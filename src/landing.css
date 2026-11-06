@@ -84,6 +84,11 @@
     .brand-sub { display: block; color: var(--muted); font-size: .75rem; line-height: 1.4; }
     .nav-links { display: flex; align-items: center; gap: 25px; color: #52617b; font-size: .91rem; font-weight: 600; }
     .nav-links a:hover { color: var(--blue); }
+    .nav-student-link { display: none; align-items: center; gap: 7px; color: var(--blue-dark); font-weight: 700; }
+    .nav-student-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
+    @media (min-width: 1101px) {
+      .nav-student-link { display: inline-flex; }
+    }
     .nav-cta { min-height: 44px; padding: 11px 16px; font-size: .88rem; white-space: nowrap; }
     .menu-toggle { display: none; width: 44px; height: 44px; border: 1px solid var(--line); background: white; color: var(--navy); border-radius: 12px; }
 
@@ -262,6 +267,7 @@
         flex-direction: column; align-items: stretch; gap: 0; font-size: 1rem;
       }
       .nav-links.open { display: flex; }
+      .nav-student-link { display: inline-flex; }
       .nav-links a { padding: 13px 4px; border-bottom: 1px solid #f0f3f8; }
       .nav-links a:last-child { border-bottom: 0; }
       .hero { padding: 52px 0 65px; }
