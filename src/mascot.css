@@ -89,3 +89,26 @@
 @media (min-width: 1001px) {
   .cta-panel .cta-content { max-width: 560px; }
 }
+
+/* ---- navigation trigger: tap feedback ---- */
+.mascot-root .mascot.is-bouncing {
+  animation: m-bounce .55s cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes m-bounce {
+  0% { transform: translateY(0) scale(1); }
+  28% { transform: translateY(-15px) scale(1.03, .97); }
+  52% { transform: translateY(0) scale(.985, 1.015); }
+  74% { transform: translateY(-5px) scale(1.01, .99); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-root .mascot,
+  .mascot-root .mascot.is-bouncing,
+  .mascot-root .mascot.waving .wing-right,
+  .mascot-root .eye,
+  .mascot-root .mascot-bubble,
+  .m-spark {
+    animation: none !important;
+  }
+}

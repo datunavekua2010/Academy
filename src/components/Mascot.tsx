@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type Ref } from 'react';
 
 type Mode = 'idle' | 'thinking' | 'waving';
 
@@ -12,18 +12,46 @@ interface MascotProps {
   /** Wave hello shortly after mounting */
   waveOnMount?: boolean;
   className?: string;
+  /**
+   * When provided, the mascot becomes a navigation trigger: clicking calls
+   * this instead of cycling thoughts, and a short bounce confirms the tap.
+   */
+  onClick?: () => void;
+  /** Accessible name for the mascot button. */
+  buttonLabel?: string;
+  /** Ref to the underlying button, so a menu can restore focus to Axi. */
+  buttonRef?: Ref<HTMLButtonElement>;
+  /** Set when the mascot controls an expandable panel. */
+  ariaExpanded?: boolean;
+  ariaControls?: string;
+  /** Hide the speech bubble (used by the dashboard navigation). */
+  showThoughtBubble?: boolean;
 }
 
 /**
  * Axi — the curious owl (ported from the mascot prototype).
  * Eyes follow the cursor, click to make Axi think, waves hello on load.
  */
-export function Mascot({ scale = 1, thoughts, initialThought, waveOnMount = true, className = '' }: MascotProps) {
+export function Mascot({
+  scale = 1,
+  thoughts,
+  initialThought,
+  waveOnMount = true,
+  className = '',
+  onClick,
+  buttonLabel,
+  buttonRef,
+  ariaExpanded,
+  ariaControls,
+  showThoughtBubble = true,
+}: MascotProps) {
   const root = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<Mode>('idle');
   const [idx, setIdx] = useState(-1);
   const [look, setLook] = useState({ x: 0, y: 0 });
+  const [bouncing, setBouncing] = useState(false);
   const timer = useRef<number>(0);
+  const bounceTimer = useRef<number>(0);
 
   const text = idx < 0 ? (initialThought ?? thoughts[0]) : thoughts[idx];
 
@@ -54,13 +82,32 @@ export function Mascot({ scale = 1, thoughts, initialThought, waveOnMount = true
     };
   }, [waveOnMount]);
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timer.current);
+      window.clearTimeout(bounceTimer.current);
+    },
+    [],
+  );
 
   const poke = () => {
     setIdx((i) => (i + 1) % thoughts.length);
     setMode('thinking');
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => setMode('idle'), 2600);
+  };
+
+  const handleClick = () => {
+    if (!onClick) {
+      poke();
+      return;
+    }
+    setBouncing(false);
+    // restart the animation on repeated taps
+    window.requestAnimationFrame(() => setBouncing(true));
+    window.clearTimeout(bounceTimer.current);
+    bounceTimer.current = window.setTimeout(() => setBouncing(false), 560);
+    onClick();
   };
 
   const pupil = mode === 'thinking' ? { x: 7, y: -5 } : look;
@@ -72,13 +119,21 @@ export function Mascot({ scale = 1, thoughts, initialThought, waveOnMount = true
       className={`mascot-root ${className}`}
       style={{ width: 220 * scale, height: 248 * scale }}
     >
-      <div className="mascot-bubble" key={text}>
-        {text}
-      </div>
+      {showThoughtBubble && text && (
+        <div className="mascot-bubble" key={text}>
+          {text}
+        </div>
+      )}
 
       <div className="mascot-scale" style={{ transform: `scale(${scale})` }}>
         <div className="ground-shadow" />
-        <div className={`mascot ${mode === 'waving' ? 'waving' : ''} ${mode === 'thinking' ? 'thinking' : ''}`} role="img" aria-label="Axi — მეგობრული ლურჯი ბუ">
+        <div
+          className={`mascot ${mode === 'waving' ? 'waving' : ''} ${mode === 'thinking' ? 'thinking' : ''} ${
+            bouncing ? 'is-bouncing' : ''
+          }`}
+          role="img"
+          aria-label="Axi — მეგობრული ლურჯი ბუ"
+        >
           <div className="wing wing-left" />
           <div className="wing wing-right" />
           <div className="ear ear-left" />
@@ -108,7 +163,15 @@ export function Mascot({ scale = 1, thoughts, initialThought, waveOnMount = true
         </div>
       </div>
 
-      <button type="button" className="mascot-btn" onClick={poke} aria-label="Axi-ს დაწკაპუნება — რას ფიქრობს?" />
+      <button
+        ref={buttonRef}
+        type="button"
+        className="mascot-btn"
+        onClick={handleClick}
+        aria-label={buttonLabel ?? 'Axi-ს დაწკაპუნება — რას ფიქრობს?'}
+        aria-expanded={ariaExpanded}
+        aria-controls={ariaControls}
+      />
     </div>
   );
 }

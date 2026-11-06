@@ -16,4 +16,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  server: {
+    host: "0.0.0.0",
+    // The preview is served through a per-session proxy host; allow it so the
+    // dev server does not reject the platform's preview requests.
+    allowedHosts: true,
+  },
 });

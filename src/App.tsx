@@ -96,6 +96,9 @@ export default function App() {
 
   useEffect(() => {
     document.body.style.overflow = modalOpen || menuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [modalOpen, menuOpen]);
 
   useEffect(() => {
@@ -147,6 +150,14 @@ export default function App() {
                 {label}
               </a>
             ))}
+            <a
+              href="#/student"
+              className="nav-student-link"
+              onClick={() => setMenuOpen(false)}
+            >
+              <span className="nav-student-dot" aria-hidden="true" />
+              მოსწავლის შესვლა
+            </a>
           </nav>
           <button className="btn btn-primary nav-cta" onClick={openModal}>
             შეფასების დაჯავშნა <BookArrow />
@@ -446,6 +457,7 @@ export default function App() {
               {NAV.map(([href, label]) => (
                 <a key={href} href={href}>{label}</a>
               ))}
+              <a href="#/student">მოსწავლის შესვლა</a>
               <a
                 href="#"
                 onClick={(e) => {
