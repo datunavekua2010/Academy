@@ -9,7 +9,6 @@ const BUBBLES = [
   'საშინაო დავალება',
   'ვარჯიში',
   'ჩემი პროგრესი',
-  'განრიგი',
   'ჩემი პროფილი',
 ];
 
@@ -29,7 +28,7 @@ afterEach(() => {
 });
 
 describe('Axi student navigation', () => {
-  it('opens all six destinations and closes when Axi is clicked again', () => {
+  it('opens all five destinations and closes when Axi is clicked again', () => {
     render(<StudentApp />);
 
     const panel = openAxi();
