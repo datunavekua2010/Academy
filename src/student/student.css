@@ -535,36 +535,6 @@
 }
 .quiz-feedback.is-wrong { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
 
-/* schedule */
-.schedule-list { display: grid; gap: 12px; }
-.schedule-day {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 18px;
-  padding: 18px 20px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #fff;
-}
-.schedule-day.is-today { border-color: #bfdbfe; background: linear-gradient(180deg, #f5f9ff, #fff); }
-.schedule-day-name { display: flex; flex-direction: column; gap: 2px; }
-.schedule-day-name strong { color: var(--navy); font-size: .95rem; }
-.schedule-day-name span { color: var(--muted); font-size: .76rem; font-weight: 600; }
-.schedule-lessons { display: grid; gap: 8px; }
-.schedule-lesson {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 11px;
-  background: #f8fafc;
-  font-size: .85rem;
-}
-.schedule-lesson time { color: var(--muted); font-weight: 700; font-size: .78rem; white-space: nowrap; }
-.schedule-lesson strong { color: var(--navy); font-weight: 700; }
-.schedule-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tone, var(--blue)); flex-shrink: 0; }
-.schedule-empty { color: #94a3b8; font-size: .82rem; font-style: italic; }
-
 /* profile */
 .profile-head {
   display: flex;
@@ -749,7 +719,6 @@
 
   .student-grid.cols-2, .student-grid.cols-3 { grid-template-columns: 1fr; }
   .student-card { padding: 18px; }
-  .schedule-day { grid-template-columns: 1fr; gap: 10px; padding: 16px; }
   .profile-head { padding: 18px; gap: 14px; }
   .profile-avatar { width: 62px; height: 62px; border-radius: 18px; font-size: 1.2rem; }
   .signin-card { padding: 26px 20px; }

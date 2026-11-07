@@ -11,7 +11,7 @@ import { STUDENT_NAV } from './navItems';
  * dashboard (or any other student page) only has to render <AxiNav />.
  */
 
-const ANGLES = [-90, -30, 30, 90, 150, 210];
+const ANGLES = [-90, -18, 54, 126, 198];
 
 export function AxiNav() {
   const [open, setOpen] = useState(false);

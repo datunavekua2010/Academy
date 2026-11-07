@@ -6,7 +6,6 @@ import { Lessons } from './pages/Lessons';
 import { Practice } from './pages/Practice';
 import { Profile } from './pages/Profile';
 import { Progress } from './pages/Progress';
-import { Schedule } from './pages/Schedule';
 import { StudentLayout } from './StudentLayout';
 import { StudentSignIn } from './StudentSignIn';
 import { StudentSessionProvider, useStudentSession } from './session';
@@ -17,7 +16,6 @@ const TITLES: Record<string, string> = {
   homework: 'საშინაო დავალება',
   practice: 'ვარჯიში',
   progress: 'ჩემი პროგრესი',
-  schedule: 'განრიგი',
   profile: 'ჩემი პროფილი',
 };
 
@@ -72,9 +70,6 @@ function StudentRoutes() {
       break;
     case 'progress':
       page = <Progress />;
-      break;
-    case 'schedule':
-      page = <Schedule />;
       break;
     case 'profile':
       page = <Profile />;
