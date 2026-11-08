@@ -101,8 +101,8 @@ export const SAMPLE_TEMPLATES = [
     subtopicId: 'cxrili',
     prompt: '{a} × {b} = ?',
     variables: {
-      a: { kind: 'int', min: 2, max: 5 },
-      b: { kind: 'int', min: 2, max: 9 },
+      a: { kind: 'int', min: 2, max: 6 },
+      b: { kind: 'int', min: 2, max: 10 },
     },
     answer: (v) => Number(v.a) * Number(v.b),
     format: { kind: 'integer', min: 0 },
@@ -148,8 +148,8 @@ export const SAMPLE_TEMPLATES = [
     prompt: '{a} ÷ {b} = ?',
     variables: {
       // Draw the divisor first, then build a dividend that divides exactly.
-      b: { kind: 'int', min: 2, max: 9 },
-      q: { kind: 'int', min: 2, max: 9 },
+      b: { kind: 'int', min: 2, max: 10 },
+      q: { kind: 'int', min: 2, max: 12 },
       a: { kind: 'int', min: (v) => Number(v.b) * Number(v.q), max: (v) => Number(v.b) * Number(v.q) },
     },
     answer: (v) => Number(v.a) / Number(v.b),

@@ -177,8 +177,15 @@ export function advance(
   let questions = state.questions;
 
   if (queue.length < 3 && refill.length > 0) {
-    // Only append variations this session has not used yet.
-    const unused = refill.filter((question) => !state.questions[question.id]);
+    // Only append variations this session has not used yet. The prompt check is
+    // the important one: a regenerated question gets a fresh id, so filtering by
+    // id alone would let the same wording back into the queue.
+    const shown = new Set(
+      Object.values(state.questions).map((question) => question.prompt),
+    );
+    const unused = refill.filter(
+      (question) => !state.questions[question.id] && !shown.has(question.prompt),
+    );
     if (unused.length > 0) {
       questions = addQuestions(state, unused);
       const lastId = queue[queue.length - 1];
