@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { PracticeProvider } from '../practice/PracticeProvider';
 import { Link, useHashRoute } from '../router';
 import { Dashboard } from './Dashboard';
 import { Homework } from './pages/Homework';
@@ -88,7 +89,9 @@ function StudentRoutes() {
 export function StudentApp() {
   return (
     <StudentSessionProvider>
-      <StudentRoutes />
+      <PracticeProvider>
+        <StudentRoutes />
+      </PracticeProvider>
     </StudentSessionProvider>
   );
 }

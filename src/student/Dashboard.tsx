@@ -1,9 +1,19 @@
+import { usePractice } from '../practice/PracticeProvider';
+import { dueLabel } from '../practice/format';
+import { assignmentStatus } from '../practice/store';
 import { AxiNav } from './AxiNav';
 import { useStudentSession } from './session';
+import { Link } from '../router';
 
 export function Dashboard() {
   const { student } = useStudentSession();
+  const { assignments, progressFor, overall, grade } = usePractice();
   const firstName = student?.firstName ?? 'მოსწავლე';
+
+  const nextUp = assignments
+    .map((assignment) => ({ assignment, status: assignmentStatus(progressFor(assignment.ref)) }))
+    .filter((item) => item.status !== 'completed')
+    .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime())[0];
 
   return (
     <div className="student-container student-dashboard">
@@ -25,20 +35,38 @@ export function Dashboard() {
       <div className="dashboard-today" aria-label="დღევანდელი მიმოხილვა">
         <span className="today-pill">
           <span className="today-dot" aria-hidden="true" />
-          დღევანდელი გაკვეთილი: <strong>16:00</strong>
+          კლასი: <strong>{grade}</strong>
         </span>
         <span className="today-pill">
           <span className="today-dot" aria-hidden="true" style={{ background: 'var(--yellow)' }} />
-          შემდეგი დავალება: <strong>2 დღე</strong>
+          შემდეგი დავალება:{' '}
+          <strong>{nextUp ? dueLabel(nextUp.assignment) : 'ყველა შესრულებულია'}</strong>
         </span>
         <span className="today-pill">
           <span className="today-dot" aria-hidden="true" style={{ background: 'var(--pink)' }} />
-          საერთო პროგრესი: <strong>72%</strong>
+          საშინაო პროგრესი: <strong>{overall.percent}%</strong>
         </span>
       </div>
 
+      {nextUp && (
+        <div className="dashboard-next">
+          <div>
+            <span className="eyebrow">
+              <span className="eyebrow-dot" /> შემდეგი ნაბიჯი
+            </span>
+            <p>
+              {nextUp.status === 'in-progress' ? 'გააგრძელე' : 'დაიწყე'} მასწავლებლის მიერ
+              მინიჭებული ვარჯიში — ვადა: <strong>{dueLabel(nextUp.assignment)}</strong>.
+            </p>
+          </div>
+          <Link to="/student/homework" className="btn btn-primary btn-small">
+            დავალებაზე გადასვლა <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      )}
+
       <p className="demo-note dashboard-note">
-        დემო მოსწავლის გარემო — მონაცემები ილუსტრაციულია.
+        დემო მოსწავლის გარემო — შედეგები ინახება ამ მოწყობილობაზე.
       </p>
     </div>
   );
