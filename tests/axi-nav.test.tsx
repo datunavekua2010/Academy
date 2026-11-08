@@ -193,15 +193,16 @@ describe('unified homework + practice', () => {
     window.location.hash = '#/student/practice';
     render(<StudentApp />);
 
-    // Switch to grade I so the bank is small and deterministic enough.
+    // Switch to grade I so the template set is small and deterministic enough.
     fireEvent.click(screen.getAllByRole('tab')[0]);
 
+    // Only subtopics with a template can start a session; the others say so.
     const startButtons = await screen.findAllByRole('button', { name: /დაწყება/ });
     expect(startButtons.length).toBeGreaterThan(0);
     fireEvent.click(startButtons[0]);
 
-    // The runner appears with a live score meter and the shared bank question.
-    expect(screen.getByText(/ბანკიდან შემთხვევით შერჩეული/)).toBeTruthy();
+    // The runner appears with a live score meter and a generated question.
+    expect(screen.getByText(/ავტომატურად გენერირებული/)).toBeTruthy();
     expect(screen.getByRole('progressbar')).toBeTruthy();
     // First answer in the lowest band is worth +4.
     expect(screen.getByText(/შემდეგი პასუხი: \+4 \/ −2/)).toBeTruthy();
@@ -234,7 +235,7 @@ describe('practice session flow', () => {
     const startButtons = await screen.findAllByRole('button', { name: /დაწყება/ });
     fireEvent.click(startButtons[0]);
 
-    const group = screen.getByRole('group', { name: 'პასუხის ვარიანტები' });
+    const group = await screen.findByRole('group', { name: 'პასუხის ვარიანტები' });
     const options = within(group).getAllByRole('button');
     expect(options.length).toBeGreaterThanOrEqual(3);
     fireEvent.click(options[0]);

@@ -13,7 +13,7 @@ const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
  * practice both land here — there is no second activity component.
  */
 export function PracticeSession({ onExit }: { onExit: () => void }) {
-  const { session, answer, next, stop, activeAssignment, bankFor } = usePractice();
+  const { session, answer, next, stop, activeAssignment } = usePractice();
   const [choice, setChoice] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Submission | null>(null);
   const [confirmStop, setConfirmStop] = useState(false);
@@ -30,8 +30,9 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
 
   if (!session) return null;
 
-  const pool = bankFor(session.ref);
-  const question = pool.find((item) => item.id === currentId) ?? pool[0];
+  // The session carries its own generated questions (id = templateId~seed),
+  // so the screen never needs to reach back into a question bank.
+  const question = currentId ? session.questions[currentId] : undefined;
   const topic = getTopic(session.ref.grade, session.ref.topicId);
   const subtopic = getSubtopic(session.ref.grade, session.ref.topicId, session.ref.subtopicId);
 
@@ -111,7 +112,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
         <div className="question-card">
           <div className="question-count">
             კითხვა #{session.correct + session.incorrect + 1}
-            <span className="question-bank-hint">ბანკიდან შემთხვევით შერჩეული</span>
+            <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
           <p className="question-prompt">{question.prompt}</p>
 

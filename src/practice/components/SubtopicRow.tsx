@@ -9,7 +9,10 @@ interface SubtopicRowProps {
   progress: SubtopicProgress;
   assignment?: Assignment;
   onStart: () => void;
+  /** Number of templates covering this subtopic (variations are unlimited). */
   questionCount: number;
+  /** False when no template exists yet — the row explains instead of starting. */
+  playable?: boolean;
 }
 
 /** One subtopic: status, best score, and the single "start / continue" action. */
@@ -20,6 +23,7 @@ export function SubtopicRow({
   assignment,
   onStart,
   questionCount,
+  playable = true,
 }: SubtopicRowProps) {
   const status = progress.completed
     ? { label: 'დასრულებული', cls: 'is-complete' }
@@ -41,7 +45,11 @@ export function SubtopicRow({
         </div>
         <p>{subtopic.summary}</p>
         <div className="subtopic-meta">
-          <span className="meta-chip">{questionCount} კითხვა ბანკში</span>
+          <span className="meta-chip">
+            {playable
+              ? `${questionCount} შაბლონი · უსასრულო ვარიაცია`
+              : 'შაბლონი ჯერ არ არის დამატებული'}
+          </span>
           {progress.attempts > 0 && (
             <>
               <span className="meta-chip">საუკეთესო: {progress.bestScore}</span>
@@ -61,15 +69,19 @@ export function SubtopicRow({
           type="button"
           className={`btn ${status.cls === 'is-complete' ? 'btn-ghost' : 'btn-primary'} btn-small`}
           onClick={onStart}
+          disabled={!playable}
+          title={playable ? undefined : 'ამ ქვეთემაზე შაბლონი ჯერ არ არის დამატებული'}
         >
-          {status.cls === 'is-complete'
-            ? 'ხელახლა ვარჯიში'
-            : status.cls === 'is-progress'
-              ? 'გაგრძელება'
-              : assignment
-                ? 'დავალების დაწყება'
-                : 'ვარჯიშის დაწყება'}
-          <span aria-hidden="true">→</span>
+          {!playable
+            ? 'მალე დაემატება'
+            : status.cls === 'is-complete'
+              ? 'ხელახლა ვარჯიში'
+              : status.cls === 'is-progress'
+                ? 'გაგრძელება'
+                : assignment
+                  ? 'დავალების დაწყება'
+                  : 'ვარჯიშის დაწყება'}
+          {playable && <span aria-hidden="true">→</span>}
         </button>
       </div>
     </article>

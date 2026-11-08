@@ -8,10 +8,14 @@ import type { Question, SubtopicRef } from './types';
  * `startSession` and answer through `submitAnswer`. Nothing else in the app is
  * allowed to modify a score.
  *
- * Questions are drawn from the (shuffled) question bank of one subtopic. A
- * perfect run needs more than six answers to reach 100, so when the shuffled
- * queue runs out it is reshuffled — with the most recent question pushed to the
- * back — instead of ending the session early.
+ * Questions are *generated*, so the session carries the variations it has
+ * already drawn (`questions`). A generated question id is `templateId~seed`
+ * and the generator is deterministic, so a stored session can always be
+ * rebuilt into exactly the same questions after a reload.
+ *
+ * A perfect run needs 35 answers, far more than a small template set can supply
+ * without repeating, so the queue is topped up on demand — the caller passes
+ * freshly generated questions to `advance`.
  */
 
 export interface SessionAnswer {
@@ -29,6 +33,8 @@ export interface SessionState {
   ref: SubtopicRef;
   /** Question ids still to be answered, current question first. */
   queue: string[];
+  /** Every generated variation in this session, keyed by id. */
+  questions: Record<string, Question>;
   score: number;
   correct: number;
   incorrect: number;
@@ -38,8 +44,6 @@ export interface SessionState {
   completed: boolean;
   /** True when the last answer has been submitted but not advanced past. */
   awaitingNext: boolean;
-  /** True when an answer made the session reach 100 and the attempt was saved. */
-  recorded: boolean;
   answers: SessionAnswer[];
 }
 
@@ -56,13 +60,31 @@ function makeId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-export function startSession(ref: SubtopicRef, pool: Question[], now = new Date()): SessionState {
-  if (pool.length === 0) throw new Error('Cannot start a practice session without questions');
+/** Adds questions to the session's own store without touching the queue. */
+export function addQuestions(
+  state: SessionState,
+  questions: Question[],
+): Record<string, Question> {
+  if (questions.length === 0) return state.questions;
+  const next = { ...state.questions };
+  for (const question of questions) next[question.id] = question;
+  return next;
+}
+
+export function startSession(
+  ref: SubtopicRef,
+  questions: Question[],
+  now = new Date(),
+): SessionState {
+  if (questions.length === 0) {
+    throw new Error('Cannot start a practice session without questions');
+  }
 
   return {
     id: makeId('session'),
     ref,
-    queue: shuffle(pool).map((question) => question.id),
+    queue: shuffle(questions).map((question) => question.id),
+    questions: Object.fromEntries(questions.map((question) => [question.id, question])),
     score: 0,
     correct: 0,
     incorrect: 0,
@@ -70,14 +92,14 @@ export function startSession(ref: SubtopicRef, pool: Question[], now = new Date(
     finishedAt: null,
     completed: false,
     awaitingNext: false,
-    recorded: false,
     answers: [],
   };
 }
 
-export function currentQuestion(state: SessionState, pool: Question[]): Question | null {
+export function currentQuestion(state: SessionState): Question | null {
   if (state.completed) return null;
-  return pool.find((question) => question.id === state.queue[0]) ?? null;
+  const id = state.queue[0];
+  return id ? state.questions[id] ?? null : null;
 }
 
 /** Number of questions still queued *after* the current one. */
@@ -95,14 +117,16 @@ export interface Submission {
  * Applies one answer. The score band is determined by the score before the
  * answer (inside `applyAnswer`), the score is clamped to 0…100, and the session
  * finishes exactly at 100.
+ *
+ * `state.awaitingNext` guards against a second submission for the same
+ * question, so a double tap or double click can never score twice.
  */
 export function submitAnswer(
   state: SessionState,
-  pool: Question[],
   choice: string,
   now = new Date(),
 ): Submission | null {
-  const question = currentQuestion(state, pool);
+  const question = currentQuestion(state);
   if (!question || state.awaitingNext) return null;
 
   const correct = choice === question.answer;
@@ -136,25 +160,33 @@ export function submitAnswer(
 }
 
 /**
- * Moves to the next question. Called after the student has read the feedback.
- * The queue is refilled (reshuffled, last question last) when it runs low.
+ * Moves to the next question.
+ *
+ * `refill` holds newly generated variations. They are added to the session when
+ * the queue runs low, which keeps generation off the critical path: the student
+ * always has a next question ready without waiting.
  */
-export function advance(state: SessionState, pool: Question[]): SessionState {
+export function advance(
+  state: SessionState,
+  refill: Question[] = [],
+): SessionState {
   if (state.completed) return state;
 
   const [, ...rest] = state.queue;
   let queue = rest;
+  let questions = state.questions;
 
-  if (queue.length < 3) {
-    const answered = new Set(state.answers.slice(-pool.length).map((answer) => answer.questionId));
-    const fresh = shuffle(pool.filter((question) => !answered.has(question.id))).map((q) => q.id);
-    const refill = fresh.length > 0 ? fresh : shuffle(pool).map((question) => question.id);
-    queue = [...queue, ...refill.filter((id) => id !== queue[queue.length - 1])];
+  if (queue.length < 3 && refill.length > 0) {
+    // Only append variations this session has not used yet.
+    const unused = refill.filter((question) => !state.questions[question.id]);
+    if (unused.length > 0) {
+      questions = addQuestions(state, unused);
+      const lastId = queue[queue.length - 1];
+      queue = [...queue, ...shuffle(unused).map((q) => q.id).filter((id) => id !== lastId)];
+    }
   }
 
-  if (queue.length === 0) queue = shuffle(pool).map((question) => question.id);
-
-  return { ...state, queue, awaitingNext: false };
+  return { ...state, queue, questions, awaitingNext: false };
 }
 
 /** Ends a session before 100 points (the score is kept as the final result). */
@@ -168,4 +200,22 @@ export function endSession(state: SessionState, now = new Date()): SessionState 
 
 export function isFinished(state: SessionState | null): boolean {
   return Boolean(state?.finishedAt) || Boolean(state?.completed);
+}
+
+/**
+ * Rebuilds a stored draft, regenerating any question the stored state lost
+ * (older drafts kept a `pool` instead of `questions`).
+ */
+export function hydrateDraft(
+  draft: SessionState,
+  resolve: (id: string) => Question | null,
+): SessionState {
+  const questions: Record<string, Question> = { ...(draft.questions ?? {}) };
+  for (const id of draft.queue) {
+    if (!questions[id]) {
+      const question = resolve(id);
+      if (question) questions[id] = question;
+    }
+  }
+  return { ...draft, questions };
 }
