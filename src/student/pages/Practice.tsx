@@ -3,9 +3,10 @@ import { CURRICULUM, getGrade, usePractice } from '../../practice/PracticeProvid
 import { PracticeSession } from '../../practice/components/PracticeSession';
 import { ScoringRules } from '../../practice/components/ScoringRules';
 import { SubtopicRow } from '../../practice/components/SubtopicRow';
-import { TopicSelect } from '../../practice/components/TopicSelect';
+import { CurriculumAccordion } from '../../practice/components/CurriculumAccordion';
 import { dueLabel, romanGrade } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
+import { topicSubtopics } from '../../practice/types';
 import { PageIntro } from './PageIntro';
 
 /**
@@ -32,8 +33,8 @@ export function Practice() {
     clearSession,
   } = usePractice();
 
-  // Topics drop-down: the selected topic's subtopics are the only ones shown.
-  const [topicId, setTopicId] = useState<string | null>(null);
+  // Accordion: which primary topic is expanded (one at a time).
+  const [openTopicId, setOpenTopicId] = useState<string | null>(null);
 
   // Derive everything from attempts so nothing can drift out of sync.
   const assignmentsForGrade = useMemo(
@@ -47,8 +48,6 @@ export function Practice() {
     .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime());
 
   const curriculum = getGrade(grade);
-  const selectedTopic =
-    curriculum.topics.find((topic) => topic.id === topicId) ?? curriculum.topics[0];
   const gradeRows = CURRICULUM.map((item) => ({
     grade: item.grade,
     roman: item.roman,
@@ -107,7 +106,9 @@ export function Practice() {
           <ul className="assignment-list">
             {open.map(({ assignment, status }) => {
               const topic = curriculum.topics.find((item) => item.id === assignment.ref.topicId);
-              const subtopic = topic?.subtopics.find((item) => item.id === assignment.ref.subtopicId);
+              const subtopic = topic
+                ? topicSubtopics(topic).find((item) => item.id === assignment.ref.subtopicId)
+                : undefined;
               if (!topic || !subtopic) return null;
               const progress = progressFor(assignment.ref);
               return (
@@ -158,48 +159,30 @@ export function Practice() {
           ))}
         </div>
 
-        <TopicSelect
+        <CurriculumAccordion
           topics={curriculum.topics}
-          value={selectedTopic.id}
-          onChange={setTopicId}
+          openTopicId={openTopicId}
+          onToggleTopic={(topicId) =>
+            setOpenTopicId((current) => (current === topicId ? null : topicId))
+          }
+          renderSubtopic={({ topic, subtopicId, title, summary }) => {
+            const ref = { grade, topicId: topic.id, subtopicId };
+            const assignment = assignmentsForGrade.find(
+              (item) =>
+                item.ref.topicId === topic.id && item.ref.subtopicId === subtopicId,
+            );
+            return (
+              <SubtopicRow
+                topic={topic}
+                subtopic={{ id: subtopicId, title, summary }}
+                progress={progressFor(ref)}
+                assignment={assignment}
+                questionCount={bankFor(ref).length}
+                onStart={() => startPractice(ref, assignment ?? null)}
+              />
+            );
+          }}
         />
-
-        {selectedTopic && (
-          <div className="topic-list" key={`${grade}-${selectedTopic.id}`}>
-            <section className={`topic-block tone-${selectedTopic.tone}`}>
-              <div className="topic-head">
-                <span className="topic-emoji" aria-hidden="true">
-                  {selectedTopic.emoji}
-                </span>
-                <div>
-                  <h3>{selectedTopic.title}</h3>
-                  <p>{selectedTopic.summary}</p>
-                </div>
-              </div>
-
-              <div className="subtopic-list">
-                {selectedTopic.subtopics.map((subtopic) => {
-                  const ref = { grade, topicId: selectedTopic.id, subtopicId: subtopic.id };
-                  const assignment = assignmentsForGrade.find(
-                    (item) =>
-                      item.ref.topicId === selectedTopic.id && item.ref.subtopicId === subtopic.id,
-                  );
-                  return (
-                    <SubtopicRow
-                      key={subtopic.id}
-                      topic={selectedTopic}
-                      subtopic={subtopic}
-                      progress={progressFor(ref)}
-                      assignment={assignment}
-                      questionCount={bankFor(ref).length}
-                      onStart={() => startPractice(ref, assignment ?? null)}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-          </div>
-        )}
       </section>
 
       <ScoringRules />

@@ -2,7 +2,7 @@
  * Curriculum model shared by the question bank, the practice engine and the
  * progress store.
  *
- * Content is always addressed Grade → Topic → Subtopic → Questions.
+ * Content is always addressed Grade → Topic → Unit → Subtopic → Questions.
  */
 
 export type GradeId = 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -31,12 +31,25 @@ export interface Subtopic {
   summary: string;
 }
 
+/**
+ * A unit groups subtopics inside a topic (U1, U2, …). Units are a grouping
+ * only — questions and progress are still stored per subtopic, so no stored
+ * data changes when the curriculum is reshaped into units.
+ */
+export interface Unit {
+  id: string;
+  /** Short label shown in the accordion, e.g. "U1". */
+  code: string;
+  title: string;
+  subtopics: Subtopic[];
+}
+
 export interface Topic {
   id: string;
   title: string;
   emoji: string;
   summary: string;
-  subtopics: Subtopic[];
+  units: Unit[];
   tone: 'blue' | 'teal' | 'yellow' | 'pink' | 'violet' | 'green';
 }
 
@@ -53,6 +66,16 @@ export interface SubtopicRef {
   grade: GradeId;
   topicId: string;
   subtopicId: string;
+}
+
+/** Every subtopic of a topic, in curriculum (unit) order. */
+export function topicSubtopics(topic: Topic): Subtopic[] {
+  return topic.units.flatMap((unit) => unit.subtopics);
+}
+
+/** The unit a subtopic belongs to, if any. */
+export function unitOf(topic: Topic, subtopicId: string): Unit | undefined {
+  return topic.units.find((unit) => unit.subtopics.some((item) => item.id === subtopicId));
 }
 
 export function subtopicKey(ref: SubtopicRef): string {

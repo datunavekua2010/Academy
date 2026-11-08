@@ -1,6 +1,6 @@
 import { CURRICULUM } from '../curriculum';
 import type { GradeId, Question, SubtopicRef } from '../types';
-import { subtopicKey } from '../types';
+import { subtopicKey, topicSubtopics } from '../types';
 import { GRADE_1 } from './grade1';
 import { GRADE_2 } from './grade2';
 import { GRADE_3 } from './grade3';
@@ -32,7 +32,8 @@ function build(): Question[] {
 
   for (const grade of CURRICULUM) {
     for (const topic of grade.topics) {
-      for (const subtopic of topic.subtopics) {
+      // Units only group subtopics — questions stay keyed by subtopic id.
+      for (const subtopic of topicSubtopics(topic)) {
         const bankKey = `${topic.id}/${subtopic.id}`;
         const seeds = SEEDS[grade.grade][bankKey];
 

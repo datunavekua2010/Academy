@@ -2,6 +2,7 @@ import { getGrade, usePractice } from '../../practice/PracticeProvider';
 import { ScoringRules } from '../../practice/components/ScoringRules';
 import { formatDateTime, formatDuration } from '../../practice/format';
 import { needsWork, overallStats, progressFor } from '../../practice/store';
+import { topicSubtopics } from '../../practice/types';
 import { PageIntro } from './PageIntro';
 import { Link } from '../../router';
 
@@ -13,7 +14,7 @@ export function Progress() {
   const weak = needsWork(attempts).slice(0, 4);
 
   const topicRows = curriculum.topics.map((topic) => {
-    const subtopics = topic.subtopics.map((subtopic) => {
+    const subtopics = topicSubtopics(topic).map((subtopic) => {
       const progress = progressFor(attempts, {
         grade,
         topicId: topic.id,
@@ -110,7 +111,9 @@ export function Progress() {
         <ul className="recent-list">
           {weak.map((attempt) => {
             const topic = curriculum.topics.find((item) => item.id === attempt.ref.topicId);
-            const subtopic = topic?.subtopics.find((item) => item.id === attempt.ref.subtopicId);
+            const subtopic = topic
+              ? topicSubtopics(topic).find((item) => item.id === attempt.ref.subtopicId)
+              : undefined;
             return (
               <li className="recent-item" key={attempt.key}>
                 <div className="recent-main">
@@ -145,7 +148,9 @@ export function Progress() {
             const topic = getGrade(attempt.ref.grade).topics.find(
               (item) => item.id === attempt.ref.topicId,
             );
-            const subtopic = topic?.subtopics.find((item) => item.id === attempt.ref.subtopicId);
+            const subtopic = topic
+              ? topicSubtopics(topic).find((item) => item.id === attempt.ref.subtopicId)
+              : undefined;
             return (
               <li className={`recent-item ${attempt.completed ? 'is-complete' : ''}`} key={attempt.id}>
                 <div className="recent-main">
