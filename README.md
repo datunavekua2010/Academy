@@ -19,9 +19,56 @@ single-file production build portable (no server rewrites required).
 - The footer of every student page also lists all five sections, so navigation
   remains usable if the bubble animation fails.
 
+## Unified practice and homework system
+
+There is **one** practice system. Homework is the assigned subset of it, not a
+separate product, question set or engine.
+
+```
+src/practice/
+  scoring.ts          the only scoring engine (100-point rules)
+  session.ts          the only question runner state machine
+  curriculum.ts       Grade → Topic → Subtopic taxonomy (I–VII)
+  bank/               the only question bank (grade1…grade7 + index)
+  store.ts            attempts/progress + demo assignments (localStorage)
+  PracticeProvider.tsx  wires bank + engine + store for the whole student area
+  components/
+    PracticeSession.tsx   the runner used by BOTH homework and practice
+    ScoringRules.tsx      rules table rendered from the engine constants
+    ScoreMeter.tsx        the one score visual
+```
+
+- **Content model** — every question is stored with its grade, topic and subtopic
+  ids, and questions are drawn randomly from the subtopic's bank.
+- **One workflow** — `Homework` and `Practice` pages both mount the same
+  `PracticeSession`. Homework simply filters the list to academy assignments.
+- **100-point scoring** — the band is chosen from the score *before* each answer:
+
+  | Score before answering | Correct | Wrong |
+  | --- | --- | --- |
+  | below 80 | +4 | −2 |
+  | 80 – 89 | +2 | −1 |
+  | 90 – 99 | +1 | −1 |
+
+  The session ends at exactly 100, never exceeds it, and never drops below 0.
+  Points gained/lost are shown after every answer.
+- **Progress** — attempts are the single source of truth. Homework completion,
+  topic mastery and "needs more work" are derived from them, and they persist in
+  `localStorage` (`axiom-academy.practice.v1`) plus a resumable draft session.
+- No worksheets, file downloads or photo uploads anywhere in the flow.
+
+### Replacing the demo content
+
+1. Curriculum: edit `src/practice/curriculum.ts` (topic + subtopic ids).
+2. Questions: edit the `src/practice/bank/gradeN.ts` files — each entry is
+   `S(prompt, options, correctIndex, explanation, difficulty)`.
+3. Assignments: replace `buildDemoAssignments` in `store.ts` with the academy API.
+4. Accounts: replace the localStorage reads/writes in `store.ts` with the
+   student's account API; the UI is unchanged.
+
 ## Commands
 
 - `npm run dev` — start the dev server
 - `npm run build` — production build (single `dist/index.html`)
-- `npm test` — interaction tests (jsdom)
+- `npm test` — scoring, bank and interaction tests (jsdom)
 - `npm run typecheck` — TypeScript check

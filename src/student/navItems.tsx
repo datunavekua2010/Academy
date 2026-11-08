@@ -45,7 +45,7 @@ export const STUDENT_NAV: StudentNavItem[] = [
     key: 'homework',
     to: '/student/homework',
     label: 'საშინაო დავალება',
-    description: 'დავალებები და ვადები',
+    description: 'მინიჭებული ქვეთემები',
     tone: 'yellow',
     icon: (
       <svg {...iconProps}>
@@ -59,7 +59,7 @@ export const STUDENT_NAV: StudentNavItem[] = [
     key: 'practice',
     to: '/student/practice',
     label: 'ვარჯიში',
-    description: 'სავარჯიშოები და ამოცანები',
+    description: '100-ქულიანი სისტემა',
     tone: 'teal',
     icon: (
       <svg {...iconProps}>

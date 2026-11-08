@@ -1,108 +1,200 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
+import { CURRICULUM, getGrade, usePractice } from '../../practice/PracticeProvider';
+import { PracticeSession } from '../../practice/components/PracticeSession';
+import { ScoringRules } from '../../practice/components/ScoringRules';
+import { SubtopicRow } from '../../practice/components/SubtopicRow';
+import { dueLabel, romanGrade } from '../../practice/format';
+import { assignmentStatus } from '../../practice/store';
 import { PageIntro } from './PageIntro';
 
-const QUESTION = {
-  prompt: 'რამდენია 3/4 + 1/4?',
-  options: ['1', '4/8', '3/8'],
-  correct: 0,
-  explanation:
-    'მნიშვნელი ერთი და იგივეა, ამიტომ მრიცველები შევკრიბოთ: 3 + 1 = 4, მნიშვნელი კი 4 რჩება. 4/4 = 1.',
-};
-
-const SETS = [
-  { title: 'წილადების შეკვრა', level: 'მარტივი', count: 8, tone: 'teal' as const },
-  { title: 'ტექსტური ამოცანები', level: 'საშუალო', count: 6, tone: 'blue' as const },
-  { title: 'ლოგიკური კანონზომიერებები', level: 'საშუალო', count: 10, tone: 'yellow' as const },
-  { title: 'გეომეტრიული ფორმები', level: 'უფრო რთული', count: 5, tone: 'pink' as const },
-];
-
-const LETTERS = ['ა', 'ბ', 'გ'];
-
+/**
+ * The unified practice system.
+ *
+ * This one page plays both roles the brief describes: it lists the work the
+ * academy assigned (homework) and lets the student keep practising any
+ * grade → topic → subtopic. Both entry points start the same engine from the
+ * same question bank.
+ */
 export function Practice() {
-  const [selected, setSelected] = useState<number | null>(null);
-  const answered = selected !== null;
-  const isCorrect = selected === QUESTION.correct;
+  const {
+    grade,
+    setGrade,
+    assignments,
+    attempts,
+    session,
+    startPractice,
+    progressFor,
+    bankFor,
+    stats,
+    overall,
+    stop,
+    clearSession,
+  } = usePractice();
+
+  // Derive everything from attempts so nothing can drift out of sync.
+  const assignmentsForGrade = useMemo(
+    () => assignments.filter((assignment) => assignment.ref.grade === grade),
+    [assignments, grade],
+  );
+
+  const open = assignmentsForGrade
+    .map((assignment) => ({ assignment, status: assignmentStatus(progressFor(assignment.ref)) }))
+    .filter((item) => item.status !== 'completed')
+    .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime());
+
+  const curriculum = getGrade(grade);
+  const gradeRows = CURRICULUM.map((item) => ({
+    grade: item.grade,
+    roman: item.roman,
+    label: item.label,
+  }));
+
+  if (session) {
+    return (
+      <div className="student-page">
+        <PracticeSession
+          onExit={() => (session.completed ? clearSession() : stop())}
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="student-page">
+    <div className="student-page practice-page">
       <PageIntro
         eyebrow="ვარჯიში"
-        title="სავარჯიშოები და ამოცანები"
-        description="ვარჯიში ეხმარება ცოდნის გამყარებას. სცადე დღევანდელი პატარა ამოცანა და ნახე, როგორ ფიქრობ."
-      />
+        title="ისწავლე და ივარჯიშე"
+        description="ერთი სისტემა, ერთი ბანკი და ერთი შეფასება. აირჩიე კლასი, თემა და ქვეთემა — ან დაიწყე მასწავლებლის მიერ მინიჭებული საშინაო დავალებიდან."
+      >
+        <div className="practice-summary">
+          <div className="summary-stat">
+            <strong>{overall.completed}</strong>
+            <span>დასრულებული დავალება</span>
+          </div>
+          <div className="summary-stat">
+            <strong>{overall.percent}%</strong>
+            <span>საშინაო პროგრესი</span>
+          </div>
+          <div className="summary-stat">
+            <strong>{stats.correct}</strong>
+            <span>სწორი პასუხი</span>
+          </div>
+          <div className="summary-stat">
+            <strong>{stats.attempts}</strong>
+            <span>სესია</span>
+          </div>
+        </div>
+      </PageIntro>
 
-      <div className="student-card quiz-card">
-        <span className="eyebrow">
-          <span className="eyebrow-dot" /> დღევანდელი ვარჯიში
-        </span>
-        <p className="quiz-question">{QUESTION.prompt}</p>
-        <div className="quiz-options">
-          {QUESTION.options.map((option, index) => {
-            const state = !answered
-              ? ''
-              : index === QUESTION.correct
-                ? 'is-correct'
-                : index === selected
-                  ? 'is-wrong'
-                  : '';
-            return (
-              <button
-                type="button"
-                key={option}
-                className={`quiz-option ${state}`}
-                onClick={() => setSelected(index)}
-                aria-pressed={selected === index}
-              >
-                <span className="option-letter" aria-hidden="true">
-                  {LETTERS[index]}
+      <section className="assignments-panel" aria-labelledby="assigned-heading">
+        <div className="section-label" style={{ marginTop: 0 }}>
+          <h2 id="assigned-heading">📌 მასწავლებლის მიერ მინიჭებული</h2>
+          <span>{grade} კლასი · {open.length} აქტიური</span>
+        </div>
+
+        {open.length === 0 ? (
+          <div className="empty-state">
+            <span aria-hidden="true">✅</span>
+            <p>ამ კლასის ყველა დავალება დასრულებულია. შეგიძლია თავისუფლად ივარჯიშო.</p>
+          </div>
+        ) : (
+          <ul className="assignment-list">
+            {open.map(({ assignment, status }) => {
+              const topic = curriculum.topics.find((item) => item.id === assignment.ref.topicId);
+              const subtopic = topic?.subtopics.find((item) => item.id === assignment.ref.subtopicId);
+              if (!topic || !subtopic) return null;
+              const progress = progressFor(assignment.ref);
+              return (
+                <li key={assignment.id} className="assignment-item">
+                  <div className="assignment-body">
+                    <span className="assignment-topic">
+                      {topic.emoji} {topic.title} <span aria-hidden="true">→</span> {subtopic.title}
+                    </span>
+                    <span className="assignment-due">
+                      ვადა: {dueLabel(assignment)} ·{' '}
+                      {status === 'in-progress' ? 'დაწყებულია' : 'ჯერ არ დაწყებულა'}
+                      {progress.bestScore > 0 ? ` · საუკეთესო ${progress.bestScore}` : ''}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-small"
+                    onClick={() => startPractice(assignment.ref, assignment)}
+                  >
+                    {status === 'in-progress' ? 'გაგრძელება' : 'დაწყება'} <span aria-hidden="true">→</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="grade-panel" aria-labelledby="curriculum-heading">
+        <div className="section-label">
+          <h2 id="curriculum-heading">კლასი, თემა, ქვეთემა</h2>
+          <span>აირჩიე შენი კლასი</span>
+        </div>
+
+        <div className="grade-tabs" role="tablist" aria-label="კლასების არჩევა">
+          {gradeRows.map((item) => (
+            <button
+              key={item.grade}
+              type="button"
+              role="tab"
+              aria-selected={grade === item.grade}
+              className={`grade-tab ${grade === item.grade ? 'is-active' : ''}`}
+              onClick={() => setGrade(item.grade)}
+            >
+              <span className="grade-tab-roman">{item.roman}</span>
+              <span className="grade-tab-label">კლასი</span>
+            </button>
+          ))}
+        </div>
+
+        <div className="topic-list">
+          {curriculum.topics.map((topic) => (
+            <section className={`topic-block tone-${topic.tone}`} key={topic.id}>
+              <div className="topic-head">
+                <span className="topic-emoji" aria-hidden="true">
+                  {topic.emoji}
                 </span>
-                {option}
-              </button>
-            );
-          })}
-        </div>
-        <div aria-live="polite">
-          {answered && (
-            <div className={`quiz-feedback ${isCorrect ? '' : 'is-wrong'}`}>
-              {isCorrect ? 'სწორია! ' : 'სცადე ისევ. '}
-              {QUESTION.explanation}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="section-label">
-        <h2>სავარჯიშო ნაკრები</h2>
-        <span>აირჩიე თემა</span>
-      </div>
-
-      <div className="student-grid cols-2">
-        {SETS.map((set) => (
-          <article className={`student-card tone-${set.tone}`} key={set.title}>
-            <div className="student-card-head">
-              <div>
-                <h3>{set.title}</h3>
-                <p>{set.count} ამოცანა</p>
+                <div>
+                  <h3>{topic.title}</h3>
+                  <p>{topic.summary}</p>
+                </div>
               </div>
-              <span className="student-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="8.5" />
-                  <circle cx="12" cy="12" r="4.5" />
-                  <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
-                </svg>
-              </span>
-            </div>
-            <div className="meta-row">
-              <span className={`meta-chip tone-${set.tone}`}>{set.level}</span>
-              <span className="meta-chip">ვარჯიში</span>
-            </div>
-          </article>
-        ))}
-      </div>
+
+              <div className="subtopic-list">
+                {topic.subtopics.map((subtopic) => {
+                  const ref = { grade, topicId: topic.id, subtopicId: subtopic.id };
+                  const assignment = assignmentsForGrade.find(
+                    (item) => item.ref.topicId === topic.id && item.ref.subtopicId === subtopic.id,
+                  );
+                  return (
+                    <SubtopicRow
+                      key={subtopic.id}
+                      topic={topic}
+                      subtopic={subtopic}
+                      progress={progressFor(ref)}
+                      assignment={assignment}
+                      questionCount={bankFor(ref).length}
+                      onStart={() => startPractice(ref, assignment ?? null)}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+        </div>
+      </section>
+
+      <ScoringRules />
 
       <p className="demo-note">
-        სრული სავარჯიშო ნაკრები მალე გაიხსნება. ეს გვერდი დემო ამოცანას
-        შეიცავს და არ ინახავ შედეგს.
+        დემო მონაცემები: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
+        {attempts.length} შენახული სესია. რეალური სასწავლო გეგმა ჩაანაცვლებს ამ თემებს — სისტემა
+        იგივე დარჩება.
       </p>
     </div>
   );

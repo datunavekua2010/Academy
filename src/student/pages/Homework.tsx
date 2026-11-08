@@ -1,109 +1,147 @@
-import { useState } from 'react';
+import { getGrade, usePractice } from '../../practice/PracticeProvider';
+import type { GradeId } from '../../practice/types';
+import { PracticeSession } from '../../practice/components/PracticeSession';
+import { dueLabel } from '../../practice/format';
+import { assignmentStatus } from '../../practice/store';
 import { PageIntro } from './PageIntro';
+import { Link } from '../../router';
 
-interface Task {
-  id: string;
-  subject: string;
-  title: string;
-  due: string;
-  tone: 'blue' | 'teal' | 'yellow' | 'pink';
-}
-
-const TASKS: Task[] = [
-  {
-    id: 'hw-1',
-    subject: 'მათემატიკა',
-    title: 'წილადების ამოცანები — გვერდი 42, №1–6',
-    due: 'ხვალ, 18:00',
-    tone: 'blue',
-  },
-  {
-    id: 'hw-2',
-    subject: 'მათემატიკა',
-    title: 'ტექსტური ამოცანა: მაღაზიაში შესყიდვა',
-    due: '12 ნოემბერი',
-    tone: 'teal',
-  },
-  {
-    id: 'hw-3',
-    subject: 'ლოგიკა',
-    title: 'ლოგიკური კანონზომიერებების გაგრძელება',
-    due: '14 ნოემბერი',
-    tone: 'yellow',
-  },
-  {
-    id: 'hw-4',
-    subject: 'მათემატიკა',
-    title: 'გეომეტრიული ფორმების გაზომვა',
-    due: '15 ნოემბერი',
-    tone: 'pink',
-  },
-];
-
+/**
+ * Homework is NOT a separate product.
+ *
+ * This page is a filtered view of the unified practice system: it shows only
+ * the subtopics the academy assigned, and starting one opens the same
+ * `PracticeSession` question runner, the same bank and the same scoring engine
+ * as the practice page.
+ */
 export function Homework() {
-  const [done, setDone] = useState<string[]>(['hw-3']);
+  const { assignments, attempts, startPractice, progressFor, session, stop, clearSession } =
+    usePractice();
 
-  const toggle = (id: string) => {
-    setDone((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+  const byGrade = new Map<GradeId, typeof assignments>();
+  for (const assignment of assignments) {
+    const list = byGrade.get(assignment.ref.grade) ?? [];
+    list.push(assignment);
+    byGrade.set(assignment.ref.grade, list);
+  }
+
+  const groups = [...byGrade.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([grade, list]) => {
+      const curriculum = getGrade(grade);
+      const items = list
+        .map((assignment) => {
+          const topic = curriculum.topics.find((item) => item.id === assignment.ref.topicId);
+          const subtopic = topic?.subtopics.find((item) => item.id === assignment.ref.subtopicId);
+          const progress = progressFor(assignment.ref);
+          return { assignment, topic, subtopic, progress, status: assignmentStatus(progress) };
+        })
+        .filter((item) => item.topic && item.subtopic)
+        .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime());
+      return { grade, curriculum, items };
+    });
+
+  const all = groups.flatMap((group) => group.items);
+  const completed = all.filter((item) => item.status === 'completed').length;
+  const openCount = all.length - completed;
+
+  if (session) {
+    return (
+      <div className="student-page">
+        <PracticeSession onExit={() => (session.completed ? clearSession() : stop())} />
+      </div>
     );
-  };
-
-  const remaining = TASKS.length - done.length;
+  }
 
   return (
-    <div className="student-page">
+    <div className="student-page homework-page">
       <PageIntro
         eyebrow="საშინაო დავალება"
-        title="დავალებები და ვადები"
-        description="მონიშნე შესრულებული დავალებები, რომ არ დაგავიწყდეს. აქ მოცემულია დემო დავალებები — რეალურ სისტემაში ისინი მასწავლებლისგან მოვა."
+        title="მასწავლებლის მიერ მინიჭებული"
+        description="ეს არის იგივე ვარჯიშის სისტემა — მხოლოდ იმ ქვეთემებით, რომლებიც აკადემიამ საშინაო დავალებად მოგანიჭა. იმუშავე პირდაპირ აქ, ფურცლების ატვირთვა არ სჭირდება."
       />
 
-      <div className="task-summary" role="status" aria-live="polite">
+      <div className="task-summary" role="status">
         <strong>
-          {done.length}/{TASKS.length}
+          {completed}/{all.length}
         </strong>
         <span>
-          {remaining === 0
-            ? 'ყველა დავალება შესრულებულია — გილოცავ!'
-            : `დარჩა ${remaining} დავალება.`}
+          {openCount === 0
+            ? 'ყველა დავალება დასრულებულია — გილოცავ!'
+            : `დარჩა ${openCount} დავალება. თითოეული სესია 100 ქულამდე მიდის.`}
         </span>
       </div>
 
-      <div className="section-label">
-        <h2>ჩემი დავალებები</h2>
-        <span>მონიშნე შესრულებული</span>
-      </div>
+      {groups.map(({ grade, curriculum, items }) => (
+        <section className="homework-group" key={grade} aria-labelledby={`hw-grade-${grade}`}>
+          <div className="section-label">
+            <h2 id={`hw-grade-${grade}`}>{curriculum.label}</h2>
+            <span>
+              {items.filter((item) => item.status === 'completed').length}/{items.length} დასრულებული
+            </span>
+          </div>
 
-      <div className="task-list">
-        {TASKS.map((task) => {
-          const isDone = done.includes(task.id);
-          return (
-            <label className={`task-item tone-${task.tone} ${isDone ? 'is-done' : ''}`} key={task.id}>
-              <input
-                type="checkbox"
-                className="task-input"
-                checked={isDone}
-                onChange={() => toggle(task.id)}
-              />
-              <span className="task-box" aria-hidden="true">
-                ✓
-              </span>
-              <span className="task-body">
-                <span className="task-title">{task.title}</span>
-                <span className="task-meta">
-                  <span className="task-subject">{task.subject}</span>
-                  <span aria-hidden="true">•</span>
-                  <span>ვადა: {task.due}</span>
-                </span>
-              </span>
-            </label>
-          );
-        })}
+          <ul className="homework-list">
+            {items.map(({ assignment, topic, subtopic, progress, status }) => {
+              if (!topic || !subtopic) return null;
+              return (
+                <li
+                  className={`homework-item tone-${topic.tone} ${status === 'completed' ? 'is-done' : ''}`}
+                  key={assignment.id}
+                >
+                  <div className="homework-main">
+                    <span className="homework-path">
+                      {topic.emoji} {topic.title} <span aria-hidden="true">/</span> {subtopic.title}
+                    </span>
+                    <div className="homework-meta">
+                      <span className={`status-pill ${status}`}>
+                        {status === 'completed'
+                          ? '✓ დასრულებული'
+                          : status === 'in-progress'
+                            ? 'მიმდინარე'
+                            : 'დასაწყები'}
+                      </span>
+                      <span className="meta-chip">
+                        {status === 'completed' ? 'შესრულდა' : 'ვადა'}: {dueLabel(assignment)}
+                      </span>
+                      <span className="meta-chip">მასწავლებელი: {assignment.assignedBy}</span>
+                      {progress.bestScore > 0 && (
+                        <span className="meta-chip">საუკეთესო ქულა: {progress.bestScore}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    className={`btn btn-small ${status === 'completed' ? 'btn-ghost' : 'btn-primary'}`}
+                    onClick={() => startPractice(assignment.ref, assignment)}
+                  >
+                    {status === 'completed'
+                      ? 'ხელახლა'
+                      : status === 'in-progress'
+                        ? 'გაგრძელება'
+                        : 'დაწყება'}
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+
+      <div className="homework-foot">
+        <p>
+          გჭირდება სხვა თემაზე ვარჯიში?{' '}
+          <Link to="/student/practice">გახსენი სრული სავარჯიშო სისტემა</Link> — იგივე ბანკი,
+          იგივე წესები.
+        </p>
       </div>
 
       <p className="demo-note">
-        დემო რეჟიმი: მონიშვნები არ ინახება გვერდის გადატვირთვისას.
+        {attempts.length > 0
+          ? `შენახულია ${attempts.length} სესიის შედეგი ამ მოწყობილობაზე.`
+          : 'ჯერ არც ერთი სესია არ დაგიწყია — აირჩიე დავალება და დაიწყე.'}
       </p>
     </div>
   );

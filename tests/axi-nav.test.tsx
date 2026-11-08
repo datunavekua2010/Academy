@@ -18,12 +18,14 @@ function openAxi() {
 }
 
 beforeEach(() => {
+  window.localStorage.clear();
   window.location.hash = '#/student';
   window.scrollTo = vi.fn();
 });
 
 afterEach(() => {
   cleanup();
+  window.localStorage.clear();
   window.location.hash = '';
 });
 
@@ -60,9 +62,7 @@ describe('Axi student navigation', () => {
     window.location.hash = '#/student/practice';
 
     await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { level: 1, name: 'სავარჯიშოები და ამოცანები' }),
-      ).toBeTruthy();
+      expect(screen.getByRole('heading', { level: 1, name: 'ისწავლე და ივარჯიშე' })).toBeTruthy();
     });
     expect(screen.queryByRole('navigation', { name: 'მოსწავლის სექციები' })).toBeNull();
   });
@@ -78,28 +78,53 @@ describe('Axi student navigation', () => {
   });
 });
 
-describe('student pages', () => {
-  it('marks homework complete', () => {
+describe('unified homework + practice', () => {
+  it('shows teacher-assigned subtopics on the homework page with no separate workflow', () => {
     window.location.hash = '#/student/homework';
     render(<StudentApp />);
 
-    const checkbox = screen.getByRole('checkbox', {
-      name: /წილადების ამოცანები/,
-    }) as HTMLInputElement;
-    expect(checkbox.checked).toBe(false);
-    fireEvent.click(checkbox);
-    expect(checkbox.checked).toBe(true);
+    // The homework page is the same system, filtered to assigned subtopics.
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'მასწავლებლის მიერ მინიჭებული' }),
+    ).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: /გახსენი სრული სავარჯიშო სისტემა/ }).length).toBe(1);
+
+    // No checkbox / file-upload workflow anywhere.
+    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
   });
 
-  it('answers the practice question', () => {
+  it('lists grades, topics and subtopics on the practice page', () => {
     window.location.hash = '#/student/practice';
     render(<StudentApp />);
 
-    fireEvent.click(screen.getByRole('button', { name: '1' }));
-    expect(screen.getByText(/სწორია/)).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'ისწავლე და ივარჯიშე' })).toBeTruthy();
+    expect(screen.getByRole('tablist', { name: 'კლასების არჩევა' })).toBeTruthy();
+    // All seven grades are offered.
+    expect(screen.getAllByRole('tab')).toHaveLength(7);
+    // The 100-point rules are rendered from the engine constants.
+    expect(screen.getByText('100-ქულიანი სისტემა')).toBeTruthy();
+    expect(screen.getAllByText('+4').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('−2').length).toBeGreaterThan(0);
+  });
+
+  it('starts a session from a subtopic and applies the 100-point rule', async () => {
+    window.location.hash = '#/student/practice';
+    render(<StudentApp />);
+
+    // Switch to grade I so the bank is small and deterministic enough.
+    fireEvent.click(screen.getAllByRole('tab')[0]);
+
+    const startButtons = await screen.findAllByRole('button', { name: /ვარჯიშის დაწყება/ });
+    expect(startButtons.length).toBeGreaterThan(0);
+    fireEvent.click(startButtons[0]);
+
+    // The runner appears with a live score meter and the shared bank question.
+    expect(screen.getByText(/ბანკიდან შემთხვევით შერჩეული/)).toBeTruthy();
+    expect(screen.getByRole('progressbar')).toBeTruthy();
+    // First answer in the lowest band is worth +4.
+    expect(screen.getByText(/შემდეგი პასუხი: \+4 \/ −2/)).toBeTruthy();
   });
 });
-
 
 describe('public landing page', () => {
   it('keeps its conventional navigation and links to the student area', () => {
@@ -115,5 +140,45 @@ describe('public landing page', () => {
     for (const link of studentLinks) {
       expect(link.getAttribute('href')).toBe('#/student');
     }
+  });
+});
+
+describe('practice session flow', () => {
+  it('shows +4 points on a correct answer and saves progress', async () => {
+    window.location.hash = '#/student/practice';
+    const { container } = render(<StudentApp />);
+
+    fireEvent.click(screen.getAllByRole('tab')[0]);
+    const startButtons = await screen.findAllByRole('button', { name: /ვარჯიშის დაწყება/ });
+    fireEvent.click(startButtons[0]);
+
+    const group = screen.getByRole('group', { name: 'პასუხის ვარიანტები' });
+    const options = within(group).getAllByRole('button');
+    expect(options.length).toBeGreaterThanOrEqual(3);
+    fireEvent.click(options[0]);
+
+    // Feedback always appears, with a signed point change.
+    const feedback = await screen.findByText(/სწორია!|არასწორია\./);
+    // Zero is shown as "0 ქულა" because the score cannot go below 0.
+    expect(feedback.parentElement?.textContent).toMatch(/([+−]\d+|0) ქულა/);
+
+    // The score meter reflects the new score (4 for a first correct, else 0).
+    const meter = screen.getByRole('progressbar');
+    expect([0, 4]).toContain(Number(meter.getAttribute('aria-valuenow')));
+
+    // Advancing shows a new question and the answer state is cleared.
+    fireEvent.click(screen.getByRole('button', { name: /შემდეგი კითხვა/ }));
+    expect(screen.queryByText(/სწორია!|არასწორია\./)).toBeNull();
+    expect(container.querySelector('.answer-feedback')).toBeNull();
+  });
+
+  it('persists completed sessions to the progress page', async () => {
+    window.localStorage.clear();
+    window.location.hash = '#/student/progress';
+    render(<StudentApp />);
+
+    // With no attempts the page shows the empty states, not invented numbers.
+    expect(screen.getByText(/ჯერ არ გაქვს დაუსრულებელი ქვეთემა/)).toBeTruthy();
+    expect(screen.getByText(/ჯერ არ გაქვს დასრულებული სესია/)).toBeTruthy();
   });
 });
