@@ -775,137 +775,200 @@
 .grade-tab.is-active .grade-tab-roman { color: var(--blue-dark); }
 .grade-tab:focus-visible { outline: 3px solid rgba(37, 99, 235, .35); outline-offset: 2px; }
 
-/* ---------- topics drop-down ---------- */
-.topic-select {
-  position: relative;
-  margin-bottom: 16px;
-}
-.topic-select-trigger {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  padding: 12px 16px;
-  border: 1.5px solid var(--line);
-  border-radius: 16px;
-  background: #fff;
-  color: var(--navy);
-  text-align: left;
-  box-shadow: 0 6px 18px rgba(23, 43, 77, .045);
-  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
-}
-.topic-select-trigger:hover { border-color: #cbd8ec; background: #fcfdff; }
-.topic-select.is-open .topic-select-trigger {
-  border-color: var(--blue);
-  box-shadow: 0 10px 26px rgba(37, 99, 235, .12);
-}
-.topic-select-trigger:focus-visible { outline: 3px solid rgba(37, 99, 235, .35); outline-offset: 2px; }
-.topic-select-label {
-  flex-shrink: 0;
-  color: var(--muted);
-  font-size: .72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-}
-.topic-select-value { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-.topic-select-emoji {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
+/* ---------- curriculum accordion (Grade → Topic → Unit → Subtopic) ---------- */
+.accordion {
   display: grid;
-  place-items: center;
-  border-radius: 11px;
-  background: #eff6ff;
-  border: 1px solid #dbeafe;
-  font-size: 1rem;
-}
-.topic-select-text { display: grid; min-width: 0; line-height: 1.3; }
-.topic-select-text strong {
-  font-size: .94rem;
-  font-weight: 800;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.topic-select-text span { color: var(--muted); font-size: .72rem; font-weight: 600; }
-.topic-select-chevron { flex-shrink: 0; display: grid; place-items: center; color: #52617b; transition: transform .2s ease; }
-.topic-select-chevron svg { width: 20px; height: 20px; }
-.topic-select.is-open .topic-select-chevron { transform: rotate(180deg); }
-
-.topic-select-panel {
-  position: absolute;
-  z-index: 40;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
-  display: grid;
-  gap: 6px;
-  padding: 8px;
+  gap: 10px;
   border: 1px solid var(--line);
-  border-radius: 16px;
+  border-radius: 20px;
   background: #fff;
-  box-shadow: 0 18px 44px rgba(23, 43, 77, .16);
-  animation: topic-panel-in .18s ease-out;
-  max-height: min(60vh, 420px);
-  overflow-y: auto;
+  padding: 10px;
+  box-shadow: 0 8px 26px rgba(23, 43, 77, .045);
 }
-@keyframes topic-panel-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: none; }
+.accordion-topic {
+  border: 1px solid transparent;
+  border-radius: 14px;
+  transition: background .18s ease, border-color .18s ease;
 }
-.topic-option {
+.accordion-topic.is-open {
+  border-color: var(--tone-border, #dbeafe);
+  background: var(--tone-soft, #f5f9ff);
+}
+.accordion-topic-heading { margin: 0; }
+
+.accordion-topic-trigger {
   display: flex;
   align-items: center;
   gap: 11px;
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: #fff;
+  padding: 13px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
   color: var(--navy);
   text-align: left;
-  transition: background .15s ease, border-color .15s ease;
+  font: inherit;
+  transition: background .18s ease;
 }
-.topic-option:hover { background: var(--tone-soft, #f5f8ff); }
-.topic-option:focus-visible { outline: 3px solid rgba(37, 99, 235, .35); outline-offset: -2px; }
-.topic-option.is-current {
-  border-color: var(--tone-border, #dbeafe);
-  background: var(--tone-soft, #eff6ff);
+.accordion-topic-trigger:hover { background: rgba(37, 99, 235, .05); }
+.accordion-topic-trigger:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .35);
+  outline-offset: -2px;
 }
-.topic-option-emoji {
-  width: 32px;
-  height: 32px;
+.accordion-chevron {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  border-radius: 9px;
-  background: var(--tone-soft, #eff6ff);
-  border: 1px solid var(--tone-border, #dbeafe);
-  font-size: .92rem;
+  width: 22px;
+  height: 22px;
+  color: #52617b;
+  transition: transform .22s cubic-bezier(.2, .8, .3, 1);
 }
-.topic-option-text { display: grid; gap: 1px; min-width: 0; flex: 1; }
-.topic-option-text strong { font-size: .88rem; font-weight: 800; }
-.topic-option-text span {
-  color: var(--muted);
-  font-size: .72rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.topic-option-count {
+.accordion-chevron svg { width: 18px; height: 18px; }
+.accordion-topic.is-open > .accordion-topic-heading .accordion-chevron { transform: rotate(90deg); }
+.accordion-unit.is-open > .accordion-unit-trigger .accordion-chevron { transform: rotate(90deg); }
+.accordion-chevron.is-small { width: 18px; height: 18px; }
+.accordion-chevron.is-small svg { width: 15px; height: 15px; }
+
+.accordion-topic-emoji {
+  width: 34px;
+  height: 34px;
   flex-shrink: 0;
-  min-width: 24px;
-  padding: 2px 7px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--tone-border, #dbeafe);
+  font-size: .95rem;
+}
+.accordion-topic-text { display: grid; gap: 1px; min-width: 0; flex: 1; }
+.accordion-topic-text strong {
+  font-size: .95rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+  line-height: 1.3;
+}
+.accordion-topic-text span {
+  color: var(--muted);
+  font-size: .76rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.accordion-topic-count {
+  flex-shrink: 0;
+  padding: 3px 9px;
   border-radius: 999px;
   background: #f2f6fc;
   color: #52617b;
   font-size: .68rem;
   font-weight: 800;
+  white-space: nowrap;
+}
+.accordion-topic.is-open .accordion-topic-count {
+  background: #fff;
+  color: var(--tone, var(--blue));
+}
+
+/* The panel animates open/closed. `grid-template-rows: 0fr → 1fr` animates
+   height without hard-coding a max-height, so long panels never clip.
+   `inert` (set in the JSX) keeps closed content out of the tab order. */
+.accordion-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .26s cubic-bezier(.2, .8, .3, 1);
+}
+.accordion-topic.is-open > .accordion-panel { grid-template-rows: 1fr; }
+.accordion-panel-inner { overflow: hidden; }
+
+.accordion-units {
+  list-style: none;
+  margin: 0;
+  padding: 0 12px 12px 42px;
+  display: grid;
+  gap: 6px;
+}
+.accordion-unit {
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid #eef2f8;
+  overflow: hidden;
+}
+.accordion-unit.is-open { border-color: var(--tone-border, #dbeafe); }
+
+.accordion-unit-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--navy);
+  text-align: left;
+  font: inherit;
+  transition: background .16s ease;
+}
+.accordion-unit-trigger:hover { background: #f8fbff; }
+.accordion-unit-trigger:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .35);
+  outline-offset: -2px;
+}
+.accordion-unit-code {
+  flex-shrink: 0;
+  min-width: 34px;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: var(--tone-soft, #eff6ff);
+  color: var(--tone, var(--blue));
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .02em;
   text-align: center;
 }
-.topic-option.is-current .topic-option-count { background: #fff; color: var(--tone, var(--blue)); }
+.accordion-unit-title {
+  flex: 1;
+  min-width: 0;
+  font-size: .86rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.accordion-unit-count {
+  flex-shrink: 0;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: #f2f6fc;
+  color: var(--muted);
+  font-size: .66rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Subtopic panels use the same animating grid technique. */
+.accordion-unit-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows .24s cubic-bezier(.2, .8, .3, 1);
+}
+.accordion-unit.is-open > .accordion-unit-panel { grid-template-rows: 1fr; }
+.accordion-unit-panel > .accordion-subtopics { overflow: hidden; }
+
+.accordion-subtopics {
+  list-style: none;
+  margin: 0;
+  padding: 0 8px 8px;
+  display: grid;
+  gap: 6px;
+}
+.accordion-subtopics > li { min-width: 0; }
+/* The subtopic row is already a card; inside the accordion it sits flush. */
+.accordion-subtopics .subtopic-row {
+  border-radius: 10px;
+  padding: 11px 12px;
+  background: #fcfdff;
+}
+.accordion-subtopics .subtopic-row h3 { font-size: .88rem; }
+.accordion-subtopics .subtopic-main p { font-size: .74rem; }
 
 .topic-list { display: grid; gap: 16px; }
 .topic-block {
@@ -1285,11 +1348,14 @@
 
 @media (max-width: 560px) {
   .grade-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .topic-select-trigger { gap: 10px; padding: 11px 13px; }
-  .topic-select-label { display: none; }
-  .topic-select-panel { max-height: 52vh; }
-  .topic-option { padding: 9px 10px; }
-  .topic-option-text span { white-space: normal; }
+  .accordion { padding: 6px; }
+  .accordion-topic-trigger { padding: 11px 10px; gap: 8px; }
+  .accordion-topic-emoji { width: 30px; height: 30px; border-radius: 9px; font-size: .85rem; }
+  .accordion-topic-text strong { font-size: .88rem; }
+  .accordion-topic-count { display: none; }
+  .accordion-units { padding: 0 8px 8px 22px; }
+  .accordion-unit-title { font-size: .8rem; }
+  .accordion-subtopics { padding: 0 4px 6px; }
   .question-card { padding: 16px; }
   .question-prompt { font-size: 1.06rem; }
   .practice-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1300,6 +1366,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .score-meter-fill { transition: none; }
-  .topic-select-panel { animation: none; }
-  .topic-select-chevron { transition: none; }
+  .accordion-panel,
+  .accordion-unit-panel { transition: none; }
+  .accordion-chevron { transition: none; }
 }

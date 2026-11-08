@@ -25,6 +25,7 @@ import {
 } from './store';
 import type { Assignment, Attempt, GradeStats, SubtopicProgress } from './store';
 import type { GradeId, Question, SubtopicRef } from './types';
+import { topicSubtopics } from './types';
 
 interface PracticeContextValue {
   attempts: Attempt[];
@@ -52,7 +53,7 @@ const PracticeContext = createContext<PracticeContextValue | null>(null);
 function demoAssignments(grade: GradeId): Assignment[] {
   const curriculum = getGrade(grade);
   const subtopics = curriculum.topics.flatMap((topic) =>
-    topic.subtopics.map((subtopic) => ({
+    topicSubtopics(topic).map((subtopic) => ({
       topicId: topic.id,
       topicTitle: topic.title,
       subtopicId: subtopic.id,

@@ -1,5 +1,6 @@
 import { getGrade, usePractice } from '../../practice/PracticeProvider';
 import type { GradeId } from '../../practice/types';
+import { topicSubtopics } from '../../practice/types';
 import { PracticeSession } from '../../practice/components/PracticeSession';
 import { dueLabel } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
@@ -32,7 +33,9 @@ export function Homework() {
       const items = list
         .map((assignment) => {
           const topic = curriculum.topics.find((item) => item.id === assignment.ref.topicId);
-          const subtopic = topic?.subtopics.find((item) => item.id === assignment.ref.subtopicId);
+          const subtopic = topic
+            ? topicSubtopics(topic).find((item) => item.id === assignment.ref.subtopicId)
+            : undefined;
           const progress = progressFor(assignment.ref);
           return { assignment, topic, subtopic, progress, status: assignmentStatus(progress) };
         })

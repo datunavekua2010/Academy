@@ -28,18 +28,26 @@ separate product, question set or engine.
 src/practice/
   scoring.ts          the only scoring engine (100-point rules)
   session.ts          the only question runner state machine
-  curriculum.ts       Grade → Topic → Subtopic taxonomy (I–VII)
+  curriculum.ts       Grade → Topic → Unit → Subtopic taxonomy (I–VII)
   bank/               the only question bank (grade1…grade7 + index)
   store.ts            attempts/progress + demo assignments (localStorage)
   PracticeProvider.tsx  wires bank + engine + store for the whole student area
   components/
-    PracticeSession.tsx   the runner used by BOTH homework and practice
-    ScoringRules.tsx      rules table rendered from the engine constants
-    ScoreMeter.tsx        the one score visual
+    PracticeSession.tsx     the runner used by BOTH homework and practice
+    CurriculumAccordion.tsx the nested Grade → Topic → Unit → Subtopic menu
+    ScoringRules.tsx        rules table rendered from the engine constants
+    ScoreMeter.tsx          the one score visual
 ```
 
 - **Content model** — every question is stored with its grade, topic and subtopic
-  ids, and questions are drawn randomly from the subtopic's bank.
+  ids, and questions are drawn randomly from the subtopic's bank. Units group
+  subtopics inside a topic; they are a grouping only, so adding or reshaping
+  units never changes a stored score or attempt.
+- **Navigation** — the practice page lists every primary topic of the selected
+  grade as an accordion. Expanding a topic reveals its units (U1, U2, …), and
+  expanding a unit reveals its subtopics; clicking a subtopic opens the exercise
+  session for that exact grade → topic → unit → subtopic. Other topics stay
+  visible while one is expanded.
 - **One workflow** — `Homework` and `Practice` pages both mount the same
   `PracticeSession`. Homework simply filters the list to academy assignments.
 - **100-point scoring** — the band is chosen from the score *before* each answer:
@@ -59,7 +67,8 @@ src/practice/
 
 ### Replacing the demo content
 
-1. Curriculum: edit `src/practice/curriculum.ts` (topic + subtopic ids).
+1. Curriculum: edit `src/practice/curriculum.ts` (topic → unit → subtopic ids).
+   Units are numbered U1, U2, … from their order in the file.
 2. Questions: edit the `src/practice/bank/gradeN.ts` files — each entry is
    `S(prompt, options, correctIndex, explanation, difficulty)`.
 3. Assignments: replace `buildDemoAssignments` in `store.ts` with the academy API.

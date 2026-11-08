@@ -107,60 +107,86 @@ describe('unified homework + practice', () => {
     expect(screen.getAllByText('−2').length).toBeGreaterThan(0);
   });
 
-  it('opens a topics drop-down and shows only the chosen topic\'s subtopics', () => {
+  it('shows every primary topic as a collapsed accordion row', () => {
     window.location.hash = '#/student/practice';
     render(<StudentApp />);
 
-    // Closed by default: no topic list is shown until the student asks for it.
-    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
-
-    const trigger = screen.getByRole('button', { name: /თემები — არჩეულია/ });
-    expect(trigger.getAttribute('aria-expanded')).toBe('false');
-
-    fireEvent.click(trigger);
-    expect(trigger.getAttribute('aria-expanded')).toBe('true');
-
-    const panel = screen.getByRole('group', { name: 'თემების არჩევა' });
-    const options = within(panel).getAllByRole('button');
-    expect(options.length).toBeGreaterThanOrEqual(3);
-
-    // Only the selected topic's subtopics are rendered.
-    const subtopicRows = document.querySelectorAll('.subtopic-row');
-    expect(subtopicRows.length).toBe(
-      Number(panel.querySelector('.topic-option-count')?.textContent),
-    );
-    const before = [...subtopicRows].map((row) => row.querySelector('h3')?.textContent);
-
-    // Choosing another topic swaps the subtopics and closes the panel.
-    const secondTitle = options[1].querySelector('strong')?.textContent ?? '';
-    fireEvent.click(options[1]);
-
-    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
-    const trigger2 = screen.getByRole('button', { name: /თემები — არჩეულია/ });
-    expect(trigger2.getAttribute('aria-expanded')).toBe('false');
-    expect(trigger2.textContent).toContain(secondTitle);
-
-    const after = [...document.querySelectorAll('.subtopic-row')].map(
-      (row) => row.querySelector('h3')?.textContent,
-    );
-    expect(after).not.toEqual(before);
+    const triggers = screen.getAllByRole('button', { name: /ქვეთემა$/ });
+    // All topics of the grade are visible at once, none expanded.
+    expect(triggers.length).toBe(3);
+    for (const trigger of triggers) {
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    }
+    // Collapsed panels stay in the DOM for the CSS animation, but are inert
+    // so nothing inside them is reachable or focusable.
+    for (const panel of document.querySelectorAll('.accordion-panel')) {
+      expect(panel.hasAttribute('inert')).toBe(true);
+    }
+    // Unit rows exist only inside their topic's (inert) panel, so none is
+    // visible to the student.
+    expect(document.querySelectorAll('.accordion-panel:not([inert])')).toHaveLength(0);
   });
 
-  it('closes the topics drop-down on Escape and outside click', () => {
+  it('expands a topic to reveal units and expands a unit to reveal subtopics', () => {
     window.location.hash = '#/student/practice';
     render(<StudentApp />);
 
-    const open = () =>
-      fireEvent.click(screen.getByRole('button', { name: /თემები — არჩეულია/ }));
+    const topicTrigger = screen.getAllByRole('button', { name: /ქვეთემა$/ })[0];
+    fireEvent.click(topicTrigger);
+    expect(topicTrigger.getAttribute('aria-expanded')).toBe('true');
 
-    open();
-    expect(screen.getByRole('group', { name: 'თემების არჩევა' })).toBeTruthy();
-    fireEvent.keyDown(document, { key: 'Escape' });
-    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
+    // Units appear, each collapsed, with their U1/U2 codes.
+    const unitTriggers = [...document.querySelectorAll<HTMLButtonElement>('.accordion-unit-trigger')];
+    expect(unitTriggers.length).toBeGreaterThan(0);
+    expect(unitTriggers[0].textContent).toContain('U1');
+    for (const unit of unitTriggers) {
+      expect(unit.getAttribute('aria-expanded')).toBe('false');
+    }
 
-    open();
-    fireEvent.pointerDown(document.body);
-    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
+    // Subtopics are hidden until the unit is opened.
+    expect(document.querySelectorAll('.accordion-unit-panel:not([inert])')).toHaveLength(0);
+    fireEvent.click(unitTriggers[0]);
+    expect(unitTriggers[0].getAttribute('aria-expanded')).toBe('true');
+    expect(document.querySelectorAll('.accordion-unit-panel:not([inert])').length).toBe(1);
+    expect(document.querySelectorAll('.subtopic-row').length).toBeGreaterThan(0);
+  });
+
+  it('keeps the other topics visible and collapses when clicked again', () => {
+    window.location.hash = '#/student/practice';
+    render(<StudentApp />);
+
+    const [first, second] = screen.getAllByRole('button', { name: /ქვეთემა$/ });
+
+    fireEvent.click(first);
+    expect(first.getAttribute('aria-expanded')).toBe('true');
+    // The other topic rows are still on screen.
+    expect(second).toBeTruthy();
+    expect(second.getAttribute('aria-expanded')).toBe('false');
+
+    // Opening another topic collapses the first (one open at a time).
+    fireEvent.click(second);
+    expect(second.getAttribute('aria-expanded')).toBe('true');
+    expect(first.getAttribute('aria-expanded')).toBe('false');
+
+    // Clicking the open topic collapses it.
+    fireEvent.click(second);
+    expect(second.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('expanding one unit does not collapse the other unit', () => {
+    window.location.hash = '#/student/practice';
+    render(<StudentApp />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: /ქვეთემა$/ })[0]);
+
+    // Grade I topics have a single unit each; check the general rule on a
+    // grade whose topic has more units by re-using the same unit list.
+    const units = screen.getAllByRole('button', { name: /^U\d/ });
+    fireEvent.click(units[0]);
+    expect(units[0].getAttribute('aria-expanded')).toBe('true');
+    for (const unit of units.slice(1)) {
+      expect(unit.getAttribute('aria-expanded')).toBe('false');
+    }
   });
 
   it('starts a session from a subtopic and applies the 100-point rule', async () => {

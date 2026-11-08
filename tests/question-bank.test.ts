@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { QUESTIONS, bankStats, questionsForSubtopic } from '../src/practice/bank';
 import { CURRICULUM, allSubtopics } from '../src/practice/curriculum';
+import { topicSubtopics } from '../src/practice/types';
 
 describe('question bank', () => {
-  it('covers every grade, topic and subtopic in the curriculum', () => {
+  it('covers every grade, topic, unit and subtopic in the curriculum', () => {
     for (const { grade, topic, subtopic } of allSubtopics()) {
       const questions = questionsForSubtopic({
         grade,
@@ -22,7 +23,12 @@ describe('question bank', () => {
     for (const grade of CURRICULUM) {
       expect(grade.topics.length).toBeGreaterThanOrEqual(3);
       for (const topic of grade.topics) {
-        expect(topic.subtopics.length).toBeGreaterThanOrEqual(2);
+        expect(topic.units.length).toBeGreaterThanOrEqual(1);
+        for (const unit of topic.units) {
+          expect(unit.subtopics.length).toBeGreaterThanOrEqual(1);
+          expect(unit.code).toMatch(/^U\d+$/);
+        }
+        expect(topicSubtopics(topic).length).toBeGreaterThanOrEqual(2);
       }
     }
   });
@@ -49,7 +55,7 @@ describe('question bank', () => {
       expect(grade, `unknown grade on ${question.id}`).toBeTruthy();
       const topic = grade!.topics.find((item) => item.id === question.topicId);
       expect(topic, `unknown topic on ${question.id}`).toBeTruthy();
-      expect(topic!.subtopics.some((item) => item.id === question.subtopicId)).toBe(true);
+      expect(topicSubtopics(topic!).some((item) => item.id === question.subtopicId)).toBe(true);
     }
   });
 
