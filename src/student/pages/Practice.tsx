@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CURRICULUM, getGrade, usePractice } from '../../practice/PracticeProvider';
 import { PracticeSession } from '../../practice/components/PracticeSession';
 import { ScoringRules } from '../../practice/components/ScoringRules';
 import { SubtopicRow } from '../../practice/components/SubtopicRow';
+import { TopicSelect } from '../../practice/components/TopicSelect';
 import { dueLabel, romanGrade } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
 import { PageIntro } from './PageIntro';
@@ -31,6 +32,9 @@ export function Practice() {
     clearSession,
   } = usePractice();
 
+  // Topics drop-down: the selected topic's subtopics are the only ones shown.
+  const [topicId, setTopicId] = useState<string | null>(null);
+
   // Derive everything from attempts so nothing can drift out of sync.
   const assignmentsForGrade = useMemo(
     () => assignments.filter((assignment) => assignment.ref.grade === grade),
@@ -43,6 +47,8 @@ export function Practice() {
     .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime());
 
   const curriculum = getGrade(grade);
+  const selectedTopic =
+    curriculum.topics.find((topic) => topic.id === topicId) ?? curriculum.topics[0];
   const gradeRows = CURRICULUM.map((item) => ({
     grade: item.grade,
     roman: item.roman,
@@ -133,7 +139,7 @@ export function Practice() {
       <section className="grade-panel" aria-labelledby="curriculum-heading">
         <div className="section-label">
           <h2 id="curriculum-heading">კლასი, თემა, ქვეთემა</h2>
-          <span>აირჩიე შენი კლასი</span>
+          <span>აირჩიე კლასი და თემა</span>
         </div>
 
         <div className="grade-tabs" role="tablist" aria-label="კლასების არჩევა">
@@ -152,29 +158,36 @@ export function Practice() {
           ))}
         </div>
 
-        <div className="topic-list">
-          {curriculum.topics.map((topic) => (
-            <section className={`topic-block tone-${topic.tone}`} key={topic.id}>
+        <TopicSelect
+          topics={curriculum.topics}
+          value={selectedTopic.id}
+          onChange={setTopicId}
+        />
+
+        {selectedTopic && (
+          <div className="topic-list" key={`${grade}-${selectedTopic.id}`}>
+            <section className={`topic-block tone-${selectedTopic.tone}`}>
               <div className="topic-head">
                 <span className="topic-emoji" aria-hidden="true">
-                  {topic.emoji}
+                  {selectedTopic.emoji}
                 </span>
                 <div>
-                  <h3>{topic.title}</h3>
-                  <p>{topic.summary}</p>
+                  <h3>{selectedTopic.title}</h3>
+                  <p>{selectedTopic.summary}</p>
                 </div>
               </div>
 
               <div className="subtopic-list">
-                {topic.subtopics.map((subtopic) => {
-                  const ref = { grade, topicId: topic.id, subtopicId: subtopic.id };
+                {selectedTopic.subtopics.map((subtopic) => {
+                  const ref = { grade, topicId: selectedTopic.id, subtopicId: subtopic.id };
                   const assignment = assignmentsForGrade.find(
-                    (item) => item.ref.topicId === topic.id && item.ref.subtopicId === subtopic.id,
+                    (item) =>
+                      item.ref.topicId === selectedTopic.id && item.ref.subtopicId === subtopic.id,
                   );
                   return (
                     <SubtopicRow
                       key={subtopic.id}
-                      topic={topic}
+                      topic={selectedTopic}
                       subtopic={subtopic}
                       progress={progressFor(ref)}
                       assignment={assignment}
@@ -185,8 +198,8 @@ export function Practice() {
                 })}
               </div>
             </section>
-          ))}
-        </div>
+          </div>
+        )}
       </section>
 
       <ScoringRules />
