@@ -85,40 +85,63 @@ describe('session engine', () => {
   const pool = [question('q1', 'right1'), question('q2', 'right2'), question('q3', 'right3')];
   const ref = { grade: 5 as const, topicId: 't', subtopicId: 's' };
 
+  /** A fresh set of extra questions, as the provider generates on refill. */
+  const refill = (from: number) =>
+    Array.from({ length: 6 }, (_, i) =>
+      question(`extra${from + i}`, `right-extra-${from + i}`),
+    );
+
   it('scores through the shared engine and records the delta', () => {
-    let state = startSession(ref, pool);
-    const first = submitAnswer(state, pool, 'right' + state.queue[0].split('q')[1])!;
+    const state = startSession(ref, pool);
+    const current = state.questions[state.queue[0]];
+    const first = submitAnswer(state, current.answer)!;
+
     expect(first.result.score).toBe(4);
     expect(first.result.delta).toBe(4);
     expect(first.state.awaitingNext).toBe(true);
     expect(first.state.correct).toBe(1);
 
     // A second submit before advancing is ignored (prevents double scoring).
-    expect(submitAnswer(first.state, pool, 'wrong')).toBeNull();
-    state = advance(first.state, pool);
-    expect(state.awaitingNext).toBe(false);
+    expect(submitAnswer(first.state, state.questions[first.state.queue[0]].answer)).toBeNull();
+    const advanced = advance(first.state);
+    expect(advanced.awaitingNext).toBe(false);
+    expect(advanced.answers).toHaveLength(1);
   });
 
   it('finishes the session exactly at 100 and stops accepting answers', () => {
-    // Drive a perfect run through the real engine.
+    // Drive a perfect run through the real engine, topping the queue up as a
+    // real session does (a small pool cannot supply 35 answers on its own).
     let state = startSession(ref, pool);
     let guard = 0;
+    let generated = 0;
+
     while (state.score < 100 && guard < 200) {
-      const current = pool.find((item) => item.id === state.queue[0])!;
-      const submission = submitAnswer(state, pool, current.answer)!;
-      state = advance(submission.state, pool);
+      const current = state.questions[state.queue[0]];
+      const submission = submitAnswer(state, current.answer)!;
+      generated += 6;
+      const more = submission.state.queue.length <= 3 ? refill(generated) : [];
+      state = advance(submission.state, more);
       guard += 1;
     }
+
     expect(state.score).toBe(100);
     expect(state.completed).toBe(true);
     expect(state.finishedAt).not.toBeNull();
-    expect(submitAnswer(state, pool, pool[0].answer)).toBeNull();
+    expect(guard).toBe(35);
+    expect(submitAnswer(state, 'right1')).toBeNull();
   });
 
-  it('refills the queue so a 35-answer run is possible from a 3-question bank', () => {
+  it('refills the queue only with questions the session has not seen', () => {
     const state = startSession(ref, pool);
-    expect(state.queue.length).toBe(3);
-    const advanced = advance(state, pool);
-    expect(advanced.queue.length).toBeGreaterThanOrEqual(3);
+    expect(state.queue).toHaveLength(3);
+
+    // Already-known questions are not re-queued…
+    const noNews = advance(state, pool);
+    expect(noNews.queue).toHaveLength(2);
+
+    // …but newly generated ones are appended.
+    const withNews = advance(state, refill(100));
+    expect(withNews.queue.length).toBeGreaterThanOrEqual(3);
+    expect(Object.keys(withNews.questions).length).toBe(9);
   });
 });

@@ -26,7 +26,8 @@ export function Practice() {
     session,
     startPractice,
     progressFor,
-    bankFor,
+    templateCountFor,
+    isPlayable,
     stats,
     overall,
     stop,
@@ -177,7 +178,8 @@ export function Practice() {
                 subtopic={{ id: subtopicId, title, summary }}
                 progress={progressFor(ref)}
                 assignment={assignment}
-                questionCount={bankFor(ref).length}
+                questionCount={templateCountFor(ref)}
+                playable={isPlayable(ref)}
                 onStart={() => startPractice(ref, assignment ?? null)}
               />
             );

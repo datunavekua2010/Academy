@@ -1,0 +1,667 @@
+import { defineTemplate } from './types';
+import type { QuestionTemplate, TemplateConstraint, VariableSpec, Vars } from './types';
+
+/**
+ * One template per curriculum subtopic that the showcase templates in
+ * `samples.ts` do not cover.
+ *
+ * These are still *patterns*, not questions: each entry is a few lines of
+ * arithmetic that the generator turns into an unlimited number of variations.
+ * They exist so every grade → topic → subtopic in the curriculum is playable
+ * today. When the academy supplies its own templates, delete this file and
+ * swap it in `catalog.ts` — nothing else changes.
+ */
+
+/** Distinct names per corner count (several shapes share four corners). */
+const SHAPE_BY_CORNERS: Record<number, string> = {
+  3: 'სამკუთხედი',
+  4: 'ოთხკუთხედი',
+  5: 'ხუთკუთხედი',
+  6: 'ექვსკუთხედი',
+  7: 'შვიდკუთხედი',
+};
+
+const SHAPE_NAMES: Record<number, string> = {
+  3: 'სამკუთხედი',
+  4: 'ოთხკუთხედი',
+  5: 'ხუთკუთხედი',
+  6: 'ექვსკუთხედი',
+  7: 'შვიდკუთხედი',
+};
+
+interface ArithmeticSpec {
+  id: string;
+  grade: QuestionTemplate['grade'];
+  topicId: string;
+  unitId?: string;
+  subtopicId: string;
+  prompt: string;
+  hint?: string;
+  variables: Record<string, VariableSpec>;
+  constraints?: TemplateConstraint[];
+  answer: (vars: Vars) => number;
+  explanation: (vars: Vars, answer: string) => string;
+  /** Optional answer suffix, e.g. " სმ" or " კმ". */
+  unit?: string;
+  /** Optional custom wrong answers; the numeric default is used otherwise. */
+  mistakes?: (vars: Vars, answer: number) => number[];
+}
+
+/** Numeric template with the generator's default distractors. */
+const arithmetic = (spec: ArithmeticSpec): QuestionTemplate =>
+  defineTemplate({
+    id: spec.id,
+    grade: spec.grade,
+    topicId: spec.topicId,
+    unitId: spec.unitId,
+    subtopicId: spec.subtopicId,
+    prompt: spec.prompt,
+    hint: spec.hint,
+    variables: spec.variables,
+    constraints: spec.constraints,
+    answer: spec.answer,
+    format: {
+      kind: 'integer',
+      format: spec.unit ? (value) => `${value}${spec.unit}` : undefined,
+    },
+    explanation: ({ vars, answer }) => spec.explanation(vars, answer),
+    distractors: spec.mistakes
+      ? ({ vars, answer }) => spec.mistakes!(vars, Number(answer))
+      : undefined,
+  });
+
+/** Text template: all four options must be supplied explicitly. */
+const textual = (spec: {
+  id: string;
+  grade: QuestionTemplate['grade'];
+  topicId: string;
+  unitId?: string;
+  subtopicId: string;
+  prompt: string;
+  hint?: string;
+  variables: Record<string, VariableSpec>;
+  constraints?: TemplateConstraint[];
+  answer: (vars: Vars) => string;
+  wrong: (vars: Vars, answer: string) => string[];
+  explanation: (vars: Vars, answer: string) => string;
+}): QuestionTemplate =>
+  defineTemplate({
+    id: spec.id,
+    grade: spec.grade,
+    topicId: spec.topicId,
+    unitId: spec.unitId,
+    subtopicId: spec.subtopicId,
+    prompt: spec.prompt,
+    hint: spec.hint,
+    variables: spec.variables,
+    constraints: spec.constraints,
+    answer: spec.answer,
+    format: { kind: 'text' },
+    explanation: ({ vars, answer }) => spec.explanation(vars, answer),
+    distractors: ({ vars, answer }) => spec.wrong(vars, String(answer)),
+  });
+
+export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
+  // ------------------------------------------------------------- grade I
+  arithmetic({
+    id: 'cov-g1-next-number',
+    grade: 1,
+    topicId: 'ricxvebi',
+    unitId: 'u1',
+    subtopicId: 'datvla',
+    prompt: 'რომელი რიცხვი მოდის {n}-ის შემდეგ?',
+    variables: { n: { kind: 'int', min: 1, max: 18 } },
+    answer: (v) => Number(v.n) + 1,
+    explanation: (vars, answer) => `${vars.n}-ის შემდეგ მოდის ${answer}.`,
+    mistakes: (_vars, answer) => [answer - 1, answer + 1, answer + 10],
+  }),
+
+  arithmetic({
+    id: 'cov-g1-subtract-10',
+    grade: 1,
+    topicId: 'shekreba',
+    unitId: 'u1',
+    subtopicId: 'atamde',
+    prompt: '{a} − {b} = ?',
+    hint: 'გამოაკელი მეორე რიცხვი.',
+    variables: {
+      a: { kind: 'int', min: 3, max: 10 },
+      b: { kind: 'int', min: 1, max: (v) => Number(v.a) }, // never negative
+    },
+    constraints: [{ test: (v) => Number(v.a) - Number(v.b) >= 0, note: 'პასუხი უარყოფითი არ იყოს' }],
+    answer: (v) => Number(v.a) - Number(v.b),
+    explanation: (vars, answer) => `${vars.a} − ${vars.b} = ${answer}.`,
+  }),
+
+  textual({
+    id: 'cov-g1-shape-sides',
+    grade: 1,
+    topicId: 'forma',
+    unitId: 'u1',
+    subtopicId: 'amocnoba',
+    prompt: 'ფიგურას {sides} გვერდი აქვს. რა ჰქვია ამ ფიგურას?',
+    variables: {
+      sides: { kind: 'choice', values: [3, 4, 5, 6, 7] },
+    },
+    answer: (v) => SHAPE_NAMES[Number(v.sides)] ?? 'სამკუთხედი',
+    wrong: (_v, answer) =>
+      Object.values(SHAPE_NAMES).filter((name) => name !== answer),
+    explanation: (vars, answer) => `${vars.sides} გვერდიანი ფიგურა — ${answer}.`,
+  }),
+
+  textual({
+    id: 'cov-g1-shape-corners',
+    grade: 1,
+    topicId: 'forma',
+    unitId: 'u1',
+    subtopicId: 'amocnoba',
+    prompt: '{shape}-ს რამდენი კუთხე აქვს?',
+    variables: {
+      shape: {
+        kind: 'choice',
+        values: ['სამკუთხედს', 'ოთხკუთხედს', 'ხუთკუთხედს', 'ექვსკუთხედს', 'შვიდკუთხედს', 'კვადრატს', 'მართკუთხედს'],
+      },
+    },
+    answer: (v) =>
+      String(
+        {
+          'სამკუთხედს': 3,
+          'ოთხკუთხედს': 4,
+          'ხუთკუთხედს': 5,
+          'ექვსკუთხედს': 6,
+          'შვიდკუთხედს': 7,
+          'კვადრატს': 4,
+          'მართკუთხედს': 4,
+        }[String(v.shape)] ?? 4,
+      ),
+    wrong: (_v, answer) => ['3', '4', '5', '6', '7', '8'].filter((n) => n !== answer),
+    explanation: (vars, answer) => `${vars.shape} ${answer} კუთხე აქვს.`,
+  }),
+
+  textual({
+    id: 'cov-g1-shape-corner-count',
+    grade: 1,
+    topicId: 'forma',
+    unitId: 'u1',
+    subtopicId: 'amocnoba',
+    prompt: '{corners} კუთხის მქონე ფიგურა რომელია?',
+    variables: {
+      corners: { kind: 'choice', values: [3, 4, 5, 6, 7] },
+    },
+    answer: (v) => SHAPE_BY_CORNERS[Number(v.corners)] ?? 'სამკუთხედი',
+    wrong: (_v, answer) =>
+      Object.values(SHAPE_BY_CORNERS).filter((name) => name !== answer),
+    explanation: (vars, answer) => `${vars.corners} კუთხე — ${answer}.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g1-pattern',
+    grade: 1,
+    topicId: 'forma',
+    unitId: 'u2',
+    subtopicId: 'tanmimdevroba',
+    prompt: 'განაგრძე მიმდევრობა: {a}, {b}, {c}, ?',
+    hint: 'იპოვე კანონზომიერება.',
+    variables: {
+      a: { kind: 'int', min: 1, max: 10 },
+      d: { kind: 'int', min: 1, max: 3 },
+      b: { kind: 'int', min: (v) => Number(v.a) + Number(v.d), max: (v) => Number(v.a) + Number(v.d) },
+      c: { kind: 'int', min: (v) => Number(v.a) + 2 * Number(v.d), max: (v) => Number(v.a) + 2 * Number(v.d) },
+    },
+    answer: (v) => Number(v.a) + 3 * Number(v.d),
+    explanation: (vars, answer) => `ყოველ ნაბიჯზე ${vars.d}-ს ვუმატებთ, ამიტომ შემდეგია ${answer}.`,
+  }),
+
+  // ------------------------------------------------------------ grade II
+  arithmetic({
+    id: 'cov-g2-cross-ten',
+    grade: 2,
+    topicId: 'shekreba100',
+    unitId: 'u1',
+    subtopicId: 'ateusit',
+    prompt: '{a} + {b} = ?',
+    hint: 'გადადი შემდეგ ათეულში.',
+    variables: {
+      a: { kind: 'int', min: 6, max: 9 },
+      b: { kind: 'int', min: 4, max: 9 },
+    },
+    constraints: [{ test: (v) => Number(v.a) + Number(v.b) > 10, note: 'ათეულს გადავიდეს' }],
+    answer: (v) => Number(v.a) + Number(v.b),
+    explanation: (vars, answer) => `10-ის გავლით: ${vars.a} + ${vars.b} = ${answer}.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g2-apples',
+    grade: 2,
+    topicId: 'shekreba100',
+    unitId: 'u2',
+    subtopicId: 'amocana',
+    prompt: 'კალათაში {a} ვაშლია. დედამ კიდევ {b} დაამატა. რამდენი ვაშლია ახლა?',
+    variables: {
+      a: { kind: 'int', min: 5, max: 60 },
+      b: { kind: 'int', min: 5, max: 40 },
+    },
+    constraints: [{ test: (v) => Number(v.a) + Number(v.b) <= 100, note: 'ჯამი 100-მდე იყოს' }],
+    answer: (v) => Number(v.a) + Number(v.b),
+    explanation: (vars, answer) => `${vars.a} + ${vars.b} = ${answer} ვაშლი.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g2-equal-groups',
+    grade: 2,
+    topicId: 'gamravleba',
+    unitId: 'u2',
+    subtopicId: 'jgufi',
+    prompt: '{total} ბავშვი თანაბრად გადანაწილდა {groups} ჯგუფში. რამდენია თითო ჯგუფში?',
+    variables: {
+      groups: { kind: 'int', min: 2, max: 8 },
+      per: { kind: 'int', min: 2, max: 9 },
+      total: { kind: 'int', min: (v) => Number(v.groups) * Number(v.per), max: (v) => Number(v.groups) * Number(v.per) },
+    },
+    answer: (v) => Number(v.total) / Number(v.groups),
+    explanation: (vars, answer) => `${vars.total} ÷ ${vars.groups} = ${answer}.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g2-hours-minutes',
+    grade: 2,
+    topicId: 'gazomva',
+    unitId: 'u2',
+    subtopicId: 'dro',
+    prompt: '{h} საათი და {m} წუთი სულ რამდენი წუთია?',
+    variables: {
+      h: { kind: 'int', min: 1, max: 6 },
+      m: { kind: 'choice', values: [0, 10, 15, 20, 30, 40, 45, 50] },
+    },
+    answer: (v) => Number(v.h) * 60 + Number(v.m),
+    explanation: (vars, answer) =>
+      `${vars.h} × 60 = ${Number(vars.h) * 60}, დამატებული ${vars.m} = ${answer} წუთი.`,
+    mistakes: (vars, answer) => [Number(vars.h) * 30 + Number(vars.m), answer + 60, answer - 10],
+  }),
+
+  // ----------------------------------------------------------- grade III
+  arithmetic({
+    id: 'cov-g3-table-6-9',
+    grade: 3,
+    topicId: 'gamravleba-gayofa',
+    unitId: 'u1',
+    subtopicId: 'cxrili',
+    prompt: '{a} × {b} = ?',
+    variables: {
+      a: { kind: 'int', min: 6, max: 9 },
+      b: { kind: 'int', min: 6, max: 9 },
+    },
+    answer: (v) => Number(v.a) * Number(v.b),
+    explanation: (vars, answer) => `${vars.a} × ${vars.b} = ${answer}.`,
+    mistakes: (vars, answer) => [answer + Number(vars.a), answer - Number(vars.a), answer + Number(vars.b)],
+  }),
+
+  arithmetic({
+    id: 'cov-g3-pens',
+    grade: 3,
+    topicId: 'amocanebi',
+    unitId: 'u1',
+    subtopicId: 'ert',
+    prompt: 'მაღაზიაში {n} კალამი იყიდება. თითოეული {p} ლარი ღირს. რა ღირს ყველა კალამი?',
+    variables: {
+      n: { kind: 'int', min: 2, max: 12 },
+      p: { kind: 'int', min: 2, max: 9 },
+    },
+    answer: (v) => Number(v.n) * Number(v.p),
+    explanation: (vars, answer) => `${vars.n} × ${vars.p} = ${answer} ლარი.`,
+    unit: ' ლარი',
+  }),
+
+  arithmetic({
+    id: 'cov-g3-two-steps',
+    grade: 3,
+    topicId: 'amocanebi',
+    unitId: 'u2',
+    subtopicId: 'ori',
+    prompt: 'საწყობში {boxes} ყუთია, თითოეულში {per} ბურთი. გაიყიდა {sold} ყუთი. რამდენი ბურთი დარჩა?',
+    variables: {
+      boxes: { kind: 'int', min: 4, max: 9 },
+      per: { kind: 'int', min: 2, max: 8 },
+      sold: { kind: 'int', min: 1, max: (v) => Number(v.boxes) - 1 }, // at least one box left
+    },
+    answer: (v) => (Number(v.boxes) - Number(v.sold)) * Number(v.per),
+    explanation: (vars, answer) =>
+      `დარჩა ${Number(vars.boxes) - Number(vars.sold)} ყუთი, თითო ${vars.per} ბურთით: ${answer} ბურთი.`,
+    unit: ' ბურთი',
+  }),
+
+  arithmetic({
+    id: 'cov-g3-area-rect',
+    grade: 3,
+    topicId: 'perimetri',
+    unitId: 'u2',
+    subtopicId: 'fartobi',
+    prompt: 'მართკუთხედის გვერდებია {w} სმ და {h} სმ. ფართობი?',
+    hint: 'S = სიგრძე × სიგანე',
+    variables: {
+      w: { kind: 'int', min: 2, max: 12 },
+      h: { kind: 'int', min: 2, max: 12 },
+    },
+    answer: (v) => Number(v.w) * Number(v.h),
+    explanation: (vars, answer) => `S = ${vars.w} × ${vars.h} = ${answer} სმ².`,
+    unit: ' სმ²',
+    mistakes: (vars, answer) => [2 * (Number(vars.w) + Number(vars.h)), Number(vars.w) + Number(vars.h), answer + Number(vars.w)],
+  }),
+
+  // ------------------------------------------------------------ grade IV
+  arithmetic({
+    id: 'cov-g4-thousands',
+    grade: 4,
+    topicId: 'didi-ricxvebi',
+    unitId: 'u1',
+    subtopicId: 'tanrigi',
+    prompt: 'რამდენი ათასეულია {n}-ში?',
+    variables: {
+      thousands: { kind: 'int', min: 1, max: 9 },
+      hundreds: { kind: 'choice', values: [0, 100, 200, 300, 400, 500, 600, 700, 800, 900] },
+      n: {
+        kind: 'int',
+        min: (v) => Number(v.thousands) * 1000 + Number(v.hundreds),
+        max: (v) => Number(v.thousands) * 1000 + Number(v.hundreds),
+      },
+    },
+    answer: (v) => Math.floor(Number(v.n) / 1000),
+    explanation: (vars, answer) => `${vars.n}-ში ${answer} სრული ათასეულია.`,
+  }),
+
+  textual({
+    id: 'cov-g4-compare-fractions',
+    grade: 4,
+    topicId: 'wiladebi',
+    unitId: 'u2',
+    subtopicId: 'shedareba',
+    prompt: 'რომელი წილადია მეტი: {a}/{d} თუ {b}/{d}?',
+    hint: 'მნიშვნელები ერთნაირია — შეადარე მრიცხველები.',
+    variables: {
+      d: { kind: 'int', min: 4, max: 10 },
+      a: { kind: 'int', min: 1, max: (v) => Number(v.d) - 1 },
+      b: { kind: 'int', min: 1, max: (v) => Number(v.d) - 1 },
+    },
+    constraints: [{ test: (v) => v.a !== v.b, note: 'მრიცხველები განსხვავებული იყოს' }],
+    answer: (v) => (Number(v.a) > Number(v.b) ? `${v.a}/${v.d}` : `${v.b}/${v.d}`),
+    wrong: (vars, answer) => {
+      const d = Number(vars.d);
+      const other = String(answer) === `${vars.a}/${d}` ? `${vars.b}/${d}` : `${vars.a}/${d}`;
+      return [other, `${Number(vars.a) + Number(vars.b)}/${d}`, `${Math.max(Number(vars.a), Number(vars.b))}/${d + 1}`];
+    },
+    explanation: (_vars, answer) => `${answer} უფრო დიდია, რადგან მისი მრიცხველი მეტია.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g4-speed',
+    grade: 4,
+    topicId: 'mozraoba',
+    unitId: 'u1',
+    subtopicId: 'sichqare',
+    prompt: 'ავტობუსმა {d} კმ გაიარა {t} საათში. რა იყო მისი სიჩქარე?',
+    hint: 'v = მანძილი ÷ დრო',
+    variables: {
+      t: { kind: 'int', min: 2, max: 6 },
+      v: { kind: 'int', min: 10, max: 25 },
+      d: { kind: 'int', min: (v) => Number(v.t) * Number(v.v), max: (v) => Number(v.t) * Number(v.v) },
+    },
+    answer: (v) => Number(v.d) / Number(v.t),
+    explanation: (vars, answer) => `${vars.d} ÷ ${vars.t} = ${answer} კმ/სთ.`,
+    unit: ' კმ/სთ',
+  }),
+
+  arithmetic({
+    id: 'cov-g4-distance',
+    grade: 4,
+    topicId: 'mozraoba',
+    unitId: 'u2',
+    subtopicId: 'mandzili',
+    prompt: 'მატარებელი {v} კმ/სთ სიჩქარით მოძრაობს {t} საათის განმავლობაში. რა მანძილს გაივლის?',
+    hint: 's = სიჩქარე × დრო',
+    variables: {
+      v: { kind: 'int', min: 10, max: 30, step: 5 },
+      t: { kind: 'int', min: 2, max: 6 },
+    },
+    answer: (v) => Number(v.v) * Number(v.t),
+    explanation: (vars, answer) => `${vars.v} × ${vars.t} = ${answer} კმ.`,
+    unit: ' კმ',
+  }),
+
+  // ------------------------------------------------------------- grade V
+  textual({
+    id: 'cov-g5-mixed-number',
+    grade: 5,
+    topicId: 'wiladebi',
+    unitId: 'u2',
+    subtopicId: 'sereuli',
+    prompt: 'გადააქციე შერეული რიცხვი {w} {a}/{d} არასწორ წილადად.',
+    hint: 'მთელი ნაწილი გაამრავლე მნიშვნელზე და მიუმატე მრიცხველი.',
+    variables: {
+      w: { kind: 'int', min: 1, max: 4 },
+      d: { kind: 'int', min: 2, max: 6 },
+      a: { kind: 'int', min: 1, max: (v) => Number(v.d) - 1 },
+    },
+    answer: (v) => `${Number(v.w) * Number(v.d) + Number(v.a)}/${v.d}`,
+    wrong: (vars) => {
+      const d = Number(vars.d);
+      const numerator = Number(vars.w) * d + Number(vars.a);
+      return [`${numerator + 1}/${d}`, `${numerator - 1}/${d}`, `${Number(vars.w) + Number(vars.a)}/${d}`];
+    },
+    explanation: (vars, answer) =>
+      `${vars.w} × ${vars.d} + ${vars.a} = ${Number(vars.w) * Number(vars.d) + Number(vars.a)}, ამიტომ ${answer}.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g5-scale',
+    grade: 5,
+    topicId: 'proporciebi',
+    unitId: 'u1',
+    subtopicId: 'masStabi',
+    prompt: 'რუკის მასშტაბი: 1 სმ = {k} კმ. რამდენი კმ-ია {x} სმ?',
+    variables: {
+      k: { kind: 'choice', values: [5, 10, 20, 50] },
+      x: { kind: 'int', min: 2, max: 9 },
+    },
+    answer: (v) => Number(v.k) * Number(v.x),
+    explanation: (vars, answer) => `${vars.x} × ${vars.k} = ${answer} კმ.`,
+    unit: ' კმ',
+  }),
+
+  arithmetic({
+    id: 'cov-g5-three-rule',
+    grade: 5,
+    topicId: 'proporciebi',
+    unitId: 'u2',
+    subtopicId: 'sami',
+    prompt: '{a} რვეული ღირს {p} ლარი. რა ღირს {b} ასეთი რვეული?',
+    hint: 'ჯერ იპოვე ერთი რვეულის ფასი.',
+    variables: {
+      a: { kind: 'int', min: 2, max: 6 },
+      unitPrice: { kind: 'int', min: 2, max: 9 },
+      multiplier: { kind: 'int', min: 2, max: 5 },
+      p: { kind: 'int', min: (v) => Number(v.a) * Number(v.unitPrice), max: (v) => Number(v.a) * Number(v.unitPrice) },
+      b: { kind: 'int', min: (v) => Number(v.a) * Number(v.multiplier), max: (v) => Number(v.a) * Number(v.multiplier) },
+    },
+    answer: (v) => Number(v.b) * Number(v.unitPrice),
+    explanation: (vars, answer) =>
+      `ერთი რვეულია ${vars.p} ÷ ${vars.a} = ${vars.unitPrice} ლარი, ამიტომ ${vars.b} × ${vars.unitPrice} = ${answer} ლარი.`,
+    unit: ' ლარი',
+  }),
+
+  textual({
+    id: 'cov-g5-angle-type',
+    grade: 5,
+    topicId: 'kuTxeebi',
+    unitId: 'u1',
+    subtopicId: 'kuTxe',
+    prompt: '{deg}°-იანი კუთხე როგორია?',
+    variables: { deg: { kind: 'int', min: 10, max: 170, step: 5 } },
+    constraints: [{ test: (v) => Number(v.deg) !== 90, note: 'მართი კუთხე ცალკე შაბლონია' }],
+    answer: (v) => (Number(v.deg) < 90 ? 'მახვილი' : 'ბლაგვი'),
+    wrong: (_v, answer) => ['მახვილი', 'მართი', 'ბლაგვი', 'გაშლილი'].filter((item) => item !== answer),
+    explanation: (_vars, answer) => `90°-ზე ნაკლებია მახვილი, მეტი — ბლაგვი, ამიტომ ${answer}.`,
+  }),
+
+  // ------------------------------------------------------------ grade VI
+  textual({
+    id: 'cov-g6-compare-negatives',
+    grade: 6,
+    topicId: 'racionaluri',
+    unitId: 'u1',
+    subtopicId: 'uaryofa',
+    prompt: 'რომელი რიცხვია ნაკლები: {a} თუ {b}?',
+    hint: 'რიცხვით ღერძზე მარცხენა ნაკლებია.',
+    variables: {
+      a: { kind: 'choice', values: [-9, -7, -5, -3, -1] },
+      b: { kind: 'choice', values: [-8, -6, -4, -2, 1, 2] },
+    },
+    constraints: [{ test: (v) => v.a !== v.b, note: 'რიცხვები განსხვავებული იყოს' }],
+    answer: (v) => (Number(v.a) < Number(v.b) ? String(v.a) : String(v.b)),
+    wrong: (vars, answer) => {
+      const other = String(answer) === String(vars.a) ? String(vars.b) : String(vars.a);
+      return [other, String(Number(answer) + 1), String(Number(answer) - 1)];
+    },
+    explanation: (_vars, answer) => `${answer} უფრო მარცხნივაა რიცხვით ღერძზე.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g6-discount',
+    grade: 6,
+    topicId: 'procenti',
+    unitId: 'u2',
+    subtopicId: 'fasdakleba',
+    prompt: 'პროდუქტი ღირს {p} ლარი. ფასდაკლება {d}%. რამდენს გადაიხდი?',
+    hint: 'ჯერ იპოვე ფასდაკლების თანხა.',
+    variables: {
+      d: { kind: 'choice', values: [10, 20, 25, 50] },
+      base: { kind: 'int', min: 2, max: 12 },
+      p: { kind: 'int', min: (v) => Number(v.base) * 20, max: (v) => Number(v.base) * 20 },
+    },
+    answer: (v) => Number(v.p) - (Number(v.p) * Number(v.d)) / 100,
+    explanation: (vars, answer) =>
+      `ფასდაკლება ${(Number(vars.p) * Number(vars.d)) / 100} ლარია, ამიტომ გადაიხდი ${answer} ლარს.`,
+    unit: ' ლარი',
+  }),
+
+  textual({
+    id: 'cov-g6-simplify',
+    grade: 6,
+    topicId: 'gamartiveba',
+    unitId: 'u1',
+    subtopicId: 'gamartiveba',
+    prompt: 'გაამარტივე: {a}x + {b}x',
+    variables: {
+      a: { kind: 'int', min: 2, max: 9 },
+      b: { kind: 'int', min: 2, max: 9 },
+    },
+    answer: (v) => `${Number(v.a) + Number(v.b)}x`,
+    wrong: (vars, answer) => [
+      `${vars.a}x + ${vars.b}`,
+      `${Number(vars.a) * Number(vars.b)}x`,
+      `${Number(vars.a) + Number(vars.b)}x + 1`,
+      `${Number(answer.replace('x', '')) + 1}x`,
+    ],
+    explanation: (vars, answer) => `მსგავსი წევრები: ${vars.a} + ${vars.b} = ${answer}.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g6-simple-equation',
+    grade: 6,
+    topicId: 'gamartiveba',
+    unitId: 'u2',
+    subtopicId: 'gantoleba',
+    prompt: 'ამოხსენი: x + {a} = {b}',
+    hint: 'გადაიტანე რიცხვი მეორე მხარეს.',
+    variables: {
+      x: { kind: 'int', min: 2, max: 20 },
+      a: { kind: 'int', min: 2, max: 15 },
+      b: { kind: 'int', min: (v) => Number(v.x) + Number(v.a), max: (v) => Number(v.x) + Number(v.a) },
+    },
+    answer: (v) => Number(v.b) - Number(v.a),
+    explanation: (vars, answer) => `x = ${vars.b} − ${vars.a} = ${answer}.`,
+  }),
+
+  // ----------------------------------------------------------- grade VII
+  arithmetic({
+    id: 'cov-g7-sum-difference',
+    grade: 7,
+    topicId: 'xazovani',
+    unitId: 'u2',
+    subtopicId: 'amocana',
+    prompt: 'ორი რიცხვის ჯამია {s}, სხვაობა — {d}. იპოვე უფრო პატარა რიცხვი.',
+    hint: 'ჯამს გამოაკელი სხვაობა და გაყავი ორზე.',
+    variables: {
+      small: { kind: 'int', min: 2, max: 20 },
+      diff: { kind: 'int', min: 2, max: 10 },
+      s: { kind: 'int', min: (v) => 2 * Number(v.small) + Number(v.diff), max: (v) => 2 * Number(v.small) + Number(v.diff) },
+      d: { kind: 'int', min: (v) => Number(v.diff), max: (v) => Number(v.diff) },
+    },
+    answer: (v) => (Number(v.s) - Number(v.d)) / 2,
+    explanation: (vars, answer) => `(${vars.s} − ${vars.d}) ÷ 2 = ${answer}.`,
+  }),
+
+  textual({
+    id: 'cov-g7-quadrant',
+    grade: 7,
+    topicId: 'damokidebuleba',
+    unitId: 'u1',
+    subtopicId: 'koordinatebi',
+    prompt: 'რომელ კვადრატში მდებარეობს წერტილი A({x}; {y})?',
+    variables: {
+      x: { kind: 'choice', values: [-5, -3, -1, 2, 4, 6] },
+      y: { kind: 'choice', values: [-6, -4, -2, 1, 3, 5] },
+    },
+    answer: (v) => {
+      const x = Number(v.x) > 0;
+      const y = Number(v.y) > 0;
+      if (x && y) return 'I კვადრატი';
+      if (!x && y) return 'II კვადრატი';
+      if (!x && !y) return 'III კვადრატი';
+      return 'IV კვადრატი';
+    },
+    wrong: (_v, answer) =>
+      ['I კვადრატი', 'II კვადრატი', 'III კვადრატი', 'IV კვადრატი'].filter((item) => item !== answer),
+    explanation: (vars, answer) =>
+      `x ${Number(vars.x) > 0 ? 'დადებითია' : 'უარყოფითია'}, y ${Number(vars.y) > 0 ? 'დადებითია' : 'უარყოფითია'} — ${answer}.`,
+  }),
+
+  arithmetic({
+    id: 'cov-g7-linear-value',
+    grade: 7,
+    topicId: 'damokidebuleba',
+    unitId: 'u2',
+    subtopicId: 'grafiki',
+    prompt: 'მოცემულია ფუნქცია y = {k}x + {b}. იპოვე y, როცა x = {x}.',
+    variables: {
+      k: { kind: 'int', min: 2, max: 6 },
+      b: { kind: 'int', min: 1, max: 9 },
+      x: { kind: 'int', min: 1, max: 8 },
+    },
+    answer: (v) => Number(v.k) * Number(v.x) + Number(v.b),
+    explanation: (vars, answer) => `${vars.k} × ${vars.x} + ${vars.b} = ${answer}.`,
+    mistakes: (vars, answer) => [Number(vars.k) * Number(vars.x), answer + Number(vars.k), answer - 1],
+  }),
+
+  arithmetic({
+    id: 'cov-g7-volume',
+    grade: 7,
+    topicId: 'geometria',
+    unitId: 'u2',
+    subtopicId: 'moculoba',
+    prompt: 'მართკუთხა პარალელეპიპედის ზომებია {a} სმ, {b} სმ და {c} სმ. მოცულობა?',
+    hint: 'V = სიგრძე × სიგანე × სიმაღლე',
+    variables: {
+      a: { kind: 'int', min: 2, max: 8 },
+      b: { kind: 'int', min: 2, max: 8 },
+      c: { kind: 'int', min: 2, max: 8 },
+    },
+    answer: (v) => Number(v.a) * Number(v.b) * Number(v.c),
+    explanation: (vars, answer) => `V = ${vars.a} × ${vars.b} × ${vars.c} = ${answer} სმ³.`,
+    unit: ' სმ³',
+    mistakes: (vars, answer) => [
+      Number(vars.a) * Number(vars.b),
+      2 * (Number(vars.a) + Number(vars.b) + Number(vars.c)),
+      answer + Number(vars.a) * Number(vars.b),
+    ],
+  }),
+];

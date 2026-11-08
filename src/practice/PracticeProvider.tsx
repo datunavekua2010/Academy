@@ -7,8 +7,8 @@ import {
   type ReactNode,
 } from 'react';
 import { CURRICULUM, getGrade, getSubtopic, getTopic } from './curriculum';
-import { questionsForSubtopic } from './bank';
-import { advance, endSession, startSession, submitAnswer } from './session';
+import { generateBatch, hasTemplates, regenerateFromId, templateCount } from './generator';
+import { advance, endSession, hydrateDraft, startSession, submitAnswer } from './session';
 import type { SessionState, Submission } from './session';
 import {
   buildDemoAssignments,
@@ -24,7 +24,7 @@ import {
   subtopicKey,
 } from './store';
 import type { Assignment, Attempt, GradeStats, SubtopicProgress } from './store';
-import type { GradeId, Question, SubtopicRef } from './types';
+import type { GradeId, SubtopicRef } from './types';
 import { topicSubtopics } from './types';
 
 interface PracticeContextValue {
@@ -45,32 +45,51 @@ interface PracticeContextValue {
   stats: GradeStats;
   overall: ReturnType<typeof overallStats>;
   progressFor: (ref: SubtopicRef) => SubtopicProgress;
-  bankFor: (ref: SubtopicRef) => Question[];
+  /** How many templates cover a subtopic (variations are unlimited). */
+  templateCountFor: (ref: SubtopicRef) => number;
+  /** True when a subtopic can be practised (it has at least one template). */
+  isPlayable: (ref: SubtopicRef) => boolean;
 }
 
 const PracticeContext = createContext<PracticeContextValue | null>(null);
 
 function demoAssignments(grade: GradeId): Assignment[] {
   const curriculum = getGrade(grade);
-  const subtopics = curriculum.topics.flatMap((topic) =>
+  const all = curriculum.topics.flatMap((topic) =>
     topicSubtopics(topic).map((subtopic) => ({
       topicId: topic.id,
       topicTitle: topic.title,
       subtopicId: subtopic.id,
     })),
   );
-  return buildDemoAssignments(grade, subtopics);
+
+  // Assign only subtopics that actually have a template, otherwise the
+  // homework list would offer work the student cannot start. When the academy
+  // sends its templates, coverage grows and assignments follow automatically.
+  const playable = all.filter(
+    (item) =>
+      hasTemplates({ grade, topicId: item.topicId, subtopicId: item.subtopicId }),
+  );
+
+  return buildDemoAssignments(grade, playable.length > 0 ? playable : all);
 }
 
 export function PracticeProvider({ children }: { children: ReactNode }) {
   const [attempts, setAttempts] = useState<Attempt[]>(() => loadAttempts());
-  const [session, setSession] = useState<SessionState | null>(() => loadDraft());
+  const [session, setSession] = useState<SessionState | null>(() => {
+    const draft = loadDraft();
+    if (!draft) return null;
+    // A draft holds generated question ids ("templateId~seed"); the generator
+    // reproduces each one exactly, so a reload never loses the session.
+    return hydrateDraft(draft, (id) => regenerateFromId(id));
+  });
   const [grade, setGrade] = useState<GradeId>(5);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
 
   const assignments = useMemo(() => demoAssignments(grade), [grade]);
 
-  const bankFor = useCallback((ref: SubtopicRef) => questionsForSubtopic(ref), []);
+  const templateCountFor = useCallback((ref: SubtopicRef) => templateCount(ref), []);
+  const isPlayable = useCallback((ref: SubtopicRef) => hasTemplates(ref), []);
 
   const persistAttempt = useCallback((state: SessionState, startedAt: string) => {
     setAttempts((current) => {
@@ -81,9 +100,11 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startPractice = useCallback((ref: SubtopicRef, assignment: Assignment | null = null) => {
-    const pool = questionsForSubtopic(ref);
-    if (pool.length === 0) return;
-    const nextSession = startSession(ref, pool);
+    // 24 variations is enough to cover the early, high-value part of a session.
+    // More are generated on demand as the queue drains.
+    const questions = generateBatch(ref, 24);
+    if (questions.length === 0) return;
+    const nextSession = startSession(ref, questions);
     setSession(nextSession);
     setGrade(ref.grade);
     setActiveAssignmentId(assignment?.id ?? null);
@@ -93,7 +114,7 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   const answer = useCallback(
     (choice: string): Submission | null => {
       if (!session) return null;
-      const submission = submitAnswer(session, questionsForSubtopic(session.ref), choice);
+      const submission = submitAnswer(session, choice);
       if (!submission) return null;
 
       setSession(submission.state);
@@ -108,7 +129,19 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
 
   const next = useCallback(() => {
     if (!session) return;
-    const updated = advance(session, questionsForSubtopic(session.ref));
+    // Generate only when the queue is running low, so generation never blocks
+    // the answer the student just gave.
+    const used = new Set(Object.keys(session.questions));
+    // Avoid both the ids already used and the wording/numbers behind them, so a
+    // refill can never re-add a question the student has already seen.
+    const seen = session.answers.map(
+      (answer) => session.questions[answer.questionId]?.prompt ?? answer.questionId,
+    );
+    const refill =
+      session.queue.length <= 3
+        ? generateBatch(session.ref, 8, { avoid: new Set([...used, ...seen]) })
+        : [];
+    const updated = advance(session, refill);
     setSession(updated);
     saveDraft(updated);
   }, [session]);
@@ -150,9 +183,10 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       stats: gradeStats(attempts, grade, assignments),
       overall: overallStats(attempts, assignments),
       progressFor: (ref: SubtopicRef) => progressFor(attempts, ref),
-      bankFor,
+      templateCountFor,
+      isPlayable,
     };
-  }, [attempts, assignments, grade, session, activeAssignmentId, startPractice, answer, next, stop, clearSession, bankFor]);
+  }, [attempts, assignments, grade, session, activeAssignmentId, startPractice, answer, next, stop, clearSession, templateCountFor, isPlayable]);
 
   return <PracticeContext.Provider value={value}>{children}</PracticeContext.Provider>;
 }

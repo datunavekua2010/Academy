@@ -2,6 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { StudentApp } from '../src/student/StudentApp';
+import { SubtopicRow } from '../src/practice/components/SubtopicRow';
+import { getTopic } from '../src/practice/curriculum';
 
 const topicTrigger = () => screen.getAllByRole('button', { name: /ქვეთემა$/ });
 
@@ -43,29 +45,58 @@ describe('nested curriculum accordion', () => {
   it('opens exercises for the exact grade/topic/unit/subtopic clicked', () => {
     render(<StudentApp />);
 
-    // Choose grade 7, open "გეომეტრია", open U2 (მოცულობა), start its subtopic.
+    // Choose grade 7, open "გეომეტრია", open U1 (ფართობი), start its subtopic.
     fireEvent.click(screen.getAllByRole('tab')[6]);
     const geo = topicTrigger().find((button) => button.textContent?.includes('გეომეტრია'))!;
     fireEvent.click(geo);
 
     const live = document.querySelector('.accordion-panel:not([inert])')!;
     const units = [...live.querySelectorAll<HTMLElement>('.accordion-unit-trigger')];
-    const u2 = units.find((unit) => unit.textContent?.includes('U2'))!;
-    fireEvent.click(u2);
+    const u1 = units.find((unit) => unit.textContent?.includes('U1'))!;
+    fireEvent.click(u1);
 
-    const panel = document.querySelector('#unit-panel-geometria-u2')!;
+    const panel = document.querySelector('#unit-panel-geometria-u1')!;
     const start = within(panel as HTMLElement).getByRole('button', { name: /დაწყება/ });
     fireEvent.click(start);
 
     // The runner shows the exact path that was clicked.
     const path = document.querySelector('.session-path')?.textContent ?? '';
     expect(path).toContain('გეომეტრია');
-    expect(path).toContain('მოცულობა');
-    expect(screen.getByRole('heading', { level: 1, name: 'მოცულობა' })).toBeTruthy();
+    expect(path).toContain('ფართობი');
 
-    // The question belongs to the Volume subtopic of grade VII.
+    // The question was generated from that subtopic's template.
     const prompt = document.querySelector('.question-prompt')?.textContent ?? '';
-    expect(prompt).toMatch(/მოცულობა|სმ³|კუბი|წახნაგი|აკვარიუმი|ლიტრი/);
+    expect(prompt).toMatch(/სმ²|ფართობი|სამკუთხედი|ფუძე|სიმაღლე/);
+  });
+
+  it('disables a subtopic that has no template yet instead of breaking', () => {
+    const topic = getTopic(1, 'shekreba')!;
+    const onClick = vi.fn();
+
+    render(
+      <SubtopicRow
+        topic={topic}
+        subtopic={{ id: 'atamde', title: 'მოქმედებები 10-მდე', summary: 'x' }}
+        progress={{
+          bestScore: 0,
+          lastScore: null,
+          attempts: 0,
+          completed: false,
+          correct: 0,
+          incorrect: 0,
+          lastAttemptAt: null,
+        }}
+        questionCount={0}
+        playable={false}
+        onStart={onClick}
+      />,
+    );
+
+    const button = screen.getByRole('button', { name: /მალე დაემატება/ });
+    expect((button as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(button);
+    expect(onClick).not.toHaveBeenCalled();
+    expect(screen.getByText(/შაბლონი ჯერ არ არის დამატებული/)).toBeTruthy();
   });
 
   it('resets to collapsed topics when the grade changes', () => {

@@ -1,24 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { startSession, submitAnswer, advance, endSession } from '../src/practice/session';
 import { newAttempt, recordAttempt, progressFor, assignmentStatus, gradeStats, needsWork, buildDemoAssignments } from '../src/practice/store';
-import { questionsForSubtopic } from '../src/practice/bank';
+import { generateBatch } from '../src/practice/generator';
+import type { Question } from '../src/practice/types';
+import type { SessionState } from '../src/practice/session';
+
+/** Answers every question correctly until 100, generating more as the queue drains. */
+function playPerfect(ref: { grade: 1; topicId: string; subtopicId: string }): SessionState {
+  let state = startSession(ref, generateBatch(ref, 12, { seed: 42 }));
+  let guard = 0;
+  while (state.score < 100 && guard < 100) {
+    const question: Question = state.questions[state.queue[0]]!;
+    const submission = submitAnswer(state, question.answer)!;
+    const refill = submission.state.queue.length <= 3 ? generateBatch(ref, 6) : [];
+    state = advance(submission.state, refill);
+    guard += 1;
+  }
+  return state;
+}
 
 describe('integration: a real 100-point run', () => {
   it('records progress that the progress page can read', () => {
-    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'atamde' };
-    const pool = questionsForSubtopic(ref);
-    expect(pool.length).toBeGreaterThanOrEqual(5);
+    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'ocamde' };
+    const pool = generateBatch(ref, 12, { seed: 7 });
+    expect(pool.length).toBe(12);
+    expect(new Set(pool.map((q) => q.signature)).size).toBe(12);
 
-    let state = startSession(ref, pool);
+    const state = playPerfect(ref);
     const startedAt = state.startedAt;
-    let guard = 0;
-    // Answer correctly until the session hits 100.
-    while (state.score < 100 && guard < 100) {
-      const q = pool.find((item) => item.id === state.queue[0])!;
-      const sub = submitAnswer(state, pool, q.answer)!;
-      state = advance(sub.state, pool);
-      guard += 1;
-    }
+    const guard = state.answers.length;
 
     expect(state.score).toBe(100);
     expect(state.completed).toBe(true);
@@ -35,13 +45,13 @@ describe('integration: a real 100-point run', () => {
     attempts = recordAttempt(attempts, newAttempt(partial, partial.startedAt));
     expect(progressFor(attempts, ref).completed).toBe(true); // best score still 100
     expect(attempts.length).toBe(2);
-    expect(needsWork(attempts).some((a) => a.ref.subtopicId === 'atamde')).toBe(false);
+    expect(needsWork(attempts).some((a) => a.ref.subtopicId === 'ocamde')).toBe(false);
   });
 
   it('computes grade stats from assignments and attempts', () => {
     const assignments = buildDemoAssignments(1, [
-      { topicId: 'shekreba', topicTitle: 'x', subtopicId: 'atamde' },
       { topicId: 'shekreba', topicTitle: 'x', subtopicId: 'ocamde' },
+      { topicId: 'shekreba', topicTitle: 'x', subtopicId: 'atamde' },
       { topicId: 'ricxvebi', topicTitle: 'y', subtopicId: 'datvla' },
       { topicId: 'ricxvebi', topicTitle: 'y', subtopicId: 'shedareba' },
     ]);
@@ -49,15 +59,9 @@ describe('integration: a real 100-point run', () => {
     const stats = gradeStats([], 1, assignments);
     expect(stats).toMatchObject({ assigned: 4, completed: 0, notStarted: 4, mastery: 0 });
 
-    const ref = assignments[0].ref;
-    const pool = questionsForSubtopic(ref);
-    let state = startSession(ref, pool);
-    let guard = 0;
-    while (state.score < 100 && guard < 100) {
-      const q = pool.find((item) => item.id === state.queue[0])!;
-      state = advance(submitAnswer(state, pool, q.answer)!.state, pool);
-      guard += 1;
-    }
+    // The first assignment is the subtopic the template set covers.
+    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'ocamde' };
+    const state = playPerfect(ref);
     const attempts = [newAttempt(state, state.startedAt)];
     const after = gradeStats(attempts, 1, assignments);
     expect(after.completed).toBe(1);
