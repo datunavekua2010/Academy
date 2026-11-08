@@ -74,7 +74,9 @@ const question = (id: string, answer: string): Question => ({
   grade: 5,
   topicId: 't',
   subtopicId: 's',
-  prompt: 'p',
+  // Distinct wording per fixture: the session engine treats the prompt as the
+  // identity of a question (regenerated variations get fresh ids).
+  prompt: `question ${id}`,
   options: [answer, 'other'],
   answer,
   explanation: 'e',

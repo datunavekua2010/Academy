@@ -97,10 +97,15 @@ export function generateBatch(
 
   const output: GeneratedQuestion[] = [];
   const localSignatures = new Set<string>();
+  // Recycled questions, used only when the subtopic genuinely runs out of new
+  // wordings — see the comment after the loop.
+  const recycled: GeneratedQuestion[] = [];
   let guard = 0;
   let cursor = Math.floor(rng() * templates.length);
 
-  while (output.length < count && guard < count * 40 + 200) {
+  // Enough attempts for a narrow template: a 7-value choice needs ~7 draws per
+  // new wording, so sample generously before concluding the space is exhausted.
+  while (output.length < count && guard < count * 200 + 500) {
     guard += 1;
     const seed = nextSeed(rng);
     const template = templates[cursor % templates.length]!;
@@ -117,21 +122,42 @@ export function generateBatch(
       throw error;
     }
 
-    if (!question) break; // no templates for this subtopic
-
     // `avoid` accepts signatures, question ids or bare prompts, so a caller can
     // exclude anything this session has already shown.
+    if (avoid.has(question.id)) continue;
+
     if (
       avoid.has(question.signature) ||
       avoid.has(question.prompt) ||
-      avoid.has(question.id) ||
       localSignatures.has(question.signature)
     ) {
+      // Duplicate of something already in this batch — never recycle, it would
+      // be a repeat straight away.
+      if (localSignatures.has(question.signature)) continue;
+
+      // Already shown earlier in the session: keep as a last resort, but only
+      // if the caller's `avoid` set does not forbid it. A recycled question has
+      // a new id, so an id-based filter downstream would not catch a repeat.
+      const forbiddenByCaller = avoid.has(question.prompt) || avoid.has(question.signature);
+      if (!forbiddenByCaller && recycled.length < count) {
+        recycled.push(question);
+      }
       continue;
     }
 
     localSignatures.add(question.signature);
     output.push(question);
+  }
+
+  // Some subtopics are genuinely finite: a 6–9 times table has 16 entries and a
+  // 35-answer perfect run needs 35 questions. Rather than repeat within a few
+  // questions, reuse the oldest variations — that is honest behaviour for a
+  // finite exercise, and it is the template author's cue to widen the ranges.
+  if (output.length < count && recycled.length > 0) {
+    for (const question of recycled) {
+      if (output.length >= count) break;
+      output.push(question);
+    }
   }
 
   if (output.length === 0) {
