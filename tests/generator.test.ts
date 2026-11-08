@@ -149,7 +149,7 @@ describe('generated answers are mathematically correct', () => {
       expect(Number(v.answer)).toBe(Number(v.vars.a) * Number(v.vars.b));
     }
     for (const v of previewTemplate('g2-meter-cm', 100)) {
-      expect(Number(v.answer)).toBe(Number(v.vars.m) * 100);
+      expect(Number(v.answer)).toBe(Number(v.vars.m) * 100 + Number(v.vars.cm));
     }
   });
 
@@ -217,7 +217,9 @@ describe('generated answers are mathematically correct', () => {
 describe('registry', () => {
   it('finds templates by grade/topic/subtopic and rejects duplicate ids', () => {
     const registry = createTemplateRegistry(SAMPLE_TEMPLATES);
-    expect(registry.forSubtopic({ grade: 1, topicId: 'shekreba', subtopicId: 'ocamde' })).toHaveLength(1);
+    expect(
+      registry.forSubtopic({ grade: 1, topicId: 'shekreba', subtopicId: 'ocamde' }).length,
+    ).toBeGreaterThanOrEqual(1);
     expect(registry.forSubtopic({ grade: 7, topicId: 'geometria', subtopicId: 'fartobi' })).toHaveLength(1);
     expect(registry.hasTemplates({ grade: 2, topicId: 'gazomva', subtopicId: 'dro' })).toBe(false);
 

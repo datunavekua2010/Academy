@@ -227,7 +227,10 @@ export function generateFromTemplate(
     const optionsList = shuffleWith(rng, [normalised.display, ...wrongDisplays]);
     const prompt = renderPrompt(template.prompt, vars);
 
-    const signature = `${template.id}|${prompt}|${optionsList.join('|')}`;
+    // Same template + same rendered wording and numbers = the same question,
+    // even if the option order differs. Option order is random per draw, so it
+    // must not make a repeat look new.
+    const signature = `${template.id}|${prompt}`;
 
     return {
       id: `${template.id}~${seed}`,

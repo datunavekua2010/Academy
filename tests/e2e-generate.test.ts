@@ -42,4 +42,39 @@ describe('end to end: generate → play → restore', () => {
     expect(restored.options).toEqual(before.options);
     expect(restored.explanation).toBe(before.explanation);
   });
+
+  it('never repeats a question inside one long session', () => {
+    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'ocamde' };
+
+    let state = startSession(ref, generateBatch(ref, 24));
+    const seen = new Set<string>();
+    let guard = 0;
+
+    while (state.score < 100 && guard < 200) {
+      const current = state.questions[state.queue[0]];
+      const key = current.prompt;
+      expect(seen.has(key), `repeated prompt: ${key}`).toBe(false);
+      seen.add(key);
+
+      const submission = submitAnswer(state, current.answer)!;
+
+      // The provider's refill rule: regenerate when the queue runs low, and
+      // exclude every question and every wording this session has shown.
+      const used = new Set(Object.keys(submission.state.questions));
+      const seenPrompts = submission.state.answers.map(
+        (answer) => submission.state.questions[answer.questionId]?.prompt ?? answer.questionId,
+      );
+      const refill =
+        submission.state.queue.length <= 3
+          ? generateBatch(ref, 8, { avoid: new Set([...used, ...seenPrompts]) })
+          : [];
+
+      state = advance(submission.state, refill);
+      guard += 1;
+    }
+
+    expect(state.score).toBe(100);
+    expect(state.answers).toHaveLength(35);
+    expect(seen.size).toBe(35);
+  });
 });

@@ -1,7 +1,7 @@
 import type { SubtopicRef } from './types';
 import { generateFromTemplate, TemplateError } from './templates/generate';
 import type { GeneratedQuestion } from './templates/generate';
-import { makeRng, nextSeed, pickTemplate, type TemplateRegistry } from './templates/registry';
+import { makeRng, nextSeed, type TemplateRegistry } from './templates/registry';
 import { TEMPLATE_REGISTRY } from './templates/catalog';
 
 /**
@@ -44,13 +44,22 @@ export function generateQuestion(
   options: GenerateOptions = {},
 ): GeneratedQuestion | null {
   const registry = options.registry ?? TEMPLATE_REGISTRY;
-  const rng = makeRng(seed);
 
-  const template = options.templateId
-    ? registry.byId(options.templateId)
-    : pickTemplate(registry, ref, rng);
+  const templates = registry.forSubtopic(ref);
+  if (options.templateId) {
+    const chosen = registry.byId(options.templateId);
+    if (!chosen) return null;
+    return generateFromTemplate(chosen, {
+      seed,
+      optionCount: options.optionCount ?? OPTION_COUNT,
+    });
+  }
+  if (templates.length === 0) return null;
 
-  if (!template) return null;
+  // Choose a template with the same rng the seed drives, so a given id always
+  // rebuilds the same question.
+  const rng = makeRng(`${seed}-template`);
+  const template = templates[Math.floor(rng() * templates.length)];
 
   return generateFromTemplate(template, {
     seed,
@@ -73,24 +82,53 @@ export function generateBatch(
   const avoid = options.avoid ?? new Set<string>();
   const rng = makeRng(options.seed ?? Math.floor(Math.random() * 2 ** 31));
 
+  // Spread the batch across every template of the subtopic instead of always
+  // drawing one at random — a narrow template would otherwise starve the set
+  // while a wide sibling sits unused.
+  const templates = options.templateId
+    ? [registry.byId(options.templateId)].filter(Boolean)
+    : registry.forSubtopic(ref);
+  if (templates.length === 0 && !options.templateId) {
+    console.warn(
+      `[practice] No template covers ${ref.grade}/${ref.topicId}/${ref.subtopicId}.`,
+    );
+    return [];
+  }
+
   const output: GeneratedQuestion[] = [];
   const localSignatures = new Set<string>();
   let guard = 0;
+  let cursor = Math.floor(rng() * templates.length);
 
   while (output.length < count && guard < count * 40 + 200) {
     guard += 1;
     const seed = nextSeed(rng);
+    const template = templates[cursor % templates.length]!;
+    cursor += 1;
 
     let question: GeneratedQuestion | null = null;
     try {
-      question = generateQuestion(ref, seed, { ...options, registry });
+      question = generateFromTemplate(template, {
+        seed,
+        optionCount: options.optionCount ?? OPTION_COUNT,
+      });
     } catch (error) {
       if (error instanceof TemplateError) continue; // bad draw; try another seed
       throw error;
     }
 
     if (!question) break; // no templates for this subtopic
-    if (avoid.has(question.signature) || localSignatures.has(question.signature)) continue;
+
+    // `avoid` accepts signatures, question ids or bare prompts, so a caller can
+    // exclude anything this session has already shown.
+    if (
+      avoid.has(question.signature) ||
+      avoid.has(question.prompt) ||
+      avoid.has(question.id) ||
+      localSignatures.has(question.signature)
+    ) {
+      continue;
+    }
 
     localSignatures.add(question.signature);
     output.push(question);
@@ -127,6 +165,13 @@ export function regenerateFromId(
   return generateFromTemplate(template, { seed, optionCount: options.optionCount ?? OPTION_COUNT });
 }
 
+/**
+ * How many distinct variations a subtopic's templates must be able to produce
+ * between them. One template can be legitimately finite (a times table has 16
+ * entries); the subtopic it belongs to still has to fill a session.
+ */
+export const MIN_SESSION_VARIATIONS = 12;
+
 /** Generates every variation of a template — used by the test-suite and authoring. */
 export function previewTemplate(
   templateId: string,
@@ -162,9 +207,12 @@ export function previewTemplate(
     output.push(question);
   }
 
-  if (output.length < count) {
+  // A finite template (a times table, a list of shape names) is legitimate —
+  // generateBatch spreads the load across its subtopic siblings. Only warn when
+  // the template cannot even fill a session on its own.
+  if (output.length < MIN_SESSION_VARIATIONS) {
     console.warn(
-      `[practice] Template ${templateId} produced only ${output.length}/${count} variations — ` +
+      `[practice] Template ${templateId} produced only ${output.length} variations — ` +
         'widen its ranges or add more distractors.',
     );
   }

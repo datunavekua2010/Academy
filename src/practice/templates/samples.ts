@@ -27,9 +27,11 @@ export const SAMPLE_TEMPLATES = [
     subtopicId: 'ocamde',
     prompt: '{a} + {b} = ?',
     hint: 'შეკრიბე ორი რიცხვი.',
+    // 0…20 both ways: about 200 distinct sums, enough for a full 35-answer run
+    // with no repeats. `+` and `−` share the subtopic so the wording varies too.
     variables: {
-      a: { kind: 'int', min: 2, max: 12 },
-      b: { kind: 'int', min: 1, max: 8 },
+      a: { kind: 'int', min: 1, max: 19 },
+      b: { kind: 'int', min: 1, max: 19 },
     },
     constraints: [
       { test: (v) => Number(v.a) + Number(v.b) <= 20, note: 'ჯამი 20-ს არ აღემატებოდეს' },
@@ -38,6 +40,27 @@ export const SAMPLE_TEMPLATES = [
     format: { kind: 'integer', min: 0 },
     explanation: ({ vars, answer }) =>
       `${vars.a} + ${vars.b} = ${answer}.`,
+    distractors: ({ vars, answer }) => {
+      const value = Number(answer);
+      return [value + 1, value - 1, value + 2, value - 2, value + 10, Number(vars.a) + Number(vars.b) + 1];
+    },
+  }),
+
+  defineTemplate({
+    id: 'g1-sub-20',
+    grade: 1,
+    topicId: 'shekreba',
+    subtopicId: 'ocamde',
+    prompt: '{a} − {b} = ?',
+    hint: 'გამოაკელი მეორე რიცხვი.',
+    variables: {
+      a: { kind: 'int', min: 3, max: 20 },
+      b: { kind: 'int', min: 1, max: (v) => Number(v.a) - 1 }, // b < a, so no negatives
+    },
+    constraints: [{ test: (v) => Number(v.a) - Number(v.b) >= 0, note: 'პასუხი უარყოფითი არ იყოს' }],
+    answer: (v) => Number(v.a) - Number(v.b),
+    format: { kind: 'integer', min: 0 },
+    explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
     distractors: ({ answer }) => {
       const value = Number(answer);
       return [value + 1, value - 1, value + 2, value + 10];
@@ -93,14 +116,21 @@ export const SAMPLE_TEMPLATES = [
     grade: 2,
     topicId: 'gazomva',
     subtopicId: 'sigrze',
-    prompt: '{m} მეტრი რამდენი სანტიმეტრია?',
+    prompt: '{m} მ და {cm} სმ სულ რამდენი სანტიმეტრია?',
     variables: {
       m: { kind: 'int', min: 1, max: 9 },
+      cm: { kind: 'choice', values: [0, 5, 10, 15, 20, 25, 30, 40, 50, 60] },
     },
-    answer: (v) => Number(v.m) * 100,
+    answer: (v) => Number(v.m) * 100 + Number(v.cm),
     format: { kind: 'integer', min: 0 },
-    explanation: ({ vars, answer }) => `1 მ = 100 სმ, ამიტომ ${vars.m} × 100 = ${answer} სმ.`,
-    distractors: ({ vars }) => [Number(vars.m) * 10, Number(vars.m) * 1000, Number(vars.m) + 100],
+    explanation: ({ vars, answer }) =>
+      `1 მ = 100 სმ, ამიტომ ${vars.m} × 100 + ${vars.cm} = ${answer} სმ.`,
+    distractors: ({ vars, answer }) => [
+      Number(vars.m) * 10 + Number(vars.cm),
+      Number(answer) + 10,
+      Number(answer) - 10,
+      Number(vars.m) + Number(vars.cm),
+    ],
   }),
 
   // -------------------------------------------------------------- grade III

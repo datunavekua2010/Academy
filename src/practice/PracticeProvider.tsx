@@ -100,9 +100,9 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const startPractice = useCallback((ref: SubtopicRef, assignment: Assignment | null = null) => {
-    // 12 variations is enough to cover the early, high-value part of a session.
+    // 24 variations is enough to cover the early, high-value part of a session.
     // More are generated on demand as the queue drains.
-    const questions = generateBatch(ref, 12);
+    const questions = generateBatch(ref, 24);
     if (questions.length === 0) return;
     const nextSession = startSession(ref, questions);
     setSession(nextSession);
@@ -132,9 +132,14 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     // Generate only when the queue is running low, so generation never blocks
     // the answer the student just gave.
     const used = new Set(Object.keys(session.questions));
+    // Avoid both the ids already used and the wording/numbers behind them, so a
+    // refill can never re-add a question the student has already seen.
+    const seen = session.answers.map(
+      (answer) => session.questions[answer.questionId]?.prompt ?? answer.questionId,
+    );
     const refill =
       session.queue.length <= 3
-        ? generateBatch(session.ref, 6, { avoid: new Set(used) })
+        ? generateBatch(session.ref, 8, { avoid: new Set([...used, ...seen]) })
         : [];
     const updated = advance(session, refill);
     setSession(updated);

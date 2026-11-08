@@ -12,6 +12,23 @@ import type { QuestionTemplate, TemplateConstraint, VariableSpec, Vars } from '.
  * swap it in `catalog.ts` — nothing else changes.
  */
 
+/** Distinct names per corner count (several shapes share four corners). */
+const SHAPE_BY_CORNERS: Record<number, string> = {
+  3: 'სამკუთხედი',
+  4: 'ოთხკუთხედი',
+  5: 'ხუთკუთხედი',
+  6: 'ექვსკუთხედი',
+  7: 'შვიდკუთხედი',
+};
+
+const SHAPE_NAMES: Record<number, string> = {
+  3: 'სამკუთხედი',
+  4: 'ოთხკუთხედი',
+  5: 'ხუთკუთხედი',
+  6: 'ექვსკუთხედი',
+  7: 'შვიდკუთხედი',
+};
+
 interface ArithmeticSpec {
   id: string;
   grade: QuestionTemplate['grade'];
@@ -115,11 +132,57 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     grade: 1,
     topicId: 'forma',
     subtopicId: 'amocnoba',
-    prompt: 'რამდენი გვერდი აქვს {shape}-ს?',
-    variables: { shape: { kind: 'choice', values: ['სამკუთხედს', 'კვადრატს', 'მართკუთხედს', 'ხუთკუთხედს'] } },
-    answer: (v) => String({ 'სამკუთხედს': 3, 'კვადრატს': 4, 'მართკუთხედს': 4, 'ხუთკუთხედს': 5 }[String(v.shape)]),
-    wrong: (_v, answer) => ['3', '4', '5', '6'].filter((n) => n !== answer),
-    explanation: (vars, answer) => `${vars.shape} ${answer} გვერდი აქვს.`,
+    prompt: 'ფიგურას {sides} გვერდი აქვს. რა ჰქვია ამ ფიგურას?',
+    variables: {
+      sides: { kind: 'choice', values: [3, 4, 5, 6, 7] },
+    },
+    answer: (v) => SHAPE_NAMES[Number(v.sides)] ?? 'სამკუთხედი',
+    wrong: (_v, answer) =>
+      Object.values(SHAPE_NAMES).filter((name) => name !== answer),
+    explanation: (vars, answer) => `${vars.sides} გვერდიანი ფიგურა — ${answer}.`,
+  }),
+
+  textual({
+    id: 'cov-g1-shape-corners',
+    grade: 1,
+    topicId: 'forma',
+    subtopicId: 'amocnoba',
+    prompt: '{shape}-ს რამდენი კუთხე აქვს?',
+    variables: {
+      shape: {
+        kind: 'choice',
+        values: ['სამკუთხედს', 'ოთხკუთხედს', 'ხუთკუთხედს', 'ექვსკუთხედს', 'შვიდკუთხედს', 'კვადრატს', 'მართკუთხედს'],
+      },
+    },
+    answer: (v) =>
+      String(
+        {
+          'სამკუთხედს': 3,
+          'ოთხკუთხედს': 4,
+          'ხუთკუთხედს': 5,
+          'ექვსკუთხედს': 6,
+          'შვიდკუთხედს': 7,
+          'კვადრატს': 4,
+          'მართკუთხედს': 4,
+        }[String(v.shape)] ?? 4,
+      ),
+    wrong: (_v, answer) => ['3', '4', '5', '6', '7', '8'].filter((n) => n !== answer),
+    explanation: (vars, answer) => `${vars.shape} ${answer} კუთხე აქვს.`,
+  }),
+
+  textual({
+    id: 'cov-g1-shape-corner-count',
+    grade: 1,
+    topicId: 'forma',
+    subtopicId: 'amocnoba',
+    prompt: '{corners} კუთხის მქონე ფიგურა რომელია?',
+    variables: {
+      corners: { kind: 'choice', values: [3, 4, 5, 6, 7] },
+    },
+    answer: (v) => SHAPE_BY_CORNERS[Number(v.corners)] ?? 'სამკუთხედი',
+    wrong: (_v, answer) =>
+      Object.values(SHAPE_BY_CORNERS).filter((name) => name !== answer),
+    explanation: (vars, answer) => `${vars.corners} კუთხე — ${answer}.`,
   }),
 
   arithmetic({
@@ -191,11 +254,15 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     grade: 2,
     topicId: 'gazomva',
     subtopicId: 'dro',
-    prompt: '{h} საათი რამდენი წუთია?',
-    variables: { h: { kind: 'int', min: 1, max: 6 } },
-    answer: (v) => Number(v.h) * 60,
-    explanation: (vars, answer) => `1 სთ = 60 წთ, ამიტომ ${vars.h} × 60 = ${answer} წუთი.`,
-    mistakes: (vars, answer) => [Number(vars.h) * 30, Number(vars.h) * 100, answer + 60],
+    prompt: '{h} საათი და {m} წუთი სულ რამდენი წუთია?',
+    variables: {
+      h: { kind: 'int', min: 1, max: 6 },
+      m: { kind: 'choice', values: [0, 10, 15, 20, 30, 40, 45, 50] },
+    },
+    answer: (v) => Number(v.h) * 60 + Number(v.m),
+    explanation: (vars, answer) =>
+      `${vars.h} × 60 = ${Number(vars.h) * 60}, დამატებული ${vars.m} = ${answer} წუთი.`,
+    mistakes: (vars, answer) => [Number(vars.h) * 30 + Number(vars.m), answer + 60, answer - 10],
   }),
 
   // ----------------------------------------------------------- grade III
@@ -270,10 +337,17 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     topicId: 'didi-ricxvebi',
     subtopicId: 'tanrigi',
     prompt: 'რამდენი ათასეულია {n}-ში?',
-    variables: { n: { kind: 'int', min: 1, max: 9 } },
-    constraints: [{ test: (v) => Number(v.n) > 0, note: 'ნული არ იყოს' }],
-    answer: (v) => Number(v.n) * 1000,
-    explanation: (vars, answer) => `${vars.n} ათასეული = ${answer}.`,
+    variables: {
+      thousands: { kind: 'int', min: 1, max: 9 },
+      hundreds: { kind: 'choice', values: [0, 100, 200, 300, 400, 500, 600, 700, 800, 900] },
+      n: {
+        kind: 'int',
+        min: (v) => Number(v.thousands) * 1000 + Number(v.hundreds),
+        max: (v) => Number(v.thousands) * 1000 + Number(v.hundreds),
+      },
+    },
+    answer: (v) => Math.floor(Number(v.n) / 1000),
+    explanation: (vars, answer) => `${vars.n}-ში ${answer} სრული ათასეულია.`,
   }),
 
   textual({

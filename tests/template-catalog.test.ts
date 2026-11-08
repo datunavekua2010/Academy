@@ -3,7 +3,7 @@ import { CURRICULUM } from '../src/practice/curriculum';
 import { topicSubtopics } from '../src/practice/types';
 import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
 import { generateFromTemplate } from '../src/practice/templates/generate';
-import { generateBatch, previewTemplate } from '../src/practice/generator';
+import { generateBatch, MIN_SESSION_VARIATIONS, previewTemplate } from '../src/practice/generator';
 
 /**
  * Property tests across the whole catalog.
@@ -15,11 +15,19 @@ import { generateBatch, previewTemplate } from '../src/practice/generator';
 
 const VARIATIONS_PER_TEMPLATE = 40;
 
+/**
+ * A single template may be legitimately finite (a 6–9 times table has 16
+ * entries, a shape has 5 names). The guarantee is per *subtopic*: the templates
+ * behind it must together fill a session without repeating.
+ */
+const REQUIRED_VARIATIONS = MIN_SESSION_VARIATIONS;
+
 describe('every template in the catalog', () => {
   for (const template of TEMPLATE_REGISTRY.all) {
-    it(`${template.id} generates ${VARIATIONS_PER_TEMPLATE} valid variations`, () => {
+    it(`${template.id} generates valid, non-repeating variations`, () => {
       const questions = previewTemplate(template.id, VARIATIONS_PER_TEMPLATE);
-      expect(questions).toHaveLength(VARIATIONS_PER_TEMPLATE);
+      // Every variation that *is* produced must be valid and distinct…
+      expect(questions.length).toBeGreaterThan(0);
 
       const signatures = new Set<string>();
       for (const question of questions) {
@@ -77,9 +85,13 @@ describe('curriculum coverage', () => {
       for (const topic of grade.topics) {
         for (const subtopic of topicSubtopics(topic)) {
           const ref = { grade: grade.grade, topicId: topic.id, subtopicId: subtopic.id };
-          const batch = generateBatch(ref, 12);
-          expect(batch.length, `no questions for ${grade.grade}/${topic.id}/${subtopic.id}`).toBe(12);
-          expect(new Set(batch.map((q) => q.signature)).size).toBe(12);
+          const batch = generateBatch(ref, REQUIRED_VARIATIONS);
+          expect(
+            batch.length,
+            `${grade.grade}/${topic.id}/${subtopic.id} produced only ${batch.length}/${REQUIRED_VARIATIONS} variations`,
+          ).toBe(REQUIRED_VARIATIONS);
+          expect(new Set(batch.map((q) => q.signature)).size).toBe(REQUIRED_VARIATIONS);
+          expect(new Set(batch.map((q) => q.prompt)).size).toBe(REQUIRED_VARIATIONS);
         }
       }
     }
