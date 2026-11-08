@@ -107,6 +107,62 @@ describe('unified homework + practice', () => {
     expect(screen.getAllByText('−2').length).toBeGreaterThan(0);
   });
 
+  it('opens a topics drop-down and shows only the chosen topic\'s subtopics', () => {
+    window.location.hash = '#/student/practice';
+    render(<StudentApp />);
+
+    // Closed by default: no topic list is shown until the student asks for it.
+    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
+
+    const trigger = screen.getByRole('button', { name: /თემები — არჩეულია/ });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
+    const panel = screen.getByRole('group', { name: 'თემების არჩევა' });
+    const options = within(panel).getAllByRole('button');
+    expect(options.length).toBeGreaterThanOrEqual(3);
+
+    // Only the selected topic's subtopics are rendered.
+    const subtopicRows = document.querySelectorAll('.subtopic-row');
+    expect(subtopicRows.length).toBe(
+      Number(panel.querySelector('.topic-option-count')?.textContent),
+    );
+    const before = [...subtopicRows].map((row) => row.querySelector('h3')?.textContent);
+
+    // Choosing another topic swaps the subtopics and closes the panel.
+    const secondTitle = options[1].querySelector('strong')?.textContent ?? '';
+    fireEvent.click(options[1]);
+
+    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
+    const trigger2 = screen.getByRole('button', { name: /თემები — არჩეულია/ });
+    expect(trigger2.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger2.textContent).toContain(secondTitle);
+
+    const after = [...document.querySelectorAll('.subtopic-row')].map(
+      (row) => row.querySelector('h3')?.textContent,
+    );
+    expect(after).not.toEqual(before);
+  });
+
+  it('closes the topics drop-down on Escape and outside click', () => {
+    window.location.hash = '#/student/practice';
+    render(<StudentApp />);
+
+    const open = () =>
+      fireEvent.click(screen.getByRole('button', { name: /თემები — არჩეულია/ }));
+
+    open();
+    expect(screen.getByRole('group', { name: 'თემების არჩევა' })).toBeTruthy();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
+
+    open();
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('group', { name: 'თემების არჩევა' })).toBeNull();
+  });
+
   it('starts a session from a subtopic and applies the 100-point rule', async () => {
     window.location.hash = '#/student/practice';
     render(<StudentApp />);
@@ -114,7 +170,7 @@ describe('unified homework + practice', () => {
     // Switch to grade I so the bank is small and deterministic enough.
     fireEvent.click(screen.getAllByRole('tab')[0]);
 
-    const startButtons = await screen.findAllByRole('button', { name: /ვარჯიშის დაწყება/ });
+    const startButtons = await screen.findAllByRole('button', { name: /დაწყება/ });
     expect(startButtons.length).toBeGreaterThan(0);
     fireEvent.click(startButtons[0]);
 
@@ -149,7 +205,7 @@ describe('practice session flow', () => {
     const { container } = render(<StudentApp />);
 
     fireEvent.click(screen.getAllByRole('tab')[0]);
-    const startButtons = await screen.findAllByRole('button', { name: /ვარჯიშის დაწყება/ });
+    const startButtons = await screen.findAllByRole('button', { name: /დაწყება/ });
     fireEvent.click(startButtons[0]);
 
     const group = screen.getByRole('group', { name: 'პასუხის ვარიანტები' });
