@@ -33,6 +33,7 @@ interface ArithmeticSpec {
   id: string;
   grade: QuestionTemplate['grade'];
   topicId: string;
+  unitId?: string;
   subtopicId: string;
   prompt: string;
   hint?: string;
@@ -52,6 +53,7 @@ const arithmetic = (spec: ArithmeticSpec): QuestionTemplate =>
     id: spec.id,
     grade: spec.grade,
     topicId: spec.topicId,
+    unitId: spec.unitId,
     subtopicId: spec.subtopicId,
     prompt: spec.prompt,
     hint: spec.hint,
@@ -73,6 +75,7 @@ const textual = (spec: {
   id: string;
   grade: QuestionTemplate['grade'];
   topicId: string;
+  unitId?: string;
   subtopicId: string;
   prompt: string;
   hint?: string;
@@ -86,6 +89,7 @@ const textual = (spec: {
     id: spec.id,
     grade: spec.grade,
     topicId: spec.topicId,
+    unitId: spec.unitId,
     subtopicId: spec.subtopicId,
     prompt: spec.prompt,
     hint: spec.hint,
@@ -103,6 +107,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g1-next-number',
     grade: 1,
     topicId: 'ricxvebi',
+    unitId: 'u1',
     subtopicId: 'datvla',
     prompt: 'რომელი რიცხვი მოდის {n}-ის შემდეგ?',
     variables: { n: { kind: 'int', min: 1, max: 18 } },
@@ -115,6 +120,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g1-subtract-10',
     grade: 1,
     topicId: 'shekreba',
+    unitId: 'u1',
     subtopicId: 'atamde',
     prompt: '{a} − {b} = ?',
     hint: 'გამოაკელი მეორე რიცხვი.',
@@ -131,6 +137,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g1-shape-sides',
     grade: 1,
     topicId: 'forma',
+    unitId: 'u1',
     subtopicId: 'amocnoba',
     prompt: 'ფიგურას {sides} გვერდი აქვს. რა ჰქვია ამ ფიგურას?',
     variables: {
@@ -146,6 +153,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g1-shape-corners',
     grade: 1,
     topicId: 'forma',
+    unitId: 'u1',
     subtopicId: 'amocnoba',
     prompt: '{shape}-ს რამდენი კუთხე აქვს?',
     variables: {
@@ -174,6 +182,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g1-shape-corner-count',
     grade: 1,
     topicId: 'forma',
+    unitId: 'u1',
     subtopicId: 'amocnoba',
     prompt: '{corners} კუთხის მქონე ფიგურა რომელია?',
     variables: {
@@ -189,6 +198,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g1-pattern',
     grade: 1,
     topicId: 'forma',
+    unitId: 'u2',
     subtopicId: 'tanmimdevroba',
     prompt: 'განაგრძე მიმდევრობა: {a}, {b}, {c}, ?',
     hint: 'იპოვე კანონზომიერება.',
@@ -207,6 +217,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g2-cross-ten',
     grade: 2,
     topicId: 'shekreba100',
+    unitId: 'u1',
     subtopicId: 'ateusit',
     prompt: '{a} + {b} = ?',
     hint: 'გადადი შემდეგ ათეულში.',
@@ -223,6 +234,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g2-apples',
     grade: 2,
     topicId: 'shekreba100',
+    unitId: 'u2',
     subtopicId: 'amocana',
     prompt: 'კალათაში {a} ვაშლია. დედამ კიდევ {b} დაამატა. რამდენი ვაშლია ახლა?',
     variables: {
@@ -238,6 +250,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g2-equal-groups',
     grade: 2,
     topicId: 'gamravleba',
+    unitId: 'u2',
     subtopicId: 'jgufi',
     prompt: '{total} ბავშვი თანაბრად გადანაწილდა {groups} ჯგუფში. რამდენია თითო ჯგუფში?',
     variables: {
@@ -253,6 +266,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g2-hours-minutes',
     grade: 2,
     topicId: 'gazomva',
+    unitId: 'u2',
     subtopicId: 'dro',
     prompt: '{h} საათი და {m} წუთი სულ რამდენი წუთია?',
     variables: {
@@ -270,6 +284,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g3-table-6-9',
     grade: 3,
     topicId: 'gamravleba-gayofa',
+    unitId: 'u1',
     subtopicId: 'cxrili',
     prompt: '{a} × {b} = ?',
     variables: {
@@ -285,6 +300,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g3-pens',
     grade: 3,
     topicId: 'amocanebi',
+    unitId: 'u1',
     subtopicId: 'ert',
     prompt: 'მაღაზიაში {n} კალამი იყიდება. თითოეული {p} ლარი ღირს. რა ღირს ყველა კალამი?',
     variables: {
@@ -300,6 +316,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g3-two-steps',
     grade: 3,
     topicId: 'amocanebi',
+    unitId: 'u2',
     subtopicId: 'ori',
     prompt: 'საწყობში {boxes} ყუთია, თითოეულში {per} ბურთი. გაიყიდა {sold} ყუთი. რამდენი ბურთი დარჩა?',
     variables: {
@@ -317,6 +334,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g3-area-rect',
     grade: 3,
     topicId: 'perimetri',
+    unitId: 'u2',
     subtopicId: 'fartobi',
     prompt: 'მართკუთხედის გვერდებია {w} სმ და {h} სმ. ფართობი?',
     hint: 'S = სიგრძე × სიგანე',
@@ -335,6 +353,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g4-thousands',
     grade: 4,
     topicId: 'didi-ricxvebi',
+    unitId: 'u1',
     subtopicId: 'tanrigi',
     prompt: 'რამდენი ათასეულია {n}-ში?',
     variables: {
@@ -354,6 +373,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g4-compare-fractions',
     grade: 4,
     topicId: 'wiladebi',
+    unitId: 'u2',
     subtopicId: 'shedareba',
     prompt: 'რომელი წილადია მეტი: {a}/{d} თუ {b}/{d}?',
     hint: 'მნიშვნელები ერთნაირია — შეადარე მრიცხველები.',
@@ -376,6 +396,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g4-speed',
     grade: 4,
     topicId: 'mozraoba',
+    unitId: 'u1',
     subtopicId: 'sichqare',
     prompt: 'ავტობუსმა {d} კმ გაიარა {t} საათში. რა იყო მისი სიჩქარე?',
     hint: 'v = მანძილი ÷ დრო',
@@ -393,6 +414,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g4-distance',
     grade: 4,
     topicId: 'mozraoba',
+    unitId: 'u2',
     subtopicId: 'mandzili',
     prompt: 'მატარებელი {v} კმ/სთ სიჩქარით მოძრაობს {t} საათის განმავლობაში. რა მანძილს გაივლის?',
     hint: 's = სიჩქარე × დრო',
@@ -410,6 +432,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g5-mixed-number',
     grade: 5,
     topicId: 'wiladebi',
+    unitId: 'u2',
     subtopicId: 'sereuli',
     prompt: 'გადააქციე შერეული რიცხვი {w} {a}/{d} არასწორ წილადად.',
     hint: 'მთელი ნაწილი გაამრავლე მნიშვნელზე და მიუმატე მრიცხველი.',
@@ -432,6 +455,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g5-scale',
     grade: 5,
     topicId: 'proporciebi',
+    unitId: 'u1',
     subtopicId: 'masStabi',
     prompt: 'რუკის მასშტაბი: 1 სმ = {k} კმ. რამდენი კმ-ია {x} სმ?',
     variables: {
@@ -447,6 +471,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g5-three-rule',
     grade: 5,
     topicId: 'proporciebi',
+    unitId: 'u2',
     subtopicId: 'sami',
     prompt: '{a} რვეული ღირს {p} ლარი. რა ღირს {b} ასეთი რვეული?',
     hint: 'ჯერ იპოვე ერთი რვეულის ფასი.',
@@ -467,6 +492,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g5-angle-type',
     grade: 5,
     topicId: 'kuTxeebi',
+    unitId: 'u1',
     subtopicId: 'kuTxe',
     prompt: '{deg}°-იანი კუთხე როგორია?',
     variables: { deg: { kind: 'int', min: 10, max: 170, step: 5 } },
@@ -481,6 +507,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g6-compare-negatives',
     grade: 6,
     topicId: 'racionaluri',
+    unitId: 'u1',
     subtopicId: 'uaryofa',
     prompt: 'რომელი რიცხვია ნაკლები: {a} თუ {b}?',
     hint: 'რიცხვით ღერძზე მარცხენა ნაკლებია.',
@@ -501,6 +528,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g6-discount',
     grade: 6,
     topicId: 'procenti',
+    unitId: 'u2',
     subtopicId: 'fasdakleba',
     prompt: 'პროდუქტი ღირს {p} ლარი. ფასდაკლება {d}%. რამდენს გადაიხდი?',
     hint: 'ჯერ იპოვე ფასდაკლების თანხა.',
@@ -519,6 +547,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g6-simplify',
     grade: 6,
     topicId: 'gamartiveba',
+    unitId: 'u1',
     subtopicId: 'gamartiveba',
     prompt: 'გაამარტივე: {a}x + {b}x',
     variables: {
@@ -539,6 +568,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g6-simple-equation',
     grade: 6,
     topicId: 'gamartiveba',
+    unitId: 'u2',
     subtopicId: 'gantoleba',
     prompt: 'ამოხსენი: x + {a} = {b}',
     hint: 'გადაიტანე რიცხვი მეორე მხარეს.',
@@ -556,6 +586,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g7-sum-difference',
     grade: 7,
     topicId: 'xazovani',
+    unitId: 'u2',
     subtopicId: 'amocana',
     prompt: 'ორი რიცხვის ჯამია {s}, სხვაობა — {d}. იპოვე უფრო პატარა რიცხვი.',
     hint: 'ჯამს გამოაკელი სხვაობა და გაყავი ორზე.',
@@ -573,6 +604,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g7-quadrant',
     grade: 7,
     topicId: 'damokidebuleba',
+    unitId: 'u1',
     subtopicId: 'koordinatebi',
     prompt: 'რომელ კვადრატში მდებარეობს წერტილი A({x}; {y})?',
     variables: {
@@ -597,6 +629,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g7-linear-value',
     grade: 7,
     topicId: 'damokidebuleba',
+    unitId: 'u2',
     subtopicId: 'grafiki',
     prompt: 'მოცემულია ფუნქცია y = {k}x + {b}. იპოვე y, როცა x = {x}.',
     variables: {
@@ -613,6 +646,7 @@ export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
     id: 'cov-g7-volume',
     grade: 7,
     topicId: 'geometria',
+    unitId: 'u2',
     subtopicId: 'moculoba',
     prompt: 'მართკუთხა პარალელეპიპედის ზომებია {a} სმ, {b} სმ და {c} სმ. მოცულობა?',
     hint: 'V = სიგრძე × სიგანე × სიმაღლე',

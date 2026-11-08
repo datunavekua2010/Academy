@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { CURRICULUM } from '../src/practice/curriculum';
 import { topicSubtopics } from '../src/practice/types';
 import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
+import { createTemplateRegistry } from '../src/practice/templates/registry';
+import { defineTemplate } from '../src/practice/templates/types';
+import { getTopic } from '../src/practice/curriculum';
 import { generateFromTemplate } from '../src/practice/templates/generate';
 import { generateBatch, MIN_SESSION_VARIATIONS, previewTemplate } from '../src/practice/generator';
 
@@ -111,6 +114,21 @@ describe('curriculum coverage', () => {
         known.has(`${template.grade}/${template.topicId}/${template.subtopicId}`),
         `${template.id} points at a subtopic that does not exist`,
       ).toBe(true);
+    }
+  });
+
+  it('unit metadata matches the curriculum for every template', () => {
+    for (const template of TEMPLATE_REGISTRY.all) {
+      const topic = getTopic(template.grade, template.topicId)!;
+      const unit = topic.units.find((item) =>
+        item.subtopics.some((subtopic) => subtopic.id === template.subtopicId),
+      );
+
+      expect(unit, `${template.id}: subtopic not found`).toBeDefined();
+      expect(
+        template.unitId,
+        `${template.id} declares unit "${template.unitId}" but belongs to "${unit!.id}"`,
+      ).toBe(unit!.id);
     }
   });
 

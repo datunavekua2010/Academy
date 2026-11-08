@@ -30,6 +30,7 @@ export const GEOMETRY_TEMPLATES = [
     id: 'g5-perimeter-square',      // unique, stable
     grade: 5,
     topicId: 'perimetri',           // must exist in curriculum.ts
+    unitId: 'u1',                   // the unit that owns the subtopic
     subtopicId: 'perim',
 
     prompt: 'კვადრატის გვერდია {a} სმ. იპოვე პერიმეტრი.',
@@ -68,7 +69,8 @@ homework all read from the registry.
 | Field | Required | Meaning |
 | --- | --- | --- |
 | `id` | yes | Unique and stable. Used in question ids and saved sessions. |
-| `grade`, `topicId`, `subtopicId` | yes | Curriculum address; must match `curriculum.ts`. |
+| `grade`, `topicId`, `subtopicId` | yes | Curriculum address; must exist in `curriculum.ts`. |
+| `unitId` | no | Unit that owns the subtopic. Checked against the curriculum when given. |
 | `prompt` | yes | Georgian wording with `{placeholders}`. |
 | `hint` | no | Georgian instruction shown above the prompt. |
 | `variables` | yes | The numbers/text that vary. |
@@ -126,6 +128,23 @@ broken rather than shipped.
 - The correct answer is placed in a **random** position each time.
 - Options are always distinct; a template that cannot produce 4 distinct options
   fails in tests.
+
+## Validation when the registry is built
+
+Adding a template is safe: `catalog.ts` validates every template once at module
+load and throws with the template id if something is wrong.
+
+| Check | Example failure |
+| --- | --- |
+| prompt placeholder has a variable | `{c} but no such variable is declared` |
+| topic exists for the grade | `grade 3 has no topic "perimetri"` |
+| subtopic exists in the topic | `has no subtopic "perim"` |
+| declared `unitId` owns the subtopic | `declares unit "u1" but subtopic "perim" belongs to unit "u2"` |
+| ids are unique | `Duplicate template id: g5-perimeter-square` |
+| variables, ranges, answer rule | `needs at least one variable`, `max below min`, `answer must be a function` |
+
+A prompt with no `{placeholder}` only warns — a constant question is legal, just
+rarely what you meant.
 
 ## Testing templates
 
