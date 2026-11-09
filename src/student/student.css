@@ -1174,6 +1174,53 @@
 .answer-entry-result { margin: 0; font-size: 0.95rem; }
 .answer-entry-result.is-correct { color: var(--ok, #15803d); }
 .answer-entry-result.is-wrong { color: var(--bad, #b91c1c); }
+
+/* Ordering: tap the items into sequence. Large targets, clear tap marks. */
+.answer-order { display: grid; gap: 10px; margin-top: 4px; }
+.answer-order-hint { margin: 0; font-size: 0.9rem; color: var(--muted); }
+.answer-order-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.answer-order-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 13px 15px;
+  font: inherit;
+  text-align: left;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--card, #fff);
+  color: var(--ink);
+  cursor: pointer;
+}
+.answer-order-item.is-picked {
+  border-color: var(--accent, #2563eb);
+  background: color-mix(in srgb, var(--accent, #2563eb) 10%, transparent);
+  font-weight: 600;
+}
+.answer-order-item:disabled { cursor: default; }
+.answer-order-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 50%;
+  background: var(--line);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.answer-order-item.is-picked .answer-order-badge {
+  background: var(--accent, #2563eb);
+  color: #fff;
+}
 .answer-option {
   display: flex;
   align-items: center;

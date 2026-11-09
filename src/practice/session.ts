@@ -29,6 +29,21 @@ import type { Question, SubtopicRef } from './types';
  * would make the key ambiguous.
  */
 function answersMatch(question: Question, choice: string): boolean {
+  // An ordering answer is a sequence of display positions. Compare the numbers
+  // in it rather than the spelling, so "2,1,3" and "2, 1, 3" are the same
+  // answer and a stray space cannot mark a correct arrangement wrong.
+  if (question.answerMode === 'order') {
+    const typed = choice
+      .split(',')
+      .map((part) => Number(part.trim()))
+      .filter((value) => Number.isFinite(value));
+    const expected = question.answer
+      .split(',')
+      .map((part) => Number(part.trim()))
+      .filter((value) => Number.isFinite(value));
+    return typed.length === expected.length && typed.every((value, i) => value === expected[i]);
+  }
+
   if (question.answerMode !== 'number') return choice === question.answer;
 
   const typed = Number(choice.trim().replace(',', '.'));

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { U01_SUBTOPICS, U01_TEMPLATES } from '../src/practice/templates/u01-space';
+import { generateBatch } from '../src/practice/generator';
 import { generateFromTemplate, generateVariations } from '../src/practice/templates/generate';
 import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
 
@@ -97,6 +98,16 @@ describe('U01 template library', () => {
           // A typed-answer question offers no options at all — if it did, the
           // answer would be sitting in the list it tells the student to type.
           expect(question.options).toEqual([]);
+          continue;
+        }
+        if (question.answerMode === 'order') {
+          // An ordering question has no options: the items are the question.
+          expect(question.options).toEqual([]);
+          const key = question.answer.split(',').map(Number);
+          expect(key).toHaveLength(question.orderItems!.length);
+          expect([...key].sort((a, b) => a - b)).toEqual(
+            Array.from({ length: key.length }, (_, i) => i + 1),
+          );
           continue;
         }
         expect(question.options.filter((o) => o === question.answer)).toHaveLength(1);
@@ -197,11 +208,11 @@ describe('U01.2 — above / below / beside', () => {
       if (beside) {
         expect(question.answer).toBe('გვერდით');
       } else {
-        // The scene is drawn so the subject holds the position being asked
-        // about: on top for "ზემოთ", underneath for "ქვემოთ". Read the top
-        // object from the FIRST LINE — flattening the lines first would read
-        // the upper object of a "🌊\n🐟" scene as the wave.
-        const subjectName = question.prompt.replace(/^სად არის\s+/, '').split(/\s+/)[0];
+        // The stem names the subject; whatever the drawing puts on the top line
+        // is what "ზემოთ" refers to. Read the top name from the FIRST LINE —
+        // flattening first would read the upper object of a "🌊\n🐟" scene as
+        // the wave and flip the expected answer.
+        const subjectName = /სურათზე\s+(\S+)/.exec(question.prompt)![1];
         const topName = nameForEmoji(lines[0].split(/\s+/)[0]);
         expect(question.answer).toBe(topName === subjectName ? 'ზემოთ' : 'ქვემოთ');
       }
@@ -225,9 +236,11 @@ describe('U01.2 — above / below / beside', () => {
 
   it('writes the landmark in a form that agrees with Georgian', () => {
     for (const question of generateMany('g1-u01-2-where-is-it', 30)) {
-      // "ყუთი-თან" was produced by gluing a postposition with a hyphen.
+      // "ყუთი-თან" was produced by gluing a postposition with a hyphen. The
+      // stem now avoids declining the landmark altogether, so no such form may
+      // appear at all.
       expect(question.prompt).not.toContain('-თან');
-      expect(question.prompt).toMatch(/თან\?$/);
+      expect(question.prompt).toMatch(/სად არის .+\?$/);
     }
   });
 });
@@ -251,6 +264,8 @@ describe('U01.3–U01.6 — comparing measures', () => {
     });
 
     it(`${id}: asks "how much more" only when the difference is positive`, () => {
+      // U01.3 spends its third level on ordering, so it has no typed difference.
+      if (id === 'g1-u01-3-ribbon') return;
       for (const question of generateMany(`${id}-difference`)) {
         const [a, b] = numbersIn(question.prompt);
         expect(a).toBeGreaterThan(b);
@@ -281,27 +296,6 @@ describe('U01.7 — all and some', () => {
     }
   });
 
-  it('states a claim whose truth value matches the drawn group', () => {
-    for (const question of generateMany('g1-u01-7-is-it-true')) {
-      const colours = (question.visual ?? '').trim().split(/\s+/).filter(Boolean);
-      const allSame = new Set(colours).size === 1;
-      expect(question.answer).toBe(allSame ? 'მართალია' : 'არ არის მართალი');
-
-      // The colour word in the prompt must be the colour actually drawn.
-      const colourName = question.prompt.replace(/^.*ჯგუფში ყველა\s+/, '').replace(/\s+არის.*$/, '');
-      expect(colourNameFor(colours[0])).toBe(colourName);
-    }
-  });
-
-  it('counts one colour inside a mixed group correctly', () => {
-    for (const question of generateMany('g1-u01-7-count-in-group')) {
-      const colours = (question.visual ?? '').trim().split(/\s+/).filter(Boolean);
-      const asked = question.prompt.replace(/^.*რამდენი\s+/, '').replace(/\s+არის\?$/, '');
-      const matches = colours.filter((c) => colourNameFor(c) === asked).length;
-      expect(Number(question.answer)).toBe(matches);
-      expect(matches).toBeGreaterThan(0);
-    }
-  });
 });
 
 describe('U01.8 — counting', () => {
@@ -321,28 +315,43 @@ describe('U01.8 — counting', () => {
     }
   });
 
-  it('adds the two drawn groups', () => {
-    for (const question of generateMany('g1-u01-8-count-groups')) {
-      const lines = (question.visual ?? '').split('\n');
-      const total = lines.reduce((sum, line) => sum + countEmojis(line), 0);
-      expect(Number(question.answer)).toBe(total);
-    }
-  });
-
-  it('shows the whole set before objects are taken away', () => {
-    for (const question of generateMany('g1-u01-8-count-and-take')) {
-      const [a, b] = numbersIn(question.prompt);
-      // Showing only the remainder would print the answer on the picture.
-      expect(countEmojis(question.visual ?? '')).toBe(a);
-      expect(Number(question.answer)).toBe(a - b);
-    }
-  });
 });
 
 describe('U01 — difficulty progression', () => {
   it('keeps every template inside the three declared levels', () => {
     for (const template of U01_TEMPLATES) {
       expect([1, 2, 3]).toContain(template.difficulty);
+    }
+  });
+
+  it('gives every subtopic exactly three types: one per level', () => {
+    // The rule the curriculum is authored to: three question types per
+    // subtopic, corresponding to the three score bands. Not two, not five —
+    // the third band would otherwise have nothing to show.
+    const bySubtopic = new Map<string, number[]>();
+    for (const template of U01_TEMPLATES) {
+      const levels = bySubtopic.get(template.subtopicId) ?? [];
+      levels.push(template.difficulty);
+      bySubtopic.set(template.subtopicId, levels);
+    }
+
+    expect([...bySubtopic.keys()].sort()).toEqual([...U01_SUBTOPICS].sort());
+    for (const [subtopic, levels] of bySubtopic) {
+      expect(levels.sort(), `${subtopic} must have one template at each level`).toEqual([1, 2, 3]);
+    }
+  });
+
+  it('fills a whole session at every level without repeating itself', () => {
+    // A level with one thin template would run out mid-session and the
+    // generator would have to recycle. 24 is the batch a session opens with.
+    for (const subtopicId of U01_SUBTOPICS) {
+      const ref = { grade: 1, topicId: 'mdebareoba', subtopicId } as const;
+      for (const level of [1, 2, 3] as const) {
+        const batch = generateBatch(ref as never, 24, { level, seed: 4242 });
+        const signatures = new Set(batch.map((q) => q.signature));
+        expect(batch.length, `${subtopicId} level ${level} came up short`).toBe(24);
+        expect(signatures.size, `${subtopicId} level ${level} repeated a question`).toBe(24);
+      }
     }
   });
 
@@ -360,7 +369,7 @@ describe('U01 — difficulty progression', () => {
  * Helpers shared with the app's vocabulary.
  * ------------------------------------------------------------------ */
 
-import { COLOURS, SCENES, THINGS } from '../src/practice/templates/u01-space';
+import { COLOURS, THINGS } from '../src/practice/templates/u01-space';
 
 /**
  * Names an emoji from either vocabulary — the object list used by counting and
@@ -369,13 +378,9 @@ import { COLOURS, SCENES, THINGS } from '../src/practice/templates/u01-space';
  * comparing two unknowns.
  */
 function nameForEmoji(emoji: string): string {
-  const fromThings = THINGS.find((t) => t.emoji === emoji)?.name;
-  if (fromThings) return fromThings;
-  for (const scene of SCENES) {
-    if (scene.subject.emoji === emoji) return scene.subject.name;
-    if (scene.landmark.emoji === emoji) return scene.landmark.name;
-  }
-  throw new Error(`unknown emoji ${emoji}`);
+  const entry = THINGS.find((t) => t.emoji === emoji);
+  if (!entry) throw new Error(`unknown emoji ${emoji}`);
+  return entry.name;
 }
 
 /** Genitive of a drawn object, read from the vocabulary itself. */
@@ -428,33 +433,8 @@ function answerNameFor(emoji: string): string {
 /** The objects drawn in a row, in order. */
 const rowOf = (visual: string): string[] => visual.trim().split(/\s+/);
 
-describe('U01.1 — the extra positional forms', () => {
-  it('asks for the nth object from the left and the nth one is the answer', () => {
-    for (const question of generateMany('g1-u01-1-ordinal-from-left')) {
-      const order = ['პირველი', 'მეორე', 'მესამე', 'მეოთხე', 'მეხუთე', 'მეექვსე'];
-      const asked = order.findIndex((word) => question.prompt.includes(`მარცხნიდან ${word}`));
-      expect(asked, question.prompt).toBeGreaterThanOrEqual(0);
-
-      const items = rowOf(question.visual!);
-      // Counting from the left is counting array index 0 upward.
-      expect(nameForEmoji(items[asked]), question.prompt).toBe(question.answer);
-    }
-  });
-
-  it('asks for the object immediately left of a named one, and never picks the leftmost', () => {
-    for (const question of generateMany('g1-u01-1-neighbour-of')) {
-      const items = rowOf(question.visual!);
-
-      // The prompt names one object in the genitive ("ბურთის უშუალოდ მარცხნივ").
-      // Find which drawn object that is by testing its stored form.
-      const named = items.findIndex((emoji) => question.prompt.includes(`${genitiveOf(emoji)} უშუალოდ`));
-      expect(named, question.prompt).toBeGreaterThan(0);
-
-      expect(nameForEmoji(items[named - 1]), question.prompt).toBe(question.answer);
-    }
-  });
-
-  it('infers the middle toy from the two ends it names', () => {
+describe('U01.1 — the level-3 deduction', () => {
+  it('infers the middle object from the two ends it names', () => {
     for (const question of generateMany('g1-u01-1-infer-middle')) {
       const items = rowOf(question.visual!);
       expect(items).toHaveLength(3);
@@ -464,50 +444,20 @@ describe('U01.1 — the extra positional forms', () => {
       expect(question.prompt).toContain(`${left} მარცხნივ`);
       expect(question.prompt).toContain(`${right} — მარჯვნივ`);
       expect(question.answer).toBe(middle);
-    }
-  });
-
-  it('names the child standing immediately left of the one at a stated position', () => {
-    for (const question of generateMany('g1-u01-1-neighbour-by-ordinal')) {
-      const order = ['პირველი', 'მეორე', 'მესამე', 'მეოთხე'];
-      const at = order.findIndex((word) => question.prompt.includes(`მარცხნიდან ${word} ადგილზე`));
-      expect(at, question.prompt).toBeGreaterThan(0);
-
-      // The visual lists the children in the order they stand.
-      const children = rowOf(question.visual!);
-      expect(children).toHaveLength(4);
-      // The child the prompt places is really in that place.
-      expect(question.prompt).toContain(children[at]);
-      expect(question.answer).toBe(children[at - 1]);
+      // The three objects must differ, or "the middle one" is ambiguous.
+      expect(new Set(items).size).toBe(3);
     }
   });
 });
 
 describe('U01.2 — the extra relation forms', () => {
-  it('offers exactly one sentence that matches the picture', () => {
-    for (const question of generateMany('g1-u01-2-true-sentence')) {
-      // "beside" is drawn on one line; "above"/"below" on two.
-      const lines = question.visual!.split('\n').map((line) => line.trim());
-      expect(lines.length).toBeLessThanOrEqual(2);
-
-      // Exactly one option may be the sentence the picture shows. Rather than
-      // guess the relation, require that the answer states the scene and that
-      // no other option does.
-      const others = question.options.filter((option) => option !== question.answer);
-      expect(others).toHaveLength(2);
-      for (const option of others) {
-        // Every wrong option names the same two objects — only the relation
-        // differs, which is what makes the options comparable.
-        expect(option).not.toBe(question.answer);
-      }
-      expect(question.options).toContain(question.answer);
-    }
-  });
-
   it('asks for the highest or the lowest of a drawn column', () => {
     for (const question of generateMany('g1-u01-2-extreme-of-three')) {
       const column = question.visual!.split('\n').map((line) => line.trim());
       expect(column).toHaveLength(3);
+      // The three objects must be different, otherwise "highest" and "lowest"
+      // could name the same thing.
+      expect(new Set(column).size).toBe(3);
 
       const expected = question.prompt.includes('ყველაზე მაღლა')
         ? nameForEmoji(column[0])
@@ -515,131 +465,55 @@ describe('U01.2 — the extra relation forms', () => {
       expect(question.answer).toBe(expected);
     }
   });
-});
 
-describe('U01.3–U01.6 — the extra comparison forms', () => {
-  it('asks "which is shorter/ lighter/ narrower" and answers the smaller number', () => {
-    for (const id of [
-      'g1-u01-3-ribbon-less',
-      'g1-u01-4-tower-less',
-      'g1-u01-5-bag-less',
-      'g1-u01-6-box-less',
-    ]) {
-      for (const question of generateMany(id)) {
-        const [a, b] = numbersIn(question.prompt);
-        expect(Number(question.answer), question.prompt).toBe(Math.min(a, b));
-        expect(question.prompt).toMatch(/უფრო (მოკლე|დაბალი|მსუბუქი|ვიწრო)/);
-      }
-    }
-  });
-
-  it('notices when two measures are equal instead of picking a winner', () => {
-    let sawEqual = false;
-    let sawDifferent = false;
-
-    for (const id of ['g1-u01-3-ribbon-equal', 'g1-u01-6-box-equal']) {
-      for (const question of generateMany(id, 20)) {
-        const [a, b] = numbersIn(question.prompt);
-        const saysEqual = question.answer === 'ორივე ერთნაირია';
-        // Equal wording and equal numbers must agree in both directions.
-        expect(saysEqual, question.prompt).toBe(a === b);
-        if (a === b) sawEqual = true;
-        else sawDifferent = true;
-      }
-    }
-
-    // Both branches must actually occur, or half the template is dead code.
-    expect(sawEqual).toBe(true);
-    expect(sawDifferent).toBe(true);
-  });
-
-  it('picks the extreme of three measures and never the middle one', () => {
-    for (const id of ['g1-u01-3-ribbon-largest-of-three', 'g1-u01-5-bag-smallest-of-three', 'g1-u01-6-box-largest-of-three']) {
-      for (const question of generateMany(id, 30)) {
-        const values = numbersIn(question.prompt).slice(-3);
-        expect(new Set(values).size, question.prompt).toBe(3);
-
-        // The question names the items by position, not by letter.
-        const larger = /ყველაზე (გრძელი|მაღალი|მძიმე|განიერი)/.test(question.prompt);
-        expect(question.prompt, 'must say which extreme it wants').toMatch(/ყველაზე (გრძელი|მაღალი|მძიმე|განიერი|მოკლე|დაბალი|მსუბუქი|ვიწრო)/);
-        const wanted = larger ? Math.max(...values) : Math.min(...values);
-        const ordinals = ['პირველი', 'მეორე', 'მესამე'];
-        expect(question.answer, question.prompt).toBe(ordinals[values.indexOf(wanted)]);
-      }
-    }
-  });
-
-  it('answers the balance question with the pan holding more', () => {
-    for (const question of generateMany('g1-u01-5-bag-balance')) {
-      const [heavy, light] = numbersIn(question.prompt);
-      expect(heavy, question.prompt).toBeGreaterThan(light);
-      // The prompt puts the larger weight on the left, and the heavier side sinks.
-      expect(question.answer).toBe('მარცხენა');
+  it('names the objects in the stem in the same order they are drawn', () => {
+    for (const question of generateMany('g1-u01-2-extreme-of-three')) {
+      const drawn = question.visual!.split('\n').map((line) => nameForEmoji(line.trim()));
+      const named = /ზემოთაა:\s*(.+)\./.exec(question.prompt)![1].split(/,\s*/);
+      expect(named).toEqual(drawn);
     }
   });
 });
 
-describe('U01.7 — the extra quantifier forms', () => {
-  it('"some are …" is true exactly when the group contains one', () => {
-    let sawTrue = false;
-    let sawFalse = false;
-
-    for (const question of generateMany('g1-u01-7-some-is-true', 30)) {
-      const asked = question.prompt.replace(/^.*ზოგიერთი\s+/, '').replace(/ არის.*$/, '');
-      const drawn = countEmojis(question.visual!);
-      const truth = question.answer === 'მართალია';
-      // Re-derive: the group contains the shape iff the answer says so.
-      const contains = question.visual!.includes(shapeEmoji(asked));
-      expect(truth, question.prompt).toBe(contains);
-      if (truth) sawTrue = true;
-      else sawFalse = true;
-      expect(drawn).toBeGreaterThanOrEqual(2);
-    }
-
-    expect(sawTrue).toBe(true);
-    expect(sawFalse).toBe(true);
-  });
-
-  it('offers exactly one true sentence for a mixed group', () => {
-    for (const question of generateMany('g1-u01-7-quantifier-sentence', 30)) {
-      const drawn = new Set(question.visual!.trim().split(/\s+/));
-      // "some are X" is true iff X is drawn; "all are X" iff every one is X.
-      const truth = (sentence: string): boolean => {
-        const shapeName = SHAPES_LIST.find((name) => sentence.includes(name));
-        const emoji = shapeEmoji(shapeName!);
-        if (sentence.startsWith('ყველა')) return [...drawn].every((item) => item === emoji);
-        if (sentence.startsWith('ვერცერთი')) return !drawn.has(emoji);
-        return drawn.has(emoji);
-      };
-
-      const trueOptions = question.options.filter(truth);
-      expect(trueOptions, JSON.stringify(question.options)).toEqual([question.answer]);
+describe('U01.3–U01.6 — the level-2 equality form', () => {
+  it('offers "equal" only when the two measures really are equal', () => {
+    for (const id of ['g1-u01-3-ribbon', 'g1-u01-4-tower', 'g1-u01-5-bag', 'g1-u01-6-box']) {
+      let sawEqual = false;
+      let sawDifferent = false;
+      for (const question of generateMany(`${id}-equal`, 40)) {
+        const [a, b] = numbersIn(question.prompt);
+        if (a === b) {
+          sawEqual = true;
+          expect(question.answer).toBe('ორივე ერთნაირია');
+        } else {
+          sawDifferent = true;
+          // The stem prints the two measures; the options carry the words. The
+          // answer must be whichever "more" sentence names the second one.
+          expect(question.answer).toMatch(/^მეორე უფრო \S+ არის$/);
+          expect(question.options).toContain('პირველი უფრო ' + question.answer.split(' ')[2] + ' არის');
+        }
+        // The three options must be exactly the three judgements, never a repeat.
+        expect(new Set(question.options).size).toBe(3);
+        expect(question.options).toContain(question.answer);
+      }
+      // Both cases must actually occur, or the template tests only one of them.
+      expect(sawEqual, `${id}-equal never drew two equal measures`).toBe(true);
+      expect(sawDifferent, `${id}-equal never drew two different measures`).toBe(true);
     }
   });
+});
 
-  it('says both "all" and "some" hold when every object is the same', () => {
-    for (const question of generateMany('g1-u01-7-all-and-some')) {
-      // The picture is one repeated shape, so both statements are true.
-      const drawnShapes = new Set(question.visual!.match(/\p{Extended_Pictographic}/gu) ?? []);
-      expect(drawnShapes.size).toBe(1);
-      expect(question.answer).toContain('ორივე მართალია');
-      expect(question.options.filter((option) => option === question.answer)).toHaveLength(1);
-    }
-  });
-
-  it('offers exactly one WRONG sentence, and every other option is true', () => {
-    for (const question of generateMany('g1-u01-7-false-sentence', 30)) {
-      const drawn = new Set(question.visual!.trim().split(/\s+/));
-      const truth = (sentence: string): boolean => {
-        const shapeName = SHAPES_LIST.find((name) => sentence.includes(name));
-        const emoji = shapeEmoji(shapeName!);
-        if (sentence.startsWith('ყველა')) return [...drawn].every((item) => item === emoji);
-        return drawn.has(emoji);
-      };
-
-      // Exactly one option is false, and it is the answer.
-      expect(question.options.filter((option) => !truth(option))).toEqual([question.answer]);
-      expect(truth(question.answer), question.prompt).toBe(false);
+describe('U01.7 — the level-3 quantifier form', () => {
+  it('says both "all" and "some" hold when every object is the same shape', () => {
+    for (const question of generateMany('g1-u01-7-all-and-some', 40)) {
+      const drawn = countEmojis(question.visual ?? '');
+      const count = Number(numbersIn(question.prompt)[0]);
+      // The stem states the group size, so it must match the picture.
+      expect(drawn, question.prompt).toBe(count);
+      expect(question.answer).toContain('ყველა');
+      expect(question.answer).toContain('ზოგიერთი');
+      expect(question.options).toContain(question.answer);
+      expect(new Set(question.options).size).toBe(3);
     }
   });
 });

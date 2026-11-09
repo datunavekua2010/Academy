@@ -17,6 +17,24 @@ export type { GeneratedQuestion };
 /** Number of options offered per question. */
 export const OPTION_COUNT = 4;
 
+/**
+ * Templates at one difficulty level.
+ *
+ * A subtopic whose questions are all at one level is unaffected by asking for
+ * a level; a subtopic that simply has none at the requested level falls back to
+ * its whole set rather than emptying the session. The fallback is deliberate:
+ * an empty batch is worse for a student than a question at the wrong level, and
+ * the missing level is caught by the test-suite, not by a child.
+ */
+export function templatesAtLevel<T extends { difficulty?: 1 | 2 | 3 }>(
+  templates: T[],
+  level?: 1 | 2 | 3,
+): T[] {
+  if (!level) return templates;
+  const matching = templates.filter((template) => (template.difficulty ?? 1) === level);
+  return matching.length > 0 ? matching : templates;
+}
+
 /** True when a subtopic has at least one template and can be practised. */
 export function hasTemplates(ref: SubtopicRef, registry: TemplateRegistry = TEMPLATE_REGISTRY) {
   return registry.hasTemplates(ref);
@@ -32,6 +50,8 @@ export interface GenerateOptions {
   optionCount?: number;
   /** Explicit template (used by tests); otherwise one is chosen at random. */
   templateId?: string;
+  /** Only generate from templates at this level (U01's three levels). */
+  level?: 1 | 2 | 3;
 }
 
 /**
@@ -45,7 +65,7 @@ export function generateQuestion(
 ): GeneratedQuestion | null {
   const registry = options.registry ?? TEMPLATE_REGISTRY;
 
-  const templates = registry.forSubtopic(ref);
+  const templates = templatesAtLevel(registry.forSubtopic(ref), options.level);
   if (options.templateId) {
     const chosen = registry.byId(options.templateId);
     if (!chosen) return null;
@@ -87,7 +107,7 @@ export function generateBatch(
   // while a wide sibling sits unused.
   const templates = options.templateId
     ? [registry.byId(options.templateId)].filter(Boolean)
-    : registry.forSubtopic(ref);
+    : templatesAtLevel(registry.forSubtopic(ref), options.level);
   if (templates.length === 0 && !options.templateId) {
     console.warn(
       `[practice] No template covers ${ref.grade}/${ref.topicId}/${ref.subtopicId}.`,

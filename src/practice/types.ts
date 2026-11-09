@@ -25,10 +25,15 @@ export interface Question {
    *
    * `choice` (the default) presents `options`. `number` asks the student to
    * type the answer: some questions — "how many are left?", "how much longer?"
-   * — are answered more honestly by typing than by picking from four, and the
-   * U01 spec asks for both formats.
+   * — are answered more honestly by typing than by picking from four.
+   * `order` asks the student to arrange the items; `orderItems` holds them and
+   * the answer is their correct sequence as positions, e.g. "2,1,3".
+   *
+   * All three are named in the U01 specification.
    */
-  answerMode?: 'choice' | 'number';
+  answerMode?: 'choice' | 'number' | 'order';
+  /** For `answerMode: 'order'` — the items to arrange, in display order. */
+  orderItems?: string[];
   options: Answer[];
   answer: Answer;
   explanation: string;

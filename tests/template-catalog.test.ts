@@ -57,7 +57,18 @@ describe('every template in the catalog', () => {
         // Distinct options, one of which is the answer. Most questions offer
         // four; true/false and three-way sorting offer fewer by design, and a
         // typed-answer question deliberately offers none at all.
-        if (question.answerMode === 'number') {
+        if (question.answerMode === 'order') {
+          // An ordering question offers no options either: the items ARE the
+          // question, and the answer is the sequence of positions that sorts
+          // them. Both must be present and the key must be a real permutation.
+          expect(question.options).toEqual([]);
+          expect(question.orderItems?.length ?? 0).toBeGreaterThanOrEqual(2);
+          const key = String(question.answer).split(',').map(Number);
+          expect(key).toHaveLength(question.orderItems!.length);
+          expect([...key].sort((a, b) => a - b)).toEqual(
+            Array.from({ length: key.length }, (_, i) => i + 1),
+          );
+        } else if (question.answerMode === 'number') {
           expect(question.options).toEqual([]);
           // A typed answer must still be a single, unambiguous number.
           expect(String(question.answer)).toMatch(/^-?\d+(\.\d+)?$/);

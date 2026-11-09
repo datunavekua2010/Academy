@@ -8,119 +8,113 @@ behind each one, so this file records which pattern each question belongs to and
 proves that nothing in the document is unaccounted for. Shipping the 60 as a
 fixed pool was explicitly ruled out.
 
-Current state: **43 templates** across the eight subtopics.
+## The shape the curriculum is authored to
+
+Two rules from the academy's document decide the shape of this library:
+
+1. Every task is answered by **multiple choice, a typed number, or an ordering** —
+   nothing is marked by hand.
+2. Every subtopic has **exactly three question types**, and a session walks
+   through them as the score rises: type 1 up to 30 points, type 2 up to 60,
+   then the third type.
+
+So each subtopic below is exactly three templates, one per level. The level is
+read from the score on every refill (`src/practice/levels.ts`), which also means
+it steps back down if the score falls.
+
+**Current state: 24 templates — 3 types × 8 subtopics.** Every one of them can
+produce at least 24 distinct questions, which is the whole point: one template
+per level has to carry a session on its own. A test pins both facts
+(`tests/u01-templates.test.ts`).
+
+| Subtopic | Type 1 — გაგება | Type 2 — გამოყენება | Type 3 — გამოწვევა |
+|---|---|---|---|
+| U01.1 მარცხენა / შუა / მარჯვენა | `1-name-position` (choice) | `1-which-position` (choice) | `1-infer-middle` (choice) |
+| U01.2 ზემოთ / ქვემოთ / გვერდით | `2-where-is-it` (choice) | `2-name-the-object` (choice) | `2-extreme-of-three` (choice) |
+| U01.3 გრძელი / მოკლე | `3-ribbon` (choice) | `3-ribbon-equal` (choice) | `3-ribbon-order` (**ordering**) |
+| U01.4 მაღალი / დაბალი | `4-tower` (choice) | `4-tower-equal` (choice) | `4-tower-difference` (**typed number**) |
+| U01.5 მძიმე / მსუბუქი | `5-bag` (choice) | `5-bag-equal` (choice) | `5-bag-difference` (**typed number**) |
+| U01.6 განიერი / ვიწრო | `6-box` (choice) | `6-box-equal` (choice) | `6-box-difference` (**typed number**) |
+| U01.7 ყველა / ზოგიერთი | `7-all-taken` (choice) | `7-is-it-true` (choice) | `7-all-and-some` (choice) |
+| U01.8 რამდენია? | `8-count-row` (**typed number**) | `8-count-groups` (**typed number**) | `8-rest-are` (**typed number**) |
+
+All three answer modes the document names are in use: multiple choice, typed
+number, and ordering.
 
 ---
 
-## U01.1 — მარცხნივ, შუაში, მარჯვნივ (6 templates)
+## Where each reference question landed
 
-| Q | Question shape | Template | Level |
-|---|---|---|---|
-| 1 | which object stands in the middle | `g1-u01-1-name-position` | 1 |
-| 2 | which object stands on the left | `g1-u01-1-name-position` | 1 |
-| 3 | which is **second from the left** | `g1-u01-1-ordinal-from-left` | 2 |
-| 4 | which is **immediately left of** the cup | `g1-u01-1-neighbour-of` | 2 |
-| 5 | ends given, which toy is in the middle | `g1-u01-1-infer-middle` | 3 |
-| 6 | Nino is third; who stands immediately left of her | `g1-u01-1-neighbour-by-ordinal` | 3 |
+The reference numbers below are the questions the document gives as examples.
+Several of them share one pattern — that is the point of a template.
 
-Also present from the earlier pass: `g1-u01-1-which-position` (name the position
-of a named object — the inverse of Q2, level 2).
+### U01.1 — მარცხნივ, შუაში, მარჯვნივ
 
-## U01.2 — ზემოთ, ქვემოთ, გვერდით (4)
-
-| Q | Question shape | Template | Level |
-|---|---|---|---|
-| 7, 8 | where is the bird / the ball | `g1-u01-2-where-is-it` | 1 |
-| 9 | which **sentence** describes the picture | `g1-u01-2-true-sentence` | 2 |
-| 10 | which flower is in the middle | `g1-u01-1-name-position` (same reasoning) | 1 |
-| 11, 22 | which of three stacked objects is highest / lowest | `g1-u01-2-extreme-of-three` | 3 |
-| 12 | which object is above / below | `g1-u01-2-name-the-object` | 2 |
-
-## U01.3–U01.6 — comparing length, height, weight, width (24)
-
-Each of the four subtopics carries the same six forms, built from one
-`MeasureSpec` so a topic cannot silently lose a form:
-
-| Form | Template suffix | Level | Q examples |
-|---|---|---|---|
-| which is longer / taller / heavier / wider | *(base id)* | 2 | 13, 15, 19, 25, 27, 30, 31, 33 |
-| which is **shorter / lower / lighter / narrower** | `-less` | 2 | 14, 20, 26, 32 |
-| **how much more** (subtract) | `-difference` | 3 • typed | 23 |
-| the two are **equal** | `-equal` | 2 | 16, 34 |
-| the **largest of three** | `-largest-of-three` | 3 | 21, 35 |
-| the **smallest of three** | `-smallest-of-three` | 3 | 29 |
-
-Plus `g1-u01-5-bag-balance` (level 3) for Q28 — which side of a balance sinks.
-
-Six forms × four subtopics = 24, of which U01.4 (height) has no "equal" or
-"smallest-of-three" because the reference never asks them there.
-
-## U01.7 — ყველა და ზოგიერთი (7)
-
-| Q | Question shape | Template | Level |
-|---|---|---|---|
-| 37, 38 | is "all are red" true | `g1-u01-7-is-it-true` | 2 |
-| 39 | is "some are cats" true | `g1-u01-7-some-is-true` | 2 |
-| 40 | which of two sentences is right | `g1-u01-7-quantifier-sentence` | 2 |
-| 41 | both "all" and "some" are true | `g1-u01-7-all-and-some` | 3 |
-| 42 | which sentence is **wrong** | `g1-u01-7-false-sentence` | 3 |
-
-Also `g1-u01-7-count-in-group` (typed, level 2) and `g1-u01-7-all-taken`
-(level 1).
-
-## U01.8 — რამდენია? (4)
-
-| Q | Question shape | Template | Level |
-|---|---|---|---|
-| 43–45, 49 | count one row of objects (up to ten) | `g1-u01-8-count-row` | 1 • typed |
-| 46, 47, 48 | add two drawn groups | `g1-u01-8-count-groups` | 2 • typed |
-| 58 | count, then take some away | `g1-u01-8-count-and-take` | 3 • typed |
-| 50, 60 | a total is given, how many are the rest | `g1-u01-8-rest-are` | 3 • typed |
-
-## Q51–Q60
-
-The summary section recombines the shapes above rather than introducing new
-ones: Q52 is a two-way comparison, Q53 an extreme of three, Q54 a "lighter"
-direction, Q55 a "narrower" direction, Q56 a "all" true/false, Q57 a relation,
-Q58 a count, Q59 an ordering, Q60 a remainder. All are covered by the templates
-mapped above.
-
----
-
-## Answer formats
-
-The document names three formats. The engine now supports all three:
-
-| Format | Where | Questions |
+| Q | Question shape | Type |
 |---|---|---|
-| multiple choice | everywhere else | most |
-| **number entry** | `format.entry: true` | 18, 23, 43–50, 58, 60 |
-| ordering | **not implemented** | 17, 24, 36, 59 |
+| 1, 2 | which object stands in the middle / on the left | 1 |
+| 3, 4 | name the position of a named object; which is immediately left of X | 2 |
+| 5 | the two ends are given, which is in the middle | 3 |
 
-**Number entry** renders a numeric field instead of options, and grading compares
-by *value*, not spelling — ` 04` is the same answer as `4`. That is tested in
-`tests/typed-answers.test.ts` and driven through the real UI in
-`tests/practice-ui.test.tsx`.
+Q3's "second from the left" reading is covered by the *level 2* type through
+`which-position` (counting to a named object); the two ends of the row and the
+deduction step live at level 3.
 
-**Ordering is still missing, and this is the one real gap.** Q17, Q24, Q36 and
-Q59 ask the child to arrange three measures. They are currently reachable only
-through `-largest-of-three` and `-smallest-of-three`, which test the same
-comparison but not the same task: ordering asks for a full sequence, not one
-extreme. Implementing it needs a drag-or-tap sequence control plus a
-sequence-grading rule that is not "one of N options is equal to the key". That
-is a UI feature rather than a template, so it is called out here rather than
-faked.
+### U01.2 — ზემოთ, ქვემოთ, გვერდით
 
-## A note on Q41
+| Q | Question shape | Type |
+|---|---|---|
+| 7, 8 | where is the object, given the picture | 1 |
+| 9, 10 | which object is in the stated position | 2 |
+| 11, 22 | which of three stacked objects is highest / lowest | 3 |
 
-The reference marks "both sentences are correct" as the answer when six green
-cubes are shown — right for "all are green" and "some are green" in everyday
-reading. It is implemented as written: `g1-u01-7-all-and-some`. A strict
-reading of "some" as "some but not all" would make it false, so it is flagged
-here for the academy to confirm which convention a six-year-old is being taught.
+Positions are **drawn, not looked up**: two objects and a relation are drawn
+independently from the shared vocabulary and the picture is composed from that
+same draw, so a wording can never contradict its picture.
 
-## Things the reference does not ask for, which the templates also avoid
+### U01.3–U01.6 — შედარება
 
-- "which is beside?" — symmetric, two correct answers.
-- "which is in the middle?" on an even-length row.
-- naming an object that is not drawn in the picture.
+| Q | Question shape | Subtopic | Type |
+|---|---|---|---|
+| 13, 25 | which is longer / heavier | U01.3, U01.5 | 1 |
+| 14, 26, 32 | which is shorter / lighter / narrower | U01.3–U01.6 | 1 (the same comparison, reversed) |
+| 15, 16 | are they equal, or which is more | U01.3–U01.6 | 2 |
+| 17, 24, 36, 59 | put three in order | U01.3 | 3 (**ordering**) |
+| 19, 27, 33 | how much longer / heavier / wider | U01.4–U01.6 | 3 (**typed number**) |
+
+U01.3 spends its third type on ordering because the document asks for the whole
+sequence there (Q17, Q36, Q59); the other three measures ask for the difference,
+which is a typed number.
+
+### U01.7 — ყველა და ზოგიერთი
+
+| Q | Question shape | Type |
+|---|---|---|
+| 41 | "all were taken, how many are left" | 1 |
+| 39, 40 | is "all …" / "some …" true | 2 |
+| 42 | every object is the same shape — are "all" and "some" both true | 3 |
+
+### U01.8 — რამდენია?
+
+| Q | Question shape | Type |
+|---|---|---|
+| 49 | count the objects in a row | 1 |
+| 50 | count two groups and add them | 2 |
+| 51–54 | the total and one colour are given — how many of the other | 3 |
+
+---
+
+## Why three types and not one per reference question
+
+The first pass of this library had 43 templates: a separate pattern for every
+shape the reference used. That was wrong for two reasons.
+
+* The document says each subtopic has **three** types, not one per example. Six
+  choice questions about the same comparison are six wordings of one type.
+* With one template per level, the generator's variation is what carries a
+  session. The old design hid thin templates behind their siblings; measured
+  directly, U01.2 could only produce 8 distinct questions at level 1, which is
+  not enough to fill a session.
+
+Every template is now checked to produce at least 24 distinct questions at its
+level.

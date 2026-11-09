@@ -67,6 +67,16 @@ export interface ListVariable {
 
 export type VariableSpec = RangedVariable | ChoiceVariable | ListVariable;
 
+/**
+ * What rendering/answer code may depend on beyond the drawn values: the
+ * option order. Only a shuffled template needs it — an ordering question's key
+ * is a sequence through the items *as the student sees them*.
+ */
+export interface AnswerContext {
+  /** Item order for a `shuffle` template. Undefined when not shuffled. */
+  order?: string[];
+}
+
 /** A whole-set rule evaluated after every variable has been drawn. */
 export interface TemplateConstraint {
   /** Return true when the drawn values are acceptable. */
@@ -138,7 +148,25 @@ export interface QuestionTemplate {
   constraints?: TemplateConstraint[];
 
   /** Computes the correct answer from the drawn values. Never a constant. */
-  answer: (vars: Vars) => number | string;
+  answer: (vars: Vars, ctx: AnswerContext) => number | string;
+
+  /**
+   * Shows the drawn items to the student and asks them to put them in order.
+   *
+   * The items are `vars[shuffle.source]`, but they are displayed in a shuffled
+   * order, because asking a child to arrange a list that is already sorted is
+   * not a question. The correct answer is the sequence of *display* positions,
+   * e.g. "2,1,3": the student taps the items into order and the runner records
+   * which position they pressed first, second, third.
+   *
+   * `direction: 'asc'` means "smallest first".
+   */
+  shuffle?: {
+    /** Which list variable holds the values to arrange. */
+    source: string;
+    /** 'asc' = smallest first, 'desc' = largest first. */
+    direction: 'asc' | 'desc';
+  };
 
   /** Answer format / validation rules. */
   format?: AnswerFormat;

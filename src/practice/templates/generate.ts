@@ -234,9 +234,27 @@ export function generateFromTemplate(
 
     let raw: number | string;
     let normalised: { value: number | string; display: string };
+    // An ordering question's scramble is part of the draw, and the answer is a
+    // sequence through *that* scramble — so it must be built BEFORE the answer
+    // is computed. Computing the answer first keyed it to an order the student
+    // never sees, and the answer came out empty.
+    let orderItems: string[] | undefined;
+    if (template.shuffle) {
+      const source = vars[template.shuffle.source];
+      const values = Array.isArray(source) ? source.map(String) : [];
+      if (values.length < 2) continue;
+      orderItems = shuffleWith(rng, values);
+
+      // A scramble that came out already sorted would hand over the answer.
+      const sorted = [...values].sort((a, b) =>
+        template.shuffle!.direction === 'asc' ? Number(a) - Number(b) : Number(b) - Number(a),
+      );
+      if (orderItems.join() === sorted.join()) continue;
+    }
+
 
     try {
-      raw = template.answer(vars);
+      raw = template.answer(vars, { order: orderItems });
       normalised = normaliseAnswer(template, raw);
     } catch (error) {
       lastError = error;
@@ -266,14 +284,16 @@ export function generateFromTemplate(
       wrongDisplays.push(display);
     }
 
-    if (wrongDisplays.length < optionCount - 1 && !entry) {
+    if (wrongDisplays.length < optionCount - 1 && !entry && !template.shuffle) {
       lastError = new TemplateError(
         `${template.id}: not enough distinct wrong options for "${normalised.display}"`,
       );
       continue;
     }
 
-    const optionsList = shuffleWith(rng, [normalised.display, ...wrongDisplays]);
+    const optionsList = template.shuffle
+      ? []
+      : shuffleWith(rng, [normalised.display, ...wrongDisplays]);
     const prompt = renderPrompt(template.prompt, vars);
 
     // Same template + same rendered wording, numbers AND picture = the same
@@ -287,7 +307,7 @@ export function generateFromTemplate(
     // output as a repeat and fail with "ranges are too narrow" while holding a
     // perfectly good library of questions.
     const visual = template.visual ? template.visual(vars) : '';
-    const signature = `${template.id}|${prompt}|${visual}`;
+    const signature = `${template.id}|${prompt}|${visual}|${orderItems?.join(',') ?? ''}`;
 
     return {
       id: `${template.id}~${seed}`,
@@ -302,11 +322,12 @@ export function generateFromTemplate(
       prompt,
       visual: template.visual ? template.visual(vars) : undefined,
       hint: template.hint,
-      answerMode: entry ? 'number' : 'choice',
-      // A typed-answer question must not ship options: an option list would be
-      // a second, contradictory way to answer it (and a student could read the
-      // answer off it).
-      options: entry ? [] : optionsList,
+      answerMode: template.shuffle ? 'order' : entry ? 'number' : 'choice',
+      orderItems,
+      // A typed-answer or ordering question must not ship options: an option
+      // list would be a second, contradictory way to answer it (and a student
+      // could read the answer off it).
+      options: template.shuffle || entry ? [] : optionsList,
       answer: normalised.display,
       explanation: template.explanation({ vars, answer: normalised.display }),
       difficulty: options.difficulty ?? template.difficulty ?? 1,
