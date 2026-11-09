@@ -1,5 +1,6 @@
 import { getTopic } from '../curriculum';
 import { SAMPLE_TEMPLATES } from './samples';
+import { GRADE1_PLACEHOLDERS } from './grade1-placeholders';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -37,8 +38,8 @@ import { createTemplateRegistry } from './registry';
  * templates are supplied; the engine does not change.
  */
 export const TEMPLATE_REGISTRY = createTemplateRegistry(
-  [...SAMPLE_TEMPLATES, ...COVERAGE_TEMPLATES],
+  [...SAMPLE_TEMPLATES, ...COVERAGE_TEMPLATES, ...GRADE1_PLACEHOLDERS],
   { resolveTopic: getTopic },
 );
 
-export { SAMPLE_TEMPLATES, COVERAGE_TEMPLATES };
+export { SAMPLE_TEMPLATES, COVERAGE_TEMPLATES, GRADE1_PLACEHOLDERS };

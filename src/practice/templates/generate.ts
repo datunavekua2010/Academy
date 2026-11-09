@@ -179,7 +179,9 @@ export function generateFromTemplate(
 ): GeneratedQuestion {
   const seed = options.seed >>> 0;
   const rng = makeRng(seed);
-  const optionCount = Math.max(2, options.optionCount ?? 4);
+  // A template may legitimately offer only two or three options (true/false,
+  // three-way sorting); never demand more than it declares.
+  const optionCount = Math.max(2, template.optionCount ?? options.optionCount ?? 4);
 
   let lastError: unknown = null;
 

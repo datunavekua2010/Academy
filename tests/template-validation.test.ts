@@ -13,9 +13,9 @@ const good = () =>
   defineTemplate({
     id: 'ok',
     grade: 1,
-    topicId: 'shekreba',
-    unitId: 'u2',
-    subtopicId: 'ocamde',
+    topicId: 'Sekreba',
+    unitId: 'Sekreba',
+    subtopicId: 'SuratiT-10',
     prompt: '{a} + {b} = ?',
     variables: {
       a: { kind: 'int', min: 1, max: 9 },
@@ -49,9 +49,10 @@ describe('template validation', () => {
   });
 
   it('rejects a unitId that does not own the subtopic', () => {
-    // 'ocamde' lives in u2 of shekreba; declaring u1 is a copy-paste error.
-    const template = { ...good(), id: 'bad-unit', unitId: 'u1' };
-    expect(() => build([template])).toThrow(/belongs to unit "u2"/);
+    // Each grade-1 unit is its own topic; declaring a different unit is a
+    // copy-paste error the validator must catch.
+    const template = { ...good(), id: 'bad-unit', unitId: 'Gamokleba' };
+    expect(() => build([template])).toThrow(/belongs to unit "Sekreba"/);
   });
 
   it('rejects duplicate ids', () => {

@@ -21,7 +21,7 @@ function playPerfect(ref: { grade: 1; topicId: string; subtopicId: string }): Se
 
 describe('integration: a real 100-point run', () => {
   it('records progress that the progress page can read', () => {
-    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'ocamde' };
+    const ref = { grade: 1 as const, topicId: 'Sekreba', subtopicId: 'SuratiT-10' };
     const pool = generateBatch(ref, 12, { seed: 7 });
     expect(pool.length).toBe(12);
     expect(new Set(pool.map((q) => q.signature)).size).toBe(12);
@@ -45,22 +45,22 @@ describe('integration: a real 100-point run', () => {
     attempts = recordAttempt(attempts, newAttempt(partial, partial.startedAt));
     expect(progressFor(attempts, ref).completed).toBe(true); // best score still 100
     expect(attempts.length).toBe(2);
-    expect(needsWork(attempts).some((a) => a.ref.subtopicId === 'ocamde')).toBe(false);
+    expect(needsWork(attempts).some((a) => a.ref.subtopicId === 'SuratiT-10')).toBe(false);
   });
 
   it('computes grade stats from assignments and attempts', () => {
     const assignments = buildDemoAssignments(1, [
-      { topicId: 'shekreba', topicTitle: 'x', subtopicId: 'ocamde' },
-      { topicId: 'shekreba', topicTitle: 'x', subtopicId: 'atamde' },
-      { topicId: 'ricxvebi', topicTitle: 'y', subtopicId: 'datvla' },
-      { topicId: 'ricxvebi', topicTitle: 'y', subtopicId: 'shedareba' },
+      { topicId: 'Sekreba', topicTitle: 'x', subtopicId: 'SuratiT-10' },
+      { topicId: 'Sekreba', topicTitle: 'x', subtopicId: 'ra-aris-Sekreba' },
+      { topicId: 'ricxvebi20', topicTitle: 'y', subtopicId: 'ricxvebi1-10' },
+      { topicId: 'ricxvebi20', topicTitle: 'y', subtopicId: 'luwi-kenti' },
     ]);
     expect(assignments.length).toBe(4);
     const stats = gradeStats([], 1, assignments);
     expect(stats).toMatchObject({ assigned: 4, completed: 0, notStarted: 4, mastery: 0 });
 
     // The first assignment is the subtopic the template set covers.
-    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'ocamde' };
+    const ref = { grade: 1 as const, topicId: 'Sekreba', subtopicId: 'SuratiT-10' };
     const state = playPerfect(ref);
     const attempts = [newAttempt(state, state.startedAt)];
     const after = gradeStats(attempts, 1, assignments);

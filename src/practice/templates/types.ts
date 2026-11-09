@@ -108,6 +108,13 @@ export interface QuestionTemplate {
   explanation: (context: { vars: Vars; answer: string }) => string;
 
   difficulty?: 1 | 2 | 3;
+
+  /**
+   * How many options this question shows (default 4). A true/false question
+   * shows 2, a three-way categorisation shows 3. The generator never asks for
+   * more options than the template can offer.
+   */
+  optionCount?: number;
 }
 
 /** Authoring helper — gives full type checking and editor completion. */
