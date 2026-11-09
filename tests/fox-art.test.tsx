@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
 import { Mascot } from '../src/components/Mascot';
 
 /**
@@ -72,5 +73,26 @@ describe('fox artwork', () => {
     // The SVG is decorative; the wrapper carries the accessible name.
     const svg = container.querySelector('svg.fox-art');
     expect(svg?.getAttribute('aria-hidden')).toBe('true');
+  });
+});
+
+describe('mascot containment', () => {
+  /**
+   * The drawn art and the tap target are position:absolute children of
+   * .mascot-root. AxiNav's mobile layout sets the root to `position: static`,
+   * which would hand their containing block to the nav stage instead: on tap
+   * the stage grows as the bubbles open, the fox slides to the new bottom and
+   * the invisible button stretches over every bubble. jsdom has no layout
+   * engine, so this guards the declaration that prevents it rather than the
+   * resulting geometry.
+   */
+  it('keeps its own containing block when a placement makes it static', () => {
+    // jsdom's import.meta.url is not a file URL, so resolve from the cwd.
+    const css = readFileSync('src/mascot.css', 'utf8');
+    const rootRule = css.slice(css.indexOf('.mascot-root {'), css.indexOf('}', css.indexOf('.mascot-root {')));
+    expect(rootRule).toMatch(/will-change:\s*transform/);
+    // isolation alone is not enough: it creates a stacking context but not a
+    // containing block, which was verified in a real browser.
+    expect(rootRule).not.toMatch(/^\s*isolation:/m);
   });
 });

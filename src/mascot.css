@@ -14,6 +14,14 @@
   display: block;
   width: var(--mascot-w);
   height: var(--mascot-h);
+  /* The children below are position:absolute with bottom:0 — the drawn art and
+     the full-size tap target. They must resolve against this box, so it has to
+     stay a containing block even when a placement sets `position: static`
+     (the AxiNav mobile layout does). `will-change: transform` does that
+     without taking the element out of flow or changing its own position.
+     Note: `isolation: isolate` is NOT enough — it makes a stacking context
+     but not a containing block, which I confirmed in the browser. */
+  will-change: transform;
 }
 .mascot-root .mascot-btn {
   position: absolute; inset: 0; padding: 0; margin: 0; border: 0; background: none;
