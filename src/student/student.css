@@ -1131,6 +1131,21 @@
   letter-spacing: .04em;
 }
 .question-bank-hint { text-transform: none; letter-spacing: 0; font-weight: 600; color: #9aa8bd; }
+/* Support line for generated visual content (an object row to count, the
+   groups being compared, a sequence to order). Sized up because for a
+   six-year-old the picture IS the question. */
+.question-visual {
+  margin: 10px 0 0; padding: 14px 18px; border-radius: 16px;
+  background: #f6f9ff; border: 1px dashed #d7e3f7;
+  font-size: 1.6rem; line-height: 1.75; letter-spacing: .12em; color: var(--navy);
+  word-break: break-word;
+  /* The objects ARE the question, so an explicit emoji stack matters. Without
+     it a device whose default font lacks emoji draws empty boxes and the child
+     has nothing to count. These are the standard system emoji fonts, in the
+     order browsers otherwise pick them. */
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
+    "Twemoji Mozilla", "EmojiOne Color", "Android Emoji", sans-serif;
+}
 .question-prompt { font-size: 1.22rem; font-weight: 800; color: var(--navy); margin: 12px 0 18px; line-height: 1.5; }
 .answer-list { display: grid; gap: 9px; }
 .answer-option {
@@ -1363,6 +1378,7 @@
   .accordion-subtopics { padding: 0 4px 6px; }
   .question-card { padding: 16px; }
   .question-prompt { font-size: 1.06rem; }
+  .question-visual { font-size: 1.25rem; padding: 11px 13px; }
   .practice-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .summary-stat { padding: 11px 13px; }
   .summary-stat strong { font-size: 1.25rem; }

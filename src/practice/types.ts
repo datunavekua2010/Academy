@@ -16,6 +16,8 @@ export interface Question {
   subtopicId: string;
   /** Georgian prompt. May contain simple `x`, `÷` and fraction text. */
   prompt: string;
+  /** Optional support line drawn above the prompt (object row, groups, …). */
+  visual?: string;
   /** Optional supporting line (a number line hint, a diagram description…). */
   hint?: string;
   options: Answer[];

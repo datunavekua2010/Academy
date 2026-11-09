@@ -8,6 +8,38 @@ different, mathematically valid questions.
 template  ──generate(seed)──►  question (prompt, 4 options, answer, explanation)
 ```
 
+## Visual questions
+
+A template may carry a picture. `visual` receives the drawn values and returns
+a single line of text (emoji, bars, symbols) shown above the prompt:
+
+```ts
+visual: (vars) => (vars.row as string[]).join(' '),
+```
+
+The important discipline is that the picture must be *derived from the same
+values the answer uses*. Not drawn alongside them — derived from them. If the
+row comes from a `list` variable and the question is "which is second from the
+left?", the answer is read out of that same array, so no seed can produce a
+question that contradicts its own picture.
+
+`kind: 'list'` exists for this:
+
+```ts
+row: { kind: 'list', pick: { values: EMOJIS, length: { min: 3, max: 5 }, unique: true } },
+```
+
+Notes that matter in practice:
+
+- **The signature includes the visual.** Two rows of different objects are two
+  different questions even though the sentence reads the same — and the
+  generator uses the signature to avoid repeats.
+- **A constant prompt is fine when there is a visual.** The registry only warns
+  about a placeholder-free prompt for templates that have no `visual`.
+- **Rounding is a correctness risk.** A bar scaled to ten cells will draw 3 and
+  7 as equal lengths. If the picture is what the child reasons from, the
+  drawing must agree with the numbers (see `bars()` in `u01-space.ts`).
+
 ## Why templates
 
 - One template replaces hundreds of hand-written questions.

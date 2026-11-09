@@ -13,7 +13,8 @@
 import type { GradeId } from '../types';
 
 /** Values drawn for one variation, keyed by variable name. */
-export type Vars = Record<string, number | string>;
+export type VarValue = number | string | Array<number | string>;
+export type Vars = Record<string, VarValue>;
 
 export interface RangedVariable {
   kind: 'int';
@@ -36,7 +37,27 @@ export interface ChoiceVariable {
   values: Array<number | string>;
 }
 
-export type VariableSpec = RangedVariable | ChoiceVariable;
+/**
+ * A whole ordered sequence drawn at once, e.g. a row of objects to count.
+ *
+ * `pick` chooses the items; `length` decides how many, and may depend on
+ * values drawn earlier. Distinctness is opt-in (`unique`) because some
+ * sequences are meant to repeat, such as two groups of the same shape.
+ */
+export interface ListVariable {
+  kind: 'list';
+  pick: {
+    values: Array<number | string>;
+    /** How many items to draw. */
+    length: number | { min: number; max: number };
+    /** Draw without replacement, so no item appears twice. */
+    unique?: boolean;
+    /** Optional per-draw weighting/filter used before picking. */
+    filter?: (item: number | string, vars: Vars) => boolean;
+  };
+}
+
+export type VariableSpec = RangedVariable | ChoiceVariable | ListVariable;
 
 /** A whole-set rule evaluated after every variable has been drawn. */
 export interface TemplateConstraint {
@@ -89,6 +110,13 @@ export interface QuestionTemplate {
 
   /** Georgian question wording with {placeholders}, e.g. "{a} + {b} = ?" */
   prompt: string;
+  /**
+   * Optional Georgian support line drawn above the prompt for this particular
+   * variation — an object row to count, the groups being compared, a sequence
+   * to order. Computed from the drawn values so it can never disagree with the
+   * prompt or the answer.
+   */
+  visual?: (vars: Vars) => string;
   /** Optional Georgian instruction line above the prompt. */
   hint?: string;
 

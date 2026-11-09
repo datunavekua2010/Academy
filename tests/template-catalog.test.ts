@@ -112,8 +112,15 @@ describe('curriculum coverage', () => {
             batch.length,
             `${grade.grade}/${topic.id}/${subtopic.id} produced only ${batch.length}/${required} variations`,
           ).toBe(required);
+          // Identity and distinctness are both measured by signature.
+          //
+          // Not by prompt: a visual question's wording is deliberately fixed
+          // ("how many objects are there?") and its content is the drawn
+          // picture, so two rows of different objects are two different
+          // questions with the same sentence. Asserting on prompts made this
+          // test fail intermittently for exactly those subtopics — the batch
+          // held three different pictures and two distinct sentences.
           expect(new Set(batch.map((q) => q.signature)).size).toBe(required);
-          expect(new Set(batch.map((q) => q.prompt)).size).toBe(required);
         }
       }
     }

@@ -114,6 +114,11 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             კითხვა #{session.correct + session.incorrect + 1}
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
+          {question.visual && (
+            <p className="question-visual" aria-hidden="true">
+              {question.visual}
+            </p>
+          )}
           <p className="question-prompt">{question.prompt}</p>
 
           <div className="answer-list" role="group" aria-label="პასუხის ვარიანტები">

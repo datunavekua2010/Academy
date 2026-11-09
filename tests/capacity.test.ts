@@ -40,8 +40,13 @@ describe('subtopic capacity', () => {
 
           // One generous batch is enough to see the whole pool: generateBatch
           // recycles only after it has run out of new wordings.
+          // Identity is the signature, not the prompt. For a visual question
+          // the wording is deliberately constant ("how many objects are
+          // there?") and the content is the drawn row, so two pictures with
+          // different objects are different questions even though the sentence
+          // reads the same.
           const unique = new Set(
-            generateBatch(ref, 80, { seed: 1 }).map((question) => question.prompt),
+            generateBatch(ref, 80, { seed: 1 }).map((question) => question.signature),
           );
 
           const isPlaceholder = generateBatch(ref, 1, { seed: 1 }).every((question) =>
@@ -61,7 +66,11 @@ describe('subtopic capacity', () => {
     expect(tooNarrow).toEqual([]);
   });
 
-  it('never repeats a question before the subtopic pool is exhausted', () => {
+  // Discovering a pool now means up to 80 distinct questions per subtopic,
+  // where picture-based templates previously collapsed to a dozen repeated
+  // wordings. That is more work for the same assertion, so the default 5s
+  // budget is raised rather than the check weakened.
+  it('never repeats a question before the subtopic pool is exhausted', { timeout: 40000 }, () => {
     // The guarantee the student actually feels: a repeat is only allowed once
     // every distinct wording in that subtopic has already been shown.
     for (const grade of CURRICULUM) {
@@ -71,20 +80,20 @@ describe('subtopic capacity', () => {
 
           // Discover the full pool for this subtopic.
           const pool = new Set(
-            generateBatch(ref, 80, { seed: 1 }).map((question) => question.prompt),
+            generateBatch(ref, 80, { seed: 1 }).map((question) => question.signature),
           );
 
           // A session batch may only repeat after the pool runs out.
           const batch = generateBatch(ref, ANSWERS_PER_PERFECT_RUN, { seed: 77 });
           const seen = new Set<string>();
           for (const question of batch) {
-            if (seen.has(question.prompt)) {
+            if (seen.has(question.signature)) {
               expect(
                 seen.size,
                 `${grade.grade}/${topic.id}/${subtopic.id} repeated before the pool was exhausted`,
               ).toBe(pool.size);
             }
-            seen.add(question.prompt);
+            seen.add(question.signature);
           }
         }
       }
