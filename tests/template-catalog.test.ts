@@ -55,11 +55,18 @@ describe('every template in the catalog', () => {
         expect(question.explanation.trim().length).toBeGreaterThan(0);
 
         // Distinct options, one of which is the answer. Most questions offer
-        // four; true/false and three-way sorting offer fewer by design.
-        const expectedOptions = template.optionCount ?? 4;
-        expect(question.options).toHaveLength(expectedOptions);
-        expect(new Set(question.options).size).toBe(expectedOptions);
-        expect(question.options).toContain(question.answer);
+        // four; true/false and three-way sorting offer fewer by design, and a
+        // typed-answer question deliberately offers none at all.
+        if (question.answerMode === 'number') {
+          expect(question.options).toEqual([]);
+          // A typed answer must still be a single, unambiguous number.
+          expect(String(question.answer)).toMatch(/^-?\d+(\.\d+)?$/);
+        } else {
+          const expectedOptions = template.optionCount ?? 4;
+          expect(question.options).toHaveLength(expectedOptions);
+          expect(new Set(question.options).size).toBe(expectedOptions);
+          expect(question.options).toContain(question.answer);
+        }
 
         // The question belongs to the template's curriculum address.
         expect(question.grade).toBe(template.grade);

@@ -15,6 +15,7 @@ const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
 export function PracticeSession({ onExit }: { onExit: () => void }) {
   const { session, answer, next, stop, activeAssignment } = usePractice();
   const [choice, setChoice] = useState<string | null>(null);
+  const [typed, setTyped] = useState('');
   const [feedback, setFeedback] = useState<Submission | null>(null);
   const [confirmStop, setConfirmStop] = useState(false);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -24,6 +25,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const currentId = session?.queue[0];
   useEffect(() => {
     setChoice(null);
+    setTyped('');
     setFeedback(null);
     setConfirmStop(false);
   }, [session?.id, currentId]);
@@ -52,16 +54,19 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const complete = session.completed || session.score >= MAX_SCORE;
   const attemptMode = activeAssignment ? 'საშინაო დავალება' : 'ვარჯიში';
 
-  const choose = (option: string) => {
-    if (answered) return;
-    const submission = answer(option);
+  const submit = (value: string) => {
+    if (answered || value.trim() === '') return;
+    const submission = answer(value);
     if (!submission) return;
-    setChoice(option);
+    setChoice(value);
     setFeedback(submission);
     window.requestAnimationFrame(() =>
       feedbackRef.current?.focus({ preventScroll: false }),
     );
   };
+
+  const choose = (option: string) => submit(option);
+  const entryMode = question?.answerMode === 'number';
 
   return (
     <div className="practice-stage">
@@ -121,6 +126,45 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
           )}
           <p className="question-prompt">{question.prompt}</p>
 
+          {entryMode ? (
+            <form
+              className="answer-entry"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submit(typed);
+              }}
+            >
+              <label className="answer-entry-label" htmlFor="answer-entry-input">
+                ჩაწერე პასუხი
+              </label>
+              <div className="answer-entry-row">
+                <input
+                  id="answer-entry-input"
+                  className="answer-entry-input"
+                  // inputMode brings up the number pad on a phone; `type=text`
+                  // keeps it usable with a physical keyboard and screen reader.
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
+                  value={typed}
+                  onChange={(event) => setTyped(event.target.value)}
+                  disabled={answered}
+                  aria-describedby="answer-entry-hint"
+                />
+                <button type="submit" className="btn btn-primary" disabled={answered || typed.trim() === ''}>
+                  შემოწმება
+                </button>
+              </div>
+              <p id="answer-entry-hint" className="answer-entry-hint">
+                {answered ? '' : 'შეიყვანე რიცხვი კლავიატურით.'}
+              </p>
+              {answered && (
+                <p className={`answer-entry-result ${feedback?.result.correct ? 'is-correct' : 'is-wrong'}`}>
+                  სწორი პასუხია: <strong>{question.answer}</strong>
+                </p>
+              )}
+            </form>
+          ) : (
           <div className="answer-list" role="group" aria-label="პასუხის ვარიანტები">
             {question.options.map((option, index) => {
               const isCorrect = option === question.answer;
@@ -153,6 +197,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
               );
             })}
           </div>
+          )}
 
           <div aria-live="polite" ref={feedbackRef} tabIndex={-1} className="feedback-region">
             {answered && feedback && (

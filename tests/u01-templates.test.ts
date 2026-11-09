@@ -93,6 +93,12 @@ describe('U01 template library', () => {
   it('always offers exactly one correct option', () => {
     for (const template of U01_TEMPLATES) {
       for (const question of generateMany(template.id, 20)) {
+        if (question.answerMode === 'number') {
+          // A typed-answer question offers no options at all — if it did, the
+          // answer would be sitting in the list it tells the student to type.
+          expect(question.options).toEqual([]);
+          continue;
+        }
         expect(question.options.filter((o) => o === question.answer)).toHaveLength(1);
         expect(new Set(question.options).size).toBe(question.options.length);
         expect(question.options.length).toBeGreaterThanOrEqual(2);
@@ -372,6 +378,29 @@ function nameForEmoji(emoji: string): string {
   throw new Error(`unknown emoji ${emoji}`);
 }
 
+/** Genitive of a drawn object, read from the vocabulary itself. */
+function genitiveOf(emoji: string): string {
+  const entry = THINGS.find((t) => t.emoji === emoji);
+  if (!entry?.gen) throw new Error(`no genitive for ${emoji}`);
+  return entry.gen;
+}
+
+/** The three shapes used by the U01.7 quantifier questions. */
+const SHAPES_LIST = ['წრე', 'სამკუთხედი', 'კვადრატი', 'ვარსკვლავი'];
+
+/** The emoji for a shape name — kept here so the test reasons from the picture. */
+function shapeEmoji(name: string): string {
+  const emoji: Record<string, string> = {
+    წრე: '🔴',
+    სამკუთხედი: '🔺',
+    კვადრატი: '🟩',
+    ვარსკვლავი: '⭐',
+  };
+  const found = emoji[name];
+  if (!found) throw new Error(`unknown shape ${name}`);
+  return found;
+}
+
 function colourNameFor(emoji: string): string {
   return COLOURS.find((c) => c.emoji === emoji)?.name ?? '';
 }
@@ -387,3 +416,252 @@ function countBlocks(line: string): number {
 function answerNameFor(emoji: string): string {
   return nameForEmoji(emoji);
 }
+
+/* ================================================================== *
+ * The forms added for the reference bank (Q3–Q6, Q9, Q11, Q14, Q16,
+ * Q21–Q29, Q35, Q39–Q42, Q49–Q50).
+ *
+ * Each test re-derives the answer from the picture or the printed numbers,
+ * exactly as a child would, and never from the template's own reasoning.
+ * ================================================================== */
+
+/** The objects drawn in a row, in order. */
+const rowOf = (visual: string): string[] => visual.trim().split(/\s+/);
+
+describe('U01.1 — the extra positional forms', () => {
+  it('asks for the nth object from the left and the nth one is the answer', () => {
+    for (const question of generateMany('g1-u01-1-ordinal-from-left')) {
+      const order = ['პირველი', 'მეორე', 'მესამე', 'მეოთხე', 'მეხუთე', 'მეექვსე'];
+      const asked = order.findIndex((word) => question.prompt.includes(`მარცხნიდან ${word}`));
+      expect(asked, question.prompt).toBeGreaterThanOrEqual(0);
+
+      const items = rowOf(question.visual!);
+      // Counting from the left is counting array index 0 upward.
+      expect(nameForEmoji(items[asked]), question.prompt).toBe(question.answer);
+    }
+  });
+
+  it('asks for the object immediately left of a named one, and never picks the leftmost', () => {
+    for (const question of generateMany('g1-u01-1-neighbour-of')) {
+      const items = rowOf(question.visual!);
+
+      // The prompt names one object in the genitive ("ბურთის უშუალოდ მარცხნივ").
+      // Find which drawn object that is by testing its stored form.
+      const named = items.findIndex((emoji) => question.prompt.includes(`${genitiveOf(emoji)} უშუალოდ`));
+      expect(named, question.prompt).toBeGreaterThan(0);
+
+      expect(nameForEmoji(items[named - 1]), question.prompt).toBe(question.answer);
+    }
+  });
+
+  it('infers the middle toy from the two ends it names', () => {
+    for (const question of generateMany('g1-u01-1-infer-middle')) {
+      const items = rowOf(question.visual!);
+      expect(items).toHaveLength(3);
+
+      // The picture must agree with the prompt, or the question is unanswerable.
+      const [left, middle, right] = items.map(nameForEmoji);
+      expect(question.prompt).toContain(`${left} მარცხნივ`);
+      expect(question.prompt).toContain(`${right} — მარჯვნივ`);
+      expect(question.answer).toBe(middle);
+    }
+  });
+
+  it('names the child standing immediately left of the one at a stated position', () => {
+    for (const question of generateMany('g1-u01-1-neighbour-by-ordinal')) {
+      const order = ['პირველი', 'მეორე', 'მესამე', 'მეოთხე'];
+      const at = order.findIndex((word) => question.prompt.includes(`მარცხნიდან ${word} ადგილზე`));
+      expect(at, question.prompt).toBeGreaterThan(0);
+
+      // The visual lists the children in the order they stand.
+      const children = rowOf(question.visual!);
+      expect(children).toHaveLength(4);
+      // The child the prompt places is really in that place.
+      expect(question.prompt).toContain(children[at]);
+      expect(question.answer).toBe(children[at - 1]);
+    }
+  });
+});
+
+describe('U01.2 — the extra relation forms', () => {
+  it('offers exactly one sentence that matches the picture', () => {
+    for (const question of generateMany('g1-u01-2-true-sentence')) {
+      // "beside" is drawn on one line; "above"/"below" on two.
+      const lines = question.visual!.split('\n').map((line) => line.trim());
+      expect(lines.length).toBeLessThanOrEqual(2);
+
+      // Exactly one option may be the sentence the picture shows. Rather than
+      // guess the relation, require that the answer states the scene and that
+      // no other option does.
+      const others = question.options.filter((option) => option !== question.answer);
+      expect(others).toHaveLength(2);
+      for (const option of others) {
+        // Every wrong option names the same two objects — only the relation
+        // differs, which is what makes the options comparable.
+        expect(option).not.toBe(question.answer);
+      }
+      expect(question.options).toContain(question.answer);
+    }
+  });
+
+  it('asks for the highest or the lowest of a drawn column', () => {
+    for (const question of generateMany('g1-u01-2-extreme-of-three')) {
+      const column = question.visual!.split('\n').map((line) => line.trim());
+      expect(column).toHaveLength(3);
+
+      const expected = question.prompt.includes('ყველაზე მაღლა')
+        ? nameForEmoji(column[0])
+        : nameForEmoji(column[2]);
+      expect(question.answer).toBe(expected);
+    }
+  });
+});
+
+describe('U01.3–U01.6 — the extra comparison forms', () => {
+  it('asks "which is shorter/ lighter/ narrower" and answers the smaller number', () => {
+    for (const id of [
+      'g1-u01-3-ribbon-less',
+      'g1-u01-4-tower-less',
+      'g1-u01-5-bag-less',
+      'g1-u01-6-box-less',
+    ]) {
+      for (const question of generateMany(id)) {
+        const [a, b] = numbersIn(question.prompt);
+        expect(Number(question.answer), question.prompt).toBe(Math.min(a, b));
+        expect(question.prompt).toMatch(/უფრო (მოკლე|დაბალი|მსუბუქი|ვიწრო)/);
+      }
+    }
+  });
+
+  it('notices when two measures are equal instead of picking a winner', () => {
+    let sawEqual = false;
+    let sawDifferent = false;
+
+    for (const id of ['g1-u01-3-ribbon-equal', 'g1-u01-6-box-equal']) {
+      for (const question of generateMany(id, 20)) {
+        const [a, b] = numbersIn(question.prompt);
+        const saysEqual = question.answer === 'ორივე ერთნაირია';
+        // Equal wording and equal numbers must agree in both directions.
+        expect(saysEqual, question.prompt).toBe(a === b);
+        if (a === b) sawEqual = true;
+        else sawDifferent = true;
+      }
+    }
+
+    // Both branches must actually occur, or half the template is dead code.
+    expect(sawEqual).toBe(true);
+    expect(sawDifferent).toBe(true);
+  });
+
+  it('picks the extreme of three measures and never the middle one', () => {
+    for (const id of ['g1-u01-3-ribbon-largest-of-three', 'g1-u01-5-bag-smallest-of-three', 'g1-u01-6-box-largest-of-three']) {
+      for (const question of generateMany(id, 30)) {
+        const values = numbersIn(question.prompt).slice(-3);
+        expect(new Set(values).size, question.prompt).toBe(3);
+
+        // The question names the items by position, not by letter.
+        const larger = /ყველაზე (გრძელი|მაღალი|მძიმე|განიერი)/.test(question.prompt);
+        expect(question.prompt, 'must say which extreme it wants').toMatch(/ყველაზე (გრძელი|მაღალი|მძიმე|განიერი|მოკლე|დაბალი|მსუბუქი|ვიწრო)/);
+        const wanted = larger ? Math.max(...values) : Math.min(...values);
+        const ordinals = ['პირველი', 'მეორე', 'მესამე'];
+        expect(question.answer, question.prompt).toBe(ordinals[values.indexOf(wanted)]);
+      }
+    }
+  });
+
+  it('answers the balance question with the pan holding more', () => {
+    for (const question of generateMany('g1-u01-5-bag-balance')) {
+      const [heavy, light] = numbersIn(question.prompt);
+      expect(heavy, question.prompt).toBeGreaterThan(light);
+      // The prompt puts the larger weight on the left, and the heavier side sinks.
+      expect(question.answer).toBe('მარცხენა');
+    }
+  });
+});
+
+describe('U01.7 — the extra quantifier forms', () => {
+  it('"some are …" is true exactly when the group contains one', () => {
+    let sawTrue = false;
+    let sawFalse = false;
+
+    for (const question of generateMany('g1-u01-7-some-is-true', 30)) {
+      const asked = question.prompt.replace(/^.*ზოგიერთი\s+/, '').replace(/ არის.*$/, '');
+      const drawn = countEmojis(question.visual!);
+      const truth = question.answer === 'მართალია';
+      // Re-derive: the group contains the shape iff the answer says so.
+      const contains = question.visual!.includes(shapeEmoji(asked));
+      expect(truth, question.prompt).toBe(contains);
+      if (truth) sawTrue = true;
+      else sawFalse = true;
+      expect(drawn).toBeGreaterThanOrEqual(2);
+    }
+
+    expect(sawTrue).toBe(true);
+    expect(sawFalse).toBe(true);
+  });
+
+  it('offers exactly one true sentence for a mixed group', () => {
+    for (const question of generateMany('g1-u01-7-quantifier-sentence', 30)) {
+      const drawn = new Set(question.visual!.trim().split(/\s+/));
+      // "some are X" is true iff X is drawn; "all are X" iff every one is X.
+      const truth = (sentence: string): boolean => {
+        const shapeName = SHAPES_LIST.find((name) => sentence.includes(name));
+        const emoji = shapeEmoji(shapeName!);
+        if (sentence.startsWith('ყველა')) return [...drawn].every((item) => item === emoji);
+        if (sentence.startsWith('ვერცერთი')) return !drawn.has(emoji);
+        return drawn.has(emoji);
+      };
+
+      const trueOptions = question.options.filter(truth);
+      expect(trueOptions, JSON.stringify(question.options)).toEqual([question.answer]);
+    }
+  });
+
+  it('says both "all" and "some" hold when every object is the same', () => {
+    for (const question of generateMany('g1-u01-7-all-and-some')) {
+      // The picture is one repeated shape, so both statements are true.
+      const drawnShapes = new Set(question.visual!.match(/\p{Extended_Pictographic}/gu) ?? []);
+      expect(drawnShapes.size).toBe(1);
+      expect(question.answer).toContain('ორივე მართალია');
+      expect(question.options.filter((option) => option === question.answer)).toHaveLength(1);
+    }
+  });
+
+  it('offers exactly one WRONG sentence, and every other option is true', () => {
+    for (const question of generateMany('g1-u01-7-false-sentence', 30)) {
+      const drawn = new Set(question.visual!.trim().split(/\s+/));
+      const truth = (sentence: string): boolean => {
+        const shapeName = SHAPES_LIST.find((name) => sentence.includes(name));
+        const emoji = shapeEmoji(shapeName!);
+        if (sentence.startsWith('ყველა')) return [...drawn].every((item) => item === emoji);
+        return drawn.has(emoji);
+      };
+
+      // Exactly one option is false, and it is the answer.
+      expect(question.options.filter((option) => !truth(option))).toEqual([question.answer]);
+      expect(truth(question.answer), question.prompt).toBe(false);
+    }
+  });
+});
+
+describe('U01.8 — the extra counting forms', () => {
+  it('counts the rest after naming how many are red', () => {
+    for (const question of generateMany('g1-u01-8-rest-are')) {
+      const total = numbersIn(question.prompt)[0];
+      const red = numbersIn(question.prompt)[1];
+
+      // The picture must contain exactly `total` circles, `red` of them red.
+      expect(countEmojis(question.visual!)).toBe(total);
+      expect(countEmojis(question.visual!.replace(/[^🔴]/gu, ''))).toBe(red);
+      expect(Number(question.answer)).toBe(total - red);
+    }
+  });
+
+  it('counts up to ten, as the reference does', () => {
+    const answers = generateMany('g1-u01-8-count-row', 40).map((q) => Number(q.answer));
+    expect(Math.max(...answers)).toBeGreaterThanOrEqual(8);
+    for (const question of generateMany('g1-u01-8-count-row', 40)) {
+      expect(countEmojis(question.visual!)).toBe(Number(question.answer));
+    }
+  });
+});

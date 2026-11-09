@@ -78,7 +78,10 @@ function drawVars(template: QuestionTemplate, rng: () => number): Vars {
 
   for (const [name, spec] of Object.entries(template.variables)) {
     if (spec.kind === 'choice') {
-      vars[name] = pick(rng, spec.values);
+      // A function pool may depend on variables drawn earlier in declaration
+      // order, so a value can be derived rather than independently drawn.
+      const pool = typeof spec.values === 'function' ? spec.values(vars) : spec.values;
+      vars[name] = pick(rng, pool);
       continue;
     }
 
@@ -240,9 +243,14 @@ export function generateFromTemplate(
       continue;
     }
 
+    // A typed-answer question shows no options at all, so building distractors
+    // for it would be wasted work (and would make the template fail when it
+    // could not invent enough of them).
+    const entry = template.format?.entry === true;
+
     // Distractors come from the drawn values, so they always relate to *this*
     // variation. Anything equal to the answer (by display text) is dropped.
-    const candidates = template.distractors
+    const candidates = entry ? [] : template.distractors
       ? template.distractors({ answer: normalised.value, vars, rng })
       : typeof normalised.value === 'number'
         ? defaultDistractors(normalised.value, rng)
@@ -258,7 +266,7 @@ export function generateFromTemplate(
       wrongDisplays.push(display);
     }
 
-    if (wrongDisplays.length < optionCount - 1) {
+    if (wrongDisplays.length < optionCount - 1 && !entry) {
       lastError = new TemplateError(
         `${template.id}: not enough distinct wrong options for "${normalised.display}"`,
       );
@@ -294,7 +302,11 @@ export function generateFromTemplate(
       prompt,
       visual: template.visual ? template.visual(vars) : undefined,
       hint: template.hint,
-      options: optionsList,
+      answerMode: entry ? 'number' : 'choice',
+      // A typed-answer question must not ship options: an option list would be
+      // a second, contradictory way to answer it (and a student could read the
+      // answer off it).
+      options: entry ? [] : optionsList,
       answer: normalised.display,
       explanation: template.explanation({ vars, answer: normalised.display }),
       difficulty: options.difficulty ?? template.difficulty ?? 1,

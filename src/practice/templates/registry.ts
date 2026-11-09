@@ -67,6 +67,10 @@ function validateShape(template: QuestionTemplate): void {
 
   for (const [name, spec] of Object.entries(template.variables)) {
     if (spec.kind === 'choice') {
+      // A function pool is derived at draw time, so its size is not knowable
+      // here — the generator checks it produced a value, and templates that
+      // derive a *single* value depend on an earlier variable for correctness.
+      if (typeof spec.values === 'function') continue;
       if (!Array.isArray(spec.values) || spec.values.length < 2) {
         throw new Error(`${where}: choice variable "${name}" needs at least two values`);
       }

@@ -80,3 +80,54 @@ describe('practice UI with generated questions', () => {
     }
   });
 });
+
+describe('typed answers', () => {
+  /**
+   * Q18 and Q46–Q50 of the reference bank are answered by typing a number, so
+   * the runner has to render an input instead of options, accept the value, and
+   * grade it by value rather than by spelling.
+   *
+   * Navigation mirrors what a student does: grade I → the "მდებარეობა" topic →
+   * the counting subtopic → start. Counting is the only U01 subtopic that asks
+   * typed questions, so the test has to go there deliberately.
+   */
+  const startCounting = async () => {
+    render(<StudentApp />);
+    const tab = screen.getAllByRole('tab').find((t) => t.textContent?.startsWith('Iკლასი'));
+    expect(tab, 'grade I tab').toBeTruthy();
+    fireEvent.click(tab!);
+
+    const topic = [...document.querySelectorAll<HTMLElement>('.accordion-topic-trigger')].find((b) =>
+      b.textContent?.includes('მდებარეობა'),
+    );
+    expect(topic, 'the U01 topic').toBeTruthy();
+    fireEvent.click(topic!);
+
+    // U01 is one unit holding eight subtopic rows; counting is the last row.
+    const panel = document.querySelector('#unit-panel-mdebareoba-mdebareoba');
+    expect(panel, 'the U01 unit panel').toBeTruthy();
+    const rows = [...(panel as HTMLElement).querySelectorAll<HTMLElement>('.subtopic-row')];
+    expect(rows.length, 'eight U01 subtopics').toBe(8);
+    expect(rows[7].textContent).toContain('დათვლა სურათიდან');
+
+    const start = within(rows[7]).getByRole('button', { name: /დაწყება/ });
+    fireEvent.click(start);
+
+    return (await screen.findByLabelText('ჩაწერე პასუხი')) as HTMLInputElement;
+  };
+
+  it('shows a number field instead of options, and grades by value', async () => {
+    const input = await startCounting();
+
+    // A typed question offers no options at all.
+    expect(document.querySelectorAll('.answer-option')).toHaveLength(0);
+    expect(input.getAttribute('inputmode')).toBe('numeric');
+
+    fireEvent.change(input, { target: { value: '999' } });
+    fireEvent.submit(input.closest('form')!);
+
+    // The runner reveals the right answer and locks the field.
+    expect(await screen.findByText(/სწორი პასუხია/)).toBeTruthy();
+    expect(input.disabled).toBe(true);
+  });
+});

@@ -1148,6 +1148,32 @@
 }
 .question-prompt { font-size: 1.22rem; font-weight: 800; color: var(--navy); margin: 12px 0 18px; line-height: 1.5; }
 .answer-list { display: grid; gap: 9px; }
+
+/* Typed-answer questions: large target, obvious cursor, number pad on phones. */
+.answer-entry { display: grid; gap: 8px; margin-top: 4px; }
+.answer-entry-label { font-weight: 700; color: var(--ink); }
+.answer-entry-row { display: flex; gap: 8px; align-items: stretch; }
+.answer-entry-input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px 15px;
+  font: inherit;
+  /* 16px keeps iOS from zooming the page when the field is focused. */
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--card, #fff);
+  color: var(--ink);
+}
+.answer-entry-input:focus-visible {
+  outline: 3px solid var(--accent, #2563eb);
+  outline-offset: 1px;
+}
+.answer-entry-hint { margin: 0; font-size: 0.86rem; color: var(--muted); }
+.answer-entry-result { margin: 0; font-size: 0.95rem; }
+.answer-entry-result.is-correct { color: var(--ok, #15803d); }
+.answer-entry-result.is-wrong { color: var(--bad, #b91c1c); }
 .answer-option {
   display: flex;
   align-items: center;

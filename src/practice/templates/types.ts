@@ -33,8 +33,16 @@ export interface RangedVariable {
 
 export interface ChoiceVariable {
   kind: 'choice';
-  /** A fixed pool of values, e.g. ['+', '−'] or ['მეტრი', 'სანტიმეტრი']. */
-  values: Array<number | string>;
+  /**
+   * The pool to draw from. A function receives the values drawn so far, which
+   * lets one variable be *derived* from another instead of drawn independently.
+   *
+   * Independent draws plus a constraint that they agree is not equivalent: the
+   * generator would reject almost every attempt (1/k of them match) and, for a
+   * template with a small pool, spend its whole attempt budget failing. A
+   * derived value is always consistent on the first draw.
+   */
+  values: Array<number | string> | ((vars: Vars) => Array<number | string>);
 }
 
 /**
@@ -82,6 +90,12 @@ export interface AnswerFormat {
   min?: number;
   /** Reject answers above this value. */
   max?: number;
+  /**
+   * Ask the student to type the answer instead of choosing from options.
+   * Only meaningful for numeric answers — a typed Georgian noun would be a
+   * spelling test, which is not what these questions assess.
+   */
+  entry?: boolean;
   /** Render the computed answer as the string students see. */
   format?: (answer: number | string) => string;
 }
