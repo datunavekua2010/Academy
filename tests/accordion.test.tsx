@@ -70,13 +70,13 @@ describe('nested curriculum accordion', () => {
   });
 
   it('disables a subtopic that has no template yet instead of breaking', () => {
-    const topic = getTopic(1, 'shekreba')!;
+    const topic = getTopic(1, 'Sekreba')!;
     const onClick = vi.fn();
 
     render(
       <SubtopicRow
         topic={topic}
-        subtopic={{ id: 'atamde', title: 'მოქმედებები 10-მდე', summary: 'x' }}
+        subtopic={{ id: 'ra-aris-Sekreba', title: 'რას ნიშნავს შეკრება', summary: 'x' }}
         progress={{
           bestScore: 0,
           lastScore: null,

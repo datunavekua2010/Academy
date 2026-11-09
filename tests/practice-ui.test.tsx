@@ -5,9 +5,18 @@ import { StudentApp } from '../src/student/StudentApp';
 
 /**
  * The generated questions must survive the real UI, not just the engine tests:
- * a session has to start from a template, render four distinct options, accept
- * an answer, and advance to a genuinely different question.
+ * a session has to start from a template, render distinct options, accept an
+ * answer, and advance to a genuinely different question.
+ *
+ * These drive grade 2: grade 1 is currently placeholder content (see
+ * grade1-placeholders.ts) whose fixed-wording questions are correct but not
+ * representative of what the engine can do.
  */
+const startGrade2Subtopic = async () => {
+  render(<StudentApp />);
+  fireEvent.click(screen.getAllByRole('tab')[1]);
+  fireEvent.click((await screen.findAllByRole('button', { name: /დაწყება/ }))[0]);
+};
 beforeEach(() => {
   window.localStorage.clear();
   window.location.hash = '#/student/practice';
@@ -22,10 +31,7 @@ afterEach(() => {
 
 describe('practice UI with generated questions', () => {
   it('plays ten different generated questions in a row', async () => {
-    render(<StudentApp />);
-
-    fireEvent.click(screen.getAllByRole('tab')[0]);
-    fireEvent.click((await screen.findAllByRole('button', { name: /დაწყება/ }))[0]);
+    await startGrade2Subtopic();
 
     // The runner says the question came from the generator.
     expect(screen.getByText(/ავტომატურად გენერირებული/)).toBeTruthy();
@@ -53,10 +59,7 @@ describe('practice UI with generated questions', () => {
   });
 
   it('keeps the score inside 0–100 while answering', async () => {
-    render(<StudentApp />);
-
-    fireEvent.click(screen.getAllByRole('tab')[0]);
-    fireEvent.click((await screen.findAllByRole('button', { name: /დაწყება/ }))[0]);
+    await startGrade2Subtopic();
 
     for (let index = 0; index < 5; index += 1) {
       const options = within(

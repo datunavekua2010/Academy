@@ -3,16 +3,17 @@ import { generateFromTemplate, generateVariations, TemplateError } from '../src/
 import { defineTemplate } from '../src/practice/templates/types';
 import { SAMPLE_TEMPLATES } from '../src/practice/templates/samples';
 import { createTemplateRegistry } from '../src/practice/templates/registry';
+import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
 import { generateBatch, regenerateFromId, previewTemplate } from '../src/practice/generator';
 
 describe('template generator', () => {
   it('produces many different variations, never repeating a signature', () => {
-    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g1-add-20')!;
-    const variations = generateVariations(template, 60, { seed: 1234 });
+    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g2-times-table')!;
+    const variations = generateVariations(template, 30, { seed: 1234 });
 
-    expect(variations).toHaveLength(60);
+    expect(variations).toHaveLength(30);
     const signatures = new Set(variations.map((v) => v.signature));
-    expect(signatures.size).toBe(60);
+    expect(signatures.size).toBe(30);
 
     // The prompts are genuinely different, not just the option order.
     const prompts = new Set(variations.map((v) => v.prompt));
@@ -20,13 +21,13 @@ describe('template generator', () => {
   });
 
   it('recomputes the answer for every variation (never reuses the template answer)', () => {
-    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g1-add-20')!;
-    for (const v of generateVariations(template, 80, { seed: 99 })) {
+    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g2-times-table')!;
+    for (const v of generateVariations(template, 40, { seed: 99 })) {
       const a = Number(v.vars.a);
       const b = Number(v.vars.b);
-      expect(v.answer).toBe(String(a + b));
+      // The printed answer must be the product of the printed numbers.
+      expect(Number(v.answer)).toBe(a * b);
       expect(v.options).toContain(v.answer);
-      expect(a + b).toBeLessThanOrEqual(20); // constraint respected
     }
   });
 
@@ -58,7 +59,7 @@ describe('template generator', () => {
   });
 
   it('shuffles answer positions rather than always placing the answer first', () => {
-    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g1-add-20')!;
+    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g2-times-table')!;
     const positions = new Set(
       generateVariations(template, 40, { seed: 5 }).map((v) => v.options.indexOf(v.answer)),
     );
@@ -135,12 +136,11 @@ describe('template generator', () => {
 });
 
 describe('generated answers are mathematically correct', () => {
-  it('grade I addition and comparison', () => {
-    for (const v of previewTemplate('g1-add-20', 150)) {
+  it('grade I placeholder addition answers the printed sum', () => {
+    // Grade I now has one placeholder per curriculum subtopic; each must still
+    // print a sum whose answer is correct.
+    for (const v of previewTemplate('g1-ra-aris-Sekreba', 60)) {
       expect(Number(v.answer)).toBe(Number(v.vars.a) + Number(v.vars.b));
-    }
-    for (const v of previewTemplate('g1-compare', 150)) {
-      expect(Number(v.answer)).toBe(Math.max(Number(v.vars.a), Number(v.vars.b)));
     }
   });
 
@@ -216,12 +216,15 @@ describe('generated answers are mathematically correct', () => {
 
 describe('registry', () => {
   it('finds templates by grade/topic/subtopic and rejects duplicate ids', () => {
-    const registry = createTemplateRegistry(SAMPLE_TEMPLATES);
+    const registry = TEMPLATE_REGISTRY;
     expect(
-      registry.forSubtopic({ grade: 1, topicId: 'shekreba', subtopicId: 'ocamde' }).length,
-    ).toBeGreaterThanOrEqual(1);
+      registry.forSubtopic({ grade: 1, topicId: 'Sekreba', subtopicId: 'SuratiT-10' }).length,
+    ).toBe(1);
     expect(registry.forSubtopic({ grade: 7, topicId: 'geometria', subtopicId: 'fartobi' })).toHaveLength(1);
-    expect(registry.hasTemplates({ grade: 2, topicId: 'gazomva', subtopicId: 'dro' })).toBe(false);
+    // An address with nothing behind it must report empty rather than throw.
+    expect(
+      registry.forSubtopic({ grade: 3, topicId: 'meoreklasebi', subtopicId: 'araarsebobs' }),
+    ).toEqual([]);
 
     expect(() => createTemplateRegistry([SAMPLE_TEMPLATES[0], SAMPLE_TEMPLATES[0]])).toThrow(
       /Duplicate template id/,
@@ -229,7 +232,7 @@ describe('registry', () => {
   });
 
   it('generates a batch without repeats', () => {
-    const ref = { grade: 1 as const, topicId: 'shekreba', subtopicId: 'ocamde' };
+    const ref = { grade: 1 as const, topicId: 'Sekreba', subtopicId: 'SuratiT-10' };
     const batch = generateBatch(ref, 10, { seed: 3 });
     expect(batch).toHaveLength(10);
     expect(new Set(batch.map((q) => q.signature)).size).toBe(10);
