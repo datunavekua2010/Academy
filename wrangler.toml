@@ -18,3 +18,9 @@ directory = "./dist"
 # Serve index.html for unknown paths. Cheap insurance: it keeps the site
 # working if a future route ever uses real paths instead of hashes.
 not_found_handling = "single-page-application"
+
+# `wrangler preview` (the command Workers Builds runs on non-production
+# branches) refuses to start without this block, even when empty. Workers
+# Builds checks out only the branch, so this must be committed on every
+# branch that should produce a preview.
+[previews]

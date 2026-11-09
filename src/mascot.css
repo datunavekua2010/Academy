@@ -3,8 +3,17 @@
    Scoped to .mascot-root so it doesn't collide with the landing page. */
 .mascot-root {
   --m-navy: #24324a;
+  /* A placement sets --mascot-scale to grow the fox (see the per-placement
+     rules); without one it falls back to the `scale` prop. The layout box, the
+     drawn art and the tap target all derive from this single value, so they
+     cannot drift apart. */
+  --mascot-scale: var(--mascot-propscale, 1);
+  --mascot-w: calc(220px * var(--mascot-scale));
+  --mascot-h: calc(248px * var(--mascot-scale));
   position: relative;
   display: block;
+  width: var(--mascot-w);
+  height: var(--mascot-h);
 }
 .mascot-root .mascot-btn {
   position: absolute; inset: 0; padding: 0; margin: 0; border: 0; background: none;
@@ -14,6 +23,7 @@
 .mascot-root .mascot-scale {
   position: absolute; left: 0; bottom: 0;
   width: 220px; height: 248px;
+  transform: scale(var(--mascot-scale));
   transform-origin: bottom left; pointer-events: none;
 }
 
@@ -97,28 +107,54 @@
 }
 
 @keyframes m-bob { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
+
+/* Decorative sparkles scattered around the hero. Unrelated to the fox's own
+   spark (that one is #axi-spark inside the SVG); these are the floating
+   characters positioned inline in App.tsx. */
+.m-spark {
+  position: absolute; z-index: 1; color: #e4ad2f; font-size: 30px;
+  animation: m-twinkle 2s ease-in-out infinite; pointer-events: none;
+}
+@keyframes m-twinkle { 0%,100% { opacity: .55; transform: scale(.9) rotate(0); } 50% { opacity: 1; transform: scale(1.12) rotate(12deg); } }
 @keyframes m-pop { from { opacity: 0; transform: translateY(6px) scale(.9); } to { opacity: 1; transform: none; } }
 
 
 /* ---- placement on the landing page ---- */
-.hero-art { min-height: 520px; }
+
+/* The fox is deliberately large — it is the first thing a child sees — so the
+   panel has to grow with it. 660 rather than 520: the fox is 238px tall at
+   scale .96, and the maths board is centred here and nudged up 48px, so at a
+   600px panel the board's bottom edge would have overlapped the fox's ears. */
+.hero-art { min-height: 660px; }
 .hero-art .math-board { transform: rotate(-2deg) translateY(-48px); }
-.hero-mascot { position: absolute; right: 14px; bottom: 6px; z-index: 3; }
+.hero-mascot { --mascot-scale: .96; position: absolute; right: 10px; bottom: 4px; z-index: 3; }
 .hero-mascot .mascot-bubble { right: 6px; bottom: 100%; margin-bottom: -6px; }
 .hero-art .float-one { bottom: 38px; left: 16px; }
 
-.cta-mascot { position: absolute; right: clamp(28px, 6vw, 80px); bottom: 0; z-index: 2; }
+/* The offset is capped at 127px on purpose: .cta-content is 690px wide inside
+   a 66px pad, so its text reaches x=756 of 1160. At scale 1.15 the fox is
+   253px wide, and 1160 - 253 - 756 = 151px of clearance — anything larger
+   pulls the fox over the copy. */
+.cta-mascot { --mascot-scale: 1.15; position: absolute; right: clamp(24px, 8vw, 127px); bottom: 0; z-index: 2; }
 .cta-mascot .mascot-bubble { right: 20px; bottom: 100%; margin-bottom: -4px; }
-.cta-panel { min-height: 330px; }
+.cta-panel { min-height: 400px; }
 .cta-panel .cta-content { padding-right: 0; }
 
 @media (max-width: 1000px) {
   .cta-mascot { display: none; }
+  /* The hero panel drops to 390px tall here (landing.css), so the desktop-size
+     fox would sit on top of the maths board. Raise the panel and shrink the
+     fox: at 470 with a .62 fox the board ends at y=312 and the fox starts at
+     316, leaving 4px rather than overlapping by 120. */
+  .hero-art { min-height: 470px; }
+  .hero-mascot { --mascot-scale: .62; }
 }
 @media (max-width: 760px) {
-  .hero-art { min-height: 520px; }
+  /* A full-size fox would cover the maths board on a phone. 560 keeps the
+     179px-tall fox clear of the board, which ends around y=357 at this width. */
+  .hero-art { min-height: 560px; }
+  .hero-mascot { --mascot-scale: .72; right: 6px; }
   .hero-art .math-board { width: 88%; }
-  .hero-mascot { right: 6px; }
   .hero-art .float-one { display: none; }
   .hero-art .float-two { max-width: 75%; }
 }
