@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { CURRICULUM, getGrade, getSubtopic, getTopic } from './curriculum';
 import { generateBatch, hasTemplates, regenerateFromId, templateCount } from './generator';
+import { shownKey } from './identity';
 import { advance, endSession, hydrateDraft, startSession, submitAnswer } from './session';
 import type { SessionState, Submission } from './session';
 import {
@@ -173,10 +174,13 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     // different row is a different question.
     const seen = session.answers.map((answer) => {
       // Older drafts stored no prompt with the answer; those fall back to the id.
+      if (!answer.prompt) return answer.questionId;
       const question = session.questions[answer.questionId];
-      const prompt = answer.prompt ?? question?.prompt ?? answer.questionId;
-      const visual = answer.visual ?? question?.visual ?? '';
-      return `${prompt}|${visual}`;
+      return shownKey({
+        prompt: answer.prompt,
+        visual: answer.visual,
+        orderItems: answer.orderItems ?? question?.orderItems,
+      });
     });
     // Top up with questions at the level the *current* score has unlocked, so
     // the next question belongs to the band the student has just reached.

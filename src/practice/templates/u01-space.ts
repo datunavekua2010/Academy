@@ -543,12 +543,26 @@ const compareBuilder = (spec: MeasureSpec): QuestionTemplate =>
       b: { kind: 'int', min: spec.min, max: spec.max },
     },
     constraints: [{ note: 'the two measures must differ', test: (v: Vars) => Number(v.a) !== Number(v.b) }],
-    answer: (v: Vars) => Math.max(Number(v.a), Number(v.b)),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
+    answer: (v: Vars) => {
+      // The question is a choice between two printed measures, so the answer is
+      // one of them exactly as printed. A bare "14" beside options reading
+      // "14 სმ" asks the student to reconcile two spellings of one thing.
+      const longer = Math.max(Number(v.a), Number(v.b));
+      return `${longer} ${spec.unit}`;
+    },
+    format: { kind: 'text' },
+    // Two options, because the question offers exactly two objects. The old
+    // options were four near-misses of the winning length — 21, 20, 22, 19 for a
+    // stem printing 20 and 15 — so a student could answer by picking the only
+    // plausible length without comparing anything, and the losing object was
+    // never on offer at all.
+    optionCount: 2,
+    distractors: ({ vars, answer }) =>
+      [`${vars.a} ${spec.unit}`, `${vars.b} ${spec.unit}`].filter((value) => value !== answer),
     explanation: ({ vars, answer }) => {
-      const other = Number(vars.a) === Number(answer) ? Number(vars.b) : Number(vars.a);
-      return `${answer} ${spec.unit} მეტია, ვიდრე ${other} ${spec.unit}. ამიტომ ${answer} ${spec.unit} უფრო ${spec.more} არის.`;
+      const other = `${vars.a} ${spec.unit}` === answer ? vars.b : vars.a;
+      const longer = Number(answer.split(' ')[0]);
+      return `${longer} ${spec.unit} მეტია, ვიდრე ${other} ${spec.unit}. ამიტომ ${answer} უფრო ${spec.more} არის.`;
     },
     visual: (v: Vars) => bars(Number(v.a), Number(v.b), spec),
   });
@@ -689,18 +703,24 @@ const orderBuilder = (spec: MeasureSpec): QuestionTemplate =>
     variables: {
       // Three different measures, drawn as a list so the template can shuffle
       // them without inventing a fourth variable.
-      items: { kind: 'list', pick: { values: ORDER_VALUES(spec), length: 3, unique: true } },
+      items: {
+        kind: 'list',
+        pick: { values: ORDER_VALUES(spec).map((value) => `${value} ${spec.unit}`), length: 3, unique: true },
+      },
     },
     answer: (_v: Vars, ctx) => {
-      // The key is the *display* positions (1-based) in sorted order.
-      const shown = (ctx.order ?? []).map(Number);
+      // The key is the *display* positions (1-based) in sorted order. Items are
+      // shown with their unit ("6 სმ"), so the number is read back out of them.
+      const shown = (ctx.order ?? []).map((item) => Number.parseInt(item, 10));
       const sorted = [...shown].sort((a, b) => a - b);
       return sorted.map((value) => shown.indexOf(value) + 1).join(',');
     },
     shuffle: { source: 'items', direction: 'asc' },
     format: { kind: 'text' },
     explanation: ({ vars }) => {
-      const values = (vars.items as string[]).map(Number).sort((a, b) => a - b);
+      const values = (vars.items as string[])
+        .map((item) => Number.parseInt(item, 10))
+        .sort((a, b) => a - b);
       return `უმცირესიდან: ${values.map((value) => `${value} ${spec.unit}`).join(' < ')}.`;
     },
   });
@@ -742,8 +762,8 @@ const u017: QuestionTemplate[] = [
     difficulty: 1,
     prompt: 'კალათაში {a} {thing} იყო. ყველა ავიღეთ. რამდენი დარჩა?',
     variables: {
-      a: { kind: 'int', min: 1, max: 10 },
-      thing: { kind: 'choice', values: ['ვაშლი', 'მსხალი', 'ბურთი', 'კექსი'] },
+      a: { kind: 'int', min: 1, max: 20 },
+      thing: { kind: 'choice', values: ['ვაშლი', 'მსხალი', 'ბურთი', 'კექსი', 'ფორთოხალი', 'ვაზი'] },
     },
     answer: () => 0,
     format: { kind: 'integer', min: 0 },
@@ -751,7 +771,17 @@ const u017: QuestionTemplate[] = [
     explanation: ({ vars }) => `${vars.a} − ${vars.a} = 0. ყველა ავიღეთ, ამიტომ კალათა ცარიელია.`,
     visual: (v: Vars) => {
       const emoji =
-        v.thing === 'ვაშლი' ? '🍎' : v.thing === 'მსხალი' ? '🍐' : v.thing === 'ბურთი' ? '⚽' : '🧁';
+        v.thing === 'ვაშლი'
+          ? '🍎'
+          : v.thing === 'მსხალი'
+            ? '🍐'
+            : v.thing === 'ბურთი'
+              ? '⚽'
+              : v.thing === 'კექსი'
+                ? '🧁'
+                : v.thing === 'ფორთოხალი'
+                  ? '🍊'
+                  : '🍇';
       return emoji.repeat(Number(v.a));
     },
   }),
@@ -768,10 +798,12 @@ const u017: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'yvela-rame',
     difficulty: 2,
-    prompt: 'მართალია თუ არა: „ჯგუფში ყველა {colour} არის“?',
+    // The claim is about "the circles in the group", not "all the circles", so
+    // the sentence stays true of a group of nine as well as of two.
+    prompt: 'მართალია თუ არა: „ჯგუფის ყველა წრე {colour} არის“?',
     variables: {
       colour: { kind: 'choice', values: COLOURS.map((c) => c.name) },
-      count: { kind: 'int', min: 2, max: 5 },
+      count: { kind: 'int', min: 2, max: 9 },
       /** 1 = one object is a different colour, so the claim is false. */
       mixed: { kind: 'int', min: 0, max: 1 },
     },

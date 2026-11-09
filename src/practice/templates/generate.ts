@@ -250,8 +250,15 @@ export function generateFromTemplate(
       orderItems = shuffleWith(rng, values);
 
       // A scramble that came out already sorted would hand over the answer.
+      // Items may carry a unit ("6 სმ"), so compare their numeric part: reading
+      // the whole string as a number gives NaN for every item, and a NaN sort
+      // leaves the list in draw order, which made this check compare the
+      // scramble with itself and reject nothing.
+      const sortValue = (item: string): number => Number.parseFloat(item);
       const sorted = [...values].sort((a, b) =>
-        template.shuffle!.direction === 'asc' ? Number(a) - Number(b) : Number(b) - Number(a),
+        template.shuffle!.direction === 'asc'
+          ? sortValue(a) - sortValue(b)
+          : sortValue(b) - sortValue(a),
       );
       if (orderItems.join() === sorted.join()) continue;
     }
@@ -273,7 +280,7 @@ export function generateFromTemplate(
     // Distractors come from the drawn values, so they always relate to *this*
     // variation. Anything equal to the answer (by display text) is dropped.
     const candidates = entry ? [] : template.distractors
-      ? template.distractors({ answer: normalised.value, vars, rng })
+      ? template.distractors({ answer: normalised.value, vars, rng, display: normalised.display })
       : typeof normalised.value === 'number'
         ? defaultDistractors(normalised.value, rng)
         : [];

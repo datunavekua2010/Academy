@@ -1,3 +1,4 @@
+import { shownKey } from './identity';
 import { applyAnswer, MAX_SCORE, type AnswerResult } from './scoring';
 import type { Question, SubtopicRef } from './types';
 
@@ -54,7 +55,7 @@ function answersMatch(question: Question, choice: string): boolean {
 export interface SessionAnswer {
   questionId: string;
   /**
-   * The prompt and picture as they were shown.
+   * The prompt, picture and items as they were shown.
    *
    * Recorded because a question drops out of `questions` once the session has
    * moved past it, and a refill has to know what has already been asked to
@@ -63,6 +64,8 @@ export interface SessionAnswer {
    */
   prompt?: string;
   visual?: string;
+  /** For ordering questions, the items the student was asked to arrange. */
+  orderItems?: string[];
   choice: string;
   correct: boolean;
   previousScore: number;
@@ -207,6 +210,7 @@ export function submitAnswer(
           questionId: question.id,
           prompt: question.prompt,
           visual: question.visual,
+          orderItems: question.orderItems,
           choice,
           correct,
           previousScore: result.previousScore,
@@ -242,7 +246,7 @@ export function advance(
   const answeredIds = new Set(state.answers.map((answer) => answer.questionId));
   const keyOf = (id: string): string => {
     const question = questions[id];
-    return question ? `${question.prompt}|${question.visual ?? ''}` : id;
+    return question ? shownKey(question) : id;
   };
   const keep = new Set<string>();
   queue = queue.filter((id) => {
@@ -269,20 +273,18 @@ export function advance(
     // Answered questions are included. `state.questions` only keeps what is
     // still ahead, so filtering on it alone let a question the student had
     // just finished be queued again.
-    const shown = new Set(
-      Object.values(state.questions).map(
-        (question) => `${question.prompt}|${question.visual ?? ''}`,
-      ),
-    );
+    const shown = new Set(Object.values(state.questions).map(shownKey));
     for (const answer of state.answers) {
-      if (answer.prompt) shown.add(`${answer.prompt}|${answer.visual ?? ''}`);
+      if (answer.prompt) {
+        shown.add(shownKey({ prompt: answer.prompt, visual: answer.visual, orderItems: answer.orderItems }));
+      }
     }
     // A prompt already waiting in the queue counts as shown, even when it
     // arrived under a different id. `startSession` and a refill can both hand
     // over the same wording, and the queue would then ask it twice.
     for (const id of queue) {
       const waiting = state.questions[id];
-      if (waiting) shown.add(`${waiting.prompt}|${waiting.visual ?? ''}`);
+      if (waiting) shown.add(shownKey(waiting));
     }
     // `state.questions[id]` is checked even when that id has already been
     // answered: an id encodes the drawn question, so a refill offering the same
@@ -292,7 +294,7 @@ export function advance(
       (question) =>
         !state.questions[question.id] &&
         !answeredIds.has(question.id) &&
-        !shown.has(`${question.prompt}|${question.visual ?? ''}`),
+        !shown.has(shownKey(question)),
     );
     if (unused.length > 0) {
       questions = addQuestions(state, unused);

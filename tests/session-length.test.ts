@@ -5,6 +5,7 @@ import { generateBatch, hasTemplates } from '../src/practice/generator';
 import { advance, startSession, submitAnswer } from '../src/practice/session';
 import { U01_SUBTOPICS } from '../src/practice/templates/u01-space';
 import { MAX_SCORE } from '../src/practice/scoring';
+import { shownKey } from '../src/practice/identity';
 import type { QuestionTemplate } from '../src/practice/templates/types';
 import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
 
@@ -51,7 +52,7 @@ function playThrough(ref: { grade: number; topicId: string; subtopicId: string }
 
     const question = state.questions[id]!;
     prompts.push(question.prompt);
-    shown.push(`${question.prompt}|${question.visual ?? ''}`);
+    shown.push(shownKey(question));
 
     const submission = submitAnswer(state, question.answer);
     // A perfect score ends the session; that is the success case.
@@ -64,7 +65,7 @@ function playThrough(ref: { grade: number; topicId: string; subtopicId: string }
     const refill =
       state.queue.length <= 3
         ? generateBatch(asRef, 4, {
-            avoid: new Set(Object.values(state.questions).map((q) => `${q.prompt}|${q.visual ?? ''}`)),
+            avoid: new Set(Object.values(state.questions).map(shownKey)),
           })
         : [];
     state = advance(state, refill);

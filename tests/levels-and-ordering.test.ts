@@ -115,7 +115,8 @@ describe('ordering questions', () => {
       for (let seed = 1; seed <= 40; seed += 1) {
         const q = question(template.id, seed);
         if (!q) continue;
-        const items = q.orderItems!.map(Number);
+        // Items read "6 სმ": their number is what the ordering means.
+        const items = q.orderItems!.map((item) => Number.parseFloat(item));
         const sorted = [...items].sort((a, b) => a - b);
         expect(items, `${template.id} seed ${seed}`).not.toEqual(sorted);
       }
@@ -127,7 +128,7 @@ describe('ordering questions', () => {
       for (let seed = 1; seed <= 40; seed += 1) {
         const q = question(template.id, seed);
         if (!q) continue;
-        const items = q.orderItems!.map(Number);
+        const items = q.orderItems!.map((item) => Number.parseFloat(item));
         const key = q.answer.split(',').map(Number);
 
         // Following the key through the displayed items must produce them in

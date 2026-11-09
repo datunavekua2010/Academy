@@ -1139,6 +1139,11 @@
   background: #f6f9ff; border: 1px dashed #d7e3f7;
   font-size: 1.6rem; line-height: 1.75; letter-spacing: .12em; color: var(--navy);
   word-break: break-word;
+  /* Some pictures are a stack, not a row: "above" and "below" are drawn as one
+     object over another, and the newline between them is the whole meaning.
+     Without this the two collapse onto one line and a vertical question shows
+     a horizontal picture — every "above/below" answer then looks wrong. */
+  white-space: pre-line;
   /* The objects ARE the question, so an explicit emoji stack matters. Without
      it a device whose default font lacks emoji draws empty boxes and the child
      has nothing to count. These are the standard system emoji fonts, in the

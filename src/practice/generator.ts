@@ -1,3 +1,4 @@
+import { shownKey } from './identity';
 import type { SubtopicRef } from './types';
 import { generateFromTemplate, TemplateError } from './templates/generate';
 import type { GeneratedQuestion } from './templates/generate';
@@ -142,13 +143,14 @@ export function generateBatch(
       throw error;
     }
 
-    // `avoid` accepts three shapes: a question id, the bare prompt, and
-    // `prompt|visual`. The third exists because a positional question can show
-    // the same sentence over a different row, so prompt and picture together
-    // identify what was actually shown; a caller that only passes bare prompts
+    // `avoid` accepts three shapes: a question id, the bare prompt, and the
+    // shown key. The third exists because a positional question can show the
+    // same sentence over a different row, and an ordering question shows the
+    // same sentence over a different set of items, so the sentence alone does
+    // not identify what the student saw; a caller that only passes bare prompts
     // still works.
-    const shownKey = `${question.prompt}|${question.visual ?? ''}`;
-    if (avoid.has(question.id) || avoid.has(shownKey)) continue;
+    const key = shownKey(question);
+    if (avoid.has(question.id) || avoid.has(key)) continue;
 
     if (
       avoid.has(question.signature) ||
@@ -163,7 +165,7 @@ export function generateBatch(
       // if the caller's `avoid` set does not forbid it. A recycled question has
       // a new id, so an id-based filter downstream would not catch a repeat.
       const forbiddenByCaller =
-        avoid.has(question.prompt) || avoid.has(question.signature) || avoid.has(shownKey);
+        avoid.has(question.prompt) || avoid.has(question.signature) || avoid.has(key);
       if (!forbiddenByCaller && recycled.length < count) {
         recycled.push(question);
       }

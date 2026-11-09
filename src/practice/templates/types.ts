@@ -128,6 +128,16 @@ export interface AnswerFormat {
 export type DistractorBuilder = (context: {
   answer: number | string;
   vars: Vars;
+  /**
+   * The answer as the student reads it, units included (`"15 სმ"`).
+   *
+   * A comparison asks "20 სმ or 15 სმ?", and the options used to be built from
+   * the bare number: the student saw 21, 20, 22, 19 — four near-misses of the
+   * winning length and not one of the losing one, so the question could be
+   * answered without comparing anything. A distractor has to be a wrong answer
+   * *to this question*, which means it has to look like the printed values.
+   */
+  display: string;
   rng: () => number;
 }) => Array<number | string>;
 

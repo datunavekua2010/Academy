@@ -263,12 +263,25 @@ describe('U01.3–U01.6 — comparing measures', () => {
   ];
 
   for (const { id, word } of pairs) {
-    it(`${id}: picks the larger of the two printed measures`, () => {
+    it(`${id}: offers exactly the two printed measures, and answers the larger`, () => {
       for (const question of generateMany(id)) {
         const [a, b] = numbersIn(question.prompt);
         expect(a).not.toBe(b);
-        expect(Number(question.answer)).toBe(Math.max(a, b));
         expect(question.prompt).toContain(word);
+
+        // The answer is the larger measure as printed, unit included, so it can
+        // be matched against an option character for character.
+        const larger = Math.max(a, b);
+        const smaller = Math.min(a, b);
+        expect(question.answer).toMatch(new RegExp(`^${larger} \\S+$`));
+
+        // Two options, because the stem offers two objects. The flat number is
+        // never one of them, and neither is the smaller measure's units-less form.
+        expect(question.options).toHaveLength(2);
+        expect([...question.options].sort()).toEqual(
+          [`${larger} ${question.answer.split(' ')[1]}`, `${smaller} ${question.answer.split(' ')[1]}`].sort(),
+        );
+        expect(question.options).not.toContain(String(larger));
       }
     });
 
