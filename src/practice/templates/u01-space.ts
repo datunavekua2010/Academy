@@ -87,11 +87,8 @@ const thingByName = (name: string): Thing | undefined => THINGS.find((t) => t.na
  * A second list would let a question name an object it cannot draw — the exact
  * bug that produced "ობიექტი" placeholders — so there is only ever one list.
  */
-const TOY_NAMES = ['მანქანა', 'დათუნია', 'ბზრიალა', 'ბურთი', 'თოჯინა', 'მატარებელი'];
-const toyEmoji = (name: number | string): string => thingByName(String(name))?.emoji ?? '🧸';
 
 /** Children's names, as used in Q6. */
-const CHILD_NAMES = ['ანა', 'ლუკა', 'ნინო', 'საბა', 'მარიამი', 'გიორგი'];
 const nameOf = (emoji: string): string => THINGS.find((t) => t.emoji === emoji)?.name ?? 'ობიექტი';
 
 /** Georgian ordinals 1st–6th. */
@@ -124,6 +121,19 @@ const topicId = 'mdebareoba';
 const ROW_LENGTH = { min: 3, max: 5 };
 const distinctRow = { values: EMOJIS, length: ROW_LENGTH, unique: true };
 
+/**
+ * Values an ordering question draws from.
+ *
+ * Deliberately a short, evenly spaced set: the task is the ordering, not
+ * arithmetic on awkward numbers, and three values from a tight range would
+ * often repeat.
+ */
+const ORDER_VALUES = (spec: MeasureSpec): number[] => {
+  const out: number[] = [];
+  for (let value = spec.min; value <= Math.min(spec.max, 10); value += 1) out.push(value);
+  return out;
+};
+
 /** Plausible wrong answers for a numeric question: neighbours only. */
 const nearMisses = (answer: number, spread = 3): number[] => {
   const out: number[] = [];
@@ -151,7 +161,11 @@ const u011: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'marcxena-marjvena',
     difficulty: 1,
-    prompt: 'რომელი ობიექტი დგას {where}?',
+    // The stem names the row it is about. Without this the wording never
+    // changes — only the picture does — so the de-duplication that compares
+    // prompts treated different questions as the same one, and a session
+    // repeated the identical sentence over and over.
+    prompt: 'მწკრივში დგას: {row}. რომელი ობიექტი დგას {where}?',
     variables: {
       row: { kind: 'list', pick: distinctRow },
       slot: { kind: 'int', min: 1, max: (v: Vars) => (v.row as unknown[]).length },
@@ -193,7 +207,9 @@ const u011: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'marcxena-marjvena',
     difficulty: 2,
-    prompt: 'რომელია რიგში {thing}?',
+    // "რომელია რიგში X" reads as "which one is X, in a row?" — the adverbial
+    // form "რომელ ადგილას" is what a child is actually being asked.
+    prompt: 'მწკრივში დგას: {row}. რომელ ადგილას დგას რიგში {thing}?',
     variables: {
       row: { kind: 'list', pick: distinctRow },
       thing: { kind: 'choice', values: NAMES },
@@ -227,97 +243,14 @@ const u011: QuestionTemplate[] = [
 ];
 
 /* ------------------------------------------------------------------ *
- * U01.1 — the other shapes the reference questions use.
+ * U01.1 — level 3: deduce a position instead of reading it off.
  *
- * Q3 (second from the left), Q4 (immediately left of X), Q5 (ends given,
- * which is in the middle) and Q6 (who stands left of the third child) are all
- * "read or infer a position in a row", but each tests a different step. They
- * are separate templates rather than one template with a mode switch, because
- * the *reasoning* differs and the difficulty differs.
+ * The two ends of the row are named and the third object is the one in the
+ * middle. It is the same picture as level 1, but the student has to place two
+ * given things before the remaining one can be located.
  * ------------------------------------------------------------------ */
 
 const u011Extra: QuestionTemplate[] = [
-  /** Q3 — "which toy is second from the left?" Counting along a row. */
-  defineTemplate({
-    id: 'g1-u01-1-ordinal-from-left',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'marcxena-marjvena',
-    difficulty: 2,
-    prompt: 'მწკრივში საგნები დგანან. რომელი საგანია მარცხნიდან {which}?',
-    variables: {
-      row: { kind: 'list', pick: distinctRow },
-      which: { kind: 'choice', values: ORDINALS.slice(0, 4) },
-    },
-    constraints: [
-      {
-        note: 'the row must be long enough for the ordinal asked',
-        test: (v: Vars) => (v.row as unknown[]).length >= ORDINALS.indexOf(String(v.which)) + 1,
-      },
-    ],
-    answer: (v: Vars) => nameOf((v.row as string[])[ORDINALS.indexOf(String(v.which))]),
-    format: { kind: 'text' },
-    distractors: ({ answer, vars }) =>
-      (vars.row as string[]).map((item) => nameOf(item)).filter((name) => name !== answer),
-    explanation: ({ vars }) => {
-      const names = (vars.row as string[]).map((item, i) => `${i + 1}) ${nameOf(item)}`);
-      return `მარცხნიდან თვლით: ${names.join(', ')}.`;
-    },
-    visual: (v: Vars) => row(v.row as string[]),
-  }),
-
-  /** Q4 — "which object is immediately to the left of the cup?" */
-  defineTemplate({
-    id: 'g1-u01-1-neighbour-of',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'marcxena-marjvena',
-    difficulty: 2,
-    // Three objects, not five: the answer must be deducible from the picture,
-    // and every option must be one of the drawn objects. A five-item row drew
-    // two objects that could not be offered as options at all.
-    prompt: 'მწკრივში სამი საგანი დგას: {row}. რომელი საგანია {thingGen} უშუალოდ მარცხნივ?',
-    variables: {
-      row: { kind: 'list', pick: { values: EMOJIS, length: 3, unique: true } },
-      thing: { kind: 'choice', values: NAMES },
-      thingGen: { kind: 'choice', values: (v: Vars) => [thingByName(String(v.thing))?.gen ?? ''] },
-    },
-    constraints: [
-      {
-        note: 'the named object must be drawn, and must not be leftmost',
-        test: (v: Vars) => {
-          const entry = thingByName(String(v.thing));
-          if (entry === undefined) return false;
-          const at = (v.row as string[]).indexOf(entry.emoji);
-          return at > 0;
-        },
-      },
-    ],
-    answer: (v: Vars) => {
-      const at = (v.row as string[]).indexOf(thingByName(String(v.thing))!.emoji);
-      return nameOf((v.row as string[])[at - 1]);
-    },
-    format: { kind: 'text' },
-    optionCount: 3,
-    // Every wrong option is one of the other objects actually in the row, so
-    // "it was not in the picture" can never rule an option out.
-    distractors: ({ answer, vars }) =>
-      (vars.row as string[]).map((item) => nameOf(item)).filter((name) => name !== answer),
-    explanation: ({ vars }) => {
-      const names = (vars.row as string[]).map((item, i) => `${i + 1}) ${nameOf(item)}`);
-      return `მარცხნიდან თვლით: ${names.join(', ')}.`;
-    },
-    visual: (v: Vars) => row(v.row as string[]),
-  }),
-
-
-  /**
-   * Q5 — "the car is on the left, the teddy on the right, the doll is the only
-   * one left; which is in the middle?" The row is DRAWN from the same three
-   * facts the prompt states, so the inference and the picture agree.
-   */
   defineTemplate({
     id: 'g1-u01-1-infer-middle',
     grade,
@@ -326,134 +259,79 @@ const u011Extra: QuestionTemplate[] = [
     subtopicId: 'marcxena-marjvena',
     difficulty: 3,
     prompt:
-      'სამი სათამაშოა მწკრივში. {left} მარცხნივ დგას, {right} — მარჯვნივ. ერთადერთი დარჩენილი სათამაშო შუაშია. რომელი სათამაშოა შუაში?',
+      'მწკრივში სამი საგანი დგას. {left} მარცხნივ დგას, {right} — მარჯვნივ. რომელი საგანია შუაში?',
     variables: {
-      leftItem: { kind: 'choice', values: TOY_NAMES },
-      middleItem: { kind: 'choice', values: TOY_NAMES },
-      rightItem: { kind: 'choice', values: TOY_NAMES },
-      // The ends named in the prompt ARE the ends drawn, derived rather than
-      // drawn again — two independent draws would nearly always disagree.
-      left: { kind: 'choice', values: (v: Vars) => [String(v.leftItem)] },
-      right: { kind: 'choice', values: (v: Vars) => [String(v.rightItem)] },
-    },
-    constraints: [
-      {
-        note: 'the three toys must be different, so only one is left for the middle',
-        test: (v: Vars) =>
-          v.leftItem !== v.rightItem && v.leftItem !== v.middleItem && v.rightItem !== v.middleItem,
+      left: { kind: 'choice', values: NAMES },
+      // Both others are derived from what was drawn, so the three objects are
+      // always different — otherwise the "middle" could be a repeat of an end.
+      right: { kind: 'choice', values: (v: Vars) => NAMES.filter((n) => n !== v.left) },
+      middle: {
+        kind: 'choice',
+        values: (v: Vars) => NAMES.filter((n) => n !== v.left && n !== v.right),
       },
-    ],
-    answer: (v: Vars) => String(v.middleItem),
+    },
+    answer: (v: Vars) => String(v.middle),
     format: { kind: 'text' },
     optionCount: 3,
-    distractors: ({ answer, vars }) =>
-      TOY_NAMES.filter((name) => name !== answer && name !== vars.left && name !== vars.right),
-    explanation: ({ vars, answer }) =>
-      `მარცხნივ დგას ${vars.left}, მარჯვნივ — ${vars.right}. შუაში რჩება ${answer}.`,
-    // The row is drawn from the answer, so the picture never contradicts it.
-    visual: (v: Vars) => [v.leftItem, v.middleItem, v.rightItem].map((n) => toyEmoji(String(n))).join(' '),
-  }),
-
-
-  /**
-   * Q6 — "Nino is third from the left; who is immediately left of her?"
-   * Two steps: turn the ordinal into a position, then step one place left.
-   */
-  defineTemplate({
-    id: 'g1-u01-1-neighbour-by-ordinal',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'marcxena-marjvena',
-    difficulty: 3,
-    prompt:
-      'მწკრივში ოთხი ბავშვი დგას: {first}, {second}, {third} და {fourth}. {who} მარცხნიდან {which} ადგილზე დგას. ვინ დგას მის უშუალოდ მარცხნივ?',
-    variables: {
-      first: { kind: 'choice', values: CHILD_NAMES },
-      second: { kind: 'choice', values: CHILD_NAMES },
-      third: { kind: 'choice', values: CHILD_NAMES },
-      fourth: { kind: 'choice', values: CHILD_NAMES },
-      who: { kind: 'choice', values: CHILD_NAMES },
-      // Second, third or fourth — never the leftmost, who has no left neighbour.
-      which: { kind: 'choice', values: ORDINALS.slice(1, 4) },
-    },
-    constraints: [
-      {
-        note: 'four different children, and the child named is really in the stated place',
-        test: (v: Vars) => {
-          const order = [v.first, v.second, v.third, v.fourth].map(String);
-          if (new Set(order).size !== 4) return false;
-          return order[ORDINALS.indexOf(String(v.which))] === String(v.who);
-        },
-      },
-    ],
-    answer: (v: Vars) => {
-      const order = [v.first, v.second, v.third, v.fourth].map(String);
-      return order[ORDINALS.indexOf(String(v.which)) - 1];
-    },
-    format: { kind: 'text' },
-    optionCount: 3,
-    distractors: ({ vars, answer }) =>
-      [vars.first, vars.second, vars.third, vars.fourth].map(String).filter((name) => name !== answer),
-    explanation: ({ vars, answer }) => {
-      const order = [vars.first, vars.second, vars.third, vars.fourth].map(String);
-      return `მარცხნიდან: ${order.map((name, i) => `${i + 1}) ${name}`).join(', ')}. ${vars.who} ${vars.which} ადგილზე დგას, მის მარცხნივ — ${answer}.`;
-    },
-    visual: (v: Vars) => [v.first, v.second, v.third, v.fourth].join('  '),
+    // The two named ends were given, so only the middle is a candidate; the
+    // other two options repeat what the stem already placed.
+    distractors: ({ vars }) => [String(vars.left), String(vars.right)],
+    explanation: ({ vars }) =>
+      `მარცხნივ ${vars.left}, მარჯვნივ ${vars.right}. ამიტომ შუაში ${vars.middle} დგას.`,
+    visual: (v: Vars) =>
+      `${thingByName(String(v.left))!.emoji} ${thingByName(String(v.middle))!.emoji} ${thingByName(String(v.right))!.emoji}`,
   }),
 ];
 
 /* ================================================================== *
  * U01.2 — ზემოთ, ქვემოთ, გვერდით
+ *
+ * Positions are drawn, not looked up. Two objects and one relation are picked
+ * independently from the shared vocabulary, and the drawing is composed from
+ * that same draw — so every wording matches its picture by construction, and
+ * the variation is the size of the vocabulary rather than the size of a
+ * hand-written scene table.
+ *
+ * Georgian declines the lower object differently per relation ("ხის ქვეშ",
+ * "მაგიდის ზემოთ"), so the file lists the correct forms for the relation it
+ * actually draws instead of gluing a suffix onto a noun.
  * ================================================================== */
 
 const RELATION_WORDS = { above: 'ზემოთ', below: 'ქვემოთ', beside: 'გვერდით' } as const;
 type Relation = keyof typeof RELATION_WORDS;
 
-interface Scene {
-  subject: Thing;
-  landmark: Thing;
-  /** Genitive of the landmark: "ხის ზემოთ", "სკამის ქვეშ". */
-  landmarkGen: string;
-  /**
-   * The landmark in the grammatical form the question needs. Georgian nouns
-   * decline before a postposition ("ყუთი" → "ყუთთან"), so the surface form is
-   * stored rather than glued together with a hyphen, which read as
-   * "ყუთი-თან" and is simply not Georgian.
-   */
-  landmarkToward: string;
-  relation: Relation;
-  /** Georgian sentence stating the scene, used for the explanation. */
-  text: string;
-}
+/**
+ * Irregular declensions, listed rather than derived: "წყალი" → "წყლის" and
+ * "საწოლი" → "საწოლის" both lose a vowel, which no suffix rule reproduces.
+ */
+const GENITIVE: Record<string, string> = { წყალი: 'წყლის', საწოლი: 'საწოლის' };
 
-const SCENES: Scene[] = [
-  { subject: { emoji: '🐦', name: 'ჩიტი' }, landmark: { emoji: '🌳', name: 'ხე' }, landmarkGen: 'ხის', landmarkToward: 'ხესთან', relation: 'above', text: 'ჩიტი ხის ზემოთ დაფრინავს.' },
-  { subject: { emoji: '🐟', name: 'თევზი' }, landmark: { emoji: '🌊', name: 'წყალი' }, landmarkGen: 'წყლის', landmarkToward: 'წყალთან', relation: 'below', text: 'თევზი წყლის ქვეშ ცურავს.' },
-  { subject: { emoji: '🐱', name: 'კატა' }, landmark: { emoji: '🪑', name: 'სკამი' }, landmarkGen: 'სკამის', landmarkToward: 'სკამთან', relation: 'above', text: 'კატა სკამზე ზის.' },
-  { subject: { emoji: '🐶', name: 'ძაღლი' }, landmark: { emoji: '🛏️', name: 'საწოლი' }, landmarkGen: 'საწოლის', landmarkToward: 'საწოლთან', relation: 'below', text: 'ძაღლი საწოლის ქვეშ იწვა.' },
-  { subject: { emoji: '🧸', name: 'დათუნია' }, landmark: { emoji: '📦', name: 'ყუთი' }, landmarkGen: 'ყუთის', landmarkToward: 'ყუთთან', relation: 'beside', text: 'დათუნია ყუთის გვერდით ზის.' },
-  { subject: { emoji: '🌼', name: 'ყვავილი' }, landmark: { emoji: '🪴', name: 'ქოთანი' }, landmarkGen: 'ქოთნის', landmarkToward: 'ქოთანთან', relation: 'beside', text: 'ყვავილი ქოთნის გვერდით დგას.' },
-  { subject: { emoji: '☁️', name: 'ღრუბელი' }, landmark: { emoji: '🏠', name: 'სახლი' }, landmarkGen: 'სახლის', landmarkToward: 'სახლთან', relation: 'above', text: 'ღრუბელი სახლის ზემოთ არის.' },
-  { subject: { emoji: '⚽', name: 'ბურთი' }, landmark: { emoji: '🪑', name: 'სკამი' }, landmarkGen: 'სკამის', landmarkToward: 'სკამთან', relation: 'below', text: 'ბურთი სკამის ქვეშ არის.' },
-];
+/** The genitive of a vocabulary entry: "ხის", "სკამის", "აუზის". */
+const genitiveOf = (thing: Thing): string =>
+  GENITIVE[thing.name] ??
+  (['ა', 'ე', 'ი', 'ო', 'უ'].includes(thing.name.slice(-1))
+    ? `${thing.name.slice(0, -1)}ის`
+    : `${thing.name}ის`);
 
 /**
- * Draws the scene. A vertical relation is shown vertically and a sideways one
- * side by side, so the layout itself carries the meaning.
+ * Objects that can sensibly sit above or below something, and objects that can
+ * be the landmark underneath. Kept broad so the same template keeps producing
+ * new pictures.
  */
-const sceneDrawing = (scene: Scene): string => {
-  if (scene.relation === 'beside') return `${scene.landmark.emoji} ${scene.subject.emoji}`;
-  if (scene.relation === 'above') return `${scene.subject.emoji}\n${scene.landmark.emoji}`;
-  return `${scene.landmark.emoji}\n${scene.subject.emoji}`;
-};
+const SITTERS = THINGS.filter((t) => ['ჩიტი', 'კატა', 'ძაღლი', 'დათუნია', 'ბურთი', 'ყვავილი', 'ბუშტი', 'ვარსკვლავი', 'მთვარე', 'საათი', 'თოჯინა', 'წიწილა', 'თევზი', 'პეპელა'].includes(t.name));
+
+const LANDMARKS: Thing[] = [
+  ...THINGS.filter((t) => ['ხე', 'სკამი', 'ყუთი', 'მაგიდა', 'საწოლი', 'სახლი', 'ავტობუსი', 'თარო', 'ჭიქა', 'ფოთოლი', 'ქოთანი'].includes(t.name)),
+];
+
+/** A vertical picture: the sitter on top or underneath the landmark. */
+const stack = (relation: 'above' | 'below', sitter: Thing, landmark: Thing): string =>
+  relation === 'above' ? `${sitter.emoji}\n${landmark.emoji}` : `${landmark.emoji}\n${sitter.emoji}`;
 
 const u012: QuestionTemplate[] = [
   /**
-   * `scene` is one variable, so the picture, the answer and the explanation
-   * all read from the same entry. The subject and landmark are named in the
-   * prompt through two further variables whose only job is to describe the
-   * chosen scene — the constraint keeps them honest.
+   * Level 1 — name the position from the picture. The relation is drawn
+   * vertically or side by side, so the layout itself carries the meaning.
    */
   defineTemplate({
     id: 'g1-u01-2-where-is-it',
@@ -462,28 +340,48 @@ const u012: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'zeda-qveda',
     difficulty: 1,
-    prompt: 'სად არის {subject} {landmark}?',
+    // No declined landmark in the stem: the picture already shows which two
+    // objects are meant, so a genitive here would only be a declension trap.
+    prompt: 'სურათზე {subject} და {landmark} არიან. სად არის {subject}?',
     variables: {
-      scene: { kind: 'choice', values: SCENES.map((_, i) => i) },
-      // Derived from the scene, so the wording is always the pair that is drawn.
-      subject: { kind: 'choice', values: (v: Vars) => [SCENES[Number(v.scene)].subject.name] },
-      landmark: { kind: 'choice', values: (v: Vars) => [SCENES[Number(v.scene)].landmarkToward] },
+      subject: { kind: 'choice', values: SITTERS.map((t) => t.name) },
+      landmark: {
+        kind: 'choice',
+        values: (v: Vars) => LANDMARKS.filter((t) => t.name !== v.subject).map((t) => t.name),
+      },
+      relation: { kind: 'choice', values: RELATIONS },
     },
-    answer: (v: Vars) => RELATION_WORDS[SCENES[Number(v.scene)].relation],
+    answer: (v: Vars) => RELATION_WORDS[String(v.relation) as Relation],
     format: { kind: 'text' },
     optionCount: 3,
     distractors: () => Object.values(RELATION_WORDS),
-    explanation: ({ vars }) => SCENES[Number(vars.scene)].text,
-    visual: (v: Vars) => sceneDrawing(SCENES[Number(v.scene)]),
+    explanation: ({ vars }) => {
+      const relation = String(vars.relation) as Relation;
+      const subject = thingByName(String(vars.subject))!;
+      const landmark = thingByName(String(vars.landmark))!;
+      const where =
+        relation === 'above'
+          ? `${genitiveOf(landmark)} ზემოთ`
+          : relation === 'below'
+            ? `${genitiveOf(landmark)} ქვეშ`
+            : `${genitiveOf(landmark)} გვერდით`;
+      return `${subject.name} ${where} არის, ამიტომ პასუხია „${RELATION_WORDS[relation]}“.`;
+    },
+    visual: (v: Vars) => {
+      const relation = String(v.relation) as Relation;
+      const subject = thingByName(String(v.subject))!;
+      const landmark = thingByName(String(v.landmark))!;
+      return relation === 'beside'
+        ? `${landmark.emoji} ${subject.emoji}`
+        : stack(relation, subject, landmark);
+    },
   }),
 
   /**
-   * The inverse: the relation is given, the object must be named.
-   *
-   * "გვერდით" is symmetric — both objects are beside each other — so those
-   * scenes are excluded here; asking "which one is beside?" would have two
-   * correct answers. That is exactly the kind of ambiguity the spec forbids,
-   * and it is filtered out rather than left to a coin flip.
+   * Level 2 — the inverse: the relation is given, the object has to be named.
+   * "გვერდით" is symmetric — both objects are beside each other — so it is
+   * excluded here; asking "which one is beside?" would have two correct
+   * answers.
    */
   defineTemplate({
     id: 'g1-u01-2-name-the-object',
@@ -492,108 +390,49 @@ const u012: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'zeda-qveda',
     difficulty: 2,
-    prompt: 'რომელი ობიექტია {relation}?',
+    // `relation` is drawn as the Georgian surface form, not as the internal
+    // key: rendering the key printed "რომელი საგანია above?" to a six-year-old.
+    prompt: 'სურათზე {subject} და {landmark} არის. რომელი საგანია {relation}?',
     variables: {
-      // Scenes whose relation is symmetric are excluded: "which object is
-      // beside?" would have two correct answers.
-      scene: { kind: 'choice', values: SCENES.map((_, i) => i).filter((i) => SCENES[i].relation !== 'beside') },
-      // Derived from the scene, so the asked relation is the drawn one.
-      relation: { kind: 'choice', values: (v: Vars) => [RELATION_WORDS[SCENES[Number(v.scene)].relation]] },
+      subject: { kind: 'choice', values: SITTERS.map((t) => t.name) },
+      landmark: {
+        kind: 'choice',
+        values: (v: Vars) => LANDMARKS.filter((t) => t.name !== v.subject).map((t) => t.name),
+      },
+      // Georgian surface forms, derived from the relations this template can
+      // actually draw. "გვერდით" is not one of them — see the note above.
+      relation: { kind: 'choice', values: ['ზემოთ', 'ქვემოთ'] },
     },
-    answer: (v: Vars) => {
-      // The scene is laid out so the subject holds the position being asked
-      // about: for an "above" scene it is drawn on top, for a "below" scene it
-      // is drawn underneath. Either way the answer is the subject, and the
-      // landmark is the plausible mistake the distractors offer. Naming the
-      // landmark on "below" would return the object at the top instead.
-      return SCENES[Number(v.scene)].subject.name;
-    },
+    // The drawing always puts the *subject* in the asked position — on top for
+    // "ზემოთ", underneath for "ქვემოთ" — so the question has the same answer
+    // whichever relation was drawn. What varies is where the subject sits.
+    answer: (v: Vars) => String(v.subject),
     format: { kind: 'text' },
     optionCount: 3,
     distractors: ({ vars, answer }) => {
-      const scene = SCENES[Number(vars.scene)];
-      const others = SCENES.filter((s) => s !== scene).map((s) => s.subject.name);
-      // Both objects of the drawn scene are plausible; drop whichever one is
-      // actually correct so the correct answer never appears twice.
-      return [scene.subject.name, scene.landmark.name, ...others].filter((name) => name !== answer);
-    },
-    explanation: ({ vars }) => SCENES[Number(vars.scene)].text,
-    visual: (v: Vars) => sceneDrawing(SCENES[Number(v.scene)]),
-  }),
-];
-
-/**
- * Three-object vertical arrangements, ordered top → bottom, written as emoji and
- * resolved against THINGS so every drawing has a name in the same vocabulary.
- */
-const COLUMNS: Array<[string, string, string]> = [
-  ['⭐', '🌙', '⚽'],
-  ['🎈', '🐦', '🌳'],
-  ['🎈', '🧸', '🪑'],
-  ['🕐', '🪑', '⚽'],
-];
-
-/** Resolves a column's emoji to their entries; throws rather than inventing one. */
-const columnThings = (index: number): [Thing, Thing, Thing] => {
-  const entries = COLUMNS[index].map((emoji) => THINGS.find((t) => t.emoji === emoji));
-  if (entries.some((entry) => entry === undefined)) {
-    throw new Error(`column ${index} names an object that is not in THINGS`);
-  }
-  return entries as [Thing, Thing, Thing];
-};
-
-/* ------------------------------------------------------------------ *
- * U01.2 — the remaining shapes from the reference.
- *
- * Q9 (which sentence is right), Q11 (which of three is highest) and Q22
- * (which of three is lowest) are not the same reasoning as "where is the
- * bird?": one judges a claim, the others rank three things. Separate
- * templates, at the levels the document assigns.
- * ------------------------------------------------------------------ */
-
-/** Draws three objects stacked vertically, given their order top → bottom. */
-const column = (top: Thing, middle: Thing, bottom: Thing): string =>
-  `${top.emoji}\n${middle.emoji}\n${bottom.emoji}`;
-
-const u012Extra: QuestionTemplate[] = [
-  /**
-   * Q9 — which of three sentences describes the picture?
-   *
-   * The wrong sentences are built from the SAME subject and landmark by
-   * changing only the relation: "the cup is beside the plate" against "the cup
-   * is above the plate". Generated from the drawn scene rather than stored, so
-   * a wrong option can never accidentally be true.
-   */
-  defineTemplate({
-    id: 'g1-u01-2-true-sentence',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'zeda-qveda',
-    difficulty: 2,
-    prompt: 'რომელი წინადადება აღწერს სურათს სწორად?',
-    variables: {
-      scene: { kind: 'choice', values: SCENES.map((_, i) => i) },
-    },
-    answer: (v: Vars) => SCENES[Number(v.scene)].text,
-    format: { kind: 'text' },
-    optionCount: 3,
-    distractors: ({ vars }) => {
-      const scene = SCENES[Number(vars.scene)];
-      // Same subject and landmark, only the relation changed — that is exactly
-      // the distinction the question is testing.
-      return RELATIONS.filter((relation) => relation !== scene.relation).map(
-        (relation) => `${scene.subject.name} ${scene.landmarkGen} ${GEORGIAN_RELATION[relation]} არის.`,
+      const others = THINGS.filter((t) => t.name !== vars.subject && t.name !== vars.landmark)
+        .slice(0, 12)
+        .map((t) => t.name);
+      return [String(vars.landmark), String(vars.subject), ...others].filter(
+        (name) => name !== answer,
       );
     },
-    explanation: ({ vars }) => `სწორია: ${SCENES[Number(vars.scene)].text}`,
-    visual: (v: Vars) => sceneDrawing(SCENES[Number(v.scene)]),
+    explanation: ({ vars }) => {
+      const subject = thingByName(String(vars.subject))!;
+      const landmark = thingByName(String(vars.landmark))!;
+      return `${subject.name} ${genitiveOf(landmark)} ${vars.relation === 'ზემოთ' ? 'ზემოთ' : 'ქვეშ'} არის.`;
+    },
+    visual: (v: Vars) =>
+      // By definition of the question, the object in the asked position is the
+      // one on top for "ზემოთ" and underneath for "ქვემოთ".
+      String(v.relation) === 'ზემოთ'
+        ? `${thingByName(String(v.subject))!.emoji}\n${thingByName(String(v.landmark))!.emoji}`
+        : `${thingByName(String(v.landmark))!.emoji}\n${thingByName(String(v.subject))!.emoji}`,
   }),
 
   /**
-   * Q11 / Q22 — three objects in a vertical column; which is highest / lowest.
-   * The column is drawn from a single ordered choice, so "highest" is simply
-   * the first entry and "lowest" the last.
+   * Level 3 — three objects in a column. Two comparisons in one question, and
+   * the answer is a named object rather than a direction.
    */
   defineTemplate({
     id: 'g1-u01-2-extreme-of-three',
@@ -602,27 +441,26 @@ const u012Extra: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'zeda-qveda',
     difficulty: 3,
-    prompt: 'სამი საგანი ვერტიკალურადაა განლაგებული. რომელი საგანია {which}?',
+    prompt: 'სამი საგანი ვერტიკალურადაა განლაგებული: {top}, {middle}, {bottom}. რომელია {which}?',
     variables: {
-      column: { kind: 'choice', values: COLUMNS.map((_, i) => i) },
+      top: { kind: 'choice', values: NAMES },
+      // Distinct from the one above, so "highest" and "lowest" are never the
+      // same object and the picture always shows three different things.
+      middle: { kind: 'choice', values: (v: Vars) => NAMES.filter((n) => n !== v.top) },
+      bottom: {
+        kind: 'choice',
+        values: (v: Vars) => NAMES.filter((n) => n !== v.top && n !== v.middle),
+      },
       which: { kind: 'choice', values: ['ყველაზე მაღლა', 'ყველაზე დაბლა'] },
     },
-    answer: (v: Vars) => {
-      const col = columnThings(Number(v.column));
-      return v.which === 'ყველაზე მაღლა' ? col[0].name : col[2].name;
-    },
+    answer: (v: Vars) => String(v.which === 'ყველაზე მაღლა' ? v.top : v.bottom),
     format: { kind: 'text' },
     optionCount: 3,
-    distractors: ({ answer, vars }) =>
-      columnThings(Number(vars.column)).map((t) => t.name).filter((name) => name !== answer),
-    explanation: ({ vars }) => {
-      const col = columnThings(Number(vars.column));
-      return `ზემოდან ქვემოთ: ${col.map((t) => t.name).join(', ')}.`;
-    },
-    visual: (v: Vars) => {
-      const col = columnThings(Number(v.column));
-      return column(col[0], col[1], col[2]);
-    },
+    distractors: ({ vars }) => [String(vars.middle), String(vars.bottom), String(vars.top)],
+    explanation: ({ vars, answer }) =>
+      `ზემოდან ქვემოთ: ${vars.top}, ${vars.middle}, ${vars.bottom}. ამიტომ ${vars.which} არის ${answer}.`,
+    visual: (v: Vars) =>
+      `${thingByName(String(v.top))!.emoji}\n${thingByName(String(v.middle))!.emoji}\n${thingByName(String(v.bottom))!.emoji}`,
   }),
 ];
 
@@ -652,6 +490,8 @@ interface MeasureSpec {
   dimension: string;
   /** "the second one's" — a stored form, not name + suffix. */
   secondGenitive: string;
+  /** Instrumental of the dimension: "სიგრძით", "სიმაღლით", "წონით". */
+  dimensionInstr: string;
   /** "the second one" — nominative, for the option that names it. */
   secondNominative: string;
   min: number;
@@ -687,29 +527,42 @@ const bars = (a: number, b: number, spec: MeasureSpec): string => {
  * narrower"), so the direction is a parameter rather than a second template
  * body.
  */
-const compareBuilder = (spec: MeasureSpec, direction: 'more' | 'less' = 'more'): QuestionTemplate =>
+const compareBuilder = (spec: MeasureSpec): QuestionTemplate =>
   defineTemplate({
-    id: direction === 'more' ? spec.id : `${spec.id}-${direction}`,
+    id: spec.id,
     grade,
     topicId,
     unitId: topicId,
     subtopicId: spec.subtopicId,
-    difficulty: 2,
-    prompt: `რომელი ${spec.noun} არის უფრო ${direction === 'more' ? spec.more : spec.less}: {a} ${spec.unit} თუ {b} ${spec.unit}?`,
+    // "Which is longer" with two printed measures is the recognising question
+    // (Q13: "9 cm or 4 cm?"), so it is level 1: one comparison, one answer.
+    difficulty: 1,
+    prompt: `რომელი ${spec.noun} არის უფრო ${spec.more}: {a} ${spec.unit} თუ {b} ${spec.unit}?`,
     variables: {
       a: { kind: 'int', min: spec.min, max: spec.max },
       b: { kind: 'int', min: spec.min, max: spec.max },
     },
     constraints: [{ note: 'the two measures must differ', test: (v: Vars) => Number(v.a) !== Number(v.b) }],
-    answer: (v: Vars) =>
-      direction === 'more' ? Math.max(Number(v.a), Number(v.b)) : Math.min(Number(v.a), Number(v.b)),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
+    answer: (v: Vars) => {
+      // The question is a choice between two printed measures, so the answer is
+      // one of them exactly as printed. A bare "14" beside options reading
+      // "14 სმ" asks the student to reconcile two spellings of one thing.
+      const longer = Math.max(Number(v.a), Number(v.b));
+      return `${longer} ${spec.unit}`;
+    },
+    format: { kind: 'text' },
+    // Two options, because the question offers exactly two objects. The old
+    // options were four near-misses of the winning length — 21, 20, 22, 19 for a
+    // stem printing 20 and 15 — so a student could answer by picking the only
+    // plausible length without comparing anything, and the losing object was
+    // never on offer at all.
+    optionCount: 2,
+    distractors: ({ vars, answer }) =>
+      [`${vars.a} ${spec.unit}`, `${vars.b} ${spec.unit}`].filter((value) => value !== answer),
     explanation: ({ vars, answer }) => {
-      const other = Number(vars.a) === Number(answer) ? Number(vars.b) : Number(vars.a);
-      const adjective = direction === 'more' ? spec.more : spec.less;
-      const [big, small] = direction === 'more' ? [answer, other] : [other, answer];
-      return `${big} ${spec.unit} მეტია, ვიდრე ${small} ${spec.unit}. ამიტომ ${answer} ${spec.unit} უფრო ${adjective} არის.`;
+      const other = `${vars.a} ${spec.unit}` === answer ? vars.b : vars.a;
+      const longer = Number(answer.split(' ')[0]);
+      return `${longer} ${spec.unit} მეტია, ვიდრე ${other} ${spec.unit}. ამიტომ ${answer} უფრო ${spec.more} არის.`;
     },
     visual: (v: Vars) => bars(Number(v.a), Number(v.b), spec),
   });
@@ -742,33 +595,33 @@ const differenceBuilder = (spec: MeasureSpec): QuestionTemplate =>
 
 const LENGTH: MeasureSpec = {
   id: 'g1-u01-3-ribbon', subtopicId: 'grZeli-mokle', unit: 'სმ', noun: 'ლენტი',
-  plural: 'ლენტი', genitive: 'ლენტის', dimension: 'სიგრძე', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'გრძელი', less: 'მოკლე', min: 2, max: 20,
+  plural: 'ლენტი', genitive: 'ლენტის', dimension: 'სიგრძე', dimensionInstr: 'სიგრძით', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'გრძელი', less: 'მოკლე', min: 2, max: 20,
 };
 const HEIGHT: MeasureSpec = {
   id: 'g1-u01-4-tower', subtopicId: 'magle-dabali', unit: 'სმ', noun: 'კოშკი',
-  plural: 'კოშკი', genitive: 'კოშკის', dimension: 'სიმაღლე', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'მაღალი', less: 'დაბალი', min: 3, max: 20,
+  plural: 'კოშკი', genitive: 'კოშკის', dimension: 'სიმაღლე', dimensionInstr: 'სიმაღლით', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'მაღალი', less: 'დაბალი', min: 3, max: 20,
 };
 const WEIGHT: MeasureSpec = {
   id: 'g1-u01-5-bag', subtopicId: 'mZime-msubuqi', unit: 'კგ', noun: 'ჩანთა',
-  plural: 'ჩანთა', genitive: 'ჩანთის', dimension: 'წონა', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'მძიმე', less: 'მსუბუქი', min: 1, max: 20,
+  plural: 'ჩანთა', genitive: 'ჩანთის', dimension: 'წონა', dimensionInstr: 'წონით', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'მძიმე', less: 'მსუბუქი', min: 1, max: 20,
 };
 const WIDTH: MeasureSpec = {
   id: 'g1-u01-6-box', subtopicId: 'gansieri-vicki', unit: 'სმ', noun: 'ყუთი',
-  plural: 'ყუთი', genitive: 'ყუთის', dimension: 'სიგანე', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'განიერი', less: 'ვიწრო', min: 2, max: 20,
+  plural: 'ყუთი', genitive: 'ყუთის', dimension: 'სიგანე', dimensionInstr: 'სიგანით', secondGenitive: 'მეორესი', secondNominative: 'მეორე', more: 'განიერი', less: 'ვიწრო', min: 2, max: 20,
 };
 
+/**
+ * One comparison per measure at level 1. U01.3 reaches level 3 by ordering (see
+ * `u013to016Extra`), so its difference template is not registered here; the
+ * other three measure the difference with a typed number.
+ */
 const u013to016: QuestionTemplate[] = [
   compareBuilder(LENGTH),
-  compareBuilder(LENGTH, 'less'),
-  differenceBuilder(LENGTH),
   compareBuilder(HEIGHT),
-  compareBuilder(HEIGHT, 'less'),
   differenceBuilder(HEIGHT),
   compareBuilder(WEIGHT),
-  compareBuilder(WEIGHT, 'less'),
   differenceBuilder(WEIGHT),
   compareBuilder(WIDTH),
-  compareBuilder(WIDTH, 'less'),
   differenceBuilder(WIDTH),
 ];
 
@@ -823,83 +676,67 @@ const equalBuilder = (spec: MeasureSpec): QuestionTemplate =>
     visual: (v: Vars) => `${'▬'.repeat(Number(v.a))}\n${'▬'.repeat(Number(v.b))}`,
   });
 
-/**
- * Q21 / Q29 / Q35 — an extreme of THREE values. Three-way comparison is
- * harder than two-way: the child has to hold one winner while checking the
- * other two.
- */
-const extremeOfThreeBuilder = (spec: MeasureSpec, which: 'max' | 'min'): QuestionTemplate =>
+/* ------------------------------------------------------------------ *
+ * Ordering — "დაალაგე უმოკლესიდან უგრძელესისკენ" (Q17, Q24, Q36, Q59).
+ *
+ * The third answer format the specification names. The three measures are
+ * shown in a scrambled order and the student taps them into order; the answer
+ * key is the sequence of *display positions*, computed after the scramble.
+ *
+ * This is not the same task as "which is the largest": that needs one
+ * comparison and one answer, this needs the whole sequence, which is the
+ * difference between recognising a comparison and applying it.
+ * ------------------------------------------------------------------ */
+
+const orderBuilder = (spec: MeasureSpec): QuestionTemplate =>
   defineTemplate({
-    id: `${spec.id}-${which === 'max' ? 'largest' : 'smallest'}-of-three`,
+    id: `${spec.id}-order`,
     grade,
     topicId,
     unitId: topicId,
     subtopicId: spec.subtopicId,
     difficulty: 3,
-    prompt: `სამი ${spec.plural} გვაქვს. პირველი — {a} ${spec.unit}, მეორე — {b} ${spec.unit}, მესამე — {c} ${spec.unit}. რომელია ${which === 'max' ? `ყველაზე ${spec.more}` : `ყველაზე ${spec.less}`}?`,
+    // The dimension is the instrument ("სიგრძით", "სიმაღლით") and the plural
+    // names them in the stem, so the wording never needs a hyphenated case
+    // ending glued onto a noun.
+    prompt: `დაალაგე სამი საგანი ${spec.dimensionInstr} ზრდადობით: ჯერ ყველაზე ${spec.less}, ბოლოს — ყველაზე ${spec.more}.`,
     variables: {
-      a: { kind: 'int', min: spec.min, max: spec.max },
-      b: { kind: 'int', min: spec.min, max: spec.max },
-      c: { kind: 'int', min: spec.min, max: spec.max },
+      // Three different measures, drawn as a list so the template can shuffle
+      // them without inventing a fourth variable.
+      items: {
+        kind: 'list',
+        pick: { values: ORDER_VALUES(spec).map((value) => `${value} ${spec.unit}`), length: 3, unique: true },
+      },
     },
-    constraints: [
-      { note: 'all three must differ, so a single extreme exists', test: (v: Vars) => new Set([v.a, v.b, v.c]).size === 3 },
-    ],
-    answer: (v: Vars) => {
-      const values = [Number(v.a), Number(v.b), Number(v.c)];
-      const wanted = values.indexOf(which === 'max' ? Math.max(...values) : Math.min(...values));
-      // Named, not lettered: a six-year-old is asked about the first, second or
-      // third one, not about "A".
-      return ['პირველი', 'მეორე', 'მესამე'][wanted];
+    answer: (_v: Vars, ctx) => {
+      // The key is the *display* positions (1-based) in sorted order. Items are
+      // shown with their unit ("6 სმ"), so the number is read back out of them.
+      const shown = (ctx.order ?? []).map((item) => Number.parseInt(item, 10));
+      const sorted = [...shown].sort((a, b) => a - b);
+      return sorted.map((value) => shown.indexOf(value) + 1).join(',');
     },
+    shuffle: { source: 'items', direction: 'asc' },
     format: { kind: 'text' },
-    optionCount: 3,
-    distractors: ({ answer }) => ['პირველი', 'მეორე', 'მესამე'].filter((name) => name !== answer),
-    explanation: ({ vars, answer }) => {
-      const rows: Array<[string, number]> = [
-        ['პირველი', Number(vars.a)],
-        ['მეორე', Number(vars.b)],
-        ['მესამე', Number(vars.c)],
-      ];
-      const sorted = [...rows].sort((x, y) => x[1] - y[1]);
-      return `ზრდადობით: ${sorted.map(([name, value]) => `${name} — ${value} ${spec.unit}`).join(', ')}. პასუხია ${answer}.`;
+    explanation: ({ vars }) => {
+      const values = (vars.items as string[])
+        .map((item) => Number.parseInt(item, 10))
+        .sort((a, b) => a - b);
+      return `უმცირესიდან: ${values.map((value) => `${value} ${spec.unit}`).join(' < ')}.`;
     },
   });
 
 /**
- * Q28 — a balance. The left pan holds more, so the rule "the heavier side
- * sinks" gives the left, and the drawing shows its pan lower so the picture
- * and the answer cannot disagree.
+ * The U01.3–U01.6 library: exactly one template per level, per subtopic.
+ *
+ * Level 1 asks one comparison, level 2 asks about equality — where "neither is
+ * more" is a third answer beside two directions — and level 3 applies it.
+ * U01.3 applies it by ordering a whole row, because "longest, middle, shortest"
+ * is the task the reference asks for; U01.4–U01.6 apply it by measuring the
+ * difference, which those reference questions ask with a typed number.
  */
-const balanceBuilder = (spec: MeasureSpec): QuestionTemplate =>
-  defineTemplate({
-    id: `${spec.id}-balance`,
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: spec.subtopicId,
-    difficulty: 3,
-    prompt: `სასწორის მარცხენა მხარეს {heavy} ${spec.unit}-ია, მარჯვენაზე — {light} ${spec.unit}. რომელი მხარე დაიწევს ქვემოთ?`,
-    variables: {
-      heavy: { kind: 'int', min: spec.min + 1, max: spec.max },
-      light: { kind: 'int', min: spec.min, max: (v: Vars) => Number(v.heavy) - 1 },
-    },
-    answer: () => 'მარცხენა',
-    format: { kind: 'text' },
-    optionCount: 3,
-    distractors: () => ['მარჯვენა', 'არცერთი'],
-    explanation: ({ vars }) =>
-      `მარცხნივ ${vars.heavy} ${spec.unit} მეტია, ვიდრე მარჯვნივ ${vars.light} ${spec.unit}. მძიმე მხარე ჩადის, ამიტომ დაიწევს მარცხენა.`,
-    visual: (v: Vars) => `⬇️ ${Number(v.heavy)} ${spec.unit}    ⚖    ${Number(v.light)} ${spec.unit} ⬆️`,
-  });
-
 const u013to016Extra: QuestionTemplate[] = [
-  equalBuilder(LENGTH), equalBuilder(WIDTH),
-  extremeOfThreeBuilder(LENGTH, 'max'), extremeOfThreeBuilder(LENGTH, 'min'),
-  extremeOfThreeBuilder(HEIGHT, 'max'),
-  extremeOfThreeBuilder(WEIGHT, 'min'), extremeOfThreeBuilder(WEIGHT, 'max'),
-  extremeOfThreeBuilder(WIDTH, 'max'), extremeOfThreeBuilder(WIDTH, 'min'),
-  balanceBuilder(WEIGHT),
+  equalBuilder(LENGTH), equalBuilder(HEIGHT), equalBuilder(WEIGHT), equalBuilder(WIDTH),
+  orderBuilder(LENGTH),
 ];
 
 /* ================================================================== *
@@ -925,8 +762,8 @@ const u017: QuestionTemplate[] = [
     difficulty: 1,
     prompt: 'კალათაში {a} {thing} იყო. ყველა ავიღეთ. რამდენი დარჩა?',
     variables: {
-      a: { kind: 'int', min: 1, max: 10 },
-      thing: { kind: 'choice', values: ['ვაშლი', 'მსხალი', 'ბურთი', 'კექსი'] },
+      a: { kind: 'int', min: 1, max: 20 },
+      thing: { kind: 'choice', values: ['ვაშლი', 'მსხალი', 'ბურთი', 'კექსი', 'ფორთოხალი', 'ვაზი'] },
     },
     answer: () => 0,
     format: { kind: 'integer', min: 0 },
@@ -934,7 +771,17 @@ const u017: QuestionTemplate[] = [
     explanation: ({ vars }) => `${vars.a} − ${vars.a} = 0. ყველა ავიღეთ, ამიტომ კალათა ცარიელია.`,
     visual: (v: Vars) => {
       const emoji =
-        v.thing === 'ვაშლი' ? '🍎' : v.thing === 'მსხალი' ? '🍐' : v.thing === 'ბურთი' ? '⚽' : '🧁';
+        v.thing === 'ვაშლი'
+          ? '🍎'
+          : v.thing === 'მსხალი'
+            ? '🍐'
+            : v.thing === 'ბურთი'
+              ? '⚽'
+              : v.thing === 'კექსი'
+                ? '🧁'
+                : v.thing === 'ფორთოხალი'
+                  ? '🍊'
+                  : '🍇';
       return emoji.repeat(Number(v.a));
     },
   }),
@@ -951,10 +798,12 @@ const u017: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'yvela-rame',
     difficulty: 2,
-    prompt: 'მართალია თუ არა: „ჯგუფში ყველა {colour} არის“?',
+    // The claim is about "the circles in the group", not "all the circles", so
+    // the sentence stays true of a group of nine as well as of two.
+    prompt: 'მართალია თუ არა: „ჯგუფის ყველა წრე {colour} არის“?',
     variables: {
       colour: { kind: 'choice', values: COLOURS.map((c) => c.name) },
-      count: { kind: 'int', min: 2, max: 5 },
+      count: { kind: 'int', min: 2, max: 9 },
       /** 1 = one object is a different colour, so the claim is false. */
       mixed: { kind: 'int', min: 0, max: 1 },
     },
@@ -979,44 +828,6 @@ const u017: QuestionTemplate[] = [
     },
   }),
 
-  /** Count one colour inside a mixed group. */
-  defineTemplate({
-    id: 'g1-u01-7-count-in-group',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'yvela-rame',
-    difficulty: 2,
-    prompt: 'ჯგუფში რამდენი {colour} არის?',
-    variables: {
-      colour: { kind: 'choice', values: COLOURS.map((c) => c.name) },
-      group: { kind: 'list', pick: { values: COLOURS.map((c) => c.emoji), length: { min: 2, max: 5 } } },
-    },
-    constraints: [
-      {
-        note: 'the group must contain the colour being asked about',
-        test: (v: Vars) => {
-          const target = colourByName(String(v.colour))!.emoji;
-          return (v.group as string[]).includes(target);
-        },
-      },
-    ],
-    answer: (v: Vars) => {
-      const target = colourByName(String(v.colour))!.emoji;
-      return (v.group as string[]).filter((c) => c === target).length;
-    },
-    format: { kind: 'integer', min: 1 , entry: true},
-    distractors: ({ vars, answer }) => {
-      const target = colourByName(String(vars.colour))!.emoji;
-      const present = (vars.group as string[]).filter((c) => c !== target).length;
-      return [present, Number(answer) + 1, Number(answer) - 1, Number(answer) + 2];
-    },
-    explanation: ({ vars, answer }) => {
-      const target = colourByName(String(vars.colour))!.emoji;
-      return `${target} — სულ ${answer}.`;
-    },
-    visual: (v: Vars) => (v.group as string[]).join(' '),
-  }),
 ];
 
 /* ------------------------------------------------------------------ *
@@ -1042,88 +853,6 @@ const SHAPES = [
 const shapeByName = (name: string) => SHAPES.find((s) => s.name === name);
 
 const u017Extra: QuestionTemplate[] = [
-  /** Q39 — the group contains some of the named shape; is "some are…" true? */
-  defineTemplate({
-    id: 'g1-u01-7-some-is-true',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'yvela-rame',
-    difficulty: 2,
-    prompt: 'მართალია თუ არა: „ჯგუფში ზოგიერთი {shape} არის“?',
-    variables: {
-      shape: { kind: 'choice', values: SHAPES.map((x) => x.name) },
-      group: { kind: 'list', pick: { values: SHAPES.map((x) => x.emoji), length: { min: 2, max: 5 } } },
-    },
-    answer: (v: Vars) => {
-      const target = shapeByName(String(v.shape))!.emoji;
-      return (v.group as string[]).includes(target) ? 'მართალია' : 'არ არის მართალი';
-    },
-    format: { kind: 'text' },
-    optionCount: 2,
-    distractors: ({ answer }) => (answer === 'მართალია' ? ['არ არის მართალი'] : ['მართალია']),
-    explanation: ({ vars }) => {
-      const target = shapeByName(String(vars.shape))!.emoji;
-      const n = (vars.group as string[]).filter((x) => x === target).length;
-      return n > 0
-        ? `ჯგუფში ${n} ${vars.shape} არის, ამიტომ დებულება მართალია.`
-        : `ჯგუფში არცერთი ${vars.shape} არ არის, ამიტომ დებულება არ არის მართალი.`;
-    },
-    visual: (v: Vars) => (v.group as string[]).join(' '),
-  }),
-
-  /**
-   * Q40 — a group where "all" is wrong and "some" is right, so the child has
-   * to see that one counter-example defeats "all" while leaving "some" true.
-   * Every wrong option is false by construction, not by luck.
-   */
-  defineTemplate({
-    id: 'g1-u01-7-quantifier-sentence',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'yvela-rame',
-    difficulty: 2,
-    prompt: 'ჯგუფს ვუყურებთ. რომელი წინადადებაა სწორი?',
-    variables: {
-      group: { kind: 'list', pick: { values: SHAPES.map((x) => x.emoji), length: { min: 3, max: 5 } } },
-    },
-    constraints: [
-      {
-        note: 'mixed group with at least one shape absent, so "some" and "all" differ',
-        test: (v: Vars) => {
-          const group = v.group as string[];
-          const present = SHAPES.filter((x) => group.includes(x.emoji));
-          return present.length >= 1 && present.length < SHAPES.length;
-        },
-      },
-    ],
-    answer: (v: Vars) => {
-      const present = SHAPES.filter((x) => (v.group as string[]).includes(x.emoji));
-      return `ზოგიერთი ${present[0].name} არის`;
-    },
-    format: { kind: 'text' },
-    optionCount: 3,
-    distractors: ({ vars, answer }) => {
-      const group = vars.group as string[];
-      const present = SHAPES.filter((x) => group.includes(x.emoji));
-      const missing = SHAPES.filter((x) => !group.includes(x.emoji));
-      return [
-        // false: nothing of that shape is in the group
-        `ყველა ${missing[0].name} არის`,
-        // false: that shape certainly is in the group
-        `ვერცერთი ${present[0].name} არ არის`,
-      ].filter((option) => option !== answer);
-    },
-    explanation: ({ vars, answer }) => {
-      const group = vars.group as string[];
-      const present = SHAPES.filter((x) => group.includes(x.emoji)).map((x) => x.name);
-      const missing = SHAPES.filter((x) => !group.includes(x.emoji)).map((x) => x.name);
-      return `ჯგუფში არის ${present.join(', ')}, მაგრამ არ არის ${missing.join(', ')}. ამიტომ სწორია: „${answer}“.`;
-    },
-    visual: (v: Vars) => (v.group as string[]).join(' '),
-  }),
-
   /**
    * Q41 — every object is the same shape, so both "all" and "some" hold.
    * The options are the two sentences plus "both" and "neither", in the form a
@@ -1136,10 +865,13 @@ const u017Extra: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'yvela-rame',
     difficulty: 3,
-    prompt: 'ჯგუფში ყველა საგანი {shape} არის. რომელია სწორი?',
+    prompt: 'ჯგუფში {count} საგანია და ყველა {shape} არის. რომელია სწორი?',
     variables: {
       shape: { kind: 'choice', values: SHAPES.map((x) => x.name) },
-      count: { kind: 'int', min: 2, max: 5 },
+      // The count is in the stem, not only in the picture: a group of two and a
+      // group of ten are different questions, and this keeps one template from
+      // running out of variations inside a single session.
+      count: { kind: 'int', min: 2, max: 10 },
     },
     answer: (v: Vars) => `ორივე მართალია: ყველა ${v.shape} არის და ზოგიერთი ${v.shape} არის`,
     format: { kind: 'text' },
@@ -1153,52 +885,6 @@ const u017Extra: QuestionTemplate[] = [
     visual: (v: Vars) => shapeByName(String(v.shape))!.emoji.repeat(Number(v.count)),
   }),
 
-  /**
-   * Q42 — which sentence is WRONG? Finding a false statement among true ones
-   * is a different scan from confirming a true one, so it is its own template.
-   * The wrong sentence claims "all" of a shape that is not in the group at all.
-   */
-  defineTemplate({
-    id: 'g1-u01-7-false-sentence',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'yvela-rame',
-    difficulty: 3,
-    prompt: 'ჯგუფს ვუყურებთ. რომელი წინადადებაა არასწორი?',
-    variables: {
-      group: { kind: 'list', pick: { values: SHAPES.map((x) => x.emoji), length: { min: 3, max: 5 } } },
-    },
-    constraints: [
-      {
-        note: 'at least one shape present and one absent, so both true and false sentences exist',
-        test: (v: Vars) => {
-          const group = v.group as string[];
-          const present = SHAPES.filter((x) => group.includes(x.emoji));
-          return present.length >= 1 && present.length < SHAPES.length;
-        },
-      },
-    ],
-    answer: (v: Vars) => {
-      const missing = SHAPES.filter((x) => !(v.group as string[]).includes(x.emoji));
-      return `ყველა ${missing[0].name} არის`;
-    },
-    format: { kind: 'text' },
-    optionCount: 3,
-    distractors: ({ vars, answer }) => {
-      const group = vars.group as string[];
-      const present = SHAPES.filter((x) => group.includes(x.emoji));
-      const options = present.map((x) => `ზოგიერთი ${x.name} არის`);
-      return options.filter((option) => option !== answer);
-    },
-    explanation: ({ vars, answer }) => {
-      const group = vars.group as string[];
-      const present = SHAPES.filter((x) => group.includes(x.emoji)).map((x) => x.name);
-      const missing = SHAPES.filter((x) => !group.includes(x.emoji)).map((x) => x.name);
-      return `ჯგუფში ${present.join(', ')} არის, ხოლო ${missing.join(', ')} — არა. ამიტომ არასწორია: „${answer}“.`;
-    },
-    visual: (v: Vars) => (v.group as string[]).join(' '),
-  }),
 ];
 
 /* ================================================================== *
@@ -1254,30 +940,6 @@ const u018: QuestionTemplate[] = [
     visual: (v: Vars) => `${(v.first as string[]).join(' ')}\n${(v.second as string[]).join(' ')}`,
   }),
 
-  /**
-   * Count, then take away. The picture shows the starting set with the taken
-   * objects still visible, which is how the operation is taught — showing only
-   * the remainder would hand over the answer.
-   */
-  defineTemplate({
-    id: 'g1-u01-8-count-and-take',
-    grade,
-    topicId,
-    unitId: topicId,
-    subtopicId: 'datvla-suratebidan',
-    difficulty: 3,
-    prompt: 'სურათზე {a} {thing} არის. {b} წავიღეთ. რამდენი დარჩა?',
-    variables: {
-      a: { kind: 'int', min: 2, max: 9 },
-      b: { kind: 'int', min: 1, max: (v: Vars) => Number(v.a) - 1 },
-      thing: { kind: 'choice', values: NAMES },
-    },
-    answer: (v: Vars) => Number(v.a) - Number(v.b),
-    format: { kind: 'integer', min: 1 , entry: true},
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
-    visual: (v: Vars) => (thingByName(String(v.thing))?.emoji ?? '⭐').repeat(Number(v.a)),
-  }),
 ];
 
 /* ------------------------------------------------------------------ *
@@ -1327,7 +989,6 @@ export const U01_TEMPLATES: QuestionTemplate[] = [
   ...u011,
   ...u011Extra,
   ...u012,
-  ...u012Extra,
   ...u013to016,
   ...u013to016Extra,
   ...u017,
@@ -1348,4 +1009,4 @@ export const U01_SUBTOPICS = [
   'datvla-suratebidan',
 ] as const;
 
-export { THINGS, COLOURS, SCENES, nameOf, ordinal };
+export { THINGS, COLOURS, nameOf, ordinal };

@@ -96,7 +96,7 @@ describe('nested curriculum accordion', () => {
     expect((button as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(button);
     expect(onClick).not.toHaveBeenCalled();
-    expect(screen.getByText(/შაბლონი ჯერ არ არის დამატებული/)).toBeTruthy();
+    expect(screen.getByText(/კითხვები ჯერ არ არის დამატებული/)).toBeTruthy();
   });
 
   it('resets to collapsed topics when the grade changes', () => {

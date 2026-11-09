@@ -45,8 +45,14 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] - 1),
   },
   {
+    // Both directions, as the subtopic is named: "before N" is N−1, and
+    // "after N" is N+1. Checking only the first would pass a template that
+    // asked both with the same answer.
     subtopicId: 'win-ukan',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - 1),
+    check: (p, a) =>
+      p.includes('შემდეგ')
+        ? expectEqual(p, a, nums(p)[0] + 1)
+        : expectEqual(p, a, nums(p)[0] - 1),
   },
   {
     subtopicId: 'atobit-nabijebit',

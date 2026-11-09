@@ -1,3 +1,4 @@
+import { shownKey } from './identity';
 import type { SubtopicRef } from './types';
 import { generateFromTemplate, TemplateError } from './templates/generate';
 import type { GeneratedQuestion } from './templates/generate';
@@ -17,6 +18,24 @@ export type { GeneratedQuestion };
 /** Number of options offered per question. */
 export const OPTION_COUNT = 4;
 
+/**
+ * Templates at one difficulty level.
+ *
+ * A subtopic whose questions are all at one level is unaffected by asking for
+ * a level; a subtopic that simply has none at the requested level falls back to
+ * its whole set rather than emptying the session. The fallback is deliberate:
+ * an empty batch is worse for a student than a question at the wrong level, and
+ * the missing level is caught by the test-suite, not by a child.
+ */
+export function templatesAtLevel<T extends { difficulty?: 1 | 2 | 3 }>(
+  templates: T[],
+  level?: 1 | 2 | 3,
+): T[] {
+  if (!level) return templates;
+  const matching = templates.filter((template) => (template.difficulty ?? 1) === level);
+  return matching.length > 0 ? matching : templates;
+}
+
 /** True when a subtopic has at least one template and can be practised. */
 export function hasTemplates(ref: SubtopicRef, registry: TemplateRegistry = TEMPLATE_REGISTRY) {
   return registry.hasTemplates(ref);
@@ -32,6 +51,8 @@ export interface GenerateOptions {
   optionCount?: number;
   /** Explicit template (used by tests); otherwise one is chosen at random. */
   templateId?: string;
+  /** Only generate from templates at this level (U01's three levels). */
+  level?: 1 | 2 | 3;
 }
 
 /**
@@ -45,7 +66,7 @@ export function generateQuestion(
 ): GeneratedQuestion | null {
   const registry = options.registry ?? TEMPLATE_REGISTRY;
 
-  const templates = registry.forSubtopic(ref);
+  const templates = templatesAtLevel(registry.forSubtopic(ref), options.level);
   if (options.templateId) {
     const chosen = registry.byId(options.templateId);
     if (!chosen) return null;
@@ -87,7 +108,7 @@ export function generateBatch(
   // while a wide sibling sits unused.
   const templates = options.templateId
     ? [registry.byId(options.templateId)].filter(Boolean)
-    : registry.forSubtopic(ref);
+    : templatesAtLevel(registry.forSubtopic(ref), options.level);
   if (templates.length === 0 && !options.templateId) {
     console.warn(
       `[practice] No template covers ${ref.grade}/${ref.topicId}/${ref.subtopicId}.`,
@@ -122,9 +143,14 @@ export function generateBatch(
       throw error;
     }
 
-    // `avoid` accepts signatures, question ids or bare prompts, so a caller can
-    // exclude anything this session has already shown.
-    if (avoid.has(question.id)) continue;
+    // `avoid` accepts three shapes: a question id, the bare prompt, and the
+    // shown key. The third exists because a positional question can show the
+    // same sentence over a different row, and an ordering question shows the
+    // same sentence over a different set of items, so the sentence alone does
+    // not identify what the student saw; a caller that only passes bare prompts
+    // still works.
+    const key = shownKey(question);
+    if (avoid.has(question.id) || avoid.has(key)) continue;
 
     if (
       avoid.has(question.signature) ||
@@ -138,7 +164,8 @@ export function generateBatch(
       // Already shown earlier in the session: keep as a last resort, but only
       // if the caller's `avoid` set does not forbid it. A recycled question has
       // a new id, so an id-based filter downstream would not catch a repeat.
-      const forbiddenByCaller = avoid.has(question.prompt) || avoid.has(question.signature);
+      const forbiddenByCaller =
+        avoid.has(question.prompt) || avoid.has(question.signature) || avoid.has(key);
       if (!forbiddenByCaller && recycled.length < count) {
         recycled.push(question);
       }

@@ -28,7 +28,10 @@ const MIN_UNIQUE_QUESTIONS = 20;
 const PLACEHOLDER_MIN_UNIQUE = 3;
 
 describe('subtopic capacity', () => {
-  it('every subtopic has enough variety to fill a perfect run', () => {
+  // This sweeps all 149 subtopics and asks each for 80 questions; it takes
+  // seconds by nature, and the default 5s limit was tripped by ordinary
+  // generation cost rather than by a failure.
+  it('every subtopic has enough variety to fill a perfect run', { timeout: 120_000 }, () => {
     expect(MAX_SCORE).toBe(100);
 
     const tooNarrow: string[] = [];

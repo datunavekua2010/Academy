@@ -27,6 +27,15 @@ export interface RangedVariable {
   max: number | ((vars: Vars) => number);
   /** Values are drawn as min + k·step. Defaults to 1. */
   step?: number;
+  /**
+   * Draw from the top down (max, max−step, …).
+   *
+   * For a template whose answers are scattered — "which number comes before N"
+   * has one answer per number — drawing downward makes the *first* variations
+   * cover the hardest answers, so a session that has to end early still ends on
+   * a representative set rather than a cluster at the bottom of the range.
+   */
+  reverse?: boolean;
   /** Skip zero — use this for divisors and multipliers that must not be 0. */
   nonZero?: boolean;
 }
@@ -66,6 +75,16 @@ export interface ListVariable {
 }
 
 export type VariableSpec = RangedVariable | ChoiceVariable | ListVariable;
+
+/**
+ * What rendering/answer code may depend on beyond the drawn values: the
+ * option order. Only a shuffled template needs it — an ordering question's key
+ * is a sequence through the items *as the student sees them*.
+ */
+export interface AnswerContext {
+  /** Item order for a `shuffle` template. Undefined when not shuffled. */
+  order?: string[];
+}
 
 /** A whole-set rule evaluated after every variable has been drawn. */
 export interface TemplateConstraint {
@@ -109,6 +128,16 @@ export interface AnswerFormat {
 export type DistractorBuilder = (context: {
   answer: number | string;
   vars: Vars;
+  /**
+   * The answer as the student reads it, units included (`"15 სმ"`).
+   *
+   * A comparison asks "20 სმ or 15 სმ?", and the options used to be built from
+   * the bare number: the student saw 21, 20, 22, 19 — four near-misses of the
+   * winning length and not one of the losing one, so the question could be
+   * answered without comparing anything. A distractor has to be a wrong answer
+   * *to this question*, which means it has to look like the printed values.
+   */
+  display: string;
   rng: () => number;
 }) => Array<number | string>;
 
@@ -138,7 +167,25 @@ export interface QuestionTemplate {
   constraints?: TemplateConstraint[];
 
   /** Computes the correct answer from the drawn values. Never a constant. */
-  answer: (vars: Vars) => number | string;
+  answer: (vars: Vars, ctx: AnswerContext) => number | string;
+
+  /**
+   * Shows the drawn items to the student and asks them to put them in order.
+   *
+   * The items are `vars[shuffle.source]`, but they are displayed in a shuffled
+   * order, because asking a child to arrange a list that is already sorted is
+   * not a question. The correct answer is the sequence of *display* positions,
+   * e.g. "2,1,3": the student taps the items into order and the runner records
+   * which position they pressed first, second, third.
+   *
+   * `direction: 'asc'` means "smallest first".
+   */
+  shuffle?: {
+    /** Which list variable holds the values to arrange. */
+    source: string;
+    /** 'asc' = smallest first, 'desc' = largest first. */
+    direction: 'asc' | 'desc';
+  };
 
   /** Answer format / validation rules. */
   format?: AnswerFormat;

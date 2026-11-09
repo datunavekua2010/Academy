@@ -47,8 +47,8 @@ export function SubtopicRow({
         <div className="subtopic-meta">
           <span className="meta-chip">
             {playable
-              ? `${questionCount} შაბლონი · უსასრულო ვარიაცია`
-              : 'შაბლონი ჯერ არ არის დამატებული'}
+              ? `${questionCount} ტიპის კითხვა`
+              : 'კითხვები ჯერ არ არის დამატებული'}
           </span>
           {progress.attempts > 0 && (
             <>
@@ -70,7 +70,7 @@ export function SubtopicRow({
           className={`btn ${status.cls === 'is-complete' ? 'btn-ghost' : 'btn-primary'} btn-small`}
           onClick={onStart}
           disabled={!playable}
-          title={playable ? undefined : 'ამ ქვეთემაზე შაბლონი ჯერ არ არის დამატებული'}
+          title={playable ? undefined : 'ამ ქვეთემაზე კითხვები ჯერ არ არის დამატებული'}
         >
           {!playable
             ? 'მალე დაემატება'

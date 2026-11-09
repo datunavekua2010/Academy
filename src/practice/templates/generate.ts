@@ -95,7 +95,11 @@ function drawVars(template: QuestionTemplate, rng: () => number): Vars {
     const max = resolveBound(spec.max, vars);
     const upper = Math.max(min, max);
 
-    let value = min + randomInt(rng, 0, Math.floor((upper - min) / step)) * step;
+    const steps = Math.floor((upper - min) / step);
+    // `reverse` draws from the top of the range down, so the first variations of
+    // a template whose answers are scattered still cover the hard end.
+    const offset = spec.reverse ? steps - randomInt(rng, 0, steps) : randomInt(rng, 0, steps);
+    let value = min + offset * step;
 
     if (spec.nonZero && value === 0) {
       // Nudge off zero without leaving the range when possible.
@@ -234,9 +238,34 @@ export function generateFromTemplate(
 
     let raw: number | string;
     let normalised: { value: number | string; display: string };
+    // An ordering question's scramble is part of the draw, and the answer is a
+    // sequence through *that* scramble — so it must be built BEFORE the answer
+    // is computed. Computing the answer first keyed it to an order the student
+    // never sees, and the answer came out empty.
+    let orderItems: string[] | undefined;
+    if (template.shuffle) {
+      const source = vars[template.shuffle.source];
+      const values = Array.isArray(source) ? source.map(String) : [];
+      if (values.length < 2) continue;
+      orderItems = shuffleWith(rng, values);
+
+      // A scramble that came out already sorted would hand over the answer.
+      // Items may carry a unit ("6 სმ"), so compare their numeric part: reading
+      // the whole string as a number gives NaN for every item, and a NaN sort
+      // leaves the list in draw order, which made this check compare the
+      // scramble with itself and reject nothing.
+      const sortValue = (item: string): number => Number.parseFloat(item);
+      const sorted = [...values].sort((a, b) =>
+        template.shuffle!.direction === 'asc'
+          ? sortValue(a) - sortValue(b)
+          : sortValue(b) - sortValue(a),
+      );
+      if (orderItems.join() === sorted.join()) continue;
+    }
+
 
     try {
-      raw = template.answer(vars);
+      raw = template.answer(vars, { order: orderItems });
       normalised = normaliseAnswer(template, raw);
     } catch (error) {
       lastError = error;
@@ -251,7 +280,7 @@ export function generateFromTemplate(
     // Distractors come from the drawn values, so they always relate to *this*
     // variation. Anything equal to the answer (by display text) is dropped.
     const candidates = entry ? [] : template.distractors
-      ? template.distractors({ answer: normalised.value, vars, rng })
+      ? template.distractors({ answer: normalised.value, vars, rng, display: normalised.display })
       : typeof normalised.value === 'number'
         ? defaultDistractors(normalised.value, rng)
         : [];
@@ -266,14 +295,16 @@ export function generateFromTemplate(
       wrongDisplays.push(display);
     }
 
-    if (wrongDisplays.length < optionCount - 1 && !entry) {
+    if (wrongDisplays.length < optionCount - 1 && !entry && !template.shuffle) {
       lastError = new TemplateError(
         `${template.id}: not enough distinct wrong options for "${normalised.display}"`,
       );
       continue;
     }
 
-    const optionsList = shuffleWith(rng, [normalised.display, ...wrongDisplays]);
+    const optionsList = template.shuffle
+      ? []
+      : shuffleWith(rng, [normalised.display, ...wrongDisplays]);
     const prompt = renderPrompt(template.prompt, vars);
 
     // Same template + same rendered wording, numbers AND picture = the same
@@ -287,7 +318,12 @@ export function generateFromTemplate(
     // output as a repeat and fail with "ranges are too narrow" while holding a
     // perfectly good library of questions.
     const visual = template.visual ? template.visual(vars) : '';
-    const signature = `${template.id}|${prompt}|${visual}`;
+    // The answer belongs in the key too. Two questions can show the same row
+    // and ask different things about it ("which is on the left?" against
+    // "which is in the middle?") — same prompt prefix, same picture, different
+    // question. Keyed without the answer, one was mistaken for the other and a
+    // session showed the same sentence twice.
+    const signature = `${template.id}|${prompt}|${visual}|${orderItems?.join(',') ?? ''}|${String(normalised.value)}`;
 
     return {
       id: `${template.id}~${seed}`,
@@ -302,11 +338,12 @@ export function generateFromTemplate(
       prompt,
       visual: template.visual ? template.visual(vars) : undefined,
       hint: template.hint,
-      answerMode: entry ? 'number' : 'choice',
-      // A typed-answer question must not ship options: an option list would be
-      // a second, contradictory way to answer it (and a student could read the
-      // answer off it).
-      options: entry ? [] : optionsList,
+      answerMode: template.shuffle ? 'order' : entry ? 'number' : 'choice',
+      orderItems,
+      // A typed-answer or ordering question must not ship options: an option
+      // list would be a second, contradictory way to answer it (and a student
+      // could read the answer off it).
+      options: template.shuffle || entry ? [] : optionsList,
       answer: normalised.display,
       explanation: template.explanation({ vars, answer: normalised.display }),
       difficulty: options.difficulty ?? template.difficulty ?? 1,

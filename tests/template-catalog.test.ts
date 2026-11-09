@@ -57,7 +57,18 @@ describe('every template in the catalog', () => {
         // Distinct options, one of which is the answer. Most questions offer
         // four; true/false and three-way sorting offer fewer by design, and a
         // typed-answer question deliberately offers none at all.
-        if (question.answerMode === 'number') {
+        if (question.answerMode === 'order') {
+          // An ordering question offers no options either: the items ARE the
+          // question, and the answer is the sequence of positions that sorts
+          // them. Both must be present and the key must be a real permutation.
+          expect(question.options).toEqual([]);
+          expect(question.orderItems?.length ?? 0).toBeGreaterThanOrEqual(2);
+          const key = String(question.answer).split(',').map(Number);
+          expect(key).toHaveLength(question.orderItems!.length);
+          expect([...key].sort((a, b) => a - b)).toEqual(
+            Array.from({ length: key.length }, (_, i) => i + 1),
+          );
+        } else if (question.answerMode === 'number') {
           expect(question.options).toEqual([]);
           // A typed answer must still be a single, unambiguous number.
           expect(String(question.answer)).toMatch(/^-?\d+(\.\d+)?$/);
@@ -181,14 +192,19 @@ describe('curriculum coverage', () => {
     expect(problems).toEqual([]);
   });
 
-  it('has exactly one grade-1 placeholder per curriculum subtopic', () => {
+  it('has at least one grade-1 placeholder per curriculum subtopic', () => {
     const grade1 = CURRICULUM.find((grade) => grade.grade === 1)!;
     const subtopics = grade1.topics.flatMap((topic) =>
       topicSubtopics(topic).map((subtopic) => `${topic.id}/${subtopic.id}`),
     );
-    const covered = GRADE1_PLACEHOLDER_SPECS.map((spec) => `${spec.topicId}/${spec.subtopicId}`);
+    const covered = new Set(
+      GRADE1_PLACEHOLDER_SPECS.map((spec) => `${spec.topicId}/${spec.subtopicId}`),
+    );
 
-    expect(covered.sort()).toEqual(subtopics.sort());
+    // Every subtopic is covered — but a subtopic may carry more than one
+    // placeholder once it is widened, which is how "დათვლა წინ და უკან" gained
+    // its counting-backwards half.
+    for (const key of subtopics) expect(covered.has(key), key).toBe(true);
     expect(subtopics).toHaveLength(113);
   });
 

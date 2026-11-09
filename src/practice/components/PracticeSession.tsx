@@ -4,6 +4,7 @@ import { getSubtopic, getTopic } from '../curriculum';
 import { signed } from '../format';
 import { MAX_SCORE } from '../scoring';
 import type { Submission } from '../session';
+import { bandForLevel, levelForScore, usesLevelBands } from '../levels';
 import { ScoreMeter } from './ScoreMeter';
 
 const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
@@ -16,6 +17,8 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const { session, answer, next, stop, activeAssignment } = usePractice();
   const [choice, setChoice] = useState<string | null>(null);
   const [typed, setTyped] = useState('');
+  /** Positions (1-based) the student has tapped so far, in order. */
+  const [sequence, setSequence] = useState<number[]>([]);
   const [feedback, setFeedback] = useState<Submission | null>(null);
   const [confirmStop, setConfirmStop] = useState(false);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -26,6 +29,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   useEffect(() => {
     setChoice(null);
     setTyped('');
+    setSequence([]);
     setFeedback(null);
     setConfirmStop(false);
   }, [session?.id, currentId]);
@@ -38,7 +42,12 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const topic = getTopic(session.ref.grade, session.ref.topicId);
   const subtopic = getSubtopic(session.ref.grade, session.ref.topicId, session.ref.subtopicId);
 
-  if (!topic || !subtopic || !question) {
+  // Decided before the guard, because an ended session legitimately has no
+  // current question left to render.
+  const finished = session.completed || session.score >= MAX_SCORE;
+  // The material running out is an ending, not a failed load — the branch below
+  // renders it. Only a genuinely missing topic/subtopic/question is an error.
+  if (!topic || !subtopic || (!question && !finished && !session.exhausted)) {
     return (
       <div className="practice-stage">
         <p className="demo-note">სესია ვერ ჩაიტვირთა. სცადე თავიდან.</p>
@@ -51,7 +60,13 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
 
   // The engine owns the questions; the view only renders the current one.
   const answered = session.awaitingNext;
-  const complete = session.completed || session.score >= MAX_SCORE;
+  const complete = finished;
+  // The subtopic ran out of questions before the score was complete.
+  const exhausted = !complete && Boolean(session.exhausted);
+  // The level the *current* score has earned. It moves down as well as up, so a
+  // student who slips back gets the easier questions again rather than being
+  // stuck with material they have just failed.
+  const level = usesLevelBands(session.ref.grade) ? levelForScore(session.score) : 1;
   const attemptMode = activeAssignment ? 'საშინაო დავალება' : 'ვარჯიში';
 
   const submit = (value: string) => {
@@ -67,6 +82,17 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
 
   const choose = (option: string) => submit(option);
   const entryMode = question?.answerMode === 'number';
+  const orderMode = question?.answerMode === 'order';
+
+  /** Tapping an item appends it to the sequence; tapping it again removes it. */
+  const tapOrder = (position: number) => {
+    if (answered) return;
+    setSequence((current) =>
+      current.includes(position)
+        ? current.filter((entry) => entry !== position)
+        : [...current, position],
+    );
+  };
 
   return (
     <div className="practice-stage">
@@ -92,12 +118,35 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             {session.correct + session.incorrect}{' '}
             {session.correct + session.incorrect === 1 ? 'პასუხი' : 'პასუხი'} · სწორი{' '}
             <strong>{session.correct}</strong> · არასწორი <strong>{session.incorrect}</strong>
+            {usesLevelBands(session.ref.grade) && (
+              <>
+                {' '}
+                · დონე <strong>{level}</strong> — {bandForLevel(level).label}
+              </>
+            )}
           </p>
         </div>
         <ScoreMeter score={session.score} label="სესიის ქულა" />
       </div>
 
-      {complete ? (
+      {exhausted ? (
+        <div className="session-complete" role="status">
+          <div className="complete-badge" aria-hidden="true">
+            ✅
+          </div>
+          <h2>ამ თემის კითხვები ამოიწურა.</h2>
+          <p>
+            ქულა: <strong>{session.score}</strong> / {MAX_SCORE} · {session.correct} სწორი და{' '}
+            {session.incorrect} არასწორი პასუხი. ეს თემა ჯერ ამ რაოდენობის კითხვას გვაძლევს,
+            ამიტომ სესია აქ სრულდება — შედეგი პროგრესში შენახულია.
+          </p>
+          <div className="page-actions">
+            <button type="button" className="btn btn-primary" onClick={onExit}>
+              გაგრძელება
+            </button>
+          </div>
+        </div>
+      ) : complete ? (
         <div className="session-complete" role="status">
           <div className="complete-badge" aria-hidden="true">
             🎉
@@ -113,7 +162,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             </button>
           </div>
         </div>
-      ) : (
+      ) : question ? (
         <div className="question-card">
           <div className="question-count">
             კითხვა #{session.correct + session.incorrect + 1}
@@ -126,7 +175,48 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
           )}
           <p className="question-prompt">{question.prompt}</p>
 
-          {entryMode ? (
+          {orderMode ? (
+            <div className="answer-order">
+              <p className="answer-order-hint">
+                შეეხე საგნებს იმ თანმიმდევრობით, როგორც უნდა იდგეს.
+              </p>
+              <ol className="answer-order-list" aria-label="არჩეული თანმიმდევრობა">
+                {(question.orderItems ?? []).map((item, index) => {
+                  const position = index + 1;
+                  const place = sequence.indexOf(position);
+                  return (
+                    <li key={`${item}-${position}`}>
+                      <button
+                        type="button"
+                        className={`answer-order-item ${place >= 0 ? 'is-picked' : ''}`}
+                        onClick={() => tapOrder(position)}
+                        disabled={answered}
+                        aria-pressed={place >= 0}
+                      >
+                        <span className="answer-order-badge" aria-hidden="true">
+                          {place >= 0 ? place + 1 : position}
+                        </span>
+                        <span className="answer-order-text">{item}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={answered || sequence.length !== (question.orderItems ?? []).length}
+                onClick={() => submit(sequence.join(','))}
+              >
+                შემოწმება
+              </button>
+              {answered && (
+                <p className={`answer-entry-result ${feedback?.result.correct ? 'is-correct' : 'is-wrong'}`}>
+                  სწორი თანმიმდევრობაა: <strong>{question.answer.split(',').join(' → ')}</strong>
+                </p>
+              )}
+            </div>
+          ) : entryMode ? (
             <form
               className="answer-entry"
               onSubmit={(event) => {
@@ -247,7 +337,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

@@ -122,15 +122,31 @@ const nextNumber = (spec: Address, min = 1, max = 19): QuestionTemplate =>
   });
 
 /** "Which number comes right before n?" */
-const previousNumber = (spec: Address, min = 2, max = 20): QuestionTemplate =>
+const previousNumber = (
+  spec: Address,
+  min = 2,
+  max = 20,
+  direction: 'before' | 'after' = 'before',
+): QuestionTemplate =>
   defineTemplate({
     ...address(spec),
-    prompt: 'რომელი რიცხვი მოდის {n}-მდე?',
-    variables: numbers(min, max),
-    answer: (v: Vars) => Number(v.n) - 1,
+    // The id is the subtopic plus the direction, so the two directions are
+    // separate templates rather than one template with a mode switch, and
+    // `previousNumber` stays reusable for other subtopics (win-nak also uses
+    // it). Hard-coding 'g1-win-ukan' here collided with win-nak's own id.
+    id: `g1-${spec.subtopicId}${direction === 'before' ? '' : '-after'}`,
+    prompt: direction === 'before' ? 'რომელი რიცხვი მოდის {n}-მდე?' : 'რომელი რიცხვი მოდის {n}-ის შემდეგ?',
+    variables: {
+      // Drawn from the top of the range down: "before N" has exactly one answer
+      // per N, so the first variations should cover the hard end of the range
+      // in case the session cannot get through all of them.
+      n: { kind: 'int', min: direction === 'before' ? min : min - 1, max: direction === 'before' ? max : max - 1, reverse: true },
+    },
+    answer: (v: Vars) => (direction === 'before' ? Number(v.n) - 1 : Number(v.n) + 1),
     format: { kind: 'integer', min: 0 },
     distractors: ({ answer }) => numeric(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n}-მდე მოდის ${answer}.`,
+    explanation: ({ vars, answer }) =>
+      direction === 'before' ? `${vars.n}-მდე მოდის ${answer}.` : `${vars.n}-ის შემდეგ მოდის ${answer}.`,
   });
 
 /** "Which of these two numbers is bigger?" */
@@ -328,6 +344,7 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   // U03 — თვლა
   add({ subtopicId: 'sruli-datvla', topicId: 'datvla' }, 1, 10),
   previousNumber({ subtopicId: 'win-ukan', topicId: 'datvla' }, 2, 20),
+  previousNumber({ subtopicId: 'win-ukan', topicId: 'datvla' }, 2, 20, 'after'),
   nextNumber({ subtopicId: '100-mde', topicId: 'datvla' }, 1, 19),
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
