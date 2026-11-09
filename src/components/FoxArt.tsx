@@ -16,7 +16,11 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
   return (
     <svg
       className="fox-art"
-      viewBox="0 0 800 800"
+      /* Cropped to the art's own bounds plus half a stroke, since the outlines
+         are stroked on the centreline and reach past the raw coordinates. The
+         800x800 source carried a lot of empty margin, which made the fox
+         render small in every placement. */
+      viewBox="200 90 512 636"
       aria-hidden="true"
       focusable="false"
     >

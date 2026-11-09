@@ -24,14 +24,14 @@
   transform-origin: center bottom;
 }
 
-/* The artwork fills the box width and rests on the bottom edge, so the fox
-   stands on the ground shadow rather than floating in the square viewBox. */
+/* The art is taller than it is wide (aspect ~0.79), so it is fitted to the
+   box height and centred; fitting the width instead would overflow the box. */
 .mascot-root .fox-art {
   position: absolute;
   left: 50%;
-  bottom: 0;
-  width: 220px;
-  height: 220px;
+  bottom: 4px;
+  height: 244px;
+  width: auto;
   transform: translateX(-50%);
   overflow: visible;
 }
