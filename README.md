@@ -95,16 +95,27 @@ compatibility_date = "2025-01-01"
 [assets]
 directory = "./dist"
 not_found_handling = "single-page-application"
+
+[previews]
 ```
 
-Without `[assets]`, Workers Builds looks for a Worker entry point, finds none,
-and the deployment fails — which is why the file exists. Under Workers Builds
-the settings are:
+Two blocks matter, for two different reasons:
+
+- **`[assets]`** — without it Workers Builds looks for a Worker entry point,
+  finds none, and the build step fails.
+- **`[previews]`** — the preview job runs `npx wrangler preview` (Worker Previews,
+  open beta), which refuses to run unless this block exists. It may be empty;
+  assets and compatibility settings stay at the top level.
+
+Workers Builds settings:
 
 | Setting | Value |
 | --- | --- |
 | Build command | `npm run build` |
-| Deploy command | `npx wrangler deploy` |
+| Deploy command | `npx wrangler preview` |
+
+Use `npx wrangler deploy` instead if you want a named production Worker rather
+than a branch preview.
 
 Routing is hash-based (`#/student/practice`), so every route resolves to the
 same `index.html`; `not_found_handling` is only there so a future real-path
@@ -114,5 +125,11 @@ To check the configuration locally without deploying:
 
 ```bash
 npm run build
-npx wrangler dev     # serves dist/ exactly as production will
+npx wrangler dev        # serves dist/ exactly as production will
+npx wrangler deploy --dry-run   # validates the config + asset upload
 ```
+
+`wrangler preview` cannot be checked locally — it needs `CLOUDFLARE_API_TOKEN`,
+which the Workers Builds environment provides and a local shell does not. The
+config error it reports (a missing `[previews]` block) appears *before* the
+authentication error, so a config regression is still visible locally.

@@ -18,3 +18,9 @@ directory = "./dist"
 # Serve index.html for unknown paths. Cheap insurance: it keeps the site
 # working if a future route ever uses real paths instead of hashes.
 not_found_handling = "single-page-application"
+
+# Worker Previews (open beta) — this is what `npx wrangler preview` deploys,
+# and it is the command the Workers Builds job runs to produce a preview URL.
+# The block must be present (it may be empty); assets, compatibility settings
+# and migrations stay at the top level.
+[previews]
