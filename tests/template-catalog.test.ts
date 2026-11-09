@@ -192,14 +192,19 @@ describe('curriculum coverage', () => {
     expect(problems).toEqual([]);
   });
 
-  it('has exactly one grade-1 placeholder per curriculum subtopic', () => {
+  it('has at least one grade-1 placeholder per curriculum subtopic', () => {
     const grade1 = CURRICULUM.find((grade) => grade.grade === 1)!;
     const subtopics = grade1.topics.flatMap((topic) =>
       topicSubtopics(topic).map((subtopic) => `${topic.id}/${subtopic.id}`),
     );
-    const covered = GRADE1_PLACEHOLDER_SPECS.map((spec) => `${spec.topicId}/${spec.subtopicId}`);
+    const covered = new Set(
+      GRADE1_PLACEHOLDER_SPECS.map((spec) => `${spec.topicId}/${spec.subtopicId}`),
+    );
 
-    expect(covered.sort()).toEqual(subtopics.sort());
+    // Every subtopic is covered — but a subtopic may carry more than one
+    // placeholder once it is widened, which is how "დათვლა წინ და უკან" gained
+    // its counting-backwards half.
+    for (const key of subtopics) expect(covered.has(key), key).toBe(true);
     expect(subtopics).toHaveLength(113);
   });
 

@@ -42,7 +42,12 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const topic = getTopic(session.ref.grade, session.ref.topicId);
   const subtopic = getSubtopic(session.ref.grade, session.ref.topicId, session.ref.subtopicId);
 
-  if (!topic || !subtopic || !question) {
+  // Decided before the guard, because an ended session legitimately has no
+  // current question left to render.
+  const finished = session.completed || session.score >= MAX_SCORE;
+  // The material running out is an ending, not a failed load — the branch below
+  // renders it. Only a genuinely missing topic/subtopic/question is an error.
+  if (!topic || !subtopic || (!question && !finished && !session.exhausted)) {
     return (
       <div className="practice-stage">
         <p className="demo-note">სესია ვერ ჩაიტვირთა. სცადე თავიდან.</p>
@@ -55,7 +60,9 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
 
   // The engine owns the questions; the view only renders the current one.
   const answered = session.awaitingNext;
-  const complete = session.completed || session.score >= MAX_SCORE;
+  const complete = finished;
+  // The subtopic ran out of questions before the score was complete.
+  const exhausted = !complete && Boolean(session.exhausted);
   // The level the *current* score has earned. It moves down as well as up, so a
   // student who slips back gets the easier questions again rather than being
   // stuck with material they have just failed.
@@ -122,7 +129,24 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
         <ScoreMeter score={session.score} label="სესიის ქულა" />
       </div>
 
-      {complete ? (
+      {exhausted ? (
+        <div className="session-complete" role="status">
+          <div className="complete-badge" aria-hidden="true">
+            ✅
+          </div>
+          <h2>ამ თემის კითხვები ამოიწურა.</h2>
+          <p>
+            ქულა: <strong>{session.score}</strong> / {MAX_SCORE} · {session.correct} სწორი და{' '}
+            {session.incorrect} არასწორი პასუხი. ეს თემა ჯერ ამ რაოდენობის კითხვას გვაძლევს,
+            ამიტომ სესია აქ სრულდება — შედეგი პროგრესში შენახულია.
+          </p>
+          <div className="page-actions">
+            <button type="button" className="btn btn-primary" onClick={onExit}>
+              გაგრძელება
+            </button>
+          </div>
+        </div>
+      ) : complete ? (
         <div className="session-complete" role="status">
           <div className="complete-badge" aria-hidden="true">
             🎉
@@ -138,7 +162,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             </button>
           </div>
         </div>
-      ) : (
+      ) : question ? (
         <div className="question-card">
           <div className="question-count">
             კითხვა #{session.correct + session.incorrect + 1}
@@ -313,7 +337,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             )}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

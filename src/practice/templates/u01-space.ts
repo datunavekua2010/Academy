@@ -161,7 +161,11 @@ const u011: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'marcxena-marjvena',
     difficulty: 1,
-    prompt: 'რომელი ობიექტი დგას {where}?',
+    // The stem names the row it is about. Without this the wording never
+    // changes — only the picture does — so the de-duplication that compares
+    // prompts treated different questions as the same one, and a session
+    // repeated the identical sentence over and over.
+    prompt: 'მწკრივში დგას: {row}. რომელი ობიექტი დგას {where}?',
     variables: {
       row: { kind: 'list', pick: distinctRow },
       slot: { kind: 'int', min: 1, max: (v: Vars) => (v.row as unknown[]).length },
@@ -205,7 +209,7 @@ const u011: QuestionTemplate[] = [
     difficulty: 2,
     // "რომელია რიგში X" reads as "which one is X, in a row?" — the adverbial
     // form "რომელ ადგილას" is what a child is actually being asked.
-    prompt: 'რომელ ადგილას დგას რიგში {thing}?',
+    prompt: 'მწკრივში დგას: {row}. რომელ ადგილას დგას რიგში {thing}?',
     variables: {
       row: { kind: 'list', pick: distinctRow },
       thing: { kind: 'choice', values: NAMES },

@@ -163,9 +163,21 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     const used = new Set(Object.keys(session.questions));
     // Avoid both the ids already used and the wording/numbers behind them, so a
     // refill can never re-add a question the student has already seen.
-    const seen = session.answers.map(
-      (answer) => session.questions[answer.questionId]?.prompt ?? answer.questionId,
-    );
+    // Everything this session has ever shown — answered as well as queued.
+    // `session.questions` only holds what is still ahead, so an answered
+    // question had already dropped out of it; avoiding only the current queue
+    // let the generator hand back a question the student had just finished.
+    //
+    // Prompt *and* picture, as `advance` itself compares: a positional question
+    // asks several things about one drawn row, so the same sentence over a
+    // different row is a different question.
+    const seen = session.answers.map((answer) => {
+      // Older drafts stored no prompt with the answer; those fall back to the id.
+      const question = session.questions[answer.questionId];
+      const prompt = answer.prompt ?? question?.prompt ?? answer.questionId;
+      const visual = answer.visual ?? question?.visual ?? '';
+      return `${prompt}|${visual}`;
+    });
     // Top up with questions at the level the *current* score has unlocked, so
     // the next question belongs to the band the student has just reached.
     const refill =

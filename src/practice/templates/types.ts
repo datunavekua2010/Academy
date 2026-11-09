@@ -27,6 +27,15 @@ export interface RangedVariable {
   max: number | ((vars: Vars) => number);
   /** Values are drawn as min + k·step. Defaults to 1. */
   step?: number;
+  /**
+   * Draw from the top down (max, max−step, …).
+   *
+   * For a template whose answers are scattered — "which number comes before N"
+   * has one answer per number — drawing downward makes the *first* variations
+   * cover the hardest answers, so a session that has to end early still ends on
+   * a representative set rather than a cluster at the bottom of the range.
+   */
+  reverse?: boolean;
   /** Skip zero — use this for divisors and multipliers that must not be 0. */
   nonZero?: boolean;
 }

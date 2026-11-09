@@ -53,6 +53,16 @@ function answersMatch(question: Question, choice: string): boolean {
 
 export interface SessionAnswer {
   questionId: string;
+  /**
+   * The prompt and picture as they were shown.
+   *
+   * Recorded because a question drops out of `questions` once the session has
+   * moved past it, and a refill has to know what has already been asked to
+   * avoid asking it again. An id alone cannot do that job: a regenerated
+   * question carries a new id, so the old one matches nothing.
+   */
+  prompt?: string;
+  visual?: string;
   choice: string;
   correct: boolean;
   previousScore: number;
@@ -75,6 +85,15 @@ export interface SessionState {
   finishedAt: string | null;
   /** True after the score reaches 100. */
   completed: boolean;
+  /**
+   * True when the subtopic's material has run out before 100.
+   *
+   * This is an ending, not an error: a subtopic with a finite set of questions
+   * (nineteen numbers, four shapes) simply cannot supply a 35-question session.
+   * The score reached is the result. Distinguishing this from a broken load is
+   * what stops the student being told "სცადე თავიდან" after a perfect run.
+   */
+  exhausted?: boolean;
   /** True when the last answer has been submitted but not advanced past. */
   awaitingNext: boolean;
   answers: SessionAnswer[];
@@ -100,7 +119,13 @@ export function addQuestions(
 ): Record<string, Question> {
   if (questions.length === 0) return state.questions;
   const next = { ...state.questions };
-  for (const question of questions) next[question.id] = question;
+  // Never overwrite. An id is `templateId~seed`, so a draw that repeats a seed
+  // produces the same id — writing it over an existing question silently
+  // replaced something the student had not yet been asked, and the prompt it
+  // carried could then appear twice in one session.
+  for (const question of questions) {
+    if (!next[question.id]) next[question.id] = question;
+  }
   return next;
 }
 
@@ -180,6 +205,8 @@ export function submitAnswer(
         ...state.answers,
         {
           questionId: question.id,
+          prompt: question.prompt,
+          visual: question.visual,
           choice,
           correct,
           previousScore: result.previousScore,
@@ -203,30 +230,95 @@ export function advance(
   state: SessionState,
   refill: Question[] = [],
 ): SessionState {
-  if (state.completed) return state;
+  if (state.completed || state.exhausted) return state;
 
   const [, ...rest] = state.queue;
   let queue = rest;
   let questions = state.questions;
 
-  if (queue.length < 3 && refill.length > 0) {
+  // An id encodes the drawn question, so answering it means it must never be
+  // asked again. Remembering the ids we have stepped past lets the check below
+  // catch a repeat whatever route it took into the queue.
+  const answeredIds = new Set(state.answers.map((answer) => answer.questionId));
+  const keyOf = (id: string): string => {
+    const question = questions[id];
+    return question ? `${question.prompt}|${question.visual ?? ''}` : id;
+  };
+  const keep = new Set<string>();
+  queue = queue.filter((id) => {
+    if (answeredIds.has(id)) return false;
+    const key = keyOf(id);
+    if (keep.has(key)) return false;
+    keep.add(key);
+    return true;
+  });
+
+  // Runs whenever the queue is short, not only when the refill is non-empty:
+  // the de-duplication below also repairs a queue that already carries the same
+  // question twice, and skipping it left the student on a question they had
+  // just answered.
+  if (queue.length < 3) {
     // Only append variations this session has not used yet. The prompt check is
     // the important one: a regenerated question gets a fresh id, so filtering by
     // id alone would let the same wording back into the queue.
+    // Keyed on the prompt *and* the picture: a positional question shows a row
+    // and asks one of several things about it, so the same sentence over a
+    // different row is a different question, and the same row asked about a
+    // different position is one too.
+    //
+    // Answered questions are included. `state.questions` only keeps what is
+    // still ahead, so filtering on it alone let a question the student had
+    // just finished be queued again.
     const shown = new Set(
-      Object.values(state.questions).map((question) => question.prompt),
+      Object.values(state.questions).map(
+        (question) => `${question.prompt}|${question.visual ?? ''}`,
+      ),
     );
+    for (const answer of state.answers) {
+      if (answer.prompt) shown.add(`${answer.prompt}|${answer.visual ?? ''}`);
+    }
+    // A prompt already waiting in the queue counts as shown, even when it
+    // arrived under a different id. `startSession` and a refill can both hand
+    // over the same wording, and the queue would then ask it twice.
+    for (const id of queue) {
+      const waiting = state.questions[id];
+      if (waiting) shown.add(`${waiting.prompt}|${waiting.visual ?? ''}`);
+    }
+    // `state.questions[id]` is checked even when that id has already been
+    // answered: an id encodes the drawn question, so a refill offering the same
+    // id is offering the same question again. `addQuestions` deliberately will
+    // not overwrite it, so queueing it would point the student at nothing.
     const unused = refill.filter(
-      (question) => !state.questions[question.id] && !shown.has(question.prompt),
+      (question) =>
+        !state.questions[question.id] &&
+        !answeredIds.has(question.id) &&
+        !shown.has(`${question.prompt}|${question.visual ?? ''}`),
     );
     if (unused.length > 0) {
       questions = addQuestions(state, unused);
       const lastId = queue[queue.length - 1];
-      queue = [...queue, ...shuffle(unused).map((q) => q.id).filter((id) => id !== lastId)];
+      // `addQuestions` may have declined an id collision, so only queue the
+      // questions that are actually in the session now.
+      queue = [
+        ...queue,
+        ...shuffle(unused)
+          .filter((q) => questions[q.id] === q)
+          .map((q) => q.id)
+          .filter((id) => id !== lastId),
+      ];
     }
   }
 
-  return { ...state, queue, questions, awaitingNext: false };
+  // Nothing left to ask and the score is short of 100: the subtopic has run
+  // out of material. Ending here is the honest outcome — the alternative is a
+  // queue that empties under a student who was doing everything right.
+  //
+  // Recomputed, never inherited: an earlier refill can legitimately come back
+  // empty when the queue is briefly too long, and carrying that flag forward
+  // marked the session finished while questions were still waiting.
+  const exhausted = !state.completed && queue.length === 0 && state.score < MAX_SCORE;
+
+  return { ...state, queue, questions, awaitingNext: false, exhausted };
 }
 
 /** Ends a session before 100 points (the score is kept as the final result). */
@@ -239,7 +331,7 @@ export function endSession(state: SessionState, now = new Date()): SessionState 
 }
 
 export function isFinished(state: SessionState | null): boolean {
-  return Boolean(state?.finishedAt) || Boolean(state?.completed);
+  return Boolean(state?.finishedAt) || Boolean(state?.completed) || Boolean(state?.exhausted);
 }
 
 /**

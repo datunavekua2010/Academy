@@ -95,7 +95,11 @@ function drawVars(template: QuestionTemplate, rng: () => number): Vars {
     const max = resolveBound(spec.max, vars);
     const upper = Math.max(min, max);
 
-    let value = min + randomInt(rng, 0, Math.floor((upper - min) / step)) * step;
+    const steps = Math.floor((upper - min) / step);
+    // `reverse` draws from the top of the range down, so the first variations of
+    // a template whose answers are scattered still cover the hard end.
+    const offset = spec.reverse ? steps - randomInt(rng, 0, steps) : randomInt(rng, 0, steps);
+    let value = min + offset * step;
 
     if (spec.nonZero && value === 0) {
       // Nudge off zero without leaving the range when possible.
@@ -307,7 +311,12 @@ export function generateFromTemplate(
     // output as a repeat and fail with "ranges are too narrow" while holding a
     // perfectly good library of questions.
     const visual = template.visual ? template.visual(vars) : '';
-    const signature = `${template.id}|${prompt}|${visual}|${orderItems?.join(',') ?? ''}`;
+    // The answer belongs in the key too. Two questions can show the same row
+    // and ask different things about it ("which is on the left?" against
+    // "which is in the middle?") — same prompt prefix, same picture, different
+    // question. Keyed without the answer, one was mistaken for the other and a
+    // session showed the same sentence twice.
+    const signature = `${template.id}|${prompt}|${visual}|${orderItems?.join(',') ?? ''}|${String(normalised.value)}`;
 
     return {
       id: `${template.id}~${seed}`,
