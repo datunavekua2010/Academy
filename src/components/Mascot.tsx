@@ -29,8 +29,11 @@ interface MascotProps {
 }
 
 /**
- * Axi — the curious owl (ported from the mascot prototype).
+ * Axi — the curious red fox.
+ *
  * Eyes follow the cursor, click to make Axi think, waves hello on load.
+ * The animation contract (eye tracking, blink, wave, bounce, thinking) is
+ * independent of the anatomy, so the fox keeps every owl behaviour.
  */
 export function Mascot({
   scale = 1,
@@ -132,34 +135,36 @@ export function Mascot({
             bouncing ? 'is-bouncing' : ''
           }`}
           role="img"
-          aria-label="Axi — მეგობრული ლურჯი ბუ"
+          aria-label="Axi — მეგობრული წითელი მელა"
         >
-          <div className="wing wing-left" />
-          <div className="wing wing-right" />
+          {/* brush tail, behind the body */}
+          <div className="tail">
+            <div className="tail-tip" />
+          </div>
+          <div className="paw paw-left" />
+          <div className="paw paw-right" />
           <div className="ear ear-left" />
           <div className="ear ear-right" />
-          <div className="m-body">
-            <div className="belly">
-              <div className="feather feather-one" />
-              <div className="feather feather-two" />
-              <div className="feather feather-three" />
-            </div>
-            <div className="eye eye-left">
-              <div className="pupil" style={pupilStyle} />
-              <div className="shine" style={pupilStyle} />
-            </div>
-            <div className="eye eye-right">
-              <div className="pupil" style={pupilStyle} />
-              <div className="shine" style={pupilStyle} />
-            </div>
-            <div className="beak" />
-            <div className="cheek cheek-left" />
-            <div className="cheek cheek-right" />
-            <div className="feet">
-              <span />
-              <span />
-            </div>
+          <div className="m-body" />
+          <div className="chest" />
+          {/* cream muzzle: a rounded mask plus a small rise between the eyes */}
+          <div className="mask mask-main" />
+          <div className="mask mask-left" />
+          <div className="feet">
+            <span />
+            <span />
           </div>
+          <div className="eye eye-left">
+            <div className="pupil" style={pupilStyle} />
+            <div className="shine" style={pupilStyle} />
+          </div>
+          <div className="eye eye-right">
+            <div className="pupil" style={pupilStyle} />
+            <div className="shine" style={pupilStyle} />
+          </div>
+          <div className="nose" />
+          <div className="cheek cheek-left" />
+          <div className="cheek cheek-right" />
         </div>
       </div>
 
