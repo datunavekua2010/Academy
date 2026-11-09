@@ -81,3 +81,38 @@ src/practice/
 - `npm run build` — production build (single `dist/index.html`)
 - `npm test` — scoring, bank and interaction tests (jsdom)
 - `npm run typecheck` — TypeScript check
+
+## Deployment (Cloudflare Workers)
+
+This project deploys to **Cloudflare Workers as static assets only**. The build
+is a single self-contained `dist/index.html`, and there is no Worker script —
+`wrangler.toml` supplies the assets-only configuration:
+
+```toml
+name = "axiom-academy"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"
+```
+
+Without `[assets]`, Workers Builds looks for a Worker entry point, finds none,
+and the deployment fails — which is why the file exists. Under Workers Builds
+the settings are:
+
+| Setting | Value |
+| --- | --- |
+| Build command | `npm run build` |
+| Deploy command | `npx wrangler deploy` |
+
+Routing is hash-based (`#/student/practice`), so every route resolves to the
+same `index.html`; `not_found_handling` is only there so a future real-path
+route keeps working.
+
+To check the configuration locally without deploying:
+
+```bash
+npm run build
+npx wrangler dev     # serves dist/ exactly as production will
+```
