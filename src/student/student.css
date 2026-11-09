@@ -168,21 +168,24 @@
 
 /* ---------- Axi navigation ---------- */
 .axi-nav {
-  --axi-radius: 265px;
+  /* 290 rather than 265: the fox is larger now, so the bubbles need to sit
+     further out or they start overlapping the ears and tail. */
+  --axi-radius: 290px;
   margin-top: 6px;
 }
 .axi-stage {
   position: relative;
   width: min(100%, 760px);
-  height: 610px;
+  /* Grown from 610 to hold the larger fox and the wider bubble ring. */
+  height: 670px;
   margin: 0 auto;
 }
 .axi-halo {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 410px;
-  height: 410px;
+  width: 450px;
+  height: 450px;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(219, 234, 254, .95) 0%, rgba(239, 246, 255, .6) 52%, rgba(255, 255, 255, 0) 72%);
@@ -208,11 +211,12 @@
 .halo-dot-three { top: 128px; left: 22px; width: 7px; height: 7px; background: var(--pink); box-shadow: 0 0 0 4px rgba(244, 114, 182, .12); }
 
 .axi-nav-mascot {
+  --mascot-scale: 1.25;
   position: absolute;
   left: 50%;
   top: 50%;
   z-index: 2;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%);
   transform-origin: center center;
 }
 
@@ -580,8 +584,9 @@
   }
   .axi-halo-ring { inset: 26px; }
   .axi-nav-mascot {
+    --mascot-scale: .95;
     position: static;
-    transform: scale(.92);
+    transform: none;
     transform-origin: center center;
     margin-bottom: -4px;
   }

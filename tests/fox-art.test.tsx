@@ -57,6 +57,16 @@ describe('fox artwork', () => {
     expect(container.innerHTML).not.toContain('url(#tailFur)');
   });
 
+  it('lets a placement override its size from CSS', () => {
+    const { container } = renderMascot();
+    const root = container.querySelector('.mascot-root') as HTMLElement;
+    // The prop must seed a *different* variable than the one CSS reads.
+    // If the component wrote --mascot-scale inline, it would beat every
+    // selector and .hero-mascot/.axi-nav-mascot could never resize the fox.
+    expect(root.style.getPropertyValue('--mascot-propscale')).not.toBe('');
+    expect(root.style.getPropertyValue('--mascot-scale')).toBe('');
+  });
+
   it('exposes the mascot to assistive tech exactly once', () => {
     const { container } = renderMascot();
     // The SVG is decorative; the wrapper carries the accessible name.

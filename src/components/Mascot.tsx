@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type Ref } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type Ref } from 'react';
 import { FoxArt } from './FoxArt';
 
 type Mode = 'idle' | 'thinking' | 'waving';
@@ -121,7 +121,11 @@ export function Mascot({
     <div
       ref={root}
       className={`mascot-root ${className}`}
-      style={{ width: 220 * scale, height: 248 * scale }}
+      /* The `scale` prop seeds --mascot-propscale, which CSS consumes as the
+         fallback for --mascot-scale. Seeding --mascot-scale directly would not
+         work: it is an inline style, and inline styles beat every selector, so
+         a placement could never override it. */
+      style={{ '--mascot-propscale': scale } as CSSProperties}
     >
       {showThoughtBubble && text && (
         <div className="mascot-bubble" key={text}>
@@ -129,7 +133,7 @@ export function Mascot({
         </div>
       )}
 
-      <div className="mascot-scale" style={{ transform: `scale(${scale})` }}>
+      <div className="mascot-scale">
         <div className="ground-shadow" />
         <div
           className={`mascot ${mode === 'waving' ? 'waving' : ''} ${mode === 'thinking' ? 'thinking' : ''} ${
