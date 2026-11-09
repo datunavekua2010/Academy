@@ -48,9 +48,11 @@ function validateShape(template: QuestionTemplate): void {
 
   if (!template.id.trim()) throw new Error('A template needs a non-empty id');
   if (!template.prompt.trim()) throw new Error(`${where}: prompt is empty`);
-  if (!template.prompt.includes('{')) {
+  if (!template.prompt.includes('{') && !template.visual) {
     // Not fatal — a constant prompt is legal — but it means nothing varies in
-    // the wording, which is almost always a mistake.
+    // the wording, which is almost always a mistake. A template that declares
+    // `visual` is exempt: "how many objects are there?" is deliberately fixed
+    // wording, and the variation is carried by the picture beneath it.
     console.warn(`${where}: prompt has no {placeholder}, so every variation reads the same`);
   }
   if (typeof template.answer !== 'function') {
@@ -65,8 +67,25 @@ function validateShape(template: QuestionTemplate): void {
 
   for (const [name, spec] of Object.entries(template.variables)) {
     if (spec.kind === 'choice') {
+      // A function pool is derived at draw time, so its size is not knowable
+      // here — the generator checks it produced a value, and templates that
+      // derive a *single* value depend on an earlier variable for correctness.
+      if (typeof spec.values === 'function') continue;
       if (!Array.isArray(spec.values) || spec.values.length < 2) {
         throw new Error(`${where}: choice variable "${name}" needs at least two values`);
+      }
+      continue;
+    }
+    if (spec.kind === 'list') {
+      if (!Array.isArray(spec.pick.values) || spec.pick.values.length < 1) {
+        throw new Error(`${where}: list variable "${name}" needs at least one value to pick from`);
+      }
+      const length = spec.pick.length;
+      if (typeof length === 'number' && length < 1) {
+        throw new Error(`${where}: list variable "${name}" needs a positive length`);
+      }
+      if (typeof length !== 'number' && length.max < length.min) {
+        throw new Error(`${where}: list variable "${name}" has max length below min`);
       }
       continue;
     }

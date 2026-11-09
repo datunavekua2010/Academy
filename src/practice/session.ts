@@ -18,6 +18,24 @@ import type { Question, SubtopicRef } from './types';
  * freshly generated questions to `advance`.
  */
 
+/**
+ * Compares a student's answer with the answer key.
+ *
+ * Multiple-choice answers compare exactly. A typed number must compare by
+ * VALUE, not by spelling: "07", " 7 " and "7" are the same answer, and a child
+ * marked wrong for a leading space would be learning about keyboards rather
+ * than about arithmetic. Georgian digits are not accepted — the pad and the
+ * keyboard both produce Latin digits, and silently accepting invented ones
+ * would make the key ambiguous.
+ */
+function answersMatch(question: Question, choice: string): boolean {
+  if (question.answerMode !== 'number') return choice === question.answer;
+
+  const typed = Number(choice.trim().replace(',', '.'));
+  const expected = Number(question.answer);
+  return Number.isFinite(typed) && Number.isFinite(expected) && typed === expected;
+}
+
 export interface SessionAnswer {
   questionId: string;
   choice: string;
@@ -129,7 +147,7 @@ export function submitAnswer(
   const question = currentQuestion(state);
   if (!question || state.awaitingNext) return null;
 
-  const correct = choice === question.answer;
+  const correct = answersMatch(question, choice);
   const result = applyAnswer(state.score, correct);
 
   return {

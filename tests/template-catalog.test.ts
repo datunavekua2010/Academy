@@ -55,11 +55,18 @@ describe('every template in the catalog', () => {
         expect(question.explanation.trim().length).toBeGreaterThan(0);
 
         // Distinct options, one of which is the answer. Most questions offer
-        // four; true/false and three-way sorting offer fewer by design.
-        const expectedOptions = template.optionCount ?? 4;
-        expect(question.options).toHaveLength(expectedOptions);
-        expect(new Set(question.options).size).toBe(expectedOptions);
-        expect(question.options).toContain(question.answer);
+        // four; true/false and three-way sorting offer fewer by design, and a
+        // typed-answer question deliberately offers none at all.
+        if (question.answerMode === 'number') {
+          expect(question.options).toEqual([]);
+          // A typed answer must still be a single, unambiguous number.
+          expect(String(question.answer)).toMatch(/^-?\d+(\.\d+)?$/);
+        } else {
+          const expectedOptions = template.optionCount ?? 4;
+          expect(question.options).toHaveLength(expectedOptions);
+          expect(new Set(question.options).size).toBe(expectedOptions);
+          expect(question.options).toContain(question.answer);
+        }
 
         // The question belongs to the template's curriculum address.
         expect(question.grade).toBe(template.grade);
@@ -112,8 +119,15 @@ describe('curriculum coverage', () => {
             batch.length,
             `${grade.grade}/${topic.id}/${subtopic.id} produced only ${batch.length}/${required} variations`,
           ).toBe(required);
+          // Identity and distinctness are both measured by signature.
+          //
+          // Not by prompt: a visual question's wording is deliberately fixed
+          // ("how many objects are there?") and its content is the drawn
+          // picture, so two rows of different objects are two different
+          // questions with the same sentence. Asserting on prompts made this
+          // test fail intermittently for exactly those subtopics — the batch
+          // held three different pictures and two distinct sentences.
           expect(new Set(batch.map((q) => q.signature)).size).toBe(required);
-          expect(new Set(batch.map((q) => q.prompt)).size).toBe(required);
         }
       }
     }

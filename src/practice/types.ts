@@ -16,8 +16,19 @@ export interface Question {
   subtopicId: string;
   /** Georgian prompt. May contain simple `x`, `÷` and fraction text. */
   prompt: string;
+  /** Optional support line drawn above the prompt (object row, groups, …). */
+  visual?: string;
   /** Optional supporting line (a number line hint, a diagram description…). */
   hint?: string;
+  /**
+   * How the answer is given.
+   *
+   * `choice` (the default) presents `options`. `number` asks the student to
+   * type the answer: some questions — "how many are left?", "how much longer?"
+   * — are answered more honestly by typing than by picking from four, and the
+   * U01 spec asks for both formats.
+   */
+  answerMode?: 'choice' | 'number';
   options: Answer[];
   answer: Answer;
   explanation: string;

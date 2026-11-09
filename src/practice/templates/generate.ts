@@ -1,6 +1,6 @@
 import type { Question } from '../types';
 import { makeRng, pick, randomInt, shuffleWith } from './rng';
-import type { AnswerFormat, QuestionTemplate, Vars } from './types';
+import type { AnswerFormat, ListVariable, QuestionTemplate, Vars } from './types';
 import { renderPrompt } from './types';
 
 /**
@@ -38,13 +38,55 @@ function resolveBound(bound: number | ((vars: Vars) => number), vars: Vars): num
   return typeof bound === 'function' ? bound(vars) : bound;
 }
 
+/** Draws a whole ordered sequence for a `list` variable. */
+export function drawList(
+  spec: ListVariable,
+  vars: Vars,
+  rng: () => number,
+): Array<number | string> {
+  const pool = spec.pick.filter ? spec.pick.values.filter((item) => spec.pick.filter!(item, vars)) : [...spec.pick.values];
+
+  const lengthRange =
+    typeof spec.pick.length === 'number'
+      ? { min: spec.pick.length, max: spec.pick.length }
+      : spec.pick.length;
+  const want = randomInt(rng, lengthRange.min, Math.max(lengthRange.min, lengthRange.max));
+
+  if (spec.pick.unique && pool.length < want) {
+    // Not enough distinct items: the constraint checker will reject this draw
+    // and the generator will retry, rather than silently repeating an item.
+    return shuffleWith(rng, pool);
+  }
+
+  const out: Array<number | string> = [];
+  let available = [...pool];
+  for (let i = 0; i < want; i += 1) {
+    if (spec.pick.unique) {
+      const chosen = pick(rng, available);
+      available = available.filter((item) => item !== chosen);
+      out.push(chosen);
+    } else {
+      out.push(pick(rng, pool));
+    }
+  }
+  return out;
+}
+
 /** Draws every variable once, in declaration order. */
 function drawVars(template: QuestionTemplate, rng: () => number): Vars {
   const vars: Vars = {};
 
   for (const [name, spec] of Object.entries(template.variables)) {
     if (spec.kind === 'choice') {
-      vars[name] = pick(rng, spec.values);
+      // A function pool may depend on variables drawn earlier in declaration
+      // order, so a value can be derived rather than independently drawn.
+      const pool = typeof spec.values === 'function' ? spec.values(vars) : spec.values;
+      vars[name] = pick(rng, pool);
+      continue;
+    }
+
+    if (spec.kind === 'list') {
+      vars[name] = drawList(spec, vars, rng);
       continue;
     }
 
@@ -201,9 +243,14 @@ export function generateFromTemplate(
       continue;
     }
 
+    // A typed-answer question shows no options at all, so building distractors
+    // for it would be wasted work (and would make the template fail when it
+    // could not invent enough of them).
+    const entry = template.format?.entry === true;
+
     // Distractors come from the drawn values, so they always relate to *this*
     // variation. Anything equal to the answer (by display text) is dropped.
-    const candidates = template.distractors
+    const candidates = entry ? [] : template.distractors
       ? template.distractors({ answer: normalised.value, vars, rng })
       : typeof normalised.value === 'number'
         ? defaultDistractors(normalised.value, rng)
@@ -219,7 +266,7 @@ export function generateFromTemplate(
       wrongDisplays.push(display);
     }
 
-    if (wrongDisplays.length < optionCount - 1) {
+    if (wrongDisplays.length < optionCount - 1 && !entry) {
       lastError = new TemplateError(
         `${template.id}: not enough distinct wrong options for "${normalised.display}"`,
       );
@@ -229,10 +276,18 @@ export function generateFromTemplate(
     const optionsList = shuffleWith(rng, [normalised.display, ...wrongDisplays]);
     const prompt = renderPrompt(template.prompt, vars);
 
-    // Same template + same rendered wording and numbers = the same question,
-    // even if the option order differs. Option order is random per draw, so it
-    // must not make a repeat look new.
-    const signature = `${template.id}|${prompt}`;
+    // Same template + same rendered wording, numbers AND picture = the same
+    // question, even if the option order differs (option order is random per
+    // draw, so it must not make a repeat look new).
+    //
+    // The visual belongs in the key. For a counting or positional question the
+    // prompt is a fixed sentence — "how many objects are there?" — and all of
+    // the content lives in the drawn row. Keying on the prompt alone would make
+    // every variation look identical, so the generator would reject its own
+    // output as a repeat and fail with "ranges are too narrow" while holding a
+    // perfectly good library of questions.
+    const visual = template.visual ? template.visual(vars) : '';
+    const signature = `${template.id}|${prompt}|${visual}`;
 
     return {
       id: `${template.id}~${seed}`,
@@ -245,8 +300,13 @@ export function generateFromTemplate(
       topicId: template.topicId,
       subtopicId: template.subtopicId,
       prompt,
+      visual: template.visual ? template.visual(vars) : undefined,
       hint: template.hint,
-      options: optionsList,
+      answerMode: entry ? 'number' : 'choice',
+      // A typed-answer question must not ship options: an option list would be
+      // a second, contradictory way to answer it (and a student could read the
+      // answer off it).
+      options: entry ? [] : optionsList,
       answer: normalised.display,
       explanation: template.explanation({ vars, answer: normalised.display }),
       difficulty: options.difficulty ?? template.difficulty ?? 1,

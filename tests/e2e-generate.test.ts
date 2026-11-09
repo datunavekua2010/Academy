@@ -25,7 +25,10 @@ describe('end to end: generate → play → restore', () => {
 
           const state = startSession(ref, batch);
           const current = state.questions[state.queue[0]];
-          expect(current.options).toContain(current.answer);
+          // A choice question must include its answer among the options; a
+          // typed-answer question has no options and must not.
+          if (current.answerMode === 'number') expect(current.options).toEqual([]);
+          else expect(current.options).toContain(current.answer);
 
           const submission = submitAnswer(state, current.answer)!;
           expect(submission.result.correct).toBe(true);

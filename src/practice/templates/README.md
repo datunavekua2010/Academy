@@ -8,6 +8,38 @@ different, mathematically valid questions.
 template  ──generate(seed)──►  question (prompt, 4 options, answer, explanation)
 ```
 
+## Visual questions
+
+A template may carry a picture. `visual` receives the drawn values and returns
+a single line of text (emoji, bars, symbols) shown above the prompt:
+
+```ts
+visual: (vars) => (vars.row as string[]).join(' '),
+```
+
+The important discipline is that the picture must be *derived from the same
+values the answer uses*. Not drawn alongside them — derived from them. If the
+row comes from a `list` variable and the question is "which is second from the
+left?", the answer is read out of that same array, so no seed can produce a
+question that contradicts its own picture.
+
+`kind: 'list'` exists for this:
+
+```ts
+row: { kind: 'list', pick: { values: EMOJIS, length: { min: 3, max: 5 }, unique: true } },
+```
+
+Notes that matter in practice:
+
+- **The signature includes the visual.** Two rows of different objects are two
+  different questions even though the sentence reads the same — and the
+  generator uses the signature to avoid repeats.
+- **A constant prompt is fine when there is a visual.** The registry only warns
+  about a placeholder-free prompt for templates that have no `visual`.
+- **Rounding is a correctness risk.** A bar scaled to ten cells will draw 3 and
+  7 as equal lengths. If the picture is what the child reasons from, the
+  drawing must agree with the numbers (see `bars()` in `u01-space.ts`).
+
 ## Why templates
 
 - One template replaces hundreds of hand-written questions.
@@ -128,6 +160,45 @@ broken rather than shipped.
 - The correct answer is placed in a **random** position each time.
 - Options are always distinct; a template that cannot produce 4 distinct options
   fails in tests.
+
+### Typed answers
+
+Some questions are answered by typing a number rather than choosing one
+("how many are left?"). Set `format.entry: true`:
+
+```ts
+defineTemplate({
+  id: 'g1-u01-8-count-row',
+  // …
+  format: { kind: 'integer', min: 1, entry: true },
+});
+```
+
+The question is generated with `answerMode: 'number'` and **no options** — an
+option list alongside a typed answer would offer a second, contradictory way to
+answer and would show the answer. Grading compares by *value*, so ` 04` is
+accepted for `4`; see `answersMatch` in `src/practice/session.ts`.
+
+Use it only where the answer is a number. A typed Georgian noun would be a
+spelling test, which is not what these templates assess.
+
+### Deriving one variable from another
+
+`choice.values` may be a function of the values drawn so far:
+
+```ts
+variables: {
+  scene: { kind: 'choice', values: [0, 1, 2] },
+  subject: { kind: 'choice', values: (v) => [SCENES[Number(v.scene)].subject.name] },
+}
+```
+
+This is not the same as drawing two variables independently and rejecting the
+draws that disagree: that rejects almost every draw (1/k of them match), burns
+the 200-attempt budget, and makes generation fail for roughly a quarter of all
+seeds. A derived value is consistent on the first draw. Use a constraint only
+for a rule that *can* be satisfied by redrawing (such as "all three must
+differ"), never for one that is true of a single combination.
 
 ## Validation when the registry is built
 

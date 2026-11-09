@@ -13,7 +13,8 @@
 import type { GradeId } from '../types';
 
 /** Values drawn for one variation, keyed by variable name. */
-export type Vars = Record<string, number | string>;
+export type VarValue = number | string | Array<number | string>;
+export type Vars = Record<string, VarValue>;
 
 export interface RangedVariable {
   kind: 'int';
@@ -32,11 +33,39 @@ export interface RangedVariable {
 
 export interface ChoiceVariable {
   kind: 'choice';
-  /** A fixed pool of values, e.g. ['+', '−'] or ['მეტრი', 'სანტიმეტრი']. */
-  values: Array<number | string>;
+  /**
+   * The pool to draw from. A function receives the values drawn so far, which
+   * lets one variable be *derived* from another instead of drawn independently.
+   *
+   * Independent draws plus a constraint that they agree is not equivalent: the
+   * generator would reject almost every attempt (1/k of them match) and, for a
+   * template with a small pool, spend its whole attempt budget failing. A
+   * derived value is always consistent on the first draw.
+   */
+  values: Array<number | string> | ((vars: Vars) => Array<number | string>);
 }
 
-export type VariableSpec = RangedVariable | ChoiceVariable;
+/**
+ * A whole ordered sequence drawn at once, e.g. a row of objects to count.
+ *
+ * `pick` chooses the items; `length` decides how many, and may depend on
+ * values drawn earlier. Distinctness is opt-in (`unique`) because some
+ * sequences are meant to repeat, such as two groups of the same shape.
+ */
+export interface ListVariable {
+  kind: 'list';
+  pick: {
+    values: Array<number | string>;
+    /** How many items to draw. */
+    length: number | { min: number; max: number };
+    /** Draw without replacement, so no item appears twice. */
+    unique?: boolean;
+    /** Optional per-draw weighting/filter used before picking. */
+    filter?: (item: number | string, vars: Vars) => boolean;
+  };
+}
+
+export type VariableSpec = RangedVariable | ChoiceVariable | ListVariable;
 
 /** A whole-set rule evaluated after every variable has been drawn. */
 export interface TemplateConstraint {
@@ -61,6 +90,12 @@ export interface AnswerFormat {
   min?: number;
   /** Reject answers above this value. */
   max?: number;
+  /**
+   * Ask the student to type the answer instead of choosing from options.
+   * Only meaningful for numeric answers — a typed Georgian noun would be a
+   * spelling test, which is not what these questions assess.
+   */
+  entry?: boolean;
   /** Render the computed answer as the string students see. */
   format?: (answer: number | string) => string;
 }
@@ -89,6 +124,13 @@ export interface QuestionTemplate {
 
   /** Georgian question wording with {placeholders}, e.g. "{a} + {b} = ?" */
   prompt: string;
+  /**
+   * Optional Georgian support line drawn above the prompt for this particular
+   * variation — an object row to count, the groups being compared, a sequence
+   * to order. Computed from the drawn values so it can never disagree with the
+   * prompt or the answer.
+   */
+  visual?: (vars: Vars) => string;
   /** Optional Georgian instruction line above the prompt. */
   hint?: string;
 
