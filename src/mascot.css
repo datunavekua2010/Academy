@@ -1,16 +1,8 @@
-/* Axi the red fox — scoped to .mascot-root so it doesn't collide with the
-   landing page variables or selectors.
-   The palette keeps the site's outline weight and eyes, with rust fur and a
-   cream face mask so the fox still sits inside the blue/teal design. */
+/* Axi the red fox — the artwork is an inlined SVG (components/FoxArt.tsx) so
+   the eyes, tail and spark animate as separate elements.
+   Scoped to .mascot-root so it doesn't collide with the landing page. */
 .mascot-root {
-  --m-fur: #e8743e;
-  --m-cream: #fff8ec;
-  --m-inner: #f7c3a0;
-  --m-tip: #5c2a1c;
-  --m-outline: #803014;
-  --m-navy: #172b4d;
-  --m-nose: #33201e;
-  --m-pink: #ff9fbd;
+  --m-navy: #24324a;
   position: relative;
   display: block;
 }
@@ -19,58 +11,82 @@
   cursor: pointer; border-radius: 40px; outline-offset: 4px;
 }
 .mascot-root .mascot-btn:focus-visible { outline: 3px solid #8cc8ff; }
-.mascot-root .mascot-scale { position: absolute; left: 0; bottom: 0; width: 220px; height: 248px; transform-origin: bottom left; pointer-events: none; }
+.mascot-root .mascot-scale {
+  position: absolute; left: 0; bottom: 0;
+  width: 220px; height: 248px;
+  transform-origin: bottom left; pointer-events: none;
+}
 
-.mascot-root .mascot { position: relative; z-index: 2; width: 220px; height: 248px; animation: m-bob 3s ease-in-out infinite; transform-origin: center bottom; }
+.mascot-root .mascot {
+  position: relative; z-index: 2;
+  width: 220px; height: 248px;
+  animation: m-bob 3s ease-in-out infinite;
+  transform-origin: center bottom;
+}
 
-/* body: one soft round mass, slightly taller than wide */
-.mascot-root .m-body { position: absolute; z-index: 2; left: 22px; top: 52px; width: 176px; height: 170px; border: 4px solid var(--m-outline); border-radius: 50%; background: var(--m-fur); box-shadow: inset -10px -8px 0 #d4632f, 0 12px 0 rgba(23,43,77,.06); }
+/* The artwork fills the box width and rests on the bottom edge, so the fox
+   stands on the ground shadow rather than floating in the square viewBox. */
+.mascot-root .fox-art {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 220px;
+  height: 220px;
+  transform: translateX(-50%);
+  overflow: visible;
+}
+.mascot-root .ground-shadow {
+  position: absolute; left: 44px; bottom: 10px; width: 132px; height: 14px;
+  border-radius: 50%; background: rgba(23,43,77,.14); filter: blur(4px);
+}
 
-/* ears: the owl's triangle construction, fox colours, swept outward */
-.mascot-root .ear { position: absolute; z-index: 1; top: 22px; width: 0; height: 0; border-left: 30px solid transparent; border-right: 30px solid transparent; border-bottom: 56px solid var(--m-fur); }
-.mascot-root .ear::after { content: ""; position: absolute; top: 12px; left: -15px; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 33px solid var(--m-inner); }
-.mascot-root .ear::before { content: ""; position: absolute; top: 2px; left: -12px; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 18px solid var(--m-tip); }
-.mascot-root .ear-left { left: 32px; transform: rotate(-13deg); transform-origin: 50% 100%; }
-.mascot-root .ear-right { right: 32px; transform: rotate(13deg); transform-origin: 50% 100%; }
+/* ---- part-level animation ---------------------------------------- */
 
-/* tail: a rotated brush behind the body, with a cream tip */
-.mascot-root .tail { position: absolute; z-index: 1; left: 2px; top: 138px; width: 42px; height: 92px; border: 3px solid var(--m-outline); border-radius: 50%; background: var(--m-fur); transform: rotate(-16deg); transform-origin: 50% 90%; }
-.mascot-root .tail-tip { position: absolute; top: -4px; left: 1px; width: 36px; height: 36px; border: 3px solid var(--m-outline); border-radius: 50%; background: var(--m-cream); }
+/* Eyes: the navy pupils are real SVG groups, so the cursor tracking that
+   already existed now moves the artwork's own pupils. */
+.mascot-root #axi-pupil-left,
+.mascot-root #axi-pupil-right {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform .18s ease;
+}
 
-/* front paws resting low on the body */
-.mascot-root .paw { position: absolute; z-index: 4; top: 182px; width: 32px; height: 38px; border: 4px solid var(--m-outline); background: var(--m-fur); border-radius: 46% 46% 50% 50%; }
-.mascot-root .paw-left { left: 30px; transform: rotate(10deg); }
-.mascot-root .paw-right { right: 30px; transform: rotate(-10deg); }
+/* Blink: squash each eye about its own centre. */
+.mascot-root #axi-eye-left,
+.mascot-root #axi-eye-right {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: m-fox-blink 5s infinite;
+  animation-timing-function: step-end;
+}
+@keyframes m-fox-blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  96%, 98%      { transform: scaleY(.08); }
+}
 
-/* chest bib, low and clear of the muzzle */
-.mascot-root .chest { position: absolute; z-index: 3; bottom: 2px; left: 34px; width: 104px; height: 66px; border-radius: 50% 50% 44% 44%; background: var(--m-cream); }
-
-/* the cream face mask: four overlapping circles make one soft shape that
-   covers the muzzle and the lower cheeks, exactly as drawn */
-.mascot-root .mask { position: absolute; z-index: 3; border-radius: 50%; background: var(--m-cream); }
-.mascot-root .mask-main { left: 62px; top: 120px; width: 96px; height: 88px; }
-.mascot-root .mask-left { left: 82px; top: 108px; width: 56px; height: 40px; }
-
-/* eyes: big friendly white rounds with navy pupils that track the cursor */
-.mascot-root .eye { position: absolute; z-index: 5; top: 74px; width: 44px; height: 44px; border: 4px solid var(--m-outline); border-radius: 50%; background: #fff; overflow: hidden; }
-.mascot-root .eye-left { left: 36px; }
-.mascot-root .eye-right { right: 36px; }
-.mascot-root .pupil { position: absolute; width: 20px; height: 22px; top: 8px; left: 8px; border-radius: 50%; background: var(--m-navy); transition: transform .18s ease; }
-.mascot-root .shine { position: absolute; top: 11px; left: 13px; width: 6px; height: 6px; border-radius: 50%; background: #fff; transition: transform .18s ease; }
-.mascot-root .eye { animation: m-blink 5s infinite; }
-
-/* nose sits at the tip of the muzzle */
-.mascot-root .nose { position: absolute; z-index: 6; top: 152px; left: 99px; width: 22px; height: 16px; border-radius: 50%; background: var(--m-nose); }
-
-.mascot-root .cheek { position: absolute; z-index: 6; top: 150px; width: 18px; height: 10px; border-radius: 50%; background: var(--m-pink); opacity: .75; }
-.mascot-root .cheek-left { left: 56px; }
-.mascot-root .cheek-right { right: 56px; }
-.mascot-root .feet { position: absolute; z-index: 3; bottom: -10px; left: 62px; display: flex; gap: 24px; }
-.mascot-root .feet span { width: 22px; height: 13px; border-radius: 50% 50% 45% 45%; background: var(--m-cream); border: 2px solid var(--m-outline); }
-.mascot-root .ground-shadow { position: absolute; left: 44px; bottom: 10px; width: 132px; height: 14px; border-radius: 50%; background: rgba(23,43,77,.14); filter: blur(4px); }
-
-.mascot-root .mascot.waving .paw-right { animation: m-wave .6s ease-in-out 3; transform-origin: 50% 90%; }
+/* Tail: a gentle wag about its root, quicker while Axi is "thinking". */
+.mascot-root #axi-tail {
+  transform-box: fill-box;
+  transform-origin: 12% 78%;
+  animation: m-fox-tail 3.4s ease-in-out infinite;
+}
+@keyframes m-fox-tail {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-5deg); }
+}
 .mascot-root .mascot.thinking { animation-duration: 1.1s; }
+.mascot-root .mascot.thinking #axi-tail { animation-duration: 1.5s; }
+
+/* Spark: twinkles, and brightens the moment a tap lands. */
+.mascot-root #axi-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: m-spark-twinkle 3s ease-in-out infinite;
+}
+@keyframes m-spark-twinkle {
+  0%, 100% { opacity: .55; transform: scale(.9) rotate(0deg); }
+  50%      { opacity: 1;   transform: scale(1.15) rotate(14deg); }
+}
 
 /* speech / thought bubble (outside the scaled fox so text stays crisp) */
 .mascot-bubble {
@@ -81,12 +97,8 @@
 }
 
 @keyframes m-bob { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-8px) rotate(1deg); } }
-@keyframes m-wave { 0%,100% { transform: rotate(-20deg); } 50% { transform: rotate(-65deg); } }
-@keyframes m-blink { 0%,93%,100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
 @keyframes m-pop { from { opacity: 0; transform: translateY(6px) scale(.9); } to { opacity: 1; transform: none; } }
-@keyframes m-twinkle { 0%,100% { opacity: .55; transform: scale(.9) rotate(0); } 50% { opacity: 1; transform: scale(1.12) rotate(12deg); } }
 
-.m-spark { position: absolute; z-index: 1; color: #e4ad2f; font-size: 30px; animation: m-twinkle 2s ease-in-out infinite; pointer-events: none; }
 
 /* ---- placement on the landing page ---- */
 .hero-art { min-height: 520px; }
@@ -126,13 +138,29 @@
   100% { transform: translateY(0) scale(1); }
 }
 
+/* Greeting. Declared after .is-bouncing on purpose: both set `animation` on
+   .mascot with equal specificity, so source order decides which one wins. */
+.mascot-root .mascot.waving { animation: m-fox-greet 1.1s ease-in-out; }
+@keyframes m-fox-greet {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  30%      { transform: translateY(-6px) rotate(-2.5deg); }
+  60%      { transform: translateY(-2px) rotate(2.5deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .mascot-root .mascot,
   .mascot-root .mascot.is-bouncing,
-  .mascot-root .mascot.waving .paw-right,
-  .mascot-root .eye,
-  .mascot-root .mascot-bubble,
-  .m-spark {
+  .mascot-root .mascot.waving,
+  .mascot-root #axi-tail,
+  .mascot-root #axi-eye-left,
+  .mascot-root #axi-eye-right,
+  .mascot-root #axi-spark,
+  .mascot-root .mascot-bubble {
     animation: none !important;
+  }
+  /* pupils still follow the cursor, just without the eased glide */
+  .mascot-root #axi-pupil-left,
+  .mascot-root #axi-pupil-right {
+    transition: none !important;
   }
 }

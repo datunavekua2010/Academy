@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type Ref } from 'react';
+import { FoxArt } from './FoxArt';
 
 type Mode = 'idle' | 'thinking' | 'waving';
 
@@ -137,34 +138,8 @@ export function Mascot({
           role="img"
           aria-label="Axi — მეგობრული წითელი მელა"
         >
-          {/* brush tail, behind the body */}
-          <div className="tail">
-            <div className="tail-tip" />
-          </div>
-          <div className="paw paw-left" />
-          <div className="paw paw-right" />
-          <div className="ear ear-left" />
-          <div className="ear ear-right" />
-          <div className="m-body" />
-          <div className="chest" />
-          {/* cream muzzle: a rounded mask plus a small rise between the eyes */}
-          <div className="mask mask-main" />
-          <div className="mask mask-left" />
-          <div className="feet">
-            <span />
-            <span />
-          </div>
-          <div className="eye eye-left">
-            <div className="pupil" style={pupilStyle} />
-            <div className="shine" style={pupilStyle} />
-          </div>
-          <div className="eye eye-right">
-            <div className="pupil" style={pupilStyle} />
-            <div className="shine" style={pupilStyle} />
-          </div>
-          <div className="nose" />
-          <div className="cheek cheek-left" />
-          <div className="cheek cheek-right" />
+          {/* Inlined so the eyes, tail and spark stay individually animatable. */}
+          <FoxArt pupilStyle={pupilStyle} />
         </div>
       </div>
 
