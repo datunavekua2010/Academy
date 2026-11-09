@@ -1,0 +1,20 @@
+# Cloudflare Workers — static assets only.
+#
+# This app is a single-page static build: `npm run build` emits one
+# self-contained `dist/index.html` (vite-plugin-singlefile) and there is no
+# Worker script. Deploying it through Workers Builds therefore needs an
+# assets-only configuration — without this file the build has no entry point
+# and the deploy fails.
+#
+# Routing is hash-based (#/student/practice), so no SPA fallback is needed:
+# every route lives under the single index.html.
+
+name = "axiom-academy"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+
+# Serve index.html for unknown paths. Cheap insurance: it keeps the site
+# working if a future route ever uses real paths instead of hashes.
+not_found_handling = "single-page-application"
