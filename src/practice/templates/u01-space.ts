@@ -203,7 +203,9 @@ const u011: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'marcxena-marjvena',
     difficulty: 2,
-    prompt: 'რომელია რიგში {thing}?',
+    // "რომელია რიგში X" reads as "which one is X, in a row?" — the adverbial
+    // form "რომელ ადგილას" is what a child is actually being asked.
+    prompt: 'რომელ ადგილას დგას რიგში {thing}?',
     variables: {
       row: { kind: 'list', pick: distinctRow },
       thing: { kind: 'choice', values: NAMES },
@@ -384,6 +386,8 @@ const u012: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'zeda-qveda',
     difficulty: 2,
+    // `relation` is drawn as the Georgian surface form, not as the internal
+    // key: rendering the key printed "რომელი საგანია above?" to a six-year-old.
     prompt: 'სურათზე {subject} და {landmark} არის. რომელი საგანია {relation}?',
     variables: {
       subject: { kind: 'choice', values: SITTERS.map((t) => t.name) },
@@ -391,13 +395,14 @@ const u012: QuestionTemplate[] = [
         kind: 'choice',
         values: (v: Vars) => LANDMARKS.filter((t) => t.name !== v.subject).map((t) => t.name),
       },
-      // Derived from the relation this template can actually draw.
-      relation: { kind: 'choice', values: ['above', 'below'] },
+      // Georgian surface forms, derived from the relations this template can
+      // actually draw. "გვერდით" is not one of them — see the note above.
+      relation: { kind: 'choice', values: ['ზემოთ', 'ქვემოთ'] },
     },
-    // The picture puts one object in the asked position, so which name is
-    // correct depends on the relation that was drawn — not on which object was
-    // drawn first.
-    answer: (v: Vars) => String(v.relation === 'above' ? v.subject : v.landmark),
+    // The drawing always puts the *subject* in the asked position — on top for
+    // "ზემოთ", underneath for "ქვემოთ" — so the question has the same answer
+    // whichever relation was drawn. What varies is where the subject sits.
+    answer: (v: Vars) => String(v.subject),
     format: { kind: 'text' },
     optionCount: 3,
     distractors: ({ vars, answer }) => {
@@ -409,15 +414,14 @@ const u012: QuestionTemplate[] = [
       );
     },
     explanation: ({ vars }) => {
-      const relation = String(vars.relation) as Relation;
       const subject = thingByName(String(vars.subject))!;
       const landmark = thingByName(String(vars.landmark))!;
-      return `${subject.name} ${genitiveOf(landmark)} ${relation === 'above' ? 'ზემოთ' : 'ქვეშ'} არის.`;
+      return `${subject.name} ${genitiveOf(landmark)} ${vars.relation === 'ზემოთ' ? 'ზემოთ' : 'ქვეშ'} არის.`;
     },
     visual: (v: Vars) =>
       // By definition of the question, the object in the asked position is the
       // one on top for "ზემოთ" and underneath for "ქვემოთ".
-      String(v.relation) === 'above'
+      String(v.relation) === 'ზემოთ'
         ? `${thingByName(String(v.subject))!.emoji}\n${thingByName(String(v.landmark))!.emoji}`
         : `${thingByName(String(v.landmark))!.emoji}\n${thingByName(String(v.subject))!.emoji}`,
   }),
@@ -433,7 +437,7 @@ const u012: QuestionTemplate[] = [
     unitId: topicId,
     subtopicId: 'zeda-qveda',
     difficulty: 3,
-    prompt: 'სამი საგანი ერთმანეთის ზემოთაა: {top}, {middle}, {bottom}. რომელია {which}?',
+    prompt: 'სამი საგანი ვერტიკალურადაა განლაგებული: {top}, {middle}, {bottom}. რომელია {which}?',
     variables: {
       top: { kind: 'choice', values: NAMES },
       // Distinct from the one above, so "highest" and "lowest" are never the

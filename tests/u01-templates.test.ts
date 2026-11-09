@@ -225,6 +225,15 @@ describe('U01.2 — above / below / beside', () => {
     }
   });
 
+  it('never prints an internal key in the stem', () => {
+    // The relation used to render as its enum key, so a child was asked
+    // "რომელი საგანია above?". Anything Latin-script in a Georgian stem is a bug.
+    for (const question of generateMany('g1-u01-2-name-the-object', 40)) {
+      expect(question.prompt, question.prompt).not.toMatch(/[A-Za-z]/);
+      expect(question.prompt).toMatch(/რომელი საგანია (ზემოთ|ქვემოთ)\?$/);
+    }
+  });
+
   it('names the object that is genuinely in that position', () => {
     for (const question of generateMany('g1-u01-2-name-the-object')) {
       const [top, bottom] = (question.visual ?? '').split('\n').map((l) => l.trim());
@@ -469,7 +478,7 @@ describe('U01.2 — the extra relation forms', () => {
   it('names the objects in the stem in the same order they are drawn', () => {
     for (const question of generateMany('g1-u01-2-extreme-of-three')) {
       const drawn = question.visual!.split('\n').map((line) => nameForEmoji(line.trim()));
-      const named = /ზემოთაა:\s*(.+)\./.exec(question.prompt)![1].split(/,\s*/);
+      const named = /განლაგებული:\s*(.+)\./.exec(question.prompt)![1].split(/,\s*/);
       expect(named).toEqual(drawn);
     }
   });
