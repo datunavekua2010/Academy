@@ -7,6 +7,11 @@ import { defineTemplate } from '../src/practice/templates/types';
 import { getTopic } from '../src/practice/curriculum';
 import { GRADE1_PLACEHOLDERS } from '../src/practice/templates/grade1-placeholders';
 import { GRADE1_PLACEHOLDER_SPECS } from '../src/practice/templates/grade1-placeholders';
+import { U01_TEMPLATES } from '../src/practice/templates/u01-space';
+import { U02_TEMPLATES } from '../src/practice/templates/u02-numbers';
+
+/** The academy's own templates — held to the full session standard. */
+const REAL_LIBRARY_IDS = new Set([...U01_TEMPLATES, ...U02_TEMPLATES].map((t) => t.id));
 import { generateFromTemplate } from '../src/practice/templates/generate';
 import { generateBatch, MIN_SESSION_VARIATIONS, previewTemplate } from '../src/practice/generator';
 
@@ -28,13 +33,17 @@ const VARIATIONS_PER_TEMPLATE = 40;
 const REQUIRED_VARIATIONS = MIN_SESSION_VARIATIONS;
 
 /**
- * Grade I is currently filled with placeholders pending the academy's real
- * questions. Several are fixed-wording multiple choice (true/false, "which is
- * flat?"), so they cannot reach a full session's worth of distinct variations
- * on their own. They must still offer a few, and the subtopic-level capacity
- * test is the one that guarantees a playable session.
+ * Which grade-1 templates are still placeholders?
+ *
+ * Not "every template whose id starts with g1-" — that was true when every
+ * grade-1 template was a placeholder, and it silently held the academy's real
+ * U01 and U02 libraries to the placeholder standard of three variations. A
+ * template counts as a placeholder only when its subtopic has no real content:
+ * that is exactly the set `catalog.ts` drops once a real library covers the
+ * subtopic, so it is read from there rather than guessed from an id prefix.
  */
-const isPlaceholder = (id: string): boolean => id.startsWith('g1-');
+const isPlaceholder = (id: string): boolean =>
+  id.startsWith('g1-') && !REAL_LIBRARY_IDS.has(id);
 const PLACEHOLDER_MIN_VARIATIONS = 3;
 
 describe('every template in the catalog', () => {
@@ -123,8 +132,13 @@ describe('curriculum coverage', () => {
       for (const topic of grade.topics) {
         for (const subtopic of topicSubtopics(topic)) {
           const ref = { grade: grade.grade, topicId: topic.id, subtopicId: subtopic.id };
-          // Grade I is still placeholder content; see PLACEHOLDER_MIN_VARIATIONS.
-          const required = grade.grade === 1 ? PLACEHOLDER_MIN_VARIATIONS : REQUIRED_VARIATIONS;
+          // A subtopic whose templates are the academy's own must fill a real
+          // session; only genuine placeholder subtopics get the lower bar.
+          const subtopicTemplates = TEMPLATE_REGISTRY.forSubtopic(ref);
+          const realOnly =
+            subtopicTemplates.length > 0 &&
+            subtopicTemplates.every((template) => REAL_LIBRARY_IDS.has(template.id));
+          const required = realOnly ? REQUIRED_VARIATIONS : PLACEHOLDER_MIN_VARIATIONS;
           const batch = generateBatch(ref, required);
           expect(
             batch.length,
