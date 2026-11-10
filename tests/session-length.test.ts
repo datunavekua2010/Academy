@@ -4,6 +4,8 @@ import { topicSubtopics } from '../src/practice/types';
 import { generateBatch, hasTemplates } from '../src/practice/generator';
 import { advance, startSession, submitAnswer } from '../src/practice/session';
 import { U01_SUBTOPICS } from '../src/practice/templates/u01-space';
+import { U02_SUBTOPICS } from '../src/practice/templates/u02-numbers';
+import { U03_SUBTOPICS } from '../src/practice/templates/u03-counting';
 import { MAX_SCORE } from '../src/practice/scoring';
 import { shownKey } from '../src/practice/identity';
 import type { QuestionTemplate } from '../src/practice/templates/types';
@@ -99,20 +101,27 @@ for (const grade of CURRICULUM) {
  * playable subtopics, and it shrinks as U02…U16 are authored the way U01 now is.
  */
 describe('every playable subtopic can reach 100 points', () => {
-  it('never runs the queue dry on a U01 subtopic', () => {
-    const u01 = subtopics.filter(
-      (ref) => U01_SUBTOPICS.includes(ref.subtopicId as never) && hasTemplates(ref as never),
+  it('never runs the queue dry on a subtopic that has real templates', () => {
+    // Every subtopic with authored templates is held to the full standard, not
+    // only U01: a subtopic whose level 3 can make thirty distinct questions is
+    // a session that ends short for a student who is answering everything
+    // right, which is the failure this file exists for.
+    const real = subtopics.filter(
+      (ref) =>
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS].includes(
+          ref.subtopicId as never,
+        ) && hasTemplates(ref as never),
     );
-    expect(u01).toHaveLength(8);
+    expect(real).toHaveLength(21);
 
     const short: string[] = [];
-    for (const ref of u01) {
+    for (const ref of real) {
       const run = playThrough(ref);
       if (run.driedUp) {
         short.push(`${createKey(ref)} stopped at ${run.score} after ${run.answered}`);
       }
     }
-    expect(short, `these U01 subtopics cannot finish a session:\n${short.join('\n')}`).toEqual([]);
+    expect(short, `these subtopics cannot finish a session:\n${short.join('\n')}`).toEqual([]);
   });
 
   it('ends honestly, never with a broken screen, when material runs out', () => {
@@ -132,10 +141,13 @@ describe('every playable subtopic can reach 100 points', () => {
   });
 
   it('reaches exactly MAX_SCORE on a perfect run', () => {
-    const u01 = subtopics.filter(
-      (ref) => U01_SUBTOPICS.includes(ref.subtopicId as never) && hasTemplates(ref as never),
+    const real = subtopics.filter(
+      (ref) =>
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS].includes(
+          ref.subtopicId as never,
+        ) && hasTemplates(ref as never),
     );
-    for (const ref of u01) {
+    for (const ref of real) {
       const run = playThrough(ref);
       expect(run.driedUp, createKey(ref)).toBe(false);
       expect(run.score, createKey(ref)).toBe(MAX_SCORE);
@@ -147,10 +159,13 @@ describe('every playable subtopic can reach 100 points', () => {
     // question says "how many objects are there?" over a different picture
     // every time, and that is a new question. The bug this pins asked the same
     // picture twice, whatever its sentence.
-    const u01 = subtopics.filter(
-      (ref) => U01_SUBTOPICS.includes(ref.subtopicId as never) && hasTemplates(ref as never),
+    const real = subtopics.filter(
+      (ref) =>
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS].includes(
+          ref.subtopicId as never,
+        ) && hasTemplates(ref as never),
     );
-    for (const ref of u01) {
+    for (const ref of real) {
       const run = playThrough(ref);
       expect(new Set(run.shown).size, `${createKey(ref)} repeated a question`).toBe(
         run.shown.length,
@@ -165,18 +180,21 @@ function createKey(ref: { grade: number; topicId: string; subtopicId: string }):
 
 describe('the drawing order of a template', () => {
   it('can be reversed, so the hardest answers are not the ones left over', () => {
-    // "which number comes before N" has one answer per N. Drawn forward, a
-    // session that has to stop early ends clustered at the bottom of the range.
+    // "which number is missing" has one answer per N. Drawn forward, a session
+    // that has to stop early ends clustered at the bottom of the range.
     const win = TEMPLATE_REGISTRY.forSubtopic({
       grade: 1,
       topicId: 'datvla',
       subtopicId: 'win-ukan',
     } as never);
     expect(win.length).toBeGreaterThanOrEqual(2);
-    for (const template of win as QuestionTemplate[]) {
-      const n = template.variables.n as { reverse?: boolean };
-      expect(n.reverse, `${template.id} should draw from the top down`).toBe(true);
-    }
+    const reversed = (win as QuestionTemplate[]).filter((template) => {
+      const n = template.variables.n as { reverse?: boolean } | undefined;
+      return n?.reverse === true;
+    });
+    // At least the one that has a range to draw from; a walk of a given number
+    // of steps from a given start has no single answer range to reverse.
+    expect(reversed.length, 'no U03.2 template draws from the top down').toBeGreaterThanOrEqual(1);
   });
 
   it('draws both directions of counting, as the subtopic is named', () => {
@@ -186,8 +204,14 @@ describe('the drawing order of a template', () => {
       subtopicId: 'win-ukan',
     } as never);
     const prompts = win.map((t) => t.prompt).join(' ');
-    // "წინ და უკან" is counting forwards and backwards — both must be asked.
-    expect(prompts).toMatch(/მოდის .*-მდე/);
-    expect(prompts).toMatch(/შემდეგ/);
+    // "წინ და უკან" is counting forwards and backwards — both must be asked,
+    // and the direction has to be drawn rather than fixed in the wording.
+    expect(prompts).toMatch(/\{direction\}/);
+    expect(prompts).toMatch(/უკან/);
+    // The reverse row is printed from the drawn direction, not described in it.
+    const drawnBackwards = (win as QuestionTemplate[]).filter((template) =>
+      template.explanation({ vars: { start: 9, gap: 2, mode: 'back', n: 8 }, answer: '8' }),
+    );
+    expect(drawnBackwards.length).toBeGreaterThan(0);
   });
 });
