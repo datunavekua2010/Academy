@@ -3,6 +3,7 @@ import { CURRICULUM } from '../src/practice/curriculum';
 import { topicSubtopics } from '../src/practice/types';
 import { generateBatch } from '../src/practice/generator';
 import { MAX_SCORE } from '../src/practice/scoring';
+import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
 
 /**
  * A perfect run needs 35 correct answers (20×4 + 5×2 + 10×1).
@@ -52,9 +53,14 @@ describe('subtopic capacity', () => {
             generateBatch(ref, 80, { seed: 1 }).map((question) => question.signature),
           );
 
-          const isPlaceholder = generateBatch(ref, 1, { seed: 1 }).every((question) =>
-            question.id.startsWith('g1-'),
-          );
+          // A subtopic is a placeholder only when nothing real covers it. The
+          // old check asked whether every id started with "g1-", which was true
+          // of the academy's own U01 and U02 libraries too and held them to the
+          // placeholder bar of three.
+          const templates = TEMPLATE_REGISTRY.forSubtopic(ref);
+          const isPlaceholder =
+            templates.length > 0 &&
+            templates.every((template) => template.id === `g1-${subtopic.id}`);
           const required = isPlaceholder ? PLACEHOLDER_MIN_UNIQUE : MIN_UNIQUE_QUESTIONS;
 
           if (unique.size < required) {
