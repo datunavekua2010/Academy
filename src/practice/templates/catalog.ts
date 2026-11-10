@@ -3,6 +3,7 @@ import { SAMPLE_TEMPLATES } from './samples';
 import { GRADE1_PLACEHOLDERS } from './grade1-placeholders';
 import { U01_SUBTOPICS, U01_TEMPLATES } from './u01-space';
 import { U02_SUBTOPICS, U02_TEMPLATES } from './u02-numbers';
+import { U03_SUBTOPICS, U03_TEMPLATES } from './u03-counting';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -45,7 +46,11 @@ import { createTemplateRegistry } from './registry';
  * same subtopic. This keeps `grade1-placeholders.ts` untouched as U02…U16 are
  * converted one at a time.
  */
-const coveredByRealTemplates = new Set<string>([...U01_SUBTOPICS, ...U02_SUBTOPICS]);
+const coveredByRealTemplates = new Set<string>([
+  ...U01_SUBTOPICS,
+  ...U02_SUBTOPICS,
+  ...U03_SUBTOPICS,
+]);
 const remainingPlaceholders = GRADE1_PLACEHOLDERS.filter(
   (template) => !coveredByRealTemplates.has(template.subtopicId),
 );
@@ -57,6 +62,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...remainingPlaceholders,
     ...U01_TEMPLATES,
     ...U02_TEMPLATES,
+    ...U03_TEMPLATES,
   ],
   { resolveTopic: getTopic },
 );
@@ -69,4 +75,6 @@ export {
   U01_SUBTOPICS,
   U02_TEMPLATES,
   U02_SUBTOPICS,
+  U03_TEMPLATES,
+  U03_SUBTOPICS,
 };
