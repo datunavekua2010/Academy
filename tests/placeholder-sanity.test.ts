@@ -81,10 +81,6 @@ const RULES: Rule[] = [
 
   // ---- addition -------------------------------------------------------
   {
-    subtopicId: 'ra-aris-Sekreba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
     subtopicId: 'datvla-suratebidan',
     check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
   },
@@ -99,38 +95,6 @@ const RULES: Rule[] = [
   {
     subtopicId: 'airCe-da-daTvale',
     check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'SuratiT-10',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'teqsti',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'ricxviT-xazze',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'nuli-gakvireba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0]),
-  },
-  {
-    subtopicId: 'cxrili-20',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'Sekreba-cxrili-Sevseba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'uknobi-SeSveTi',
-    check: (p, a) => expectEqual(p, a, nums(p)[1] - nums(p)[0]),
-  },
-  {
-    subtopicId: 'samive-ze-meti',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1] + nums(p)[2]),
   },
   {
     subtopicId: 'jami-sxvaoba',
@@ -269,13 +233,6 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] % 2 === 0 ? 'ლუწი' : 'კენტი'),
   },
   {
-    subtopicId: 'martalia-tu-ara',
-    check: (p, a) => {
-      const [x, y, z] = nums(p);
-      return expectEqual(p, a, x + y === z ? 'მართალია' : 'არ არის მართალი');
-    },
-  },
-  {
     subtopicId: 'martalia-tu-ara-gamokleba',
     check: (p, a) => {
       const [x, y, z] = nums(p);
@@ -303,10 +260,6 @@ const RULES: Rule[] = [
   {
     subtopicId: 'romeli-moqmedeba',
     check: (p, a) => expectEqual(p, a, '+'),
-  },
-  {
-    subtopicId: 'SeSveTebis-arCevani',
-    check: (p, a) => expectEqual(p, a, nums(p)[1] - nums(p)[0]),
   },
   {
     subtopicId: 'Sedareba-jamebi',

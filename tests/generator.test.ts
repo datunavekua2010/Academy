@@ -217,9 +217,11 @@ describe('generated answers are mathematically correct', () => {
 describe('registry', () => {
   it('finds templates by grade/topic/subtopic and rejects duplicate ids', () => {
     const registry = TEMPLATE_REGISTRY;
+    // Authored subtopics have several templates (one per level, and often more
+    // than one per level); the point here is that the registry finds them.
     expect(
       registry.forSubtopic({ grade: 1, topicId: 'Sekreba', subtopicId: 'SuratiT-10' }).length,
-    ).toBe(1);
+    ).toBeGreaterThan(1);
     expect(registry.forSubtopic({ grade: 7, topicId: 'geometria', subtopicId: 'fartobi' })).toHaveLength(1);
     // An address with nothing behind it must report empty rather than throw.
     expect(

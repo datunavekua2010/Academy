@@ -8,6 +8,7 @@ import { U02_SUBTOPICS } from '../src/practice/templates/u02-numbers';
 import { U03_SUBTOPICS } from '../src/practice/templates/u03-counting';
 import { U04_SUBTOPICS } from '../src/practice/templates/u04-numbers100';
 import { U05_SUBTOPICS } from '../src/practice/templates/u05-compare';
+import { U06_SUBTOPICS } from '../src/practice/templates/u06-addition';
 import { MAX_SCORE } from '../src/practice/scoring';
 import { shownKey } from '../src/practice/identity';
 import type { QuestionTemplate } from '../src/practice/templates/types';
@@ -100,8 +101,8 @@ for (const grade of CURRICULUM) {
  * U01 is held to the full standard; the rest of grade 1 still runs on the
  * placeholder set, where one template with a small answer space is common.
  * They are listed rather than skipped so the count is visible, and it shrinks as
- * U02…U16 are authored the way U01 now is: U01–U05 are held to the full
- * standard, which is 37 of the playable subtopics.
+ * U02…U16 are authored the way U01 now is: U01–U06 are held to the full
+ * standard, which is 49 of the playable subtopics.
  */
 describe('every playable subtopic can reach 100 points', () => {
   it('never runs the queue dry on a subtopic that has real templates', () => {
@@ -111,11 +112,11 @@ describe('every playable subtopic can reach 100 points', () => {
     // right, which is the failure this file exists for.
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
-    expect(real).toHaveLength(37);
+    expect(real).toHaveLength(49);
 
     const short: string[] = [];
     for (const ref of real) {
@@ -146,7 +147,7 @@ describe('every playable subtopic can reach 100 points', () => {
   it('reaches exactly MAX_SCORE on a perfect run', () => {
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
@@ -164,7 +165,7 @@ describe('every playable subtopic can reach 100 points', () => {
     // picture twice, whatever its sentence.
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
