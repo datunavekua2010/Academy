@@ -245,19 +245,6 @@ const evenOrOdd = (spec: Address, min = 1, max = 20): QuestionTemplate =>
     explanation: ({ vars, answer }) => `${vars.n} არის ${answer}.`,
   });
 
-/** "Is a + b = c true?" — the claim is checked against the printed numbers. */
-const trueFalseSum = (spec: Address): QuestionTemplate =>
-  defineTemplate({
-    ...address(spec),
-    prompt: '{a} + {b} = {c}. მართალია თუ არა?',
-    variables: numbers(1, 10),
-    optionCount: 2,
-    answer: (v: Vars) => (Number(v.a) + Number(v.b) === Number(v.c) ? 'მართალია' : 'არ არის მართალი'),
-    format: { kind: 'text' },
-    distractors: ({ answer }) => (answer === 'მართალია' ? ['არ არის მართალი'] : ['მართალია']),
-    explanation: ({ vars }) => `${vars.a} + ${vars.b} = ${Number(vars.a) + Number(vars.b)}.`,
-  });
-
 /** "Is a − b = c true?" */
 const trueFalseDifference = (spec: Address): QuestionTemplate =>
   defineTemplate({
@@ -304,20 +291,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
-
-  // U06 — შეკრება
-  add({ subtopicId: 'ra-aris-Sekreba', topicId: 'Sekreba' }, 2, 10),
-  defineTemplate({ ...address({ subtopicId: 'SuratiT-10', topicId: 'Sekreba' }), prompt: 'სურათზე {a} ვაშლია, დედამ {b} დაამატა. სულ?', variables: numbers(1, 9), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'teqsti', topicId: 'Sekreba' }), prompt: 'ზღარბს {a} სოკო აქვს. კიდევ {b} იპოვა. სულ რამდენი სოკო აქვს?', variables: numbers(1, 9), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'ricxviT-xazze', topicId: 'Sekreba' }), prompt: 'რიცხვით ღერძზე {a}-ს გადავუარეთ {b} ნაბიჯი. სად აღმოვჩნდით?', variables: numbers(1, 10), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'nuli-gakvireba', topicId: 'Sekreba' }), prompt: '{a} + 0 = ?', variables: numbers(1, 20), answer: (v: Vars) => Number(v.a), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `რიცხვს ნულის დამატება რიცხვს არ ცვლის: ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'cxrili-20', topicId: 'Sekreba' }), prompt: 'შეკრების ცხრილით: {a} + {b} = ?', variables: numbers(1, 10), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'uknobi-SeSveTi', topicId: 'Sekreba' }), prompt: '{a} + ? = {b}. რომელი რიცხვი აკლია?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.b) > Number(v.a), note: 'the sum exceeds the known addend' }], answer: (v: Vars) => Number(v.b) - Number(v.a), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${answer} = ${vars.b}.` }),
-  trueFalseSum({ subtopicId: 'martalia-tu-ara', topicId: 'Sekreba' }),
-  defineTemplate({ ...address({ subtopicId: 'raodenobis-gzebi', topicId: 'Sekreba' }), prompt: '{a} + {b} სულ რამდენია? კიდევ რამდენი გვჭირდება 10-მდე?', variables: numbers(1, 10), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'samive-ze-meti', topicId: 'Sekreba' }), prompt: '{a} + {b} + {c} = ?', variables: numbers(1, 6), answer: (v: Vars) => Number(v.a) + Number(v.b) + Number(v.c), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} + ${vars.c} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'SeSveTebis-arCevani', topicId: 'Sekreba' }), prompt: 'რომელი რიცხვი აკლია: {a} + ? = {b}', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.b) > Number(v.a), note: 'the missing addend is positive' }], answer: (v: Vars) => Number(v.b) - Number(v.a), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${answer} = ${vars.b}.` }),
-  defineTemplate({ ...address({ subtopicId: 'Sekreba-cxrili-Sevseba', topicId: 'Sekreba' }), prompt: 'შეავსე ცხრილი: {a} + {b} = ?', variables: numbers(1, 10), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
 
   // U07 — გამოკლება
   sub({ subtopicId: 'ra-aris-Gamokleba', topicId: 'Gamokleba' }, 2, 10),

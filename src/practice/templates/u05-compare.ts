@@ -126,24 +126,34 @@ const numbersOf = (vars: Vars, key: string): number[] =>
  */
 interface Named {
   name: string;
-  /** „ანას“ — the form that means "Ana's". */
-  whose: string;
+  /**
+   * The dative — „დავითს“.
+   *
+   * „X-ს აქვს 5 ფანქარი“ puts the possessor in the dative, and the ending is
+   * not regular: მარიამი takes „მარიამს“ (no -ის), ანა drops its final vowel.
+   * The earlier version stored the *genitive* („დავითის“) and printed
+   * „დავითის აქვს“, which is the possessive form in a place that needs the
+   * dative. Both are stored now, and each sentence picks the one it needs.
+   */
+  dat: string;
+  gen: string;
 }
 
 const CHILDREN: Named[] = [
-  { name: 'ანა', whose: 'ანას' },
-  { name: 'ლუკა', whose: 'ლუკას' },
-  { name: 'ნინო', whose: 'ნინოს' },
-  { name: 'გიორგი', whose: 'გიორგის' },
-  { name: 'მარიამი', whose: 'მარიამის' },
-  { name: 'დავითი', whose: 'დავითის' },
-  { name: 'სოფო', whose: 'სოფოს' },
-  { name: 'ბექა', whose: 'ბექას' },
+  { name: 'ანა', dat: 'ანას', gen: 'ანას' },
+  { name: 'ლუკა', dat: 'ლუკას', gen: 'ლუკას' },
+  { name: 'ნინო', dat: 'ნინოს', gen: 'ნინოს' },
+  { name: 'გიორგი', dat: 'გიორგის', gen: 'გიორგის' },
+  { name: 'მარიამი', dat: 'მარიამს', gen: 'მარიამის' },
+  { name: 'დავითი', dat: 'დავითს', gen: 'დავითის' },
+  { name: 'სოფო', dat: 'სოფოს', gen: 'სოფოს' },
+  { name: 'ბექა', dat: 'ბექას', gen: 'ბექას' },
 ];
 
 const NAMES = CHILDREN.map((child) => child.name);
-const whoseOf = (name: string): string =>
-  CHILDREN.find((child) => child.name === name)?.whose ?? name;
+/** The dative, for „X აქვს …“ sentences. */
+const datOf = (name: string): string =>
+  CHILDREN.find((child) => child.name === name)?.dat ?? name;
 
 /** A row of one emoji, one space between objects. */
 const draw = (emoji: string, count: number): string =>
@@ -891,7 +901,7 @@ const u054: QuestionTemplate[] = [
     min: 1,
     max: 10,
     people: true,
-    story: (v) => `${whoseOf(String(v.who))} აქვს ${v.a} ფანქარი, ${whoseOf(String(v.others))} — ${v.b}.`,
+    story: (v) => `${datOf(String(v.who))} აქვს ${v.a} ფანქარი, ${datOf(String(v.others))} — ${v.b}.`,
     asks: (v) => `რამდენით მეტი ფანქარი აქვს ${String(v.who).replace(/ა$/, 'ა')}ს?`,
   }),
 
@@ -940,7 +950,7 @@ const u054: QuestionTemplate[] = [
     min: 10,
     max: 40,
     people: true,
-    story: (v) => `${whoseOf(String(v.who))} აქვს ${v.a} სტიკერი, ${whoseOf(String(v.others))} — ${v.b}.`,
+    story: (v) => `${datOf(String(v.who))} აქვს ${v.a} სტიკერი, ${datOf(String(v.others))} — ${v.b}.`,
     asks: (v) => `რამდენით მეტი სტიკერი აქვს ${String(v.who).replace(/ა$/, 'ა')}ს?`,
   }),
 
