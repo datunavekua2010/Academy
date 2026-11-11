@@ -175,18 +175,6 @@ const tensAndOnes = (spec: Address): QuestionTemplate =>
     explanation: ({ vars, answer }) => `${vars.a} ათეული და ${vars.b} ერთეული = ${answer}.`,
   });
 
-/** "n rounded to the nearest ten" */
-const roundToTen = (spec: Address): QuestionTemplate =>
-  defineTemplate({
-    ...address(spec),
-    prompt: 'დაამრგვალე {n} უახლოეს ათეულამდე.',
-    variables: numbers(11, 89),
-    answer: (v: Vars) => Math.round(Number(v.n) / 10) * 10,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => numeric(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n}-ის უახლოესი ათეულია ${answer}.`,
-  });
-
 /** "Counting in tens: 30 … which ten comes next?" */
 const nextTen = (spec: Address): QuestionTemplate =>
   defineTemplate({
@@ -249,20 +237,6 @@ const evenOrOdd = (spec: Address, min = 1, max = 20): QuestionTemplate =>
     explanation: ({ vars, answer }) => `${vars.n} არის ${answer}.`,
   });
 
-/** "a ? b — which sign is correct?" */
-const compareSign = (spec: Address): QuestionTemplate =>
-  defineTemplate({
-    ...address(spec),
-    prompt: '{a} და {b}: რომელი ნიშანია სწორი?',
-    variables: numbers(1, 20),
-    constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'the two numbers must differ' }],
-    optionCount: 2,
-    answer: (v: Vars) => (Number(v.a) > Number(v.b) ? '>' : '<'),
-    format: { kind: 'text' },
-    distractors: ({ answer }) => (answer === '>' ? ['<'] : ['>']),
-    explanation: ({ vars, answer }) => `${vars.a} ${answer} ${vars.b}.`,
-  });
-
 /** "Is a + b = c true?" — the claim is checked against the printed numbers. */
 const trueFalseSum = (spec: Address): QuestionTemplate =>
   defineTemplate({
@@ -322,16 +296,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
-
-  // U05 — შედარება
-  compareSign({ subtopicId: 'meti-naklebi-toli', topicId: 'Sedareba' }),
-  largerOf({ subtopicId: 'Sedareba10', topicId: 'Sedareba' }, 1, 10),
-  largerOf({ subtopicId: 'Sedareba100', topicId: 'Sedareba' }, 10, 99),
-  defineTemplate({ ...address({ subtopicId: 'ramdenit-meti', topicId: 'Sedareba' }), prompt: 'ანას {a} კალამი აქვს, ბექას — {b}. რამდენით მეტი აქვს ანას?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'Ana has more' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  roundToTen({ subtopicId: 'SeFaseba-aTeulamde', topicId: 'Sedareba' }),
-  defineTemplate({ ...address({ subtopicId: 'dalageba', topicId: 'Sedareba' }), prompt: 'დაალაგე ზრდადობით: {a}, {b}. რომელია პირველი?', variables: numbers(1, 20), constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'numbers differ' }], answer: (v: Vars) => Math.min(Number(v.a), Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `ყველაზე პატარა რიცხვია ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'dalageba-danayi', topicId: 'Sedareba' }), prompt: 'დაალაგე ზრდადობით: {a}, {b}, {c}. რომელია პირველი?', variables: numbers(1, 20), constraints: [{ test: (v: Vars) => new Set([v.a, v.b, v.c]).size === 3, note: 'three distinct numbers' }], answer: (v: Vars) => Math.min(Number(v.a), Number(v.b), Number(v.c)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `ყველაზე პატარა რიცხვია ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'toli-raodenoba', topicId: 'Sedareba' }), prompt: '{a} და {b} ტოლია?', variables: numbers(1, 20), optionCount: 2, answer: (v: Vars) => (Number(v.a) === Number(v.b) ? 'კი' : 'არა'), format: { kind: 'text' }, distractors: ({ answer }) => (answer === 'კი' ? ['არა'] : ['კი']), explanation: ({ vars }) => `${vars.a} და ${vars.b} ${Number(vars.a) === Number(vars.b) ? 'ტოლია' : 'არ არის ტოლი'}.` }),
 
   // U06 — შეკრება
   add({ subtopicId: 'ra-aris-Sekreba', topicId: 'Sekreba' }, 2, 10),
