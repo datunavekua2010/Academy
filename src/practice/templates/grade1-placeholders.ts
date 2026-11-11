@@ -45,14 +45,6 @@ const nearMisses = (answer: number): number[] => {
 
 const numeric = (answer: number): number[] => nearMisses(answer);
 
-/** Georgian number names, for the "write the number in words" subtopic. */
-const WORDS: Record<number, string> = {
-  1: 'ერთი', 2: 'ორი', 3: 'სამი', 4: 'ოთხი', 5: 'ხუთი',
-  6: 'ექვსი', 7: 'შვიდი', 8: 'რვა', 9: 'ცხრა', 10: 'ათი',
-  11: 'თერთმეტი', 12: 'თორმეტი', 13: 'ცამეტი', 14: 'თოთხმეტი', 15: 'თხუთმეტი',
-  16: 'თექვსმეტი', 17: 'ჩვიდმეტი', 18: 'თვრამეტი', 19: 'ცხრამეტი', 20: 'ოცი',
-};
-
 /** Every template gets the same address fields; kinds only supply the rest. */
 interface Address {
   subtopicId: string;
@@ -215,25 +207,6 @@ const nextTen = (spec: Address): QuestionTemplate =>
     explanation: ({ vars, answer }) => `${Number(vars.a) * 10}-ის შემდეგი ათეულია ${answer}.`,
   });
 
-/** "Write n in words." */
-const words = (spec: Address): QuestionTemplate => {
-  const values = Object.keys(WORDS).map(Number);
-  return defineTemplate({
-    ...address(spec),
-    prompt: 'როგორ იწერება რიცხვი {n} სიტყვებით?',
-    variables: { n: { kind: 'choice', values } },
-    answer: (v: Vars) => WORDS[Number(v.n)],
-    format: { kind: 'text' },
-    distractors: ({ vars }) => {
-      const n = Number(vars.n);
-      return [n + 1, n - 1, n + 2]
-        .filter((candidate) => WORDS[candidate])
-        .map((candidate) => WORDS[candidate]);
-    },
-    explanation: ({ vars, answer }) => `${vars.n} იწერება როგორც „${answer}“.`,
-  });
-};
-
 /**
  * A fixed question whose wording never needs a drawn number: naming a shape,
  * true/false about a stated fact, naming the smallest of a listed group. The
@@ -349,17 +322,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
-
-  // U04 — რიცხვები 100-მდე
-  nextNumber({ subtopicId: 'aseulis-cxrili', topicId: 'ricxvebi100' }, 1, 98),
-  tensAndOnes({ subtopicId: 'ateulebi-erteulebi', topicId: 'ricxvebi100' }),
-  words({ subtopicId: 'ricxvebi-sityvebiT', topicId: 'ricxvebi100' }),
-  nextNumber({ subtopicId: 'ricxviTi-xazi100', topicId: 'ricxvebi100' }, 1, 98),
-  // "{n} + 10" is exactly "ten more than n".
-  defineTemplate({ ...address({ subtopicId: 'mezoblebi', topicId: 'ricxvebi100' }), prompt: '{n}-ს 10-ით მეტი რომელი რიცხვია?', variables: numbers(10, 89), answer: (v: Vars) => Number(v.n) + 10, format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.n} + 10 = ${answer}.` }),
-  fact({ subtopicId: 'romaulti', topicId: 'ricxvebi100', prompt: 'რომელი რომაული ციფრი ნიშნავს 5-ს?', options: ['V', 'I', 'X', 'L'], answer: 'V' }),
-  evenOrOdd({ subtopicId: 'luwi-kenti-danayi', topicId: 'ricxvebi100' }, 1, 100),
-  fact({ subtopicId: 'cifrebi-asoebi', topicId: 'ricxvebi100', prompt: 'რომელია ციფრი და არა ასო?', options: ['7', 'ა', 'ბ', 'გ'], answer: '7' }),
 
   // U05 — შედარება
   compareSign({ subtopicId: 'meti-naklebi-toli', topicId: 'Sedareba' }),

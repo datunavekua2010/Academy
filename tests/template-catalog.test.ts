@@ -9,6 +9,7 @@ import { GRADE1_PLACEHOLDERS } from '../src/practice/templates/grade1-placeholde
 import { GRADE1_PLACEHOLDER_SPECS } from '../src/practice/templates/grade1-placeholders';
 import { U01_TEMPLATES } from '../src/practice/templates/u01-space';
 import { U02_TEMPLATES } from '../src/practice/templates/u02-numbers';
+import { U04_SUBTOPICS } from '../src/practice/templates/u04-numbers100';
 
 /** The academy's own templates — held to the full session standard. */
 const REAL_LIBRARY_IDS = new Set([...U01_TEMPLATES, ...U02_TEMPLATES].map((t) => t.id));
@@ -206,20 +207,36 @@ describe('curriculum coverage', () => {
     expect(problems).toEqual([]);
   });
 
-  it('has at least one grade-1 placeholder per curriculum subtopic', () => {
+  it('has playable material for every curriculum subtopic', () => {
     const grade1 = CURRICULUM.find((grade) => grade.grade === 1)!;
     const subtopics = grade1.topics.flatMap((topic) =>
-      topicSubtopics(topic).map((subtopic) => `${topic.id}/${subtopic.id}`),
+      topicSubtopics(topic).map((subtopic) => ({
+        key: `${topic.id}/${subtopic.id}`,
+        ref: { grade: 1, topicId: topic.id, subtopicId: subtopic.id },
+      })),
     );
+
+    // A subtopic is covered when it has *any* template, not necessarily a
+    // placeholder: U01–U04 have real libraries now, and their placeholders are
+    // deliberately gone. What the student needs is a playable subtopic, and the
+    // placeholder file is only how the rest of grade 1 gets one.
     const covered = new Set(
       GRADE1_PLACEHOLDER_SPECS.map((spec) => `${spec.topicId}/${spec.subtopicId}`),
     );
-
-    // Every subtopic is covered — but a subtopic may carry more than one
-    // placeholder once it is widened, which is how "დათვლა წინ და უკან" gained
-    // its counting-backwards half.
-    for (const key of subtopics) expect(covered.has(key), key).toBe(true);
+    const missing = subtopics.filter(
+      ({ key, ref }) => !covered.has(key) && !TEMPLATE_REGISTRY.hasTemplates(ref as never),
+    );
+    expect(missing.map((entry) => entry.key)).toEqual([]);
     expect(subtopics).toHaveLength(113);
+
+    // U04's placeholders were deleted when its real library landed; the earlier
+    // units kept theirs alongside the real templates. So the check is one-way:
+    // U04 must not be carrying a placeholder, which is how a deleted one
+    // quietly comes back.
+    const stale = GRADE1_PLACEHOLDER_SPECS.filter((spec) =>
+      (U04_SUBTOPICS as readonly string[]).includes(spec.subtopicId),
+    );
+    expect(stale.map((spec) => spec.subtopicId)).toEqual([]);
   });
 
   it('template ids are unique', () => {
