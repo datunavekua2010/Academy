@@ -141,7 +141,15 @@ const previousNumber = (
       direction === 'before' ? `${vars.n}-მდე მოდის ${answer}.` : `${vars.n}-ის შემდეგ მოდის ${answer}.`,
   });
 
-/** "Which of these two numbers is bigger?" */
+/**
+ * "Which of these two numbers is bigger?"
+ *
+ * The two options are the two numbers the sentence prints. Offering a
+ * neighbour of the winner instead („15 თუ 2?“ with options 14, 15, 16, 17)
+ * makes the question answerable without comparing anything: the quantity that
+ * appears in the options is the greater one, so the child picks it and is
+ * always right. The comparison only happens once both quantities are on offer.
+ */
 const largerOf = (spec: Address, min = 1, max = 20): QuestionTemplate =>
   defineTemplate({
     ...address(spec),
@@ -150,8 +158,8 @@ const largerOf = (spec: Address, min = 1, max = 20): QuestionTemplate =>
     constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'the two numbers must differ' }],
     answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)),
     format: { kind: 'integer', min: 0 },
-    distractors: ({ answer, vars }) =>
-      numeric(Number(answer)).filter((candidate) => candidate !== Number(vars.a) && candidate !== Number(vars.b)),
+    optionCount: 2,
+    distractors: ({ vars }) => [Math.min(Number(vars.a), Number(vars.b))],
     explanation: ({ vars, answer }) => `${answer} მეტია ${vars.a === Number(answer) ? vars.b : vars.a}-ზე.`,
   });
 
@@ -271,10 +279,10 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   // U01 — სივრცე და მდებარეობა
   fact({ subtopicId: 'marcxena-marjvena', topicId: 'mdebareoba', prompt: 'სამი ბურთიდან შუაში მდგომი რომელია: მარცხენა, შუა თუ მარჯვენა?', options: ['შუა', 'მარცხენა', 'მარჯვენა'], answer: 'შუა' }),
   fact({ subtopicId: 'zeda-qveda', topicId: 'mdebareoba', prompt: 'ჩიტი ხეზე ზის. სად არის ჩიტი ხესთან?', options: ['ზემოთ', 'ქვემოთ', 'გვერდით'], answer: 'ზემოთ' }),
-  defineTemplate({ ...address({ subtopicId: 'grZeli-mokle', topicId: 'mdebareoba' }), prompt: 'რომელი უფრო გრძელია: {a} სმ ლენტი თუ {b} სმ ლენტი?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'lengths differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `გრძელი ლენტი ${answer} სმ-ია.` }),
-  defineTemplate({ ...address({ subtopicId: 'magle-dabali', topicId: 'mdebareoba' }), prompt: 'ნინო {a} სმ სიმაღლისაა, გიორგი — {b} სმ. ვინ არის უფრო მაღალი?', variables: { a: { kind: 'int', min: 60, max: 99 }, b: { kind: 'int', min: 60, max: 99 }, c: { kind: 'int', min: 1, max: 9 }, d: { kind: 'int', min: 1, max: 4 }, e: { kind: 'int', min: 1, max: 9 }, n: { kind: 'int', min: 60, max: 99 }, k: { kind: 'int', min: 1, max: 3 } }, constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'heights differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `უფრო მაღალი ${answer} სმ-ია.` }),
-  defineTemplate({ ...address({ subtopicId: 'mZime-msubuqi', topicId: 'mdebareoba' }), prompt: 'რომელი უფრო მძიმეა: {a} კგ თუ {b} კგ?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'weights differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `მძიმე საგანი ${answer} კგ-ია.` }),
-  defineTemplate({ ...address({ subtopicId: 'gansieri-vicki', topicId: 'mdebareoba' }), prompt: 'რომელი ყუთია უფრო განიერი: {a} სმ თუ {b} სმ სიგანისა?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'widths differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `განიერი ყუთი ${answer} სმ-ია.` }),
+  defineTemplate({ ...address({ subtopicId: 'grZeli-mokle', topicId: 'mdebareoba' }), prompt: 'რომელი უფრო გრძელია: {a} სმ ლენტი თუ {b} სმ ლენტი?', variables: numbers(2, 20), optionCount: 2, constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'lengths differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ vars }) => [Math.min(Number(vars.a), Number(vars.b))], explanation: ({ answer }) => `გრძელი ლენტი ${answer} სმ-ია.` }),
+  defineTemplate({ ...address({ subtopicId: 'magle-dabali', topicId: 'mdebareoba' }), prompt: 'ნინო {a} სმ სიმაღლისაა, გიორგი — {b} სმ. ვინ არის უფრო მაღალი: ნინო თუ გიორგი?', variables: { a: { kind: 'int', min: 60, max: 99 }, b: { kind: 'int', min: 60, max: 99 }, c: { kind: 'int', min: 1, max: 9 }, d: { kind: 'int', min: 1, max: 4 }, e: { kind: 'int', min: 1, max: 9 }, n: { kind: 'int', min: 60, max: 99 }, k: { kind: 'int', min: 1, max: 3 } }, constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'heights differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? 'ნინო' : 'გიორგი'), format: { kind: 'text' }, optionCount: 2, distractors: ({ answer }) => [answer === 'ნინო' ? 'გიორგი' : 'ნინო'], explanation: ({ vars, answer }) => `${answer} მაღალია: ${Math.max(Number(vars.a), Number(vars.b))} სმ > ${Math.min(Number(vars.a), Number(vars.b))} სმ.` }),
+  defineTemplate({ ...address({ subtopicId: 'mZime-msubuqi', topicId: 'mdebareoba' }), prompt: 'რომელი უფრო მძიმეა: {a} კგ თუ {b} კგ?', variables: numbers(2, 20), optionCount: 2, constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'weights differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ vars }) => [Math.min(Number(vars.a), Number(vars.b))], explanation: ({ answer }) => `მძიმე საგანი ${answer} კგ-ია.` }),
+  defineTemplate({ ...address({ subtopicId: 'gansieri-vicki', topicId: 'mdebareoba' }), prompt: 'რომელი ყუთია უფრო განიერი: {a} სმ თუ {b} სმ სიგანისა?', variables: numbers(2, 20), optionCount: 2, constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'widths differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ vars }) => [Math.min(Number(vars.a), Number(vars.b))], explanation: ({ answer }) => `განიერი ყუთი ${answer} სმ-ია.` }),
   // "all of them taken away" is exactly "{a} − {a} = 0", so the answer is 0 by construction.
   defineTemplate({ ...address({ subtopicId: 'yvela-rame', topicId: 'mdebareoba' }), prompt: 'კალათაში {a} ვაშლია. ყველა ვაშლი ავიღეთ. რამდენი დარჩა?', variables: numbers(1, 10), answer: () => 0, format: { kind: 'integer', min: 0 }, distractors: ({ vars }) => [Number(vars.a), 1, 2].filter((candidate) => candidate !== 0), explanation: () => 'ყველა ვაშლი ავიღეთ, ამიტომ დარჩა 0.' }),
   add({ subtopicId: 'datvla-suratebidan', topicId: 'mdebareoba' }, 1, 10),
@@ -383,7 +391,7 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   defineTemplate({ ...address({ subtopicId: 'monetebis-vertoba', topicId: 'fasebi' }), prompt: '{a} ლარი და {b} ლარი სულ რამდენი ლარია?', variables: numbers(1, 20), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer} ლარი.` }),
   defineTemplate({ ...address({ subtopicId: 'fulis-amocanebi', topicId: 'fasebi' }), prompt: 'წიგნი ღირს {a} ლარი. {b} ლარი გაქვს. რამდენი გაკლდება?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'you are short' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer} ლარი.` }),
   fact({ subtopicId: 'tolzRvari-monetebi', topicId: 'fasebi', prompt: '2 ლარი რამდენ 1-ლარიან მონეტას უდრის?', options: ['2', '1', '4'], answer: '2' }),
-  defineTemplate({ ...address({ subtopicId: 'tanxaTa-Sedareba', topicId: 'fasebi' }), prompt: 'რომელია მეტი: {a} ლარი თუ {b} ლარი?', variables: numbers(1, 20), constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'amounts differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ answer }) => `მეტია ${answer} ლარი.` }),
+  defineTemplate({ ...address({ subtopicId: 'tanxaTa-Sedareba', topicId: 'fasebi' }), prompt: 'რომელია მეტი: {a} ლარი თუ {b} ლარი?', variables: numbers(1, 20), optionCount: 2, constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'amounts differ' }], answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)), format: { kind: 'integer', min: 0 }, distractors: ({ vars }) => [Math.min(Number(vars.a), Number(vars.b))], explanation: ({ answer }) => `მეტია ${answer} ლარი.` }),
   defineTemplate({ ...address({ subtopicId: 'yvelaze-cota-monetebi', topicId: 'fasebi' }), prompt: '{a} ლარის გადასახდელად რამდენი 1-ლარიანი მონეტა გჭირდება?', variables: numbers(1, 10), answer: (v: Vars) => Number(v.a), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars }) => `${vars.a} ლარი = ${vars.a} ცალი 1-ლარიანი მონეტა.` }),
   defineTemplate({ ...address({ subtopicId: 'sakmarisi-fuli', topicId: 'fasebi' }), prompt: 'საკმარისია {a} ლარი {b} ლარიანი ნივთისთვის?', variables: numbers(1, 20), optionCount: 2, answer: (v: Vars) => (Number(v.a) >= Number(v.b) ? 'კი' : 'არა'), format: { kind: 'text' }, distractors: ({ answer }) => (answer === 'კი' ? ['არა'] : ['კი']), explanation: ({ vars }) => `${vars.a} ${Number(vars.a) >= Number(vars.b) ? '≥' : '<'} ${vars.b}.` }),
 
