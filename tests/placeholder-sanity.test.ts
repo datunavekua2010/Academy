@@ -7,10 +7,11 @@ import { previewTemplate } from '../src/practice/generator';
  * (see src/practice/templates/grade1-placeholders.ts). Tests elsewhere prove the
  * questions are *well formed*; this file proves they are *true*.
  *
- * The U04 subtopics no longer have placeholders: their real libraries replace
- * them, so a rule here would be checking a template that no longer exists. The
- * same property — the answer reads out of the printed prompt — is asserted
- * against the real templates in `tests/u04-templates.test.ts`.
+ * The U04 and U05 subtopics no longer have placeholders: their real libraries
+ * replace them, so a rule here would be checking a template that no longer
+ * exists. The same property — the answer reads out of the printed prompt — is
+ * asserted against the real templates in `tests/u04-templates.test.ts` and
+ * `tests/u05-templates.test.ts`.
  *
  * Every check re-derives the answer from the rendered prompt alone — the same
  * text a student sees — instead of trusting the template's own arithmetic.
@@ -76,40 +77,6 @@ const RULES: Rule[] = [
   {
     subtopicId: 'gansieri-vicki',
     check: (p, a) => expectEqual(p, a, Math.max(nums(p)[0], nums(p)[1])),
-  },
-  {
-    subtopicId: 'meti-naklebi-toli',
-    check: (p, a) => {
-      const [x, y] = nums(p);
-      return expectEqual(p, a, x > y ? '>' : '<');
-    },
-  },
-  {
-    subtopicId: 'Sedareba10',
-    check: (p, a) => expectEqual(p, a, Math.max(nums(p)[0], nums(p)[1])),
-  },
-  {
-    subtopicId: 'Sedareba100',
-    check: (p, a) => expectEqual(p, a, Math.max(nums(p)[0], nums(p)[1])),
-  },
-  {
-    subtopicId: 'dalageba',
-    check: (p, a) => expectEqual(p, a, Math.min(nums(p)[0], nums(p)[1])),
-  },
-  {
-    subtopicId: 'dalageba-danayi',
-    check: (p, a) => expectEqual(p, a, Math.min(...nums(p).slice(0, 3))),
-  },
-  {
-    subtopicId: 'toli-raodenoba',
-    check: (p, a) => {
-      const [x, y] = nums(p);
-      return expectEqual(p, a, x === y ? 'კი' : 'არა');
-    },
-  },
-  {
-    subtopicId: 'SeFaseba-aTeulamde',
-    check: (p, a) => expectEqual(p, a, Math.round(nums(p)[0] / 10) * 10),
   },
 
   // ---- addition -------------------------------------------------------
@@ -209,10 +176,6 @@ const RULES: Rule[] = [
   },
   {
     subtopicId: 'uknobi-ricxvi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'ramdenit-meti',
     check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
   },
   {
