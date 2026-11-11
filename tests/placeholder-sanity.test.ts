@@ -7,6 +7,11 @@ import { previewTemplate } from '../src/practice/generator';
  * (see src/practice/templates/grade1-placeholders.ts). Tests elsewhere prove the
  * questions are *well formed*; this file proves they are *true*.
  *
+ * The U04 subtopics no longer have placeholders: their real libraries replace
+ * them, so a rule here would be checking a template that no longer exists. The
+ * same property — the answer reads out of the printed prompt — is asserted
+ * against the real templates in `tests/u04-templates.test.ts`.
+ *
  * Every check re-derives the answer from the rendered prompt alone — the same
  * text a student sees — instead of trusting the template's own arithmetic.
  */
@@ -30,14 +35,6 @@ const RULES: Rule[] = [
   },
   {
     subtopicId: '100-mde',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + 1),
-  },
-  {
-    subtopicId: 'aseulis-cxrili',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + 1),
-  },
-  {
-    subtopicId: 'ricxviTi-xazi100',
     check: (p, a) => expectEqual(p, a, nums(p)[0] + 1),
   },
   {
@@ -180,10 +177,6 @@ const RULES: Rule[] = [
     subtopicId: 'ricxviTi-gamocanebi',
     check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
   },
-  {
-    subtopicId: 'mezoblebi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + 10),
-  },
 
   // ---- subtraction ----------------------------------------------------
   {
@@ -249,10 +242,6 @@ const RULES: Rule[] = [
 
   // ---- tens and place value ------------------------------------------
   {
-    subtopicId: 'ateulebi-erteulebi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] * 10 + nums(p)[1]),
-  },
-  {
     subtopicId: 'ateuli-erteuli-modeli',
     check: (p, a) => expectEqual(p, a, nums(p)[0] * 10 + nums(p)[1]),
   },
@@ -314,10 +303,6 @@ const RULES: Rule[] = [
   // ---- true / false and classification -------------------------------
   {
     subtopicId: 'luwi-kenti',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] % 2 === 0 ? 'ლუწი' : 'კენტი'),
-  },
-  {
-    subtopicId: 'luwi-kenti-danayi',
     check: (p, a) => expectEqual(p, a, nums(p)[0] % 2 === 0 ? 'ლუწი' : 'კენტი'),
   },
   {
@@ -419,18 +404,6 @@ const RULES: Rule[] = [
   {
     subtopicId: 'diagramiT-gayofa',
     check: (p, a) => expectEqual(p, a, nums(p)[0] / nums(p)[1]),
-  },
-  {
-    subtopicId: 'ricxvebi-sityvebiT',
-    check: (p, a) => {
-      const WORDS: Record<number, string> = {
-        1: 'ერთი', 2: 'ორი', 3: 'სამი', 4: 'ოთხი', 5: 'ხუთი', 6: 'ექვსი',
-        7: 'შვიდი', 8: 'რვა', 9: 'ცხრა', 10: 'ათი', 11: 'თერთმეტი',
-        12: 'თორმეტი', 13: 'ცამეტი', 14: 'თოთხმეტი', 15: 'თხუთმეტი',
-        16: 'თექვსმეტი', 17: 'ჩვიდმეტი', 18: 'თვრამეტი', 19: 'ცხრამეტი', 20: 'ოცი',
-      };
-      return expectEqual(p, a, WORDS[nums(p)[0]]);
-    },
   },
 ];
 
