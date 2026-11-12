@@ -129,29 +129,6 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] >= nums(p)[1] ? 'კი' : 'არა'),
   },
 
-  // ---- sequences ------------------------------------------------------
-  {
-    subtopicId: 'mzardi',
-    check: (p, a) => {
-      const [x, y] = nums(p);
-      return expectEqual(p, a, y + (y - x));
-    },
-  },
-  {
-    subtopicId: 'wesis-agwera',
-    check: (p, a) => {
-      const [step, x, y] = nums(p);
-      return expectEqual(p, a, y + step);
-    },
-  },
-  {
-    subtopicId: 'ricxviTi-mimdevroba',
-    check: (p, a) => {
-      const [x, y, z] = nums(p);
-      return expectEqual(p, a, z + (y - x));
-    },
-  },
-
   // ---- time and money -------------------------------------------------
   {
     subtopicId: 'saatis-wakitxva',
