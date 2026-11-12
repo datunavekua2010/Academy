@@ -141,10 +141,24 @@ export function startSession(
     throw new Error('Cannot start a practice session without questions');
   }
 
+  // De-duplicated by what the student actually sees, not by id.
+  //
+  // An id encodes the template and the seed, so two different templates can
+  // draw the same wording — two number-line walks that happen to start at 3 and
+  // take 2 steps read identically — and both then sit in the opening queue.
+  // Measured at 39 in 200 sessions before this filter existed.
+  const seenKeys = new Set<string>();
+  const opening = shuffle(questions).filter((question) => {
+    const key = shownKey(question);
+    if (seenKeys.has(key)) return false;
+    seenKeys.add(key);
+    return true;
+  });
+
   return {
     id: makeId('session'),
     ref,
-    queue: shuffle(questions).map((question) => question.id),
+    queue: opening.map((question) => question.id),
     questions: Object.fromEntries(questions.map((question) => [question.id, question])),
     score: 0,
     correct: 0,
@@ -248,11 +262,22 @@ export function advance(
     const question = questions[id];
     return question ? shownKey(question) : id;
   };
+  // Everything the student has already been shown this session. A queue entry
+  // is dropped if it repeats one of those — otherwise the same wording comes
+  // back simply because it was queued under a second id.
+  const shownAlready = new Set<string>();
+  for (const answer of state.answers) {
+    if (answer.prompt) {
+      shownAlready.add(
+        shownKey({ prompt: answer.prompt, visual: answer.visual, orderItems: answer.orderItems }),
+      );
+    }
+  }
   const keep = new Set<string>();
   queue = queue.filter((id) => {
     if (answeredIds.has(id)) return false;
     const key = keyOf(id);
-    if (keep.has(key)) return false;
+    if (keep.has(key) || shownAlready.has(key)) return false;
     keep.add(key);
     return true;
   });

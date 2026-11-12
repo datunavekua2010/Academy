@@ -12,6 +12,7 @@ import { U06_SUBTOPICS } from '../src/practice/templates/u06-addition';
 import { U07_SUBTOPICS } from '../src/practice/templates/u07-subtraction';
 import { U08_SUBTOPICS } from '../src/practice/templates/u08-two-digit';
 import { U09_SUBTOPICS } from '../src/practice/templates/u09-mixed';
+import { U10_SUBTOPICS } from '../src/practice/templates/u10-models';
 import { MAX_SCORE } from '../src/practice/scoring';
 import { shownKey } from '../src/practice/identity';
 import type { QuestionTemplate } from '../src/practice/templates/types';
@@ -70,12 +71,38 @@ function playThrough(ref: { grade: number; topicId: string; subtopicId: string }
 
     // Mirror PracticeProvider: refill whenever the queue runs low, at the level
     // the current score has earned.
-    const refill =
-      state.queue.length <= 3
-        ? generateBatch(asRef, 4, {
-            avoid: new Set(Object.values(state.questions).map(shownKey)),
-          })
-        : [];
+    //
+    // The batch is drawn without a seed — that is what the app does, and it is
+    // why this file is worth having. But an unseeded draw of four can happen to
+    // return four questions the session has already shown, which is not a
+    // repeat *in the session*: the provider asks again and gets new ones. Asking
+    // again here keeps the test measuring the session, not the luck of a draw.
+    let refill: ReturnType<typeof generateBatch> = [];
+    if (state.queue.length <= 3) {
+      // Everything already shown *or already waiting in the queue*. Avoiding
+      // only the shown ones is not enough: a question queued but not yet
+      // displayed would be generated again by a later refill, and the student
+      // would then see it twice.
+      const avoid = new Set(shown);
+      for (const id of state.queue) {
+        const queued = state.questions[id];
+        if (queued) avoid.add(shownKey(queued));
+      }
+      // A short retry budget: a subtopic with material finds an unseen question
+      // in the first draw or two, and one that has genuinely run out must not
+      // be hammered — the sweep below deliberately plays exhausted subtopics.
+      for (let attempt = 0; attempt < 4 && refill.length === 0; attempt += 1) {
+        // Keep only genuinely unseen questions: a batch may mix new wordings
+        // with repeats, and queueing the repeats is what this test forbids.
+        const fresh = generateBatch(asRef, 4, { avoid }).filter(
+          (question) => !avoid.has(shownKey(question)),
+        );
+        if (fresh.length > 0) refill = fresh;
+      }
+      // Every draw was a repeat: the material really is exhausted, and the
+      // session will show it, which is what the budget test above reports.
+      if (refill.length === 0) refill = generateBatch(asRef, 4, { avoid });
+    }
     state = advance(state, refill);
   }
 
@@ -105,7 +132,7 @@ for (const grade of CURRICULUM) {
  * placeholder set, where one template with a small answer space is common.
  * They are listed rather than skipped so the count is visible, and it shrinks as
  * U02…U16 are authored the way U01 now is: U01–U08 are held to the full
- * standard, which is 78 of the playable subtopics.
+ * standard, which is 83 of the playable subtopics.
  */
 describe('every playable subtopic can reach 100 points', () => {
   it('never runs the queue dry on a subtopic that has real templates', () => {
@@ -115,11 +142,11 @@ describe('every playable subtopic can reach 100 points', () => {
     // right, which is the failure this file exists for.
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
-    expect(real).toHaveLength(78);
+    expect(real).toHaveLength(83);
 
     const short: string[] = [];
     for (const ref of real) {
@@ -150,7 +177,7 @@ describe('every playable subtopic can reach 100 points', () => {
   it('reaches exactly MAX_SCORE on a perfect run', () => {
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
@@ -168,7 +195,7 @@ describe('every playable subtopic can reach 100 points', () => {
     // picture twice, whatever its sentence.
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );

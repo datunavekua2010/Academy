@@ -163,25 +163,6 @@ const largerOf = (spec: Address, min = 1, max = 20): QuestionTemplate =>
     explanation: ({ vars, answer }) => `${answer} მეტია ${vars.a === Number(answer) ? vars.b : vars.a}-ზე.`,
   });
 
-/** "3 tens and 4 ones — which number is that?" */
-const tensAndOnes = (spec: Address): QuestionTemplate =>
-  defineTemplate({
-    ...address(spec),
-    prompt: '{a} ათეული და {b} ერთეული — რა რიცხვია?',
-    variables: {
-      a: { kind: 'int', min: 1, max: 9 },
-      b: { kind: 'int', min: 0, max: 9 },
-      c: { kind: 'int', min: 1, max: 9 },
-      d: { kind: 'int', min: 1, max: 4 },
-      e: { kind: 'int', min: 1, max: 9 },
-      n: { kind: 'int', min: 1, max: 99 },
-      k: { kind: 'int', min: 1, max: 3 },
-    },
-    answer: (v: Vars) => Number(v.a) * 10 + Number(v.b),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => numeric(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a} ათეული და ${vars.b} ერთეული = ${answer}.`,
-  });
 
 /** "Counting in tens: 30 … which ten comes next?" */
 const nextTen = (spec: Address): QuestionTemplate =>
@@ -278,14 +259,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
-
-  // U10 — რაოდენობის მოდელი
-  tensAndOnes({ subtopicId: 'ateuli-erteuli-modeli', topicId: 'raodenobis-modeli' }),
-  // "The model shows a tens: which number is it?" is a tens place value question.
-  defineTemplate({ ...address({ subtopicId: 'modelidan-ricxvi', topicId: 'raodenobis-modeli' }), prompt: 'მოდელზე {a} ათეულია. რა რიცხვია?', variables: numbers(1, 9), answer: (v: Vars) => Number(v.a) * 10, format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} ათეული = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'ricxvidan-modeli', topicId: 'raodenobis-modeli' }), prompt: 'რიცხვი {n} რამდენ ათეულს შეიცავს?', variables: numbers(10, 99), answer: (v: Vars) => Math.floor(Number(v.n) / 10), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.n}-ში ${answer} სრული ათეულია.` }),
-  defineTemplate({ ...address({ subtopicId: 'ateulidan-erteulebamde', topicId: 'raodenobis-modeli' }), prompt: '{a} ათეული რამდენი ერთეულია?', variables: numbers(1, 9), answer: (v: Vars) => Number(v.a) * 10, format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} ათეული = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'sawyisi-raodenoba', topicId: 'raodenobis-modeli' }), prompt: 'გვაქვს {a}. საჭიროა {b}. რამდენი გვაკლია?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.b) > Number(v.a), note: 'still short' }], answer: (v: Vars) => Number(v.b) - Number(v.a), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.b} − ${vars.a} = ${answer}.` }),
 
   // U11 — კანონზომიერება
   fact({ subtopicId: 'gameorebadi', topicId: 'kanonzomiereba', prompt: 'გაიმეორე: 🔴 🔵 🔴 🔵 … რომელია შემდეგი?', options: ['🔴', '🔵', '🟢'], answer: '🔴' }),

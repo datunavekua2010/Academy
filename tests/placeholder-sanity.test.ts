@@ -103,10 +103,6 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
   },
   {
-    subtopicId: 'sawyisi-raodenoba',
-    check: (p, a) => expectEqual(p, a, nums(p)[1] - nums(p)[0]),
-  },
-  {
     subtopicId: 'fulis-amocanebi',
     check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
   },
@@ -120,22 +116,6 @@ const RULES: Rule[] = [
   },
 
   // ---- tens and place value ------------------------------------------
-  {
-    subtopicId: 'ateuli-erteuli-modeli',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] * 10 + nums(p)[1]),
-  },
-  {
-    subtopicId: 'modelidan-ricxvi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] * 10),
-  },
-  {
-    subtopicId: 'ateulidan-erteulebamde',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] * 10),
-  },
-  {
-    subtopicId: 'ricxvidan-modeli',
-    check: (p, a) => expectEqual(p, a, Math.floor(nums(p)[0] / 10)),
-  },
 
   // ---- two-step arithmetic -------------------------------------------
 
