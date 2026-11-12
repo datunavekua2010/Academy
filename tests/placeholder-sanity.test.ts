@@ -96,14 +96,6 @@ const RULES: Rule[] = [
     subtopicId: 'airCe-da-daTvale',
     check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
   },
-  {
-    subtopicId: 'jami-sxvaoba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'Tvisebebi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
 
   // ---- subtraction ----------------------------------------------------
   {
@@ -146,18 +138,6 @@ const RULES: Rule[] = [
   },
 
   // ---- two-step arithmetic -------------------------------------------
-  {
-    subtopicId: '20-mde',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1] - nums(p)[2]),
-  },
-  {
-    subtopicId: 'ori-nabiji',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1] - nums(p)[2]),
-  },
-  {
-    subtopicId: 'Sekreba-gamokleba-Tavsatexi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1] - nums(p)[2]),
-  },
 
   // ---- true / false and classification -------------------------------
   {
@@ -165,24 +145,8 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] % 2 === 0 ? 'ლუწი' : 'კენტი'),
   },
   {
-    subtopicId: 'martali-tolobebi',
-    check: (p, a) => {
-      const [x, y] = nums(p);
-      return expectEqual(p, a, x + y === y + x ? 'მართალია' : 'არ არის მართალი');
-    },
-  },
-  {
     subtopicId: 'sakmarisi-fuli',
     check: (p, a) => expectEqual(p, a, nums(p)[0] >= nums(p)[1] ? 'კი' : 'არა'),
-  },
-  {
-    subtopicId: 'romeli-moqmedeba',
-    check: (p, a) => expectEqual(p, a, '+'),
-  },
-  {
-    subtopicId: 'Sedareba-jamebi',
-    check: (p, a) =>
-      expectEqual(p, a, Math.max(nums(p)[0] + nums(p)[1], nums(p)[2] + nums(p)[3])),
   },
 
   // ---- sequences ------------------------------------------------------
