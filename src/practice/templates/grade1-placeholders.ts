@@ -260,13 +260,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
 
-  // U11 — კანონზომიერება
-  fact({ subtopicId: 'gameorebadi', topicId: 'kanonzomiereba', prompt: 'გაიმეორე: 🔴 🔵 🔴 🔵 … რომელია შემდეგი?', options: ['🔴', '🔵', '🟢'], answer: '🔴' }),
-  // Arithmetic sequences: the step is declared in the prompt and used to answer.
-  defineTemplate({ ...address({ subtopicId: 'mzardi', topicId: 'kanonzomiereba' }), prompt: 'მზარდი მიმდევრობა: {a}, {b}, ? (ნაბიჯი იგივეა)', variables: numbers(1, 9), constraints: [{ test: (v: Vars) => Number(v.b) - Number(v.a) > 0, note: 'increasing' }], answer: (v: Vars) => Number(v.b) + (Number(v.b) - Number(v.a)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `ნაბიჯია ${Number(vars.b) - Number(vars.a)}: შემდეგი წევრი ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'wesis-agwera', topicId: 'kanonzomiereba' }), prompt: 'მიმდევრობა იზრდება {d}-ით: {a}, {b}, ?', variables: numbers(1, 8), constraints: [{ test: (v: Vars) => Number(v.b) - Number(v.a) === Number(v.d), note: 'the printed step matches' }], answer: (v: Vars) => Number(v.b) + Number(v.d), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.b} + ${vars.d} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'ricxviTi-mimdevroba', topicId: 'kanonzomiereba' }), prompt: 'რიცხვითი მიმდევრობა: {a}, {b}, {c}, ? (ნაბიჯი იგივეა)', variables: numbers(1, 9), constraints: [{ test: (v: Vars) => Number(v.b) - Number(v.a) === Number(v.c) - Number(v.b), note: 'constant step' }], answer: (v: Vars) => Number(v.c) + (Number(v.b) - Number(v.a)), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `ნაბიჯია ${Number(vars.b) - Number(vars.a)}: შემდეგი წევრი ${answer}.` }),
-
   // U12 — გეომეტრია
   fact({ subtopicId: 'brtyeli-formebi', topicId: 'geometria', prompt: 'რომელია ბრტყელი ფიგურა?', options: ['კვადრატი', 'კუბი', 'ბურთი'], answer: 'კვადრატი' }),
   fact({ subtopicId: 'moculobiti-formebi', topicId: 'geometria', prompt: 'რომელია მოცულობითი ფიგურა?', options: ['კუბი', 'კვადრატი', 'წრე'], answer: 'კუბი' }),
