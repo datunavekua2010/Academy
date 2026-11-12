@@ -7,6 +7,7 @@ import { U03_SUBTOPICS, U03_TEMPLATES } from './u03-counting';
 import { U04_SUBTOPICS, U04_TEMPLATES } from './u04-numbers100';
 import { U05_SUBTOPICS, U05_TEMPLATES } from './u05-compare';
 import { U06_SUBTOPICS, U06_TEMPLATES } from './u06-addition';
+import { U07_SUBTOPICS, U07_TEMPLATES } from './u07-subtraction';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -56,6 +57,7 @@ const coveredByRealTemplates = new Set<string>([
   ...U04_SUBTOPICS,
   ...U05_SUBTOPICS,
   ...U06_SUBTOPICS,
+  ...U07_SUBTOPICS,
 ]);
 const remainingPlaceholders = GRADE1_PLACEHOLDERS.filter(
   (template) => !coveredByRealTemplates.has(template.subtopicId),
@@ -72,6 +74,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...U04_TEMPLATES,
     ...U05_TEMPLATES,
     ...U06_TEMPLATES,
+    ...U07_TEMPLATES,
   ],
   { resolveTopic: getTopic },
 );
@@ -92,4 +95,6 @@ export {
   U05_SUBTOPICS,
   U06_TEMPLATES,
   U06_SUBTOPICS,
+  U07_TEMPLATES,
+  U07_SUBTOPICS,
 };
