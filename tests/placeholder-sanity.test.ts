@@ -111,39 +111,7 @@ const RULES: Rule[] = [
 
   // ---- subtraction ----------------------------------------------------
   {
-    subtopicId: 'ra-aris-Gamokleba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
     subtopicId: 'sagvnebamde',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'SuratiT-10-gamokleba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'teqsti-gamokleba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'xazze-gamokleba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'cxrili-20-gamokleba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'gamokleba-cxrili-Sevseba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'uknobi-ricxvi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
-    subtopicId: 'ramdenit-naklebi',
     check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
   },
   {
@@ -157,10 +125,6 @@ const RULES: Rule[] = [
   {
     subtopicId: 'Cafiqrebuli-ricxvi',
     check: (p, a) => expectEqual(p, a, nums(p)[1] - nums(p)[0]),
-  },
-  {
-    subtopicId: 'nuli-taviT-gamokleba',
-    check: (_p, a) => expectEqual('', a, 0),
   },
   {
     subtopicId: 'yvela-rame',
@@ -231,13 +195,6 @@ const RULES: Rule[] = [
   {
     subtopicId: 'luwi-kenti',
     check: (p, a) => expectEqual(p, a, nums(p)[0] % 2 === 0 ? 'ლუწი' : 'კენტი'),
-  },
-  {
-    subtopicId: 'martalia-tu-ara-gamokleba',
-    check: (p, a) => {
-      const [x, y, z] = nums(p);
-      return expectEqual(p, a, x - y === z ? 'მართალია' : 'არ არის მართალი');
-    },
   },
   {
     subtopicId: 'martali-tolobebi',

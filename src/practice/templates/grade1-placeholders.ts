@@ -245,19 +245,6 @@ const evenOrOdd = (spec: Address, min = 1, max = 20): QuestionTemplate =>
     explanation: ({ vars, answer }) => `${vars.n} არის ${answer}.`,
   });
 
-/** "Is a − b = c true?" */
-const trueFalseDifference = (spec: Address): QuestionTemplate =>
-  defineTemplate({
-    ...address(spec),
-    prompt: '{a} − {b} = {c}. მართალია თუ არა?',
-    variables: numbers(10, 20),
-    optionCount: 2,
-    answer: (v: Vars) => (Number(v.a) - Number(v.b) === Number(v.c) ? 'მართალია' : 'არ არის მართალი'),
-    format: { kind: 'text' },
-    distractors: ({ answer }) => (answer === 'მართალია' ? ['არ არის მართალი'] : ['მართალია']),
-    explanation: ({ vars }) => `${vars.a} − ${vars.b} = ${Number(vars.a) - Number(vars.b)}.`,
-  });
-
 /* ------------------------------------------------------------------ *
  * The 113 subtopics, one line each, grouped by academy unit.
  * ------------------------------------------------------------------ */
@@ -291,20 +278,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
-
-  // U07 — გამოკლება
-  sub({ subtopicId: 'ra-aris-Gamokleba', topicId: 'Gamokleba' }, 2, 10),
-  defineTemplate({ ...address({ subtopicId: 'SuratiT-10-gamokleba', topicId: 'Gamokleba' }), prompt: '{a} ბურთიდან {b} გაუშვეს. რამდენი დარჩა?', variables: numbers(2, 10), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'some balls remain' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'teqsti-gamokleba', topicId: 'Gamokleba' }), prompt: 'ხეზე {a} ჩიტი იჯდა, {b} გაფრინდა. რამდენი დარჩა?', variables: numbers(2, 10), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'some birds remain' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'xazze-gamokleba', topicId: 'Gamokleba' }), prompt: 'რიცხვით ღერძზე {a}-დან {b} ნაბიჯი უკან. სად აღმოვჩნდით?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'stays above zero' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'nuli-taviT-gamokleba', topicId: 'Gamokleba' }), prompt: '{a} − {a} = ?', variables: numbers(1, 20), answer: () => 0, format: { kind: 'integer', min: 0 }, distractors: ({ vars }) => [Number(vars.a), 2, 3].filter((candidate) => candidate !== 0), explanation: () => 'რიცხვს თუ თავის თავს გამოვაკლებთ, რჩება 0.' }),
-  defineTemplate({ ...address({ subtopicId: 'cxrili-20-gamokleba', topicId: 'Gamokleba' }), prompt: 'გამოკლების ცხრილით: {a} − {b} = ?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'positive result' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'uknobi-ricxvi', topicId: 'Gamokleba' }), prompt: '{a} − ? = {b}. რომელი რიცხვი აკლია?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'the missing number is positive' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${answer} = ${vars.b}.` }),
-  trueFalseDifference({ subtopicId: 'martalia-tu-ara-gamokleba', topicId: 'Gamokleba' }),
-  defineTemplate({ ...address({ subtopicId: 'gamoakeli-raodenoba', topicId: 'Gamokleba' }), prompt: '{a} − {b} = ? სხვა რომელი გამოკლებაც იგივე პასუხს იძლევა?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'positive result' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'ramdenit-naklebi', topicId: 'Gamokleba' }), prompt: 'გიოს {a} მანქანა აქვს, ლუკას — {b}. რამდენით ნაკლები აქვს ლუკას?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'Gio has more' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'Cevrebi-arCevani', topicId: 'Gamokleba' }), prompt: 'რომელი გამოკლებაა სწორი: {a} − {b} = {c} თუ {a} − {b} = {d}?', variables: { a: { kind: 'int', min: 5, max: 20 }, b: { kind: 'int', min: 1, max: 4 }, c: { kind: 'int', min: 1, max: 19 }, d: { kind: 'int', min: 1, max: 19 }, e: { kind: 'int', min: 1, max: 9 }, n: { kind: 'int', min: 1, max: 20 }, k: { kind: 'int', min: 1, max: 3 } }, constraints: [{ test: (v: Vars) => Number(v.c) === Number(v.a) - Number(v.b) && Number(v.d) !== Number(v.c), note: 'exactly one printed difference is right' }], optionCount: 2, answer: (v: Vars) => `${v.a} − ${v.b} = ${v.c}`, format: { kind: 'text' }, distractors: ({ vars }) => [`${vars.a} − ${vars.b} = ${vars.d}`], explanation: ({ vars }) => `${vars.a} − ${vars.b} = ${Number(vars.a) - Number(vars.b)}.` }),
-  defineTemplate({ ...address({ subtopicId: 'gamokleba-cxrili-Sevseba', topicId: 'Gamokleba' }), prompt: 'შეავსე ცხრილი: {a} − {b} = ?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'positive result' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.` }),
 
   // U08 — ათეულები და ორნიშნა რიცხვები
   defineTemplate({ ...address({ subtopicId: 'ateulebi-ateulebi', topicId: 'ateulebi-orcifra' }), prompt: '{a}0 + {b}0 = ?', variables: numbers(1, 8), answer: (v: Vars) => (Number(v.a) + Number(v.b)) * 10, format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${Number(vars.a) * 10} + ${Number(vars.b) * 10} = ${answer}.` }),
