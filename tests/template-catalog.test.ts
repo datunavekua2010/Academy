@@ -15,6 +15,7 @@ import { U06_SUBTOPICS } from '../src/practice/templates/u06-addition';
 import { U07_SUBTOPICS } from '../src/practice/templates/u07-subtraction';
 import { U08_SUBTOPICS } from '../src/practice/templates/u08-two-digit';
 import { U09_SUBTOPICS } from '../src/practice/templates/u09-mixed';
+import { U10_SUBTOPICS } from '../src/practice/templates/u10-models';
 
 /** The academy's own templates — held to the full session standard. */
 const REAL_LIBRARY_IDS = new Set([...U01_TEMPLATES, ...U02_TEMPLATES].map((t) => t.id));
@@ -234,7 +235,7 @@ describe('curriculum coverage', () => {
     expect(missing.map((entry) => entry.key)).toEqual([]);
     expect(subtopics).toHaveLength(113);
 
-    // U04–U09's placeholders were deleted when their real libraries
+    // U04–U10's placeholders were deleted when their real libraries
     // landed; the earlier units kept theirs alongside the real templates. So
     // the check is one-way: a converted unit must not be carrying a
     // placeholder, which is how a deleted one quietly comes back.
@@ -245,6 +246,7 @@ describe('curriculum coverage', () => {
       ...U07_SUBTOPICS,
       ...U08_SUBTOPICS,
       ...U09_SUBTOPICS,
+      ...U10_SUBTOPICS,
     ]);
     const stale = GRADE1_PLACEHOLDER_SPECS.filter((spec) => converted.has(spec.subtopicId));
     expect(stale.map((spec) => spec.subtopicId)).toEqual([]);
