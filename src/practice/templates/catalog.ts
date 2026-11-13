@@ -19,6 +19,7 @@ import { U14_SUBTOPICS, U14_TEMPLATES } from './u14-money';
 import { U15_SUBTOPICS, U15_TEMPLATES } from './u15-parts';
 import { U16_SUBTOPICS, U16_TEMPLATES } from './u16-logic';
 import { G2_U01_SUBTOPICS, G2_U01_TEMPLATES } from './g2-u01-numbers100';
+import { G2_U02_SUBTOPICS, G2_U02_TEMPLATES } from './g2-u02-sequences';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -85,6 +86,7 @@ const remainingPlaceholders = GRADE1_PLACEHOLDERS.filter(
 
 const coveredGrade2Subtopics = new Set<string>([
   ...G2_U01_SUBTOPICS,
+  ...G2_U02_SUBTOPICS,
 ]);
 const remainingGrade2Placeholders = GRADE2_PLACEHOLDERS.filter(
   (template) => !coveredGrade2Subtopics.has(template.subtopicId),
@@ -97,6 +99,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
     ...G2_U01_TEMPLATES,
+    ...G2_U02_TEMPLATES,
     ...U01_TEMPLATES,
     ...U02_TEMPLATES,
     ...U03_TEMPLATES,
@@ -156,4 +159,6 @@ export {
   U16_SUBTOPICS,
   G2_U01_TEMPLATES,
   G2_U01_SUBTOPICS,
+  G2_U02_TEMPLATES,
+  G2_U02_SUBTOPICS,
 };
