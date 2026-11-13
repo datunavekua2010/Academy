@@ -19,11 +19,11 @@ import { defineTemplate } from './types';
  */
 
 export const SAMPLE_TEMPLATES = [
-  // ---------------------------------------------------------------- grade I
+  // --------------------------------------------------------------- samples
   defineTemplate({
     id: 'g2-times-table',
-    grade: 2,
-    topicId: 'gamravleba',
+    grade: 3,
+    topicId: 'gamravleba-gayofa',
     unitId: 'u1',
     subtopicId: 'cxrili',
     prompt: '{a} × {b} = ?',
@@ -45,9 +45,9 @@ export const SAMPLE_TEMPLATES = [
   defineTemplate({
     id: 'g2-meter-cm',
     grade: 2,
-    topicId: 'gazomva',
-    unitId: 'u1',
-    subtopicId: 'sigrze',
+    topicId: 'g2-gazomva-geometria',
+    unitId: 'g2-gazomva-geometria',
+    subtopicId: 'u11-meters-and-centimeters',
     prompt: '{m} მ და {cm} სმ სულ რამდენი სანტიმეტრია?',
     variables: {
       m: { kind: 'int', min: 1, max: 9 },

@@ -1,6 +1,7 @@
 import { getTopic } from '../curriculum';
 import { SAMPLE_TEMPLATES } from './samples';
 import { GRADE1_PLACEHOLDERS } from './grade1-placeholders';
+import { GRADE2_PLACEHOLDERS } from './grade2-placeholders';
 import { U01_SUBTOPICS, U01_TEMPLATES } from './u01-space';
 import { U02_SUBTOPICS, U02_TEMPLATES } from './u02-numbers';
 import { U03_SUBTOPICS, U03_TEMPLATES } from './u03-counting';
@@ -86,6 +87,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...SAMPLE_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
+    ...GRADE2_PLACEHOLDERS,
     ...U01_TEMPLATES,
     ...U02_TEMPLATES,
     ...U03_TEMPLATES,
@@ -110,6 +112,7 @@ export {
   SAMPLE_TEMPLATES,
   COVERAGE_TEMPLATES,
   GRADE1_PLACEHOLDERS,
+  GRADE2_PLACEHOLDERS,
   U01_TEMPLATES,
   U01_SUBTOPICS,
   U02_TEMPLATES,
