@@ -28,10 +28,13 @@ export interface Question {
    * — are answered more honestly by typing than by picking from four.
    * `order` asks the student to arrange the items; `orderItems` holds them and
    * the answer is their correct sequence as positions, e.g. "2,1,3".
+   * `time` asks the student to type a clock time, `HH:MM`. It is a typed answer
+   * like `number`, but compared by clock value rather than by spelling: a child
+   * who writes `7:00` for `07:00` has read the clock correctly.
    *
-   * All three are named in the U01 specification.
+   * All four are named in the U01 and U13 specifications.
    */
-  answerMode?: 'choice' | 'number' | 'order';
+  answerMode?: 'choice' | 'number' | 'order' | 'time';
   /** For `answerMode: 'order'` — the items to arrange, in display order. */
   orderItems?: string[];
   options: Answer[];

@@ -18,6 +18,7 @@ import { U09_SUBTOPICS } from '../src/practice/templates/u09-mixed';
 import { U10_SUBTOPICS } from '../src/practice/templates/u10-models';
 import { U11_SUBTOPICS } from '../src/practice/templates/u11-patterns';
 import { U12_SUBTOPICS } from '../src/practice/templates/u12-geometry';
+import { U13_SUBTOPICS } from '../src/practice/templates/u13-time';
 
 /** The academy's own templates — held to the full session standard. */
 const REAL_LIBRARY_IDS = new Set([...U01_TEMPLATES, ...U02_TEMPLATES].map((t) => t.id));
@@ -86,10 +87,16 @@ describe('every template in the catalog', () => {
           expect([...key].sort((a, b) => a - b)).toEqual(
             Array.from({ length: key.length }, (_, i) => i + 1),
           );
-        } else if (question.answerMode === 'number') {
+        } else if (question.answerMode === 'number' || question.answerMode === 'time') {
+          // A typed answer is one value and no options: a number for a count, a
+          // clock time for a time. `time` joined the list in U13, where the
+          // answer is `HH:MM` and is compared by value rather than spelling.
           expect(question.options).toEqual([]);
-          // A typed answer must still be a single, unambiguous number.
-          expect(String(question.answer)).toMatch(/^-?\d+(\.\d+)?$/);
+          if (question.answerMode === 'number') {
+            expect(String(question.answer)).toMatch(/^-?\d+(\.\d+)?$/);
+          } else {
+            expect(String(question.answer)).toMatch(/^\d{2}:\d{2}$/);
+          }
         } else {
           const expectedOptions = template.optionCount ?? 4;
           expect(question.options).toHaveLength(expectedOptions);
@@ -251,6 +258,7 @@ describe('curriculum coverage', () => {
       ...U10_SUBTOPICS,
       ...U11_SUBTOPICS,
       ...U12_SUBTOPICS,
+      ...U13_SUBTOPICS,
     ]);
     const stale = GRADE1_PLACEHOLDER_SPECS.filter((spec) => converted.has(spec.subtopicId));
     expect(stale.map((spec) => spec.subtopicId)).toEqual([]);

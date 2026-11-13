@@ -111,10 +111,26 @@ export interface AnswerFormat {
   max?: number;
   /**
    * Ask the student to type the answer instead of choosing from options.
-   * Only meaningful for numeric answers — a typed Georgian noun would be a
-   * spelling test, which is not what these questions assess.
+   *
+   * A typed answer is a single string, so the input is one field: a number for
+   * an integer answer, `HH:MM` for a time (see `time`, below), a word for a
+   * weekday. A typed Georgian noun would otherwise be a spelling test, so
+   * `text` answers always supply their own `options` and are offered as a
+   * choice — see the note on `time`.
    */
   entry?: boolean;
+  /**
+   * The answer is a clock time, written `HH:MM`, and the student types it.
+   *
+   * Set this instead of `entry` for a time. It does the same three things and
+   * one more: the answer is normalised to `HH:MM` (`7:0`, `07:00`, `7.00` and
+   * `7` all become `07:00`) and compared by *value*, not by spelling, so a
+   * child who types `7:00` for `07:00` is not marked wrong for typing four
+   * characters instead of five. `entry` alone cannot express that, because a
+   * typed answer is compared as text — which is right for a number and wrong
+   * for a time.
+   */
+  time?: boolean;
   /** Render the computed answer as the string students see. */
   format?: (answer: number | string) => string;
 }

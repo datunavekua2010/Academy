@@ -65,6 +65,38 @@ describe('pictures the student has to read', () => {
     const body = rule.slice(0, rule.indexOf('}'));
     expect(body).toMatch(/white-space:\s*pre-(line|wrap)/);
   });
+
+  it('gives a clock face the one font and whitespace rule its picture needs', () => {
+    // A dial is drawn on a grid of spaces: the numerals are placed by column and
+    // the hands run along rows. `.question-visual` is proportional and
+    // `pre-line`, which is right for a row of objects and turns a dial into a
+    // smear — so the dial gets its own class, and jsdom cannot see the difference
+    // because it loads no stylesheet. Read the rule from the file the browser gets.
+    const ref = { grade: 1 as const, topicId: 'dro', subtopicId: 'saatis-wakitxva' };
+    const question = generateBatch(ref as never, 12, { level: 1 }).find((q) => q.visual?.includes('┼'))!;
+    expect(question, 'a clock question should draw a dial').toBeDefined();
+
+    saveDraft(startSession(ref as never, [question]), window.localStorage);
+    render(<StudentApp />);
+
+    const visual = document.querySelector('.question-visual')!;
+    expect(visual.textContent).toBe(question.visual);
+    expect(visual.className, 'a dial must opt into the monospace rule').toContain('question-visual-dial');
+
+    const css = readFileSync(path.resolve(process.cwd(), 'src/student/student.css'), 'utf8');
+    const rule = css.slice(css.indexOf('.question-visual-dial {'));
+    const body = rule.slice(0, rule.indexOf('}'));
+    // Every space the picture is drawn with is kept…
+    expect(body).toMatch(/white-space:\s*pre\b/);
+    // …and every character is the same width, or the columns do not line up.
+    expect(body).toMatch(/font-family:[^;]*monospace/);
+  });
+
+  it('leaves a row-of-objects picture on the emoji-friendly default', () => {
+    // The fix must not be applied to everything: an emoji counted in a
+    // monospace font is drawn at an awkward width and the row stops reading.
+    expect('🍎 🍎 🍎'.includes('┼')).toBe(false);
+  });
 });
 
 describe('the options a comparison offers', () => {

@@ -10,6 +10,17 @@ import { ScoreMeter } from './ScoreMeter';
 const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
 
 /**
+ * Is this picture a character-drawn clock face?
+ *
+ * The dial is drawn on a grid of spaces and `·`/`●`/`┼`, so it needs a
+ * monospace font and its whitespace preserved — the general `.question-visual`
+ * is proportional and `pre-line`, which is right for a row of objects and
+ * destroys a dial. The centre mark is the tell: nothing else in the app draws
+ * one.
+ */
+const isDial = (visual: string): boolean => visual.includes('┼');
+
+/**
  * One question runner for every practice session. Assigned homework and free
  * practice both land here — there is no second activity component.
  */
@@ -82,6 +93,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
 
   const choose = (option: string) => submit(option);
   const entryMode = question?.answerMode === 'number';
+  const timeMode = question?.answerMode === 'time';
   const orderMode = question?.answerMode === 'order';
 
   /** Tapping an item appends it to the sequence; tapping it again removes it. */
@@ -169,7 +181,16 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
           {question.visual && (
-            <p className="question-visual" aria-hidden="true">
+            /* Two kinds of picture share this slot: rows of objects, where the
+               width of a character does not matter, and the U13 clock face,
+               where it is the *whole* picture — the numerals are placed on a
+               character grid and a proportional font would smear them off the
+               radii, while `pre-line` collapses the runs of spaces they are
+               drawn with. The dial gets a class that pins both. */
+            <p
+              className={`question-visual${isDial(question.visual) ? ' question-visual-dial' : ''}`}
+              aria-hidden="true"
+            >
               {question.visual}
             </p>
           )}
@@ -216,7 +237,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </p>
               )}
             </div>
-          ) : entryMode ? (
+          ) : entryMode || timeMode ? (
             <form
               className="answer-entry"
               onSubmit={(event) => {
@@ -225,7 +246,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
               }}
             >
               <label className="answer-entry-label" htmlFor="answer-entry-input">
-                ჩაწერე პასუხი
+                {timeMode ? 'ჩაწერე დრო' : 'ჩაწერე პასუხი'}
               </label>
               <div className="answer-entry-row">
                 <input
@@ -233,8 +254,14 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                   className="answer-entry-input"
                   // inputMode brings up the number pad on a phone; `type=text`
                   // keeps it usable with a physical keyboard and screen reader.
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  //
+                  // A clock time needs the colon, so the keypad would be a trap:
+                  // `numeric` hides it on most phones and the child could not
+                  // type the answer at all. Times get the full keyboard and a
+                  // hint that says which shape to write.
+                  inputMode={timeMode ? 'text' : 'numeric'}
+                  pattern={timeMode ? '[0-9]{1,2}:[0-9]{2}' : '[0-9]*'}
+                  placeholder={timeMode ? 'სთ:წთ' : undefined}
                   autoComplete="off"
                   value={typed}
                   onChange={(event) => setTyped(event.target.value)}
@@ -246,7 +273,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </button>
               </div>
               <p id="answer-entry-hint" className="answer-entry-hint">
-                {answered ? '' : 'შეიყვანე რიცხვი კლავიატურით.'}
+                {answered ? '' : timeMode ? 'ჩაწერე დრო ასე: 07:30.' : 'შეიყვანე რიცხვი კლავიატურით.'}
               </p>
               {answered && (
                 <p className={`answer-entry-result ${feedback?.result.correct ? 'is-correct' : 'is-wrong'}`}>

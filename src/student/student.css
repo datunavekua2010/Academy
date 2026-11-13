@@ -1151,6 +1151,19 @@
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji",
     "Twemoji Mozilla", "EmojiOne Color", "Android Emoji", sans-serif;
 }
+/* A clock face is a picture made of characters: the numerals sit on a grid and
+   the hands are drawn along its rows and columns, so it needs a fixed-width
+   font and every space kept. `pre-line` (above) collapses runs of spaces and
+   the general stack is proportional — either one alone turns the dial into a
+   smear of digits. This class is added only to visuals that contain the dial. */
+.question-visual-dial {
+  white-space: pre;
+  overflow-x: auto;
+  font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
 .question-prompt { font-size: 1.22rem; font-weight: 800; color: var(--navy); margin: 12px 0 18px; line-height: 1.5; }
 .answer-list { display: grid; gap: 9px; }
 

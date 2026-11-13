@@ -130,18 +130,9 @@ const RULES: Rule[] = [
   },
 
   // ---- time and money -------------------------------------------------
-  {
-    subtopicId: 'saatis-wakitxva',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + 1),
-  },
-  {
-    subtopicId: 'drois-amocanebi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'sxva-dro',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
+  // U13 converted the five time subtopics to real templates, and their
+  // placeholders were deleted with them; `u13-templates.test.ts` checks the
+  // replacement. The rules below are the ones that still have a placeholder.
   {
     subtopicId: 'monetebis-vertoba',
     check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
