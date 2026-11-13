@@ -190,7 +190,7 @@ place to add material if a student ever practises a subtopic for a long time.
 
 ## Defects the first draft had
 
-Six, none of them visible to the type checker:
+Seven, none of them visible to the type checker:
 
 - **The hour hand sat on the hour at half past.** The first `clockFace` computed
   the hour hand from `hours * 30` and dropped the minutes, so 4:30 drew a hand
@@ -217,7 +217,22 @@ Six, none of them visible to the type checker:
   The varying content is drawn in the `visual` now, and a test requires four
   distinct prompt-and-picture pairs from every template.
 
-A seventh was a wording bug rather than a geometry one: „ნინო სკოლაში 09:30-ზე
+The seventh is the one this suite could not have found on its own, and it was
+still there after every test above passed:
+
+- **The dial was unreadable on screen.** `.question-visual` sets
+  `white-space: pre-line` and an emoji font stack — both right for a row of
+  objects to count, both fatal to a character grid. `pre-line` collapses the runs
+  of spaces the numerals are *placed* with, and a proportional font puts every
+  numeral at a different width, so the `12`, the `3` and the `6` would have
+  drifted off their radii and the hands would have pointed at nothing. The
+  picture was correct in the string and wrong on the page. Dial visuals now
+  carry `question-visual-dial` (`white-space: pre`, a monospace stack), the
+  class is applied by looking for the dial's centre mark, and
+  `visual-and-options.test.tsx` reads that rule out of the stylesheet and fails
+  if the class is missing — because jsdom loads no CSS and would never notice.
+
+An eighth was a wording bug rather than a geometry one: „ნინო სკოლაში 09:30-ზე
 მივიდა და 14-ზე წამოვიდა“ printed a 24-hour hour next to a dial that shows 2,
 and said nothing about which half of the day it was. It says „დილის“ and
 „შუადღის“ now.
@@ -230,8 +245,10 @@ and said nothing about which half of the day it was. It says „დილის�
 - **A reading-level review by a teacher.** The Georgian is checked for being real
   Georgian, for the case endings and for one sentence per question, not for
   whether a six-year-old will follow „ნახატზე ნახე, სად არის წუთის ისარი“.
-- **Whether the dial is legible on a phone.** It is 17 characters wide and uses
-  the app's monospace-ish font stack; a very small screen may wrap it.
+- **Whether the dial is legible on a phone.** It is 17 characters wide in a
+  monospace font and scrolls horizontally rather than wrapping, so it cannot
+  break — but at 1.25 rem on a narrow screen it is near the width of the card,
+  and nobody has looked at it on a real phone.
 - **The *drawn* angle of the hour hand**, beyond „not on a numeral and on the
   correct side“. A character grid cannot express a half-cell, so the picture is
   checked against the stated `between` pair rather than by reading the cell back.

@@ -10,6 +10,17 @@ import { ScoreMeter } from './ScoreMeter';
 const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
 
 /**
+ * Is this picture a character-drawn clock face?
+ *
+ * The dial is drawn on a grid of spaces and `·`/`●`/`┼`, so it needs a
+ * monospace font and its whitespace preserved — the general `.question-visual`
+ * is proportional and `pre-line`, which is right for a row of objects and
+ * destroys a dial. The centre mark is the tell: nothing else in the app draws
+ * one.
+ */
+const isDial = (visual: string): boolean => visual.includes('┼');
+
+/**
  * One question runner for every practice session. Assigned homework and free
  * practice both land here — there is no second activity component.
  */
@@ -170,7 +181,16 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
           {question.visual && (
-            <p className="question-visual" aria-hidden="true">
+            /* Two kinds of picture share this slot: rows of objects, where the
+               width of a character does not matter, and the U13 clock face,
+               where it is the *whole* picture — the numerals are placed on a
+               character grid and a proportional font would smear them off the
+               radii, while `pre-line` collapses the runs of spaces they are
+               drawn with. The dial gets a class that pins both. */
+            <p
+              className={`question-visual${isDial(question.visual) ? ' question-visual-dial' : ''}`}
+              aria-hidden="true"
+            >
               {question.visual}
             </p>
           )}
