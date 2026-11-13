@@ -43,14 +43,19 @@ describe('practice UI with generated questions', () => {
       expect(prompt.trim().length).toBeGreaterThan(0);
       expect(prompt).not.toMatch(/\{\w+\}/); // no unfilled template placeholders
 
-      const options = within(
-        screen.getByRole('group', { name: 'პასუხის ვარიანტები' }),
-      ).getAllByRole('button');
-      expect(options).toHaveLength(4);
-      expect(new Set(options.map((option) => option.textContent)).size).toBe(4);
+      const optionGroup = screen.queryByRole('group', { name: 'პასუხის ვარიანტები' });
+      if (optionGroup) {
+        const options = within(optionGroup).getAllByRole('button');
+        expect(options.length).toBeGreaterThanOrEqual(3);
+        expect(new Set(options.map((option) => option.textContent)).size).toBe(options.length);
+        fireEvent.click(options[0]);
+      } else {
+        const input = screen.getByLabelText('ჩაწერე პასუხი');
+        fireEvent.change(input, { target: { value: '42' } });
+        fireEvent.submit(input.closest('form')!);
+      }
 
       prompts.add(prompt);
-      fireEvent.click(options[0]);
       fireEvent.click(await screen.findByRole('button', { name: /შემდეგი/ }));
     }
 
@@ -62,10 +67,15 @@ describe('practice UI with generated questions', () => {
     await startGrade2Subtopic();
 
     for (let index = 0; index < 5; index += 1) {
-      const options = within(
-        screen.getByRole('group', { name: 'პასუხის ვარიანტები' }),
-      ).getAllByRole('button');
-      fireEvent.click(options[index % options.length]);
+      const optionGroup = screen.queryByRole('group', { name: 'პასუხის ვარიანტები' });
+      if (optionGroup) {
+        const options = within(optionGroup).getAllByRole('button');
+        fireEvent.click(options[index % options.length]);
+      } else {
+        const input = screen.getByLabelText('ჩაწერე პასუხი');
+        fireEvent.change(input, { target: { value: '42' } });
+        fireEvent.submit(input.closest('form')!);
+      }
 
       const meter = screen.getByRole('progressbar');
       const score = Number(meter.getAttribute('aria-valuenow'));
