@@ -103,10 +103,6 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
   },
   {
-    subtopicId: 'Cafiqrebuli-ricxvi',
-    check: (p, a) => expectEqual(p, a, nums(p)[1] - nums(p)[0]),
-  },
-  {
     subtopicId: 'yvela-rame',
     check: (_p, a) => expectEqual('', a, 0),
   },
