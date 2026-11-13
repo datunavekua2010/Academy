@@ -239,9 +239,17 @@ and said nothing about which half of the day it was. It says „დილის�
 
 ## What the tests do not cover
 
-- **A screen reader pass on the dial.** The clock is text — numerals, `·`, `●`,
-  `┼` — and a screen reader will read it as a line of characters. A better
-  experience would describe the time in words, and nothing here does.
+- **A blind student cannot answer the clock-reading questions.** Every picture in
+  the runner carries `aria-hidden="true"`, which is right for a row of objects
+  (the prompt already says what is being counted) and wrong here: on
+  `g1-u13-1-read-oclock` the dial *is* the question, so a screen reader gets
+  „how many hours does the clock show?“ and no clock. Reading the character grid
+  aloud instead would be noise — „space space space one two space space" — so
+  `aria-hidden` is the better of two bad options, not an oversight. The honest
+  fix is a non-visual equivalent (describe the hands, ask for the time, which is
+  already what `g1-u13-1-write-oclock` does in reverse), and that is not in this
+  unit. The exclusion is inherited from every earlier visual unit, and U13 is
+  the first where it makes a whole subtopic unanswerable rather than harder.
 - **A reading-level review by a teacher.** The Georgian is checked for being real
   Georgian, for the case endings and for one sentence per question, not for
   whether a six-year-old will follow „ნახატზე ნახე, სად არის წუთის ისარი“.
