@@ -939,11 +939,16 @@ export const G2_U01_TEMPLATES: QuestionTemplate[] = [
     ...addr({ id: 'g2-u01-45', subtopicId: 'u01-roman-numerals', difficulty: 2 }),
     prompt: 'რას უდრის რომაული რიცხვი „{roman}“?',
     variables: {
-      val: { kind: 'choice', values: [6, 7, 8, 11, 12, 13, 15, 16, 20] },
+      val: {
+        kind: 'choice',
+        values: [
+          2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 30,
+        ],
+      },
       roman: { kind: 'choice', values: (v) => [toRoman(Number(v.val))] },
     },
     answer: (v) => Number(v.val),
-    format: { kind: 'integer', min: 1, max: 30 },
+    format: { kind: 'integer', min: 1, max: 35 },
     optionCount: 3,
     distractors: ({ answer }) => [Number(answer) - 1, Number(answer) + 1],
     explanation: ({ vars, answer }) => `„${vars.roman}“ = ${answer}.`,
@@ -954,7 +959,12 @@ export const G2_U01_TEMPLATES: QuestionTemplate[] = [
     ...addr({ id: 'g2-u01-46', subtopicId: 'u01-roman-numerals', difficulty: 2 }),
     prompt: 'როგორ ჩაიწერება {val} რომაული რიცხვებით?',
     variables: {
-      val: { kind: 'choice', values: [6, 7, 8, 11, 12, 13, 15, 16, 20] },
+      val: {
+        kind: 'choice',
+        values: [
+          2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 30,
+        ],
+      },
     },
     answer: (v) => toRoman(Number(v.val)),
     format: { kind: 'text' },
@@ -979,6 +989,22 @@ export const G2_U01_TEMPLATES: QuestionTemplate[] = [
           'VI,IV',
           'XVIII,XXI',
           'IX,XI',
+          'XIII,XVII',
+          'XXII,XXIV',
+          'XXVI,XXIX',
+          'XXX,XXXV',
+          'XV,XIX',
+          'XVI,XVIII',
+          'V,VII',
+          'VIII,X',
+          'XI,XIII',
+          'XXI,XXIII',
+          'XXV,XXVIII',
+          'XXVII,XXX',
+          'IV,VIII',
+          'IX,XII',
+          'XIV,XVIII',
+          'XIX,XXII',
         ],
       },
       romA: { kind: 'choice', values: (v) => [String(v.pair).split(',')[0]] },
@@ -998,17 +1024,23 @@ export const G2_U01_TEMPLATES: QuestionTemplate[] = [
     ...addr({ id: 'g2-u01-48', subtopicId: 'u01-roman-numerals', difficulty: 3 }),
     prompt: 'რომელი ჩანაწერი აღნიშნავს {target}-ს?',
     variables: {
-      target: { kind: 'choice', values: [20, 25, 30, 15] },
+      target: {
+        kind: 'choice',
+        values: [12, 15, 16, 19, 20, 21, 24, 25, 29, 30, 35, 40],
+      },
     },
     answer: (v) => toRoman(Number(v.target)),
     format: { kind: 'text' },
     optionCount: 3,
-    distractors: ({ vars }) => {
+    distractors: ({ vars, answer }) => {
       const t = Number(vars.target);
-      if (t === 20) return ['XV', 'LX'];
-      if (t === 25) return ['XX', 'XV'];
-      if (t === 30) return ['XX', 'XL'];
-      return ['XVI', 'VI'];
+      const candidates = [
+        toRoman(t - 1 > 0 ? t - 1 : 1),
+        toRoman(t + 1),
+        toRoman(t + 5),
+        toRoman(t - 5 > 0 ? t - 5 : 2),
+      ].filter((cand) => cand !== answer);
+      return [candidates[0], candidates[1]];
     },
     explanation: ({ vars, answer }) => `${vars.target} სწორად ჩაიწერება როგორც „${answer}“.`,
   }),
@@ -1120,15 +1152,22 @@ export const G2_U01_TEMPLATES: QuestionTemplate[] = [
     ...addr({ id: 'g2-u01-53', subtopicId: 'u01-tens-and-ones', difficulty: 3 }),
     prompt: 'რიცხვი {low}-ზე მეტია, {high}-ზე ნაკლები და იყოფა 10-ზე (ბოლოვდება 0-ით). რომელია ეს რიცხვი?',
     variables: {
-      target: { kind: 'choice', values: [30, 40, 50, 60, 70, 80] },
-      low: { kind: 'choice', values: (v) => [Number(v.target) - 10] },
-      high: { kind: 'choice', values: (v) => [Number(v.target) + 10] },
+      target: { kind: 'choice', values: [20, 30, 40, 50, 60, 70, 80] },
+      dLow: { kind: 'choice', values: [3, 5, 7] },
+      dHigh: { kind: 'choice', values: [3, 5, 7] },
+      low: { kind: 'choice', values: (v) => [Number(v.target) - Number(v.dLow)] },
+      high: { kind: 'choice', values: (v) => [Number(v.target) + Number(v.dHigh)] },
     },
     answer: (v) => Number(v.target),
     format: { kind: 'integer', min: 10, max: 90 },
     optionCount: 3,
-    options: (v) => [Number(v.target), Number(v.low), Number(v.high)],
-    explanation: ({ vars, answer }) => `${vars.low}-სა და ${vars.high}-ს შორის 10-ის ჯერადი ერთადერთი რიცხვია ${answer}.`,
+    options: (v) => [
+      Number(v.target),
+      Number(v.target) - 10,
+      Number(v.target) + 10,
+    ],
+    explanation: ({ vars, answer }) =>
+      `${vars.low}-სა და ${vars.high}-ს შორის 10-ის ჯერადი (0-ით დაბოლოებული) ერთადერთი რიცხვია ${answer}.`,
   }),
 
   // Q54 (Level 3)
@@ -1220,6 +1259,17 @@ export const G2_U01_TEMPLATES: QuestionTemplate[] = [
           'IV,VI',
           'VII,VIII',
           'XXIV,XXVI',
+          'XVI,XX',
+          'XXI,XXV',
+          'XXVIII,XXXI',
+          'XXXII,XXXV',
+          'XIII,XVIII',
+          'XXIII,XXVII',
+          'XI,XIV',
+          'XV,XVII',
+          'XXII,XXVI',
+          'XXVII,XXIX',
+          'VIII,XII',
         ],
       },
       romA: { kind: 'choice', values: (v) => [String(v.pair).split(',')[0]] },
