@@ -200,6 +200,9 @@ const u141: QuestionTemplate[] = [
     format: { kind: 'text' },
     optionCount: 6,
     visual: (v: Vars) => coinRow([Number(v.coin)]),
+    // „N-ია“, with the hyphen. Georgian orthography requires a case ending on a
+    // number written in digits to be separated by a dash („6-მა“, „27-ს“,
+    // „22-ში“) — the hyphen is the rule, not a slip. See U14-MAPPING.md.
     explanation: (context) => `მონეტაზე წერია ${context.vars.coin}, ამიტომ მისი ღირებულება ${context.answer}-ია.`,
   }),
 
@@ -952,7 +955,8 @@ const u143: QuestionTemplate[] = [
     answer: (v: Vars) => Number(v.target) / 10,
     format: { kind: 'integer', min: 2, max: 10, entry: true },
     visual: (v: Vars) => amountTag(Number(v.target)),
-    explanation: (context) => `${context.vars.target} ÷ 10 = ${context.answer}.`,
+    explanation: (context) =>
+      `${context.vars.target} ÷ 10 = ${context.answer} — ამდენი 10-თეთრიანი ეტევა.`,
   }),
 
   /** Q31 — make an amount from two **different** coins. */
@@ -1073,7 +1077,15 @@ const u143: QuestionTemplate[] = [
     },
     format: { kind: 'text' },
     visual: (v: Vars) => amountTag(Number(v.target)),
-    explanation: (context) => `${context.answer} = ${context.vars.target} თეთრი.`,
+    explanation: (context) => {
+      // „50 = 50 თეთრი“ is not arithmetic, it is the answer twice. When the
+      // cheapest way is a single coin there is no sum to show, so say what the
+      // coin is and why it needs no partner.
+      const target = Number(context.vars.target);
+      const answer = String(context.answer);
+      if (!answer.includes(' + ')) return `${answer} თეთრი ერთი მონეტაა — მეტი არაფერი სჭირდება.`;
+      return `${answer} = ${target} თეთრი.`;
+    },
   }),
 
   /**

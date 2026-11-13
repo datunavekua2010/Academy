@@ -237,6 +237,18 @@ None of these were visible to the type checker:
   `/\bpre\b/` against `white-space`, which also matches `pre-line`. Both passed
   against deliberately broken CSS. They are anchored at the `;` now, and each
   was re-checked by breaking the rule and watching the test fail.
+- **A near-miss "fix" that would have broken the Georgian.** An explanation
+  read „მისი ღირებულება 20 თეთრი-ია“, and the hyphen looked like the kind of
+  glued-on case ending U13's notes complain about, so it was changed to
+  „… არის“. That was wrong: Georgian orthography **requires** a case ending,
+  particle or postposition attached to a number written in digits to be
+  separated with a dash — „6-მა“, „27-ს“, „22-ში“, „25-ეში“, „180°-ია“. The
+  hyphen is the rule, and the original string was right. The change was reverted
+  and the rule is written down here so the next reader does not make it again.
+  What *was* wrong in that explanation is narrower: a noun with the `-ი`
+  nominative already carries the copula, so „20 თეთრი-ია“ is not needed once
+  „თეთრი“ is there — but it is not an error a test can see, and rewriting it
+  into „არის“ trades a real orthographic form for a stylistic preference.
 - **The picture was the only copy of the question.** Fifteen templates carry the
   question purely in the picture („which coin is this“, „count the purse“,
   „which purse is heavier“). Every visual has `aria-hidden`, so a screen reader
