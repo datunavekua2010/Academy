@@ -39,17 +39,6 @@ export const clockText = (minutes: number): string => {
   return `${String(hours).padStart(2, '0')}:${String(rest).padStart(2, '0')}`;
 };
 
-/**
- * Georgian for a clock time: „4:30“, „4 საათი“ for a whole hour.
- *
- * The specification's own example answer for Q9 is „ექვსი საათი და ოცდაათი
- * წუთი“, so the worded form is what a spoken answer reads like: `clockWords`.
- */
-export const clockTextShort = (minutes: number): string => {
-  const hours = Math.floor(minutes / 60) % 24;
-  const rest = minutes % 60;
-  return rest === 0 ? `${hours} საათი` : `${hours}:${String(rest).padStart(2, '0')}`;
-};
 
 /* ---------------------------------------------------------------- *\
  * Georgian numbers, for the worded answers

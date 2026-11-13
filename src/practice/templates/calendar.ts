@@ -119,12 +119,6 @@ export const SEASONS: Season[] = [
   { key: 'winter', name: 'ზამთარი', months: ['დეკემბერი', 'იანვარი', 'თებერვალი'], note: 'ცივა და თოვს' },
 ];
 
-/** A season by key. */
-export const season = (key: string): Season => {
-  const found = SEASONS.find((item) => item.key === key);
-  if (!found) throw new Error(`no season "${key}"`);
-  return found;
-};
 
 /** The season a month belongs to, computed from `SEASONS` — never a second table. */
 export const seasonOfMonth = (month: string): Season => {
@@ -169,14 +163,6 @@ export const dialHour = (minutes: number): number => {
   return hour === 0 ? 12 : hour;
 };
 
-/**
- * Morning or evening, in Georgian, when it changes the answer.
- *
- * The specification's rule 7: every time question must say which half of the
- * day it means wherever that changes what is right. `05:00` in the morning and
- * `17:00` in the afternoon are the same place on a dial and different times.
- */
-export const halfOfDay = (minutes: number): string => (Math.floor(minutes / 60) < 12 ? 'დილის' : 'საღამოს');
 
 /* ---------------------------------------------------------------- *\
  * Georgian case endings
@@ -235,8 +221,6 @@ export const fromName = (name: string): string => (name.endsWith('დან') ? 
 /** „by/up to“ — „ივლისამდე“, „კვირამდე“: `-ამდე` on the stem, both classes. */
 export const untilName = (name: string): string => (name.endsWith('მდე') ? name : `${stem(name)}ამდე`);
 
-/** The dative of a clock time for „at“: `07:30-ზე` reads „შვიდის ოცდაათზე“. */
-export const atTime = (text: string): string => `${text}-ზე`;
 
 /** A duration in words, from a whole number of minutes. */
 export const durationWords = (minutes: number): string => {

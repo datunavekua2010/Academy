@@ -37,17 +37,6 @@ export interface Question {
   answerMode?: 'choice' | 'number' | 'order' | 'time';
   /** For `answerMode: 'order'` — the items to arrange, in display order. */
   orderItems?: string[];
-  /**
-   * The shape of a typed `time` answer, when the question has one.
-   *
-   * `bare` is what the student is asked for — `07:00`, a time with no words
-   * around it. `spoken` is the form that carries a word: `07:00 საათზე`,
-   * `სამშაბათი`, `სამი საათი და ოცდაათი წუთი`. The U13 specification asks for
-   * both, and they are not interchangeable: a child asked „what time is it?“
-   * should not have to type a word to be marked right. Only `bare` is typed;
-   * `spoken` is always offered as a choice.
-   */
-  answerShape?: 'bare' | 'spoken';
   options: Answer[];
   answer: Answer;
   explanation: string;

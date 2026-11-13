@@ -60,6 +60,7 @@ import {
   durationWords,
   fromName,
   genitive,
+  locative,
   untilName,
   dialHour,
   monthAfter,
@@ -900,9 +901,12 @@ const u133: QuestionTemplate[] = [
   /** Which season is this month in? The season is computed, never a second table. */
   defineTemplate({
     ...address({ id: 'g1-u13-3-season-of-month', subtopicId: 'Tveebi-seasonebi', difficulty: 2 }),
-    prompt: 'რომელ სეზონს ეკუთვნის {month}?',
+    prompt: '{monthLoc} რომელი სეზონია?',
+    // „which season is it in July?“ — the month in the locative, which is the
+    // case a Georgian speaker would use and the reason `locative` exists.
     variables: {
       month: { kind: 'choice', values: MONTH_KEYS },
+      monthLoc: { kind: 'choice', values: (v: Vars) => [locative(String(v.month))] },
     },
     answer: (v: Vars) => seasonOfMonth(String(v.month)).name,
     options: (v: Vars) => {

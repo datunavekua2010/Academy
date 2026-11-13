@@ -415,7 +415,6 @@ export function generateFromTemplate(
       visual: template.visual ? template.visual(vars) : undefined,
       hint: template.hint,
       answerMode: template.shuffle ? 'order' : template.format?.time ? 'time' : entry ? 'number' : 'choice',
-      answerShape: template.format?.time ? 'bare' : template.format?.entry ? 'bare' : undefined,
       orderItems,
       // A typed-answer or ordering question must not ship options: an option
       // list would be a second, contradictory way to answer it (and a student
