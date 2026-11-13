@@ -17,6 +17,7 @@ import { U08_SUBTOPICS } from '../src/practice/templates/u08-two-digit';
 import { U09_SUBTOPICS } from '../src/practice/templates/u09-mixed';
 import { U10_SUBTOPICS } from '../src/practice/templates/u10-models';
 import { U11_SUBTOPICS } from '../src/practice/templates/u11-patterns';
+import { U12_SUBTOPICS } from '../src/practice/templates/u12-geometry';
 
 /** The academy's own templates — held to the full session standard. */
 const REAL_LIBRARY_IDS = new Set([...U01_TEMPLATES, ...U02_TEMPLATES].map((t) => t.id));
@@ -249,6 +250,7 @@ describe('curriculum coverage', () => {
       ...U09_SUBTOPICS,
       ...U10_SUBTOPICS,
       ...U11_SUBTOPICS,
+      ...U12_SUBTOPICS,
     ]);
     const stale = GRADE1_PLACEHOLDER_SPECS.filter((spec) => converted.has(spec.subtopicId));
     expect(stale.map((spec) => spec.subtopicId)).toEqual([]);

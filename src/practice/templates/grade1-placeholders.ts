@@ -260,17 +260,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
 
-  // U12 — გეომეტრია
-  fact({ subtopicId: 'brtyeli-formebi', topicId: 'geometria', prompt: 'რომელია ბრტყელი ფიგურა?', options: ['კვადრატი', 'კუბი', 'ბურთი'], answer: 'კვადრატი' }),
-  fact({ subtopicId: 'moculobiti-formebi', topicId: 'geometria', prompt: 'რომელია მოცულობითი ფიგურა?', options: ['კუბი', 'კვადრატი', 'წრე'], answer: 'კუბი' }),
-  fact({ subtopicId: 'gverdebi-kutxebi', topicId: 'geometria', prompt: 'რომელ ფიგურას აქვს მეტი გვერდი: სამკუთხედს თუ კვადრატს?', options: ['კვადრატს', 'სამკუთხედს'], answer: 'კვადრატს' }),
-  fact({ subtopicId: 'gverdebis-datvla', topicId: 'geometria', prompt: 'რამდენი გვერდი აქვს კვადრატს?', options: ['4', '3', '5'], answer: '4' }),
-  fact({ subtopicId: 'gaRia-daxuruli', topicId: 'geometria', prompt: 'რომელი ფიგურაა დახურული?', options: ['კვადრატი', 'ღია ხაზი'], answer: 'კვადრატი' }),
-  fact({ subtopicId: 'msgavsi-formebi', topicId: 'geometria', prompt: 'რომელი ფიგურაა მსგავსი კვადრატის?', options: ['მართკუთხედი', 'წრე', 'სამკუთხედი'], answer: 'მართკუთხედი' }),
-  fact({ subtopicId: 'formebi-cxovrebaSi', topicId: 'geometria', prompt: 'ბორბალი რა ფორმისაა?', options: ['წრე', 'კვადრატი', 'სამკუთხედი'], answer: 'წრე' }),
-  fact({ subtopicId: 'formebiT-agwera', topicId: 'geometria', prompt: 'სახლის სახურავი რა ფორმისაა ხშირად?', options: ['სამკუთხედი', 'წრე', 'კვადრატი'], answer: 'სამკუთხედი' }),
-  fact({ subtopicId: 'simetria', topicId: 'geometria', prompt: 'რომელი ფიგურაა სიმეტრიული?', options: ['კვადრატი', 'არასწორი სამკუთხედი'], answer: 'კვადრატი' }),
-
   // U13 — დრო
   defineTemplate({ ...address({ subtopicId: 'saatis-wakitxva', topicId: 'dro' }), prompt: 'საათი აჩვენებს {a} საათს. ერთი საათის შემდეგ რომელი საათი იქნება?', variables: numbers(1, 11), answer: (v: Vars) => Number(v.a) + 1, format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} საათიდან ერთი საათის შემდეგ ${answer} საათია.` }),
   fact({ subtopicId: 'kviris-dgeebi', topicId: 'dro', prompt: 'კვირაში რამდენი დღეა?', options: ['7', '5', '10'], answer: '7' }),

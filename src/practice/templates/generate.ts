@@ -279,32 +279,58 @@ export function generateFromTemplate(
 
     // Distractors come from the drawn values, so they always relate to *this*
     // variation. Anything equal to the answer (by display text) is dropped.
-    const candidates = entry ? [] : template.distractors
-      ? template.distractors({ answer: normalised.value, vars, rng, display: normalised.display })
-      : typeof normalised.value === 'number'
-        ? defaultDistractors(normalised.value, rng)
-        : [];
+    // A template that supplies its own complete option set (`options`) is
+    // asking „which of these statements is true“, where the wrong answers are
+    // not slips around a number but other complete statements. It hands over
+    // every option; the only checks are that the answer is in there exactly
+    // once and that nothing is duplicated.
+    let optionsList: string[] = [];
+    if (template.shuffle || entry) {
+      optionsList = [];
+    } else if (template.options) {
+      const supplied = template.options(vars).map(String);
+      const right = supplied.filter((option) => option === normalised.display).length;
+      if (right !== 1) {
+        lastError = new TemplateError(
+          `${template.id}: its own option set must contain the answer exactly once (found ${right})`,
+        );
+        continue;
+      }
+      if (new Set(supplied).size !== supplied.length) {
+        lastError = new TemplateError(`${template.id}: its own option set repeats an option`);
+        continue;
+      }
+      if (supplied.length < 2) {
+        lastError = new TemplateError(`${template.id}: its own option set needs at least two options`);
+        continue;
+      }
+      optionsList = shuffleWith(rng, supplied);
+    } else {
+      const candidates = template.distractors
+        ? template.distractors({ answer: normalised.value, vars, rng, display: normalised.display })
+        : typeof normalised.value === 'number'
+          ? defaultDistractors(normalised.value, rng)
+          : [];
 
-    const wrongDisplays: string[] = [];
-    for (const candidate of candidates) {
-      if (wrongDisplays.length >= optionCount - 1) break;
-      if (sameOption(candidate, normalised.value)) continue;
-      const display = String(candidate);
-      if (display === normalised.display) continue;
-      if (wrongDisplays.includes(display)) continue;
-      wrongDisplays.push(display);
+      const wrongDisplays: string[] = [];
+      for (const candidate of candidates) {
+        if (wrongDisplays.length >= optionCount - 1) break;
+        if (sameOption(candidate, normalised.value)) continue;
+        const display = String(candidate);
+        if (display === normalised.display) continue;
+        if (wrongDisplays.includes(display)) continue;
+        wrongDisplays.push(display);
+      }
+
+      if (wrongDisplays.length < optionCount - 1) {
+        lastError = new TemplateError(
+          `${template.id}: not enough distinct wrong options for "${normalised.display}"`,
+        );
+        continue;
+      }
+
+      optionsList = shuffleWith(rng, [normalised.display, ...wrongDisplays]);
     }
-
-    if (wrongDisplays.length < optionCount - 1 && !entry && !template.shuffle) {
-      lastError = new TemplateError(
-        `${template.id}: not enough distinct wrong options for "${normalised.display}"`,
-      );
-      continue;
-    }
-
-    const optionsList = template.shuffle
-      ? []
-      : shuffleWith(rng, [normalised.display, ...wrongDisplays]);
     const prompt = renderPrompt(template.prompt, vars);
 
     // Same template + same rendered wording, numbers AND picture = the same
