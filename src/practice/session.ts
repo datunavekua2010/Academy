@@ -56,6 +56,23 @@ function answersMatch(question: Question, choice: string): boolean {
     return typed !== null && expected !== null && typed === expected;
   }
 
+  // A multi-select is right only when the marked *set* is the right set: every
+  // option that fits, and none that does not. Marking three right ones out of
+  // three but also the one wrong option is wrong; so is stopping one short.
+  // The marked options are joined by the same separator in the same display
+  // order as `question.answer`, which is a list, so the comparison is between
+  // two lists rather than two strings.
+  if (question.answerMode === 'multi') {
+    const parts = (value: string) =>
+      value
+        .split(',')
+        .map((part) => part.trim())
+        .filter((part) => part !== '');
+    const typed = parts(choice);
+    const expected = parts(question.answer);
+    return typed.length === expected.length && typed.every((option) => expected.includes(option));
+  }
+
   if (question.answerMode !== 'number') return choice === question.answer;
 
   const typed = Number(choice.trim().replace(',', '.'));

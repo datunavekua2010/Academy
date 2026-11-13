@@ -334,6 +334,65 @@ export function generateFromTemplate(
     // not slips around a number but other complete statements. It hands over
     // every option; the only checks are that the answer is in there exactly
     // once and that nothing is duplicated.
+    // A multi-select answer is the correct options joined by a separator, and
+    // the option *order is part of the answer*: „ა, გ“ is a different key from
+    // „გ, ა“. That is why `multi` is normalised here, before options exist, and
+    // why the generator refuses to shuffle the options it was handed.
+    if (template.multi) {
+      const supplied = template.options!(vars).map(String);
+      const separator = template.multi.separator ?? ', ';
+      const chosen = String(raw)
+        .split(',')
+        .map((part) => part.trim())
+        .filter((part) => part !== '');
+      const unknown = chosen.filter((part) => !supplied.includes(part));
+      if (unknown.length > 0) {
+        lastError = new TemplateError(
+          `${template.id}: multi-select answer names options it did not offer (${unknown.join(', ')})`,
+        );
+        continue;
+      }
+      if (new Set(chosen).size !== chosen.length) {
+        lastError = new TemplateError(`${template.id}: multi-select answer repeats an option`);
+        continue;
+      }
+      // All right or all wrong is not a question: the student has nothing to
+      // decide, and the „mark every one that fits“ wording becomes a lie.
+      if (chosen.length === 0 || chosen.length === supplied.length) {
+        lastError = new TemplateError(
+          `${template.id}: multi-select needs at least one right and one wrong option`,
+        );
+        continue;
+      }
+      // Display order, left to right, so the key reads the way the screen reads.
+      const ordered = supplied.filter((option) => chosen.includes(option));
+      normalised = { value: ordered.join(separator), display: ordered.join(separator) };
+
+      const prompt = renderPrompt(template.prompt, vars);
+      const visual = template.visual ? template.visual(vars) : '';
+      const signature = `${template.id}|${prompt}|${visual}||${ordered.join(',')}`;
+      return {
+        id: `${template.id}~${seed}`,
+        templateId: template.id,
+        seed,
+        vars,
+        rawAnswer: ordered.join(separator),
+        signature,
+        grade: template.grade,
+        topicId: template.topicId,
+        subtopicId: template.subtopicId,
+        prompt,
+        visual: template.visual ? template.visual(vars) : undefined,
+        hint: template.hint,
+        answerMode: 'multi',
+        orderItems: undefined,
+        options: supplied,
+        answer: ordered.join(separator),
+        explanation: template.explanation({ vars, answer: ordered.join(separator) }),
+        difficulty: options.difficulty ?? template.difficulty ?? 1,
+      };
+    }
+
     let optionsList: string[] = [];
     if (template.shuffle || entry) {
       optionsList = [];

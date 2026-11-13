@@ -97,6 +97,17 @@ describe('every template in the catalog', () => {
           } else {
             expect(String(question.answer)).toMatch(/^\d{2}:\d{2}$/);
           }
+        } else if (question.answerMode === 'multi') {
+          // A multi-select's answer is the *set* of right options, joined with
+          // ", ", so it is not one of the options and cannot be looked for as
+          // one. What has to hold instead: every option is offered once, every
+          // marked option really is an option, and the set is a proper subset —
+          // „mark them all“ with nothing to leave out is not a question.
+          const marked = String(question.answer).split(',').map((part) => part.trim());
+          expect(new Set(question.options).size).toBe(question.options.length);
+          for (const option of marked) expect(question.options).toContain(option);
+          expect(marked.length).toBeGreaterThan(0);
+          expect(marked.length).toBeLessThan(question.options.length);
         } else {
           const expectedOptions = template.optionCount ?? 4;
           expect(question.options).toHaveLength(expectedOptions);

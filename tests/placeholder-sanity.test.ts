@@ -103,10 +103,6 @@ const RULES: Rule[] = [
     check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
   },
   {
-    subtopicId: 'fulis-amocanebi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] - nums(p)[1]),
-  },
-  {
     subtopicId: 'Cafiqrebuli-ricxvi',
     check: (p, a) => expectEqual(p, a, nums(p)[1] - nums(p)[0]),
   },
@@ -124,27 +120,12 @@ const RULES: Rule[] = [
     subtopicId: 'luwi-kenti',
     check: (p, a) => expectEqual(p, a, nums(p)[0] % 2 === 0 ? 'ლუწი' : 'კენტი'),
   },
-  {
-    subtopicId: 'sakmarisi-fuli',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] >= nums(p)[1] ? 'კი' : 'არა'),
-  },
 
   // ---- time and money -------------------------------------------------
-  // U13 converted the five time subtopics to real templates, and their
-  // placeholders were deleted with them; `u13-templates.test.ts` checks the
-  // replacement. The rules below are the ones that still have a placeholder.
-  {
-    subtopicId: 'monetebis-vertoba',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] + nums(p)[1]),
-  },
-  {
-    subtopicId: 'tanxaTa-Sedareba',
-    check: (p, a) => expectEqual(p, a, Math.max(nums(p)[0], nums(p)[1])),
-  },
-  {
-    subtopicId: 'yvelaze-cota-monetebi',
-    check: (p, a) => expectEqual(p, a, nums(p)[0]),
-  },
+  // U13 converted the five time subtopics to real templates and U14 the six
+  // money subtopics, and their placeholders were deleted with them;
+  // `u13-templates.test.ts` and `u14-templates.test.ts` check the replacements.
+  // No rule below is left for either topic.
 
   // ---- equal parts ----------------------------------------------------
   {

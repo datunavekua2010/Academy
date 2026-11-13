@@ -203,6 +203,32 @@ export interface QuestionTemplate {
     direction: 'asc' | 'desc';
   };
 
+  /**
+   * Asks the student to mark **every** option that fits, not one of them.
+   *
+   * „Which of these can you buy with 30 თეთრი?“ has two right answers and three
+   * wrong ones on the same screen; asked as a single choice it would have to be
+   * reworded into something else, and reworded questions were the compromise
+   * every earlier unit had to make. The runner marks a set, so the set is what
+   * the template hands over:
+   *
+   *  - `options(vars)` returns every candidate, as for a „which is true“ set;
+   *  - `answer(vars)` returns the correct ones joined by commas, **in the order
+   *    they have to be displayed** — `options` must not shuffle, because the
+   *    answer is a list of the same strings and the two have to agree;
+   *  - every option must be one of the two labels the template uses for
+   *    „fits“/„does not fit“ is *not* required: the set may be of any size, but
+   *    it must be a proper subset (at least one right and one wrong), or the
+   *    question is „mark them all“ with nothing to leave out.
+   *
+   * The generator checks all of that and refuses a draw that would be trivial,
+   * so a template cannot ship a multi-select whose answer is all four options.
+   */
+  multi?: {
+    /** Separator used in the answer string. Defaults to `', '`. */
+    separator?: string;
+  };
+
   /** Answer format / validation rules. */
   format?: AnswerFormat;
 
