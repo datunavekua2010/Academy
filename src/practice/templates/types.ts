@@ -204,6 +204,20 @@ export interface QuestionTemplate {
    * more options than the template can offer.
    */
   optionCount?: number;
+
+  /**
+   * The complete option set, correct answer included, when the question is not
+   * „one of these four“ but „which of these statements is true“.
+   *
+   * A multi-select question („mark every shape with four sides“) cannot be
+   * asked in a runner that marks one option. What survives is the *same*
+   * knowledge as a single choice: one option names the whole correct set, and
+   * the others are sets a child produces by missing one, adding one, or
+   * exchanging one. Choosing between them is the question — so the template has
+   * to hand over all the options instead of a list of distractors. The answer
+   * must appear in the returned array exactly once.
+   */
+  options?: (vars: Vars) => Array<number | string>;
 }
 
 /** Authoring helper — gives full type checking and editor completion. */
