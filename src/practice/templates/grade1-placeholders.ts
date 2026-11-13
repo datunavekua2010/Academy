@@ -260,13 +260,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
 
-  // U13 — დრო
-  defineTemplate({ ...address({ subtopicId: 'saatis-wakitxva', topicId: 'dro' }), prompt: 'საათი აჩვენებს {a} საათს. ერთი საათის შემდეგ რომელი საათი იქნება?', variables: numbers(1, 11), answer: (v: Vars) => Number(v.a) + 1, format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} საათიდან ერთი საათის შემდეგ ${answer} საათია.` }),
-  fact({ subtopicId: 'kviris-dgeebi', topicId: 'dro', prompt: 'კვირაში რამდენი დღეა?', options: ['7', '5', '10'], answer: '7' }),
-  fact({ subtopicId: 'Tveebi-seasonebi', topicId: 'dro', prompt: 'წელიწადში რამდენი თვეა?', options: ['12', '10', '7'], answer: '12' }),
-  defineTemplate({ ...address({ subtopicId: 'drois-amocanebi', topicId: 'dro' }), prompt: 'გაკვეთილი იწყება {a} საათზე და გრძელდება {b} საათი. როდის მთავრდება?', variables: numbers(1, 6), constraints: [{ test: (v: Vars) => Number(v.a) + Number(v.b) <= 12, note: 'stays within the clock face' }], answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-  defineTemplate({ ...address({ subtopicId: 'sxva-dro', topicId: 'dro' }), prompt: '{a} საათიდან {b} საათის შემდეგ რომელი დროა?', variables: numbers(1, 6), constraints: [{ test: (v: Vars) => Number(v.a) + Number(v.b) <= 12, note: 'stays within the clock face' }], answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.` }),
-
   // U14 — ფასები
   defineTemplate({ ...address({ subtopicId: 'monetebis-vertoba', topicId: 'fasebi' }), prompt: '{a} ლარი და {b} ლარი სულ რამდენი ლარია?', variables: numbers(1, 20), answer: (v: Vars) => Number(v.a) + Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer} ლარი.` }),
   defineTemplate({ ...address({ subtopicId: 'fulis-amocanebi', topicId: 'fasebi' }), prompt: 'წიგნი ღირს {a} ლარი. {b} ლარი გაქვს. რამდენი გაკლდება?', variables: numbers(2, 20), constraints: [{ test: (v: Vars) => Number(v.a) > Number(v.b), note: 'you are short' }], answer: (v: Vars) => Number(v.a) - Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer} ლარი.` }),

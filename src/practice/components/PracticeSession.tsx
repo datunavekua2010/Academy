@@ -82,6 +82,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
 
   const choose = (option: string) => submit(option);
   const entryMode = question?.answerMode === 'number';
+  const timeMode = question?.answerMode === 'time';
   const orderMode = question?.answerMode === 'order';
 
   /** Tapping an item appends it to the sequence; tapping it again removes it. */
@@ -216,7 +217,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </p>
               )}
             </div>
-          ) : entryMode ? (
+          ) : entryMode || timeMode ? (
             <form
               className="answer-entry"
               onSubmit={(event) => {
@@ -225,7 +226,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
               }}
             >
               <label className="answer-entry-label" htmlFor="answer-entry-input">
-                ჩაწერე პასუხი
+                {timeMode ? 'ჩაწერე დრო' : 'ჩაწერე პასუხი'}
               </label>
               <div className="answer-entry-row">
                 <input
@@ -233,8 +234,14 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                   className="answer-entry-input"
                   // inputMode brings up the number pad on a phone; `type=text`
                   // keeps it usable with a physical keyboard and screen reader.
-                  inputMode="numeric"
-                  pattern="[0-9]*"
+                  //
+                  // A clock time needs the colon, so the keypad would be a trap:
+                  // `numeric` hides it on most phones and the child could not
+                  // type the answer at all. Times get the full keyboard and a
+                  // hint that says which shape to write.
+                  inputMode={timeMode ? 'text' : 'numeric'}
+                  pattern={timeMode ? '[0-9]{1,2}:[0-9]{2}' : '[0-9]*'}
+                  placeholder={timeMode ? 'სთ:წთ' : undefined}
                   autoComplete="off"
                   value={typed}
                   onChange={(event) => setTyped(event.target.value)}
@@ -246,7 +253,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </button>
               </div>
               <p id="answer-entry-hint" className="answer-entry-hint">
-                {answered ? '' : 'შეიყვანე რიცხვი კლავიატურით.'}
+                {answered ? '' : timeMode ? 'ჩაწერე დრო ასე: 07:30.' : 'შეიყვანე რიცხვი კლავიატურით.'}
               </p>
               {answered && (
                 <p className={`answer-entry-result ${feedback?.result.correct ? 'is-correct' : 'is-wrong'}`}>

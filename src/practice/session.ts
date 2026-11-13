@@ -1,4 +1,5 @@
 import { shownKey } from './identity';
+import { clockMinutes } from './templates/generate';
 import { applyAnswer, MAX_SCORE, type AnswerResult } from './scoring';
 import type { Question, SubtopicRef } from './types';
 
@@ -43,6 +44,16 @@ function answersMatch(question: Question, choice: string): boolean {
       .map((part) => Number(part.trim()))
       .filter((value) => Number.isFinite(value));
     return typed.length === expected.length && typed.every((value, i) => value === expected[i]);
+  }
+
+  // A typed clock time compares by the moment it names, not by its spelling.
+  // `7:00`, `07:00` and `7` are the same time on the same clock, and a child
+  // who writes the short form has read the clock correctly — marking that wrong
+  // would be testing typing, not time.
+  if (question.answerMode === 'time') {
+    const typed = clockMinutes(choice);
+    const expected = clockMinutes(question.answer);
+    return typed !== null && expected !== null && typed === expected;
   }
 
   if (question.answerMode !== 'number') return choice === question.answer;

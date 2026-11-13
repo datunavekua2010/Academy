@@ -23,6 +23,46 @@ const MAX_ATTEMPTS = 200;
 
 export class TemplateError extends Error {}
 
+/**
+ * A clock time as `HH:MM`, from whatever a template wrote.
+ *
+ * Accepts `7`, `7:0`, `07:00`, `7.00`, `7სთ30`, `7:30 წთ` and `19:05` — the
+ * forms a template might reach for while it is being written — and returns the
+ * one form the app uses everywhere. Returns null when the input is not a time
+ * at all, which the generator reports as a template bug rather than shipping a
+ * question whose key cannot be matched.
+ *
+ * Kept here rather than in the U13 file because the generator normalises with
+ * it: a template cannot be trusted to agree with `U13-MAPPING.md` about what
+ * `07:00` looks like.
+ */
+export function asClock(raw: number | string): string | null {
+  // A bare number is an hour: `9` is nine o'clock, not nine minutes past.
+  if (typeof raw === 'number') return Number.isInteger(raw) && raw >= 0 && raw <= 23 ? `${String(raw).padStart(2, '0')}:00` : null;
+
+  const text = String(raw).trim();
+  // The whole string has to be a time. An earlier version matched a prefix, so
+  // `10:5` read as `10:05` and `7:00 ვიფიქრე` as `07:00` — a wrong answer one
+  // keystroke away from a right one is exactly what must not pass.
+  const match = /^(\d{1,2})(?:\s*[:. ]\s*(\d{2}))?$/.exec(text);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = match[2] === undefined ? 0 : Number(match[2]);
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+  // A whole number with a colon and no minutes is a time („7:00“ written „7:“),
+  // but a single-digit minute count is a typo: the minute field is two digits.
+  if (match[2] !== undefined && match[2].length === 1 && text.includes(':')) return null;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+/** The minute value of a `HH:MM` clock time, or null. */
+export function clockMinutes(raw: string): number | null {
+  const clock = asClock(raw);
+  if (!clock) return null;
+  const [hours, minutes] = clock.split(':').map(Number);
+  return hours! * 60 + minutes!;
+}
+
 export interface GeneratedQuestion extends Question {
   templateId: string;
   seed: number;
@@ -170,6 +210,14 @@ function normaliseAnswer(
     throw new TemplateError(`${template.id}: answer must be a non-empty string or number`);
   }
 
+  if (format.time) {
+    // A clock time is normalised on the way out, so the key is always `HH:MM`
+    // and a template cannot ship `7:0` while the student is asked to type.
+    const clock = asClock(raw);
+    if (!clock) throw new TemplateError(`${template.id}: "${raw}" is not a clock time`);
+    return { value: clock, display: format.format ? format.format(clock) : clock };
+  }
+
   return { value: raw, display: format.format ? format.format(raw) : raw };
 }
 
@@ -274,8 +322,10 @@ export function generateFromTemplate(
 
     // A typed-answer question shows no options at all, so building distractors
     // for it would be wasted work (and would make the template fail when it
-    // could not invent enough of them).
-    const entry = template.format?.entry === true;
+    // could not invent enough of them). A `time` answer is typed too — one
+    // `HH:MM` field — but carries its own words when it needs them.
+    const typed = template.format?.entry === true || template.format?.time === true;
+    const entry = typed;
 
     // Distractors come from the drawn values, so they always relate to *this*
     // variation. Anything equal to the answer (by display text) is dropped.
@@ -364,7 +414,8 @@ export function generateFromTemplate(
       prompt,
       visual: template.visual ? template.visual(vars) : undefined,
       hint: template.hint,
-      answerMode: template.shuffle ? 'order' : entry ? 'number' : 'choice',
+      answerMode: template.shuffle ? 'order' : template.format?.time ? 'time' : entry ? 'number' : 'choice',
+      answerShape: template.format?.time ? 'bare' : template.format?.entry ? 'bare' : undefined,
       orderItems,
       // A typed-answer or ordering question must not ship options: an option
       // list would be a second, contradictory way to answer it (and a student

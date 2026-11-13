@@ -13,6 +13,7 @@ import { U09_SUBTOPICS, U09_TEMPLATES } from './u09-mixed';
 import { U10_SUBTOPICS, U10_TEMPLATES } from './u10-models';
 import { U11_SUBTOPICS, U11_TEMPLATES } from './u11-patterns';
 import { U12_SUBTOPICS, U12_TEMPLATES } from './u12-geometry';
+import { U13_SUBTOPICS, U13_TEMPLATES } from './u13-time';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -68,6 +69,7 @@ const coveredByRealTemplates = new Set<string>([
   ...U10_SUBTOPICS,
   ...U11_SUBTOPICS,
   ...U12_SUBTOPICS,
+  ...U13_SUBTOPICS,
 ]);
 const remainingPlaceholders = GRADE1_PLACEHOLDERS.filter(
   (template) => !coveredByRealTemplates.has(template.subtopicId),
@@ -90,6 +92,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...U10_TEMPLATES,
     ...U11_TEMPLATES,
     ...U12_TEMPLATES,
+    ...U13_TEMPLATES,
   ],
   { resolveTopic: getTopic },
 );
