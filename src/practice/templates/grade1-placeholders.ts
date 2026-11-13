@@ -259,12 +259,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   nextTen({ subtopicId: 'atobit-nabijebit', topicId: 'datvla' }),
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
-
-  // U16 — ლოგიკური აზროვნება
-  fact({ subtopicId: 'ferebi-wesis-mixedviT', topicId: 'logikuri-azrovneba', prompt: 'წესი: წითელის შემდეგ ყოველთვის მოდის ლურჯი. წითლის შემდეგ რომელია?', options: ['ლურჯი', 'წითელი', 'მწვანე'], answer: 'ლურჯი' }),
-  fact({ subtopicId: 'gamoricxva', topicId: 'logikuri-azrovneba', prompt: 'რომელი არ ეკუთვნის ჯგუფს: ვაშლი, მსხალი, სტაფილო?', options: ['სტაფილო', 'ვაშლი', 'მსხალი'], answer: 'სტაფილო' }),
-  fact({ subtopicId: 'sascori', topicId: 'logikuri-azrovneba', prompt: 'სასწორზე ვაშლი უფრო მძიმეა, ვიდრე მსხალი. რომელია მსუბუქი?', options: ['მსხალი', 'ვაშლი'], answer: 'მსხალი' }),
-  defineTemplate({ ...address({ subtopicId: 'Cafiqrebuli-ricxvi', topicId: 'logikuri-azrovneba' }), prompt: 'ჩავიფიქრე რიცხვი, დავუმატე {a} და მივიღე {b}. რა რიცხვი ჩავიფიქრე?', variables: numbers(1, 10), constraints: [{ test: (v: Vars) => Number(v.b) > Number(v.a), note: 'the original number is positive' }], answer: (v: Vars) => Number(v.b) - Number(v.a), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.b} − ${vars.a} = ${answer}.` }),
 ];
 
 /** One entry per template, used by the catalog tests. */
