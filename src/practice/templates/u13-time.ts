@@ -813,8 +813,6 @@ const u133: QuestionTemplate[] = [
     // phrasings so the answer is not simply memorised from one sentence.
     variables: {
       form: { kind: 'choice', values: ['months', 'seasons', 'months-word', 'seasons-word'] },
-      // A second axis so the four phrasings are drawn evenly rather than by luck.
-      axis: { kind: 'choice', values: [0, 1, 2, 3] },
       asked: {
         kind: 'choice',
         values: (v: Vars) => [
@@ -1372,19 +1370,11 @@ const u135: QuestionTemplate[] = [
 ];
 
 /* ================================================================== *\
- * The last of the fifty
- * ================================================================== */
-
-const u136: QuestionTemplate[] = [
-
-];
-
-/* ================================================================== *\
  * Exports
  * ================================================================== */
 
 /** Every U13 template, in curriculum order. */
-export const U13_TEMPLATES: QuestionTemplate[] = [...u131, ...u132, ...u133, ...u134, ...u135, ...u136];
+export const U13_TEMPLATES: QuestionTemplate[] = [...u131, ...u132, ...u133, ...u134, ...u135];
 
 /** Subtopic ids this library is responsible for. */
 export const U13_SUBTOPICS = ['saatis-wakitxva', 'kviris-dgeebi', 'Tveebi-seasonebi', 'drois-amocanebi', 'sxva-dro'];
