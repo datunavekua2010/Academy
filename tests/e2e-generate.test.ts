@@ -5,11 +5,11 @@ import { generateBatch, regenerateFromId } from '../src/practice/generator';
 import { startSession, submitAnswer, advance } from '../src/practice/session';
 
 /**
- * Grade I is placeholder content until the academy's real questions arrive, and
+ * Grade I and II are placeholder content until the academy's real questions arrive, and
  * a few placeholders are fixed-wording multiple choice with only three distinct
  * phrasings. Any non-empty batch is still a playable session.
  */
-const batchSizeFor = (grade: number): number => (grade === 1 ? 1 : 5);
+const batchSizeFor = (grade: number): number => (grade <= 2 ? 1 : 5);
 
 describe('end to end: generate → play → restore', () => {
   it('every subtopic can be played and the answers are self-consistent', () => {
@@ -52,7 +52,7 @@ describe('end to end: generate → play → restore', () => {
   });
 
   it('a session restored from storage keeps the same question', () => {
-    const ref = { grade: 2 as const, topicId: 'gamravleba', subtopicId: 'cxrili' };
+    const ref = { grade: 2 as const, topicId: 'g2-ricxvebi100', subtopicId: 'u01-hundred-chart' };
     const state = startSession(ref, generateBatch(ref, 6, { seed: 1 }));
     const before = state.questions[state.queue[0]];
 

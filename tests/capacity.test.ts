@@ -60,7 +60,10 @@ describe('subtopic capacity', () => {
           const templates = TEMPLATE_REGISTRY.forSubtopic(ref);
           const isPlaceholder =
             templates.length > 0 &&
-            templates.every((template) => template.id === `g1-${subtopic.id}`);
+            templates.every(
+              (template) =>
+                template.id === `g1-${subtopic.id}` || template.id === `g2-${subtopic.id}`,
+            );
           const required = isPlaceholder ? PLACEHOLDER_MIN_UNIQUE : MIN_UNIQUE_QUESTIONS;
 
           if (unique.size < required) {

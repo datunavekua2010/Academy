@@ -168,18 +168,18 @@ describe('every playable subtopic can reach 100 points', () => {
     // The failure this pins is not "short" but "silent": the queue empties, and
     // the screen must say the material ended rather than blame the load.
     const playable = subtopics.filter((ref) => hasTemplates(ref as never));
-    let checked = 0;
+    let grade1DriedUp = 0;
     for (const ref of playable) {
       const run = playThrough(ref);
       if (!run.driedUp) continue;
-      checked += 1;
+      if (ref.grade === 1) grade1DriedUp += 1;
       // A dried-up queue is flagged, which is what the view turns into an
       // ending; an unflagged empty queue is the bug.
       expect(run.exhausted, createKey(ref)).toBe(true);
     }
     // All 113 Grade 1 subtopics are now fully authored with real templates;
     // none dry up short of MAX_SCORE.
-    expect(checked).toBe(0);
+    expect(grade1DriedUp).toBe(0);
   });
 
   it('reaches exactly MAX_SCORE on a perfect run', () => {
