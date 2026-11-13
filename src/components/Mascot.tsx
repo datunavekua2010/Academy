@@ -140,7 +140,7 @@ export function Mascot({
             bouncing ? 'is-bouncing' : ''
           }`}
           role="img"
-          aria-label="Axi — მეგობრული წითელი მელა"
+          aria-label="Axi — მეგობრული ენოტი"
         >
           {/* Inlined so the eyes, tail and spark stay individually animatable. */}
           <FoxArt pupilStyle={pupilStyle} />
