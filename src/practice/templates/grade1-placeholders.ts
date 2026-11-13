@@ -260,10 +260,6 @@ export const GRADE1_PLACEHOLDERS: QuestionTemplate[] = [
   sub({ subtopicId: 'sagvnebamde', topicId: 'datvla' }, 2, 10),
   add({ subtopicId: 'airCe-da-daTvale', topicId: 'datvla' }, 1, 10),
 
-  // U15 — ტოლი ნაწილები
-  defineTemplate({ ...address({ subtopicId: 'diagramiT-gayofa', topicId: 'toli-nawilebi' }), prompt: '{a} ნამცხვარი თანაბრად გაიყო {b} ბავშვზე. თითოეულს რამდენი ერგო?', variables: numbers(2, 9), constraints: [{ test: (v: Vars) => Number(v.a) % Number(v.b) === 0, note: 'divides evenly' }], answer: (v: Vars) => Number(v.a) / Number(v.b), format: { kind: 'integer', min: 0 }, distractors: ({ answer }) => numeric(Number(answer)), explanation: ({ vars, answer }) => `${vars.a} ÷ ${vars.b} = ${answer}.` }),
-  fact({ subtopicId: 'toli-nawilebi-2', topicId: 'toli-nawilebi', prompt: 'ნაწილები ერთმანეთის ტოლია?', options: ['ტოლია', 'არ არის ტოლი'], answer: 'ტოლია' }),
-
   // U16 — ლოგიკური აზროვნება
   fact({ subtopicId: 'ferebi-wesis-mixedviT', topicId: 'logikuri-azrovneba', prompt: 'წესი: წითელის შემდეგ ყოველთვის მოდის ლურჯი. წითლის შემდეგ რომელია?', options: ['ლურჯი', 'წითელი', 'მწვანე'], answer: 'ლურჯი' }),
   fact({ subtopicId: 'gamoricxva', topicId: 'logikuri-azrovneba', prompt: 'რომელი არ ეკუთვნის ჯგუფს: ვაშლი, მსხალი, სტაფილო?', options: ['სტაფილო', 'ვაშლი', 'მსხალი'], answer: 'სტაფილო' }),

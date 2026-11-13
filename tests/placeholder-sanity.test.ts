@@ -122,16 +122,11 @@ const RULES: Rule[] = [
   },
 
   // ---- time and money -------------------------------------------------
-  // U13 converted the five time subtopics to real templates and U14 the six
-  // money subtopics, and their placeholders were deleted with them;
-  // `u13-templates.test.ts` and `u14-templates.test.ts` check the replacements.
-  // No rule below is left for either topic.
-
-  // ---- equal parts ----------------------------------------------------
-  {
-    subtopicId: 'diagramiT-gayofa',
-    check: (p, a) => expectEqual(p, a, nums(p)[0] / nums(p)[1]),
-  },
+  // U13 converted the five time subtopics to real templates, U14 the six
+  // money subtopics, and U15 the two equal-parts subtopics, and their
+  // placeholders were deleted with them; `u13-templates.test.ts`,
+  // `u14-templates.test.ts`, and `u15-templates.test.ts` check the replacements.
+  // No rule below is left for any of them.
 ];
 
 describe('grade-1 placeholders are factually correct', () => {

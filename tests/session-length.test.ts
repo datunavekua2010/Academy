@@ -17,6 +17,7 @@ import { U11_SUBTOPICS } from '../src/practice/templates/u11-patterns';
 import { U12_SUBTOPICS } from '../src/practice/templates/u12-geometry';
 import { U13_SUBTOPICS } from '../src/practice/templates/u13-time';
 import { U14_SUBTOPICS } from '../src/practice/templates/u14-money';
+import { U15_SUBTOPICS } from '../src/practice/templates/u15-parts';
 import { MAX_SCORE } from '../src/practice/scoring';
 import { shownKey } from '../src/practice/identity';
 import type { QuestionTemplate } from '../src/practice/templates/types';
@@ -146,11 +147,11 @@ describe('every playable subtopic can reach 100 points', () => {
     // right, which is the failure this file exists for.
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS, ...U11_SUBTOPICS, ...U12_SUBTOPICS, ...U13_SUBTOPICS, ...U14_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS, ...U11_SUBTOPICS, ...U12_SUBTOPICS, ...U13_SUBTOPICS, ...U14_SUBTOPICS, ...U15_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
-    expect(real).toHaveLength(107);
+    expect(real).toHaveLength(109);
 
     const short: string[] = [];
     for (const ref of real) {
@@ -181,7 +182,7 @@ describe('every playable subtopic can reach 100 points', () => {
   it('reaches exactly MAX_SCORE on a perfect run', () => {
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS, ...U11_SUBTOPICS, ...U12_SUBTOPICS, ...U13_SUBTOPICS, ...U14_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS, ...U11_SUBTOPICS, ...U12_SUBTOPICS, ...U13_SUBTOPICS, ...U14_SUBTOPICS, ...U15_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
@@ -199,7 +200,7 @@ describe('every playable subtopic can reach 100 points', () => {
     // picture twice, whatever its sentence.
     const real = subtopics.filter(
       (ref) =>
-        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS, ...U11_SUBTOPICS, ...U12_SUBTOPICS, ...U13_SUBTOPICS, ...U14_SUBTOPICS].includes(
+        [...U01_SUBTOPICS, ...U02_SUBTOPICS, ...U03_SUBTOPICS, ...U04_SUBTOPICS, ...U05_SUBTOPICS, ...U06_SUBTOPICS, ...U07_SUBTOPICS, ...U08_SUBTOPICS, ...U09_SUBTOPICS, ...U10_SUBTOPICS, ...U11_SUBTOPICS, ...U12_SUBTOPICS, ...U13_SUBTOPICS, ...U14_SUBTOPICS, ...U15_SUBTOPICS].includes(
           ref.subtopicId as never,
         ) && hasTemplates(ref as never),
     );
