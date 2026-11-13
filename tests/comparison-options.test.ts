@@ -53,8 +53,12 @@ const PAIR_COMPARISONS = [
   'g1-gansieri-vicki',
   // grade 1, „უდიდესი და უმცირესი“
   'g1-udidesi-umciresti',
-  // grade 1, „თანხების შედარება“
-  'g1-tanxaTa-Sedareba',
+  // grade 1, „თანხების შედარება“ — the money comparison left this list when U14
+  // replaced its placeholder. It does offer both quantities, but it does not
+  // *print* them: the two sums are drawn as coins, so the rule this file checks
+  // („the numbers in the sentence are the options“) has nothing to read.
+  // `u14-templates.test.ts` checks the money version: both purse totals appear
+  // as options, so the child still has to add and compare.
   // grade 1, U05 „შედარება და დალაგება“
   'g1-u05-2-larger',
   'g1-u05-2-smaller',

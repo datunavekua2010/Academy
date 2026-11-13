@@ -21,6 +21,70 @@ const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
 const isDial = (visual: string): boolean => visual.includes('┼');
 
 /**
+ * Is this picture a row of coins drawn as character tokens?
+ *
+ * Same reason as the dial, and the same failure if it is missed: a coin is a
+ * rounded box containing its denomination, so it needs a fixed-width font and
+ * its padding kept. The tell is the token corner, which nothing else draws.
+ */
+const isCoins = (visual: string): boolean => visual.includes('╭');
+
+/**
+ * The picture in words, for a student who cannot see it.
+ *
+ * The visual is `aria-hidden` because a clock dial or a purse of box-drawing
+ * characters read aloud is noise — a screen reader announces „box drawing light
+ * down and right, horizontal, …“ for every token. But hiding it also hides the
+ * question: „რამდენი თეთრია ყულაბაში“ with no prompt figure is unanswerable.
+ *
+ * So the picture gets a sentence instead. Only the two drawn shapes need it —
+ * a coin purse becomes „5, 5 და 10 თეთრი მონეტები“, an amount tag becomes its
+ * amount — and a visual that is already words (a row of emoji does not occur in
+ * U14) falls back to the text itself.
+ */
+function visualText(visual: string): string {
+  if (!visual.includes('╭') && !visual.includes('◆')) return visual;
+  // Every token's middle row, in the order they appear, labelled per purse.
+  const lines = visual.split('\n');
+  const parts: string[] = [];
+  let current: number[] = [];
+  let label: string | null = null;
+  const flush = () => {
+    if (current.length === 0) return;
+    const coins = current.map((coin) => `${coin}`);
+    parts.push(`${label ? `${label}: ` : ''}${coins.join(', ')} თეთრი მონეტა`);
+    current = [];
+    label = null;
+  };
+  for (const line of lines) {
+    const tagged = line.match(/^◆\s*(\d+)\s*თეთრი/);
+    if (tagged) {
+      flush();
+      parts.push(`${tagged[1]} თეთრი`);
+      continue;
+    }
+    const labelled = line.match(/^(#?\d*)\s*$/);
+    if (labelled && line.trim() !== '') {
+      // A purse or an item label standing on its own line: „ანა“, „①“, „#2“.
+      flush();
+      label = line.trim();
+      continue;
+    }
+    for (const match of line.matchAll(/│\s*(\d+)\s*│/g)) current.push(Number(match[1]));
+  }
+  flush();
+  return parts.join('; ');
+}
+
+/** Every per-picture class a visual needs, so the stylesheet rule is one place. */
+const visualClass = (visual: string): string => {
+  const classes = ['question-visual'];
+  if (isDial(visual)) classes.push('question-visual-dial');
+  if (isCoins(visual)) classes.push('question-visual-coins');
+  return classes.join(' ');
+};
+
+/**
  * One question runner for every practice session. Assigned homework and free
  * practice both land here — there is no second activity component.
  */
@@ -95,6 +159,33 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const entryMode = question?.answerMode === 'number';
   const timeMode = question?.answerMode === 'time';
   const orderMode = question?.answerMode === 'order';
+  const multiMode = question?.answerMode === 'multi';
+
+  /**
+   * Multi-select: the student toggles options, then checks the set.
+   *
+   * The marked set is not an answer on its own — a set of one is indistinguishable
+   * from a single choice, and a question with two right answers would be marked
+   * wrong the moment the first was tapped. So the taps accumulate and only the
+   * button submits, in display order, which is the order `question.answer` is
+   * written in.
+   */
+  const toggleMulti = (option: string) => {
+    if (answered) return;
+    setChoice((current) => {
+      const marked = current === null ? [] : current.split('\n');
+      return (marked.includes(option)
+        ? marked.filter((entry) => entry !== option)
+        : [...marked, option]
+      ).join('\n');
+    });
+  };
+
+  /** The marked set in the order the options are printed, joined as the key is. */
+  const markedAnswer = (): string => {
+    const marked = choice === null ? [] : choice.split('\n');
+    return (question?.options ?? []).filter((option) => marked.includes(option)).join(', ');
+  };
 
   /** Tapping an item appends it to the sequence; tapping it again removes it. */
   const tapOrder = (position: number) => {
@@ -187,12 +278,17 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                character grid and a proportional font would smear them off the
                radii, while `pre-line` collapses the runs of spaces they are
                drawn with. The dial gets a class that pins both. */
-            <p
-              className={`question-visual${isDial(question.visual) ? ' question-visual-dial' : ''}`}
-              aria-hidden="true"
-            >
-              {question.visual}
-            </p>
+            <>
+              <p className={visualClass(question.visual)} aria-hidden="true">
+                {question.visual}
+              </p>
+              {/* The drawn picture is hidden from assistive technology because
+                  box-drawing and emoji stacks read aloud as noise — but the
+                  question lives in the picture, so its meaning is given as a
+                  sentence instead. It is visually hidden, not `display: none`,
+                  so screen readers still find it. */}
+              <p className="visually-hidden">{visualText(question.visual)}</p>
+            </>
           )}
           <p className="question-prompt">{question.prompt}</p>
 
@@ -281,6 +377,68 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </p>
               )}
             </form>
+          ) : multiMode ? (
+          /**
+           * „Mark every one that fits.“ Tapping toggles; nothing is marked until
+           * the set is checked, because marking as you go would score a
+           * half-built set as a wrong single answer.
+           *
+           * After checking, the *correct* options are highlighted and the marked
+           * ones are badged, so a student who missed one can see which — the
+           * whole point of the exercise is the set, not the tap.
+           */
+          <div className="answer-multi">
+            <p className="answer-multi-hint">
+              აირჩიე ყველა, რაც ერგება, და შემდეგ შეამოწმე.
+            </p>
+            <div className="answer-list" role="group" aria-label="პასუხის ვარიანტები">
+              {question.options.map((option, index) => {
+                const isCorrect = question.answer.split(',').map((part) => part.trim()).includes(option);
+                const isMarked = choice !== null && choice.split('\n').includes(option);
+                const state = !answered
+                  ? isMarked
+                    ? 'is-picked'
+                    : ''
+                  : isCorrect
+                    ? 'is-correct'
+                    : isMarked
+                      ? 'is-wrong'
+                      : 'is-dim';
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`answer-option ${state}`}
+                    onClick={() => toggleMulti(option)}
+                    disabled={answered}
+                    aria-pressed={isMarked}
+                  >
+                    <span className="answer-letter answer-letter-check" aria-hidden="true">
+                      {isMarked ? '✓' : LETTERS[index] ?? index + 1}
+                    </span>
+                    <span className="answer-text">{option}</span>
+                    {answered && isCorrect && <span className="answer-badge">სწორი</span>}
+                    {answered && isMarked && !isCorrect && (
+                      <span className="answer-badge is-wrong">შენი პასუხი</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={answered || markedAnswer() === ''}
+              onClick={() => submit(markedAnswer())}
+            >
+              შემოწმება
+            </button>
+            {answered && (
+              <p className={`answer-entry-result ${feedback?.result.correct ? 'is-correct' : 'is-wrong'}`}>
+                სწორია: <strong>{question.answer}</strong>
+              </p>
+            )}
+          </div>
           ) : (
           <div className="answer-list" role="group" aria-label="პასუხის ვარიანტები">
             {question.options.map((option, index) => {

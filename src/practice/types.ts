@@ -31,10 +31,16 @@ export interface Question {
    * `time` asks the student to type a clock time, `HH:MM`. It is a typed answer
    * like `number`, but compared by clock value rather than by spelling: a child
    * who writes `7:00` for `07:00` has read the clock correctly.
+   * `multi` asks the student to mark *every* option that fits — „which of these
+   * can you buy with 30 თეთრი?“ — and is marked only when the marked set is
+   * exactly the right one. `options` holds every candidate and `answer` holds
+   * the correct ones, comma-separated in display order.
    *
-   * All four are named in the U01 and U13 specifications.
+   * `choice`, `number`, `order` and `multi` are the four answer types the U14
+   * specification names (single choice, typed number, ordering, multi-select);
+   * `time` joined in U13.
    */
-  answerMode?: 'choice' | 'number' | 'order' | 'time';
+  answerMode?: 'choice' | 'number' | 'order' | 'time' | 'multi';
   /** For `answerMode: 'order'` — the items to arrange, in display order. */
   orderItems?: string[];
   options: Answer[];
