@@ -53,7 +53,7 @@ const REQUIRED_VARIATIONS = MIN_SESSION_VARIATIONS;
  * subtopic, so it is read from there rather than guessed from an id prefix.
  */
 const isPlaceholder = (id: string): boolean =>
-  (id.startsWith('g1-') && !REAL_LIBRARY_IDS.has(id)) || id.startsWith('g2-');
+  (id.startsWith('g1-') && !REAL_LIBRARY_IDS.has(id)) || id.startsWith('g2-') || id.startsWith('g3-');
 const PLACEHOLDER_MIN_VARIATIONS = 3;
 
 describe('every template in the catalog', () => {

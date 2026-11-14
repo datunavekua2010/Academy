@@ -5,11 +5,11 @@ import { generateBatch, regenerateFromId } from '../src/practice/generator';
 import { startSession, submitAnswer, advance } from '../src/practice/session';
 
 /**
- * Grade I and II are placeholder content until the academy's real questions arrive, and
+ * Grades I, II, and III are placeholder content until the academy's real questions arrive, and
  * a few placeholders are fixed-wording multiple choice with only three distinct
  * phrasings. Any non-empty batch is still a playable session.
  */
-const batchSizeFor = (grade: number): number => (grade <= 2 ? 1 : 5);
+const batchSizeFor = (grade: number): number => (grade <= 3 ? 1 : 5);
 
 describe('end to end: generate → play → restore', () => {
   it('every subtopic can be played and the answers are self-consistent', () => {

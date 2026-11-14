@@ -2,6 +2,7 @@ import { getTopic } from '../curriculum';
 import { SAMPLE_TEMPLATES } from './samples';
 import { GRADE1_PLACEHOLDERS } from './grade1-placeholders';
 import { GRADE2_PLACEHOLDERS } from './grade2-placeholders';
+import { GRADE3_PLACEHOLDERS } from './grade3-placeholders';
 import { U01_SUBTOPICS, U01_TEMPLATES } from './u01-space';
 import { U02_SUBTOPICS, U02_TEMPLATES } from './u02-numbers';
 import { U03_SUBTOPICS, U03_TEMPLATES } from './u03-counting';
@@ -33,6 +34,7 @@ import { G2_U12_SUBTOPICS, G2_U12_TEMPLATES } from './g2-u12-money';
 import { G2_U13_SUBTOPICS, G2_U13_TEMPLATES } from './g2-u13-time';
 import { G2_U14_SUBTOPICS, G2_U14_TEMPLATES } from './g2-u14-patterns-logic';
 import { G2_U15_SUBTOPICS, G2_U15_TEMPLATES } from './g2-u15-fractions';
+import { G3_U01_SUBTOPICS, G3_U01_TEMPLATES } from './g3-u01-numbers100';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -118,12 +120,21 @@ const remainingGrade2Placeholders = GRADE2_PLACEHOLDERS.filter(
   (template) => !coveredGrade2Subtopics.has(template.subtopicId),
 );
 
+const coveredGrade3Subtopics = new Set<string>([
+  ...G3_U01_SUBTOPICS,
+]);
+const remainingGrade3Placeholders = GRADE3_PLACEHOLDERS.filter(
+  (template) => !coveredGrade3Subtopics.has(template.subtopicId),
+);
+
 export const TEMPLATE_REGISTRY = createTemplateRegistry(
   [
     ...SAMPLE_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
+    ...remainingGrade3Placeholders,
+    ...G3_U01_TEMPLATES,
     ...G2_U01_TEMPLATES,
     ...G2_U02_TEMPLATES,
     ...G2_U03_TEMPLATES,
@@ -164,6 +175,7 @@ export {
   COVERAGE_TEMPLATES,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
+  GRADE3_PLACEHOLDERS,
   U01_TEMPLATES,
   U01_SUBTOPICS,
   U02_TEMPLATES,
@@ -226,4 +238,6 @@ export {
   G2_U14_SUBTOPICS,
   G2_U15_TEMPLATES,
   G2_U15_SUBTOPICS,
+  G3_U01_TEMPLATES,
+  G3_U01_SUBTOPICS,
 };

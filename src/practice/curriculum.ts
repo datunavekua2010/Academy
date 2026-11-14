@@ -576,48 +576,238 @@ const g2: Topic[] = [
 ];
 
 const g3: Topic[] = [
-  topic('gamravleba-gayofa', 'გამრავლება და გაყოფა', '➗', 'ცხრილი 6–9, გაყოფა და ნაშთი.', 'teal', [
-
+  topic('g3-ricxvebi100', 'რიცხვები 100-მდე', '💯', 'ასეულთა ცხრილი, რიცხვები სიტყვიერად, რიგობითი რიცხვები, ათეულები და ერთეულები, წინა და მომდევნო რიცხვები, რიცხვითი ღერძი, უდიდესი და უმცირესი რიცხვები, რომაული ციფრები I, V, X, L.', 'blue', [
     {
-      title: 'გამრავლება 6–9',
+      id: 'g3-ricxvebi100',
+      code: 'U01',
+      title: 'რიცხვები 100-მდე',
       subtopics: [
-        { id: 'cxrili', title: 'ცხრილი 6–9', summary: 'დიდი გამრავლების ცხრილი' },
+        { id: 'u01-hundred-chart', title: 'ასეულთა ცხრილი', summary: 'ასეულთა ცხრილში ორიენტაცია და გამოტოვებული უჯრები' },
+        { id: 'u01-numbers-in-words', title: 'რიცხვები სიტყვიერად', summary: 'რიცხვების ჩაწერა და წაკითხვა სიტყვებით' },
+        { id: 'u01-ordinal-numbers', title: 'რიგობითი რიცხვები', summary: 'რიგობითი რიცხვები და პოზიცია რიგში' },
+        { id: 'u01-tens-and-ones', title: 'ათეულები და ერთეულები', summary: 'ორნიშნა რიცხვის დაშლა ათეულებად და ერთეულებად' },
+        { id: 'u01-before-and-after', title: 'წინა და მომდევნო რიცხვები', summary: 'წინა, მომდევნო და მეზობელი რიცხვები' },
+        { id: 'u01-number-line', title: 'რიცხვითი ღერძი 100-მდე', summary: 'რიცხვები რიცხვით ღერძზე და ნაბიჯებით გადაადგილება' },
+        { id: 'u01-largest-and-smallest', title: 'უდიდესი და უმცირესი რიცხვები', summary: 'რიცხვების შედარება და დალაგება' },
+        { id: 'u01-roman-numerals', title: 'რომაული ციფრები I, V, X, L', summary: 'რომაული ციფრების ცნობა და ჩაწერა' },
       ],
     },
+  ]),
+  topic('g3-mimdevrobebi-dalageba', 'რთული მიმდევრობები და დალაგება', '🔢', 'მოქმედებები რიცხვებზე, მიმდევრობითი რიცხვები, არითმეტიკული საშუალო, ლუწ-კენტობა.', 'yellow', [
     {
+      id: 'g3-mimdevrobebi-dalageba',
+      code: 'U02',
+      title: 'რთული მიმდევრობები და დალაგება',
+      subtopics: [
+        { id: 'u02-operations-on-numbers', title: 'მოქმედებები რიცხვებზე', summary: 'რიცხვითი ოპერაციები და მიმდევრობები' },
+        { id: 'u02-consecutive-numbers', title: 'მიმდევრობითი რიცხვების ამოცანები', summary: 'თანმიმდევრული რიცხვების თვისებები' },
+        { id: 'u02-arithmetic-mean', title: 'ორი რიცხვის არითმეტიკული საშუალო', summary: 'არითმეტიკული საშუალოს გამოთვლა' },
+        { id: 'u02-odd-even-quantities', title: 'ლუწი და კენტი რაოდენობების პოვნა', summary: 'რაოდენობების ლუწ-კენტობა' },
+        { id: 'u02-sorting-even-odd', title: 'ლუწებისა და კენტების დალაგება', summary: 'რიცხვების დახარისხება ლუწ-კენტობით' },
+        { id: 'u02-comparing-two-digit', title: 'ორნიშნა რიცხვების შედარება', summary: 'ორნიშნა რიცხვების შედარება და დალაგება' },
+      ],
+    },
+  ]),
+  topic('g3-shekreba-gamokleba', 'შეკრება და გამოკლება (მრავალნიშნა)', '➕', 'სამნიშნა და ოთხნიშნა რიცხვების შეკრება-გამოკლება, ქვეშმიწერა, უცნობი კომპონენტები.', 'green', [
+    {
+      id: 'g3-shekreba-gamokleba',
+      code: 'U03',
+      title: 'შეკრება და გამოკლება (მრავალნიშნა)',
+      subtopics: [
+        { id: 'u03-hundreds-thousands', title: 'ასეულებისა და ათასეულების შეკრება-გამოკლება', summary: 'მრგვალი რიცხვების შეკრება და გამოკლება' },
+        { id: 'u03-three-digit-no-regrouping', title: 'სამნიშნა მოქმედებები თანრიგის გადასვლის გარეშე', summary: 'მარტივი სამნიშნა შეკრება-გამოკლება' },
+        { id: 'u03-three-digit-regrouping', title: 'სამნიშნა მოქმედებები თანრიგის გადასვლით', summary: 'შეკრება-გამოკლება თანრიგის გადასვლით' },
+        { id: 'u03-column-addition-subtraction', title: 'ქვეშმიწერით შეკრება და გამოკლება', summary: 'სვეტური შეკრება და გამოკლება' },
+        { id: 'u03-four-digit-operations', title: 'ოთხნიშნა რიცხვებზე მოქმედებები', summary: 'მოქმედებები ოთხნიშნა რიცხვებზე' },
+        { id: 'u03-table-filling-sums-differences', title: 'ცხრილის შევსება ჯამითა და სხვაობით', summary: 'შეკრება-გამოკლების ცხრილები' },
+        { id: 'u03-true-equalities', title: 'ჭეშმარიტი ტოლობები მოქმედებებით', summary: 'ტოლობების ჭეშმარიტების დადგენა' },
+        { id: 'u03-three-number-word-problems', title: 'სამი რიცხვის შეკრება-გამოკლების ამოცანები', summary: 'ტექსტური ამოცანები სამ რიცხვზე' },
+        { id: 'u03-unknown-terms', title: 'უცნობი კომპონენტების პოვნა', summary: 'უცნობი შესაკრები, საკლები, მაკლები' },
+        { id: 'u03-inverse-indirect-methods', title: 'შებრუნებული და არაპირდაპირი მეთოდები', summary: 'შებრუნებული ოპერაციები ამოცანებში' },
+        { id: 'u03-missing-digits-table', title: 'გამოტოვებული ციფრები და ცხრილის შევსება', summary: 'ციფრების აღდგენა მოქმედებებში' },
+      ],
+    },
+  ]),
+  topic('g3-gamravleba', 'გამრავლება', '✖️', 'გამრავლების ცხრილი, უცნობი თანამამრავლი, მრგვალ რიცხვებზე გამრავლება.', 'teal', [
+    {
+      id: 'g3-gamravleba',
+      code: 'U04',
+      title: 'გამრავლება',
+      subtopics: [
+        { id: 'u04-facts-0-to-5', title: 'გამრავლება 0-დან 5-მდე', summary: 'გამრავლების ფაქტები 0-დან 5-მდე' },
+        { id: 'u04-facts-6-to-10', title: 'გამრავლება 6-დან 10-მდე', summary: 'გამრავლების ფაქტები 6-დან 10-მდე' },
+        { id: 'u04-full-table', title: 'გამრავლების სრული ცხრილი', summary: 'გამრავლების მთლიანი ცხრილი' },
+        { id: 'u04-unknown-factors', title: 'უცნობი თანამამრავლი', summary: 'უცნობი მამრავლის პოვნა' },
+        { id: 'u04-round-numbers', title: 'მრგვალ რიცხვებზე გამრავლება', summary: 'ათეულებზე და ასეულებზე გამრავლება' },
+        { id: 'u04-single-digit-products', title: 'ერთნიშნა რიცხვებზე ნამრავლი', summary: 'ნამრავლის გამოთვლა' },
+        { id: 'u04-rectangular-tables', title: 'მართკუთხა ცხრილები და ილუსტრაციები', summary: 'გამრავლების მოდელები და ცხრილები' },
+        { id: 'u04-addition-multiplication-relation', title: 'კავშირი შეკრებასა და გამრავლებას შორის', summary: 'განმეორებითი შეკრება როგორც გამრავლება' },
+        { id: 'u04-multiplying-same-number', title: 'იმავე რიცხვზე გამრავლება', summary: 'კვადრატული რიცხვები და გამრავლება' },
+        { id: 'u04-tens-hundreds-multiplication', title: 'ათეულებისა და ასეულების გამრავლება', summary: 'დიდი რიცხვების გამრავლება' },
+        { id: 'u04-table-filling', title: 'გამრავლების ცხრილის შევსება', summary: 'ცხრილის შევსება ნამრავლებით' },
+      ],
+    },
+  ]),
+  topic('g3-gayofa', 'გაყოფა', '➗', 'გაყოფის ფაქტები, უცნობი გასაყოფი და გამყოფი, მრგვალი რიცხვების გაყოფა, ტექსტური ამოცანები.', 'blue', [
+    {
+      id: 'g3-gayofa',
+      code: 'U05',
       title: 'გაყოფა',
       subtopics: [
-        { id: 'gayofa', title: 'გაყოფა და ნაშთი', summary: 'უნაშთო და ნაშთიანი გაყოფა' },
+        { id: 'u05-facts-1-to-5', title: 'გაყოფა 1-დან 5-მდე', summary: 'გაყოფის ფაქტები 1-დან 5-მდე' },
+        { id: 'u05-facts-6-to-10', title: 'გაყოფა 6-დან 10-მდე', summary: 'გაყოფის ფაქტები 6-დან 10-მდე' },
+        { id: 'u05-division-within-10', title: 'გაყოფა 10-ის ფარგლებში', summary: 'გაყოფა ერთნიშნა შედეგით' },
+        { id: 'u05-round-numbers', title: 'მრგვალი რიცხვების გაყოფა', summary: 'ათეულებისა და ასეულების გაყოფა' },
+        { id: 'u05-unknown-dividends-divisors', title: 'უცნობი გასაყოფის და გამყოფის პოვნა', summary: 'უცნობი კომპონენტები გაყოფაში' },
+        { id: 'u05-division-tables', title: 'გაყოფის ცხრილები', summary: 'ცხრილების გამოყენება გაყოფისას' },
+        { id: 'u05-word-problems-division', title: 'ტექსტური ამოცანები გაყოფაზე', summary: 'გაყოფის გამოყენება პრაქტიკაში' },
       ],
     },
   ]),
-  topic('amocanebi', 'ტექსტური ამოცანები', '📖', 'ერთ და ორმოქმედებიანი ამოცანები.', 'blue', [
-
+  topic('g3-raodenobis-shedareba', 'რაოდენობის განსაზღვრა და შედარება', '⚖️', 'თანრიგები, ნიმუშები, ჯამების შედარება შეკრების გარეშე, რაოდენობების გათანაბრება.', 'blue', [
     {
-      title: 'ერთმოქმედებიანი',
+      id: 'g3-raodenobis-shedareba',
+      code: 'U06',
+      title: 'რაოდენობის განსაზღვრა და შედარება',
       subtopics: [
-        { id: 'ert', title: 'ერთმოქმედებიანი', summary: 'ერთი მოქმედებით ამოხსნა' },
-      ],
-    },
-    {
-      title: 'ორმოქმედებიანი',
-      subtopics: [
-        { id: 'ori', title: 'ორმოქმედებიანი', summary: 'ორი ნაბიჯის დაგეგმვა' },
+        { id: 'u06-digit-ranks-place-values', title: 'თანრიგები და მათი მნიშვნელობა', summary: 'ციფრის მნიშვნელობა თანრიგში' },
+        { id: 'u06-corresponding-numbers-samples', title: 'შესაბამისი რიცხვები და ნიმუშები', summary: 'რიცხვების შეხამება ნიმუშთან' },
+        { id: 'u06-multiplying-by-samples', title: 'რიცხვების გამრავლება ნიმუშებით', summary: 'ნიმუშის მიხედვით გამრავლება' },
+        { id: 'u06-comparing-sums-without-addition', title: 'ჯამების შედარება შეკრების გარეშე', summary: 'ლოგიკური შედარება' },
+        { id: 'u06-equalizing-quantities', title: 'რაოდენობების გათანაბრება', summary: 'თანაბარი რაოდენობის მიღება' },
+        { id: 'u06-object-quantity-analysis', title: 'საგნების რაოდენობის ანალიზი', summary: 'საგნების დათვლა და შედარება' },
       ],
     },
   ]),
-  topic('perimetri', 'პერიმეტრი და ფართობი', '📐', 'კვადრატი, მართკუთხედი, სამკუთხედი.', 'pink', [
-
+  topic('g3-mravalmoqmedebiani', 'მრავალმოქმედებიანი ამოცანები და მეთოდები', '🧮', 'მოქმედებათა რიგი, ფრჩხილები, ჯამებისა და ნამრავლების შედარება, ჯერადი შედარება.', 'violet', [
     {
-      title: 'პერიმეტრი',
+      id: 'g3-mravalmoqmedebiani',
+      code: 'U07',
+      title: 'მრავალმოქმედებიანი ამოცანები და მეთოდები',
       subtopics: [
-        { id: 'perim', title: 'პერიმეტრი', summary: 'გვერდების ჯამი' },
+        { id: 'u07-terms-missing-steps', title: 'მოქმედებათა წევრები და გამოტოვებული ბიჯები', summary: 'მოქმედებების თანმიმდევრობა' },
+        { id: 'u07-multistep-brackets', title: 'მრავალსაფეხურიანი გამოსახულებები და ფრჩხილები', summary: 'ფრჩხილების გამოყენება' },
+        { id: 'u07-comparing-sums-products', title: 'ჯამისა და ნამრავლის შედარება', summary: 'შეკრებისა და გამრავლების შედარება' },
+        { id: 'u07-comparing-differences-quotients', title: 'სხვაობისა და განაყოფის შედარება', summary: 'გამოკლებისა და გაყოფის შედარება' },
+        { id: 'u07-scale-comparisons', title: 'ჯერადი შედარება (რამდენჯერ მეტი/ნაკლები)', summary: 'ჯერადი დამოკიდებულება' },
+        { id: 'u07-distance-quantity', title: 'მანძილისა და რაოდენობის გამოთვლები', summary: 'პრაქტიკული გამოთვლები' },
+        { id: 'u07-sorting-operations', title: 'მოქმედებების დალაგება', summary: 'გამოსახულებათა მნიშვნელობების დალაგება' },
       ],
     },
+  ]),
+  topic('g3-gantolebebi', 'განტოლებები', '❓', 'განტოლებები უცნობი შესაკრებით, საკლებით, მაკლებით, თანამამრავლით, გასაყოფითა და გამყოფით.', 'pink', [
     {
-      title: 'ფართობი',
+      id: 'g3-gantolebebi',
+      code: 'U08',
+      title: 'განტოლებები',
       subtopics: [
-        { id: 'fartobi', title: 'ფართობი', summary: 'კვადრატული სანტიმეტრი და მეტრი' },
+        { id: 'u08-unknown-addends', title: 'განტოლება უცნობი შესაკრებით', summary: 'x + a = b ტიპის განტოლება' },
+        { id: 'u08-unknown-minuends-subtrahends', title: 'განტოლება უცნობი საკლებით და მაკლებით', summary: 'x − a = b და a − x = b' },
+        { id: 'u08-unknown-factors', title: 'განტოლება უცნობი თანამამრავლით', summary: 'x × a = b ტიპის განტოლება' },
+        { id: 'u08-unknown-dividends-divisors', title: 'განტოლება უცნობი გასაყოფით და გამყოფით', summary: 'x ÷ a = b და a ÷ x = b' },
+      ],
+    },
+  ]),
+  topic('g3-damrgvaleba', 'დამრგვალება და მიახლოება', '🎯', 'დამრგვალება ათეულებამდე, ასეულებამდე და ათასეულებამდე, მიახლოებითი გამოთვლები.', 'yellow', [
+    {
+      id: 'g3-damrgvaleba',
+      code: 'U09',
+      title: 'დამრგვალება და მიახლოება',
+      subtopics: [
+        { id: 'u09-rounding-tens-hundreds-thousands', title: 'დამრგვალება ათეულებამდე, ასეულებამდე და ათასეულებამდე', summary: 'დამრგვალების წესები' },
+        { id: 'u09-word-problems-rounding', title: 'ტექსტური ამოცანები დამრგვალებაზე', summary: 'დამრგვალება პრაქტიკულ ამოცანებში' },
+        { id: 'u09-approximate-operations', title: 'მიახლოებითი ჯამი, სხვაობა, ნამრავლი და განაყოფი', summary: 'მიახლოებითი ანგარიში' },
+      ],
+    },
+  ]),
+  topic('g3-gazomva-geometria', 'გაზომვა და გეომეტრია', '📐', 'თერმომეტრი, ერთეულების გარდაქმნა, ფიგურები, პერიმეტრი, კუთხეები, წრფეები.', 'green', [
+    {
+      id: 'g3-gazomva-geometria',
+      code: 'U10',
+      title: 'გაზომვა და გეომეტრია',
+      subtopics: [
+        { id: 'u10-thermometers-units', title: 'თერმომეტრი და საზომი ერთეულები', summary: 'ტემპერატურა და გაზომვა' },
+        { id: 'u10-converting-units', title: 'სიგრძის, მასის და მოცულობის ერთეულების გარდაქმნა', summary: 'საზომი ერთეულების ურთიერთკავშირი' },
+        { id: 'u10-ruler-applications', title: 'სახაზავის გამოყენება', summary: 'მონაკვეთის სიგრძის გაზომვა' },
+        { id: 'u10-flat-solid-shapes', title: 'ბრტყელი და სივრცითი ფიგურები', summary: 'გეომეტრიული ფიგურების ცნობა' },
+        { id: 'u10-triangle-quadrilateral-classification', title: 'სამკუთხედებისა და ოთხკუთხედების კლასიფიკაცია', summary: 'ფიგურების ტიპები' },
+        { id: 'u10-sides-vertices-edges-faces', title: 'გვერდები, წვეროები, წიბოები და წახნაგები', summary: 'ფიგურის ელემენტები' },
+        { id: 'u10-perimeter-calculations', title: 'პერიმეტრის გამოთვლა', summary: 'გვერდების სიგრძეთა ჯამი' },
+        { id: 'u10-angle-classification', title: 'კუთხეების კლასიფიკაცია', summary: 'მართი, მახვილი და ბლაგვი კუთხე' },
+        { id: 'u10-lines-segments-rays', title: 'წრფე, მონაკვეთი, სხივი და ურთიერთმდებარეობა', summary: 'ხაზები და გეომეტრიული ელემენტები' },
+        { id: 'u10-polygons-shape-filling', title: 'მრავალკუთხედები და ფიგურების შევსება', summary: 'მრავალკუთხედების შედგენა' },
+      ],
+    },
+  ]),
+  topic('g3-fuli', 'ფინანსური წიგნიერება და ფული', '🪙', 'თეთრი და ლარი, თანხის დამრგვალება, ოთხი მოქმედება ფულზე, ყიდვა-გაყიდვა.', 'yellow', [
+    {
+      id: 'g3-fuli',
+      code: 'U11',
+      title: 'ფინანსური წიგნიერება და ფული',
+      subtopics: [
+        { id: 'u11-counting-tetri-lari', title: 'თეთრისა და ლარის დათვლა', summary: 'ფულის კუპიურები და მონეტები' },
+        { id: 'u11-rounding-money', title: 'თანხის დამრგვალება', summary: 'ფასების მიახლოება' },
+        { id: 'u11-money-operations', title: 'შეკრება, გამოკლება, გამრავლება და გაყოფა ფულზე', summary: 'მოქმედებები ფულად ერთეულებზე' },
+        { id: 'u11-sufficient-funds-shopping', title: 'საკმარისი თანხა და ფასების შედარება', summary: 'ბიუჯეტის დაგეგმვა' },
+        { id: 'u11-money-word-problems', title: 'ტექსტური ამოცანები ფულზე', summary: 'ფინანსური ამოცანები' },
+      ],
+    },
+  ]),
+  topic('g3-monacemebi-albatoba', 'მონაცემები და ალბათობა', '📊', 'მონაცემთა შეგროვება, დიაგრამები, ვენის დიაგრამა, ცხრილები, ალბათობის ცნებები.', 'teal', [
+    {
+      id: 'g3-monacemebi-albatoba',
+      code: 'U12',
+      title: 'მონაცემები და ალბათობა',
+      subtopics: [
+        { id: 'u12-gathering-grouping-data', title: 'მონაცემთა შეგროვება და დაჯგუფება', summary: 'მონაცემების ორგანიზება' },
+        { id: 'u12-diagrams-pictograms-dotplots', title: 'დიაგრამები, პიქტოგრამები და წერტილოვანი დიაგრამები', summary: 'გრაფიკული გამოსახვა' },
+        { id: 'u12-venn-diagrams-redundant-data', title: 'ზედმეტი მონაცემები და ვენის დიაგრამები', summary: 'სიმრავლეთა გადაკვეთა' },
+        { id: 'u12-table-data-comparison', title: 'მონაცემთა შედარება ცხრილებში', summary: 'ცხრილების წაკითხვა და ანალიზი' },
+        { id: 'u12-event-types', title: 'აუცილებელი, შესაძლებელი და შეუძლებელი ხდომილებები', summary: 'ხდომილებათა ტიპები' },
+        { id: 'u12-combinations-likelihood', title: 'კომბინაციები და ალბათობის ცვლილება', summary: 'შესაძლებლობების დათვლა' },
+      ],
+    },
+  ]),
+  topic('g3-dro-kalendari', 'დრო და კალენდარი', '⏰', 'დროის მიმდევრობა, დრო რიცხვით ღერძზე, კალენდარი, გასული დრო.', 'pink', [
+    {
+      id: 'g3-dro-kalendari',
+      code: 'U13',
+      title: 'დრო და კალენდარი',
+      subtopics: [
+        { id: 'u13-time-sequences-comparisons', title: 'დროის მიმდევრობა და შედარება', summary: 'საათისა და წუთების შედარება' },
+        { id: 'u13-time-number-lines', title: 'დრო რიცხვით ღერძზე', summary: 'დროის ინტერვალები ღერძზე' },
+        { id: 'u13-calendar-unit-relations', title: 'კალენდარი და დროის ერთეულებს შორის კავშირი', summary: 'თვეები, დღეები, კვირები' },
+        { id: 'u13-elapsed-time-problems', title: 'გასული დროის ამოცანები', summary: 'აქტივობის ხანგრძლივობა' },
+      ],
+    },
+  ]),
+  topic('g3-kanonzomiereba-logika', 'კანონზომიერებები და ლოგიკური მსჯელობა', '🧠', 'რიცხვითი მიმდევრობები, ჩაფიქრებული რიცხვები, ასაკი, გამორიცხვა, სასწორი.', 'violet', [
+    {
+      id: 'g3-kanonzomiereba-logika',
+      code: 'U14',
+      title: 'კანონზომიერებები და ლოგიკური მსჯელობა',
+      subtopics: [
+        { id: 'u14-number-sequences-triangles', title: 'რიცხვითი მიმდევრობები და სამკუთხედები', summary: 'კანონზომიერება რიცხვებში' },
+        { id: 'u14-illustrated-patterns', title: 'ილუსტრირებული კანონზომიერებები', summary: 'ფორმებისა და ფიგურების კანონზომიერება' },
+        { id: 'u14-thought-of-numbers-guessing', title: 'ჩაფიქრებული რიცხვები და გამოცნობა', summary: 'რიცხვის გამოცნობა მინიშნებით' },
+        { id: 'u14-age-problems-word-coding', title: 'ასაკის ამოცანები და სიტყვების კოდირება', summary: 'ლოგიკური გამოთვლები' },
+        { id: 'u14-interval-problems-color-choices', title: 'შუალედები და ფერის არჩევა', summary: 'პირობითი არჩევანი' },
+        { id: 'u14-elimination-logic-grids', title: 'გამორიცხვის მეთოდები და ლოგიკური ბადეები', summary: 'გამორიცხვის წესები' },
+        { id: 'u14-balance-scale-reasoning', title: 'სასწორის ლოგიკა', summary: 'წონების შედარება' },
+        { id: 'u14-condition-matching-elimination', title: 'პირობების შეხამება და რთული გამორიცხვა', summary: 'კომპლექსური ლოგიკა' },
+        { id: 'u14-sorting-largest-smallest', title: 'უდიდესისა და უმცირესის დალაგება', summary: 'დალაგების ლოგიკა' },
+      ],
+    },
+  ]),
+  topic('g3-wiladebi-shesavali', 'წილადების შესავალი', '🍕', 'მთელის ნაწილები, ტოლი ნაწილები და ნახევარი, მესამედი და მეოთხედი.', 'violet', [
+    {
+      id: 'g3-wiladebi-shesavali',
+      code: 'U15',
+      title: 'წილადების შესავალი',
+      subtopics: [
+        { id: 'u15-parts-of-a-whole', title: 'მთელის ნაწილები', summary: 'მთელის დაყოფა ნაწილებად' },
+        { id: 'u15-equal-parts-halves', title: 'ტოლი ნაწილები და ნახევარი', summary: 'ნახევრის ცნება და გამოთვლა' },
+        { id: 'u15-thirds-and-quarters', title: 'მესამედი და მეოთხედი', summary: 'მესამედი და მეოთხედი ნაწილები' },
       ],
     },
   ]),
