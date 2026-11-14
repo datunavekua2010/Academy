@@ -23,9 +23,9 @@ export const SAMPLE_TEMPLATES = [
   defineTemplate({
     id: 'g2-times-table',
     grade: 3,
-    topicId: 'gamravleba-gayofa',
-    unitId: 'u1',
-    subtopicId: 'cxrili',
+    topicId: 'g3-gamravleba',
+    unitId: 'g3-gamravleba',
+    subtopicId: 'u04-full-table',
     prompt: '{a} × {b} = ?',
     variables: {
       a: { kind: 'int', min: 2, max: 6 },
@@ -69,9 +69,9 @@ export const SAMPLE_TEMPLATES = [
   defineTemplate({
     id: 'g3-divide-exact',
     grade: 3,
-    topicId: 'gamravleba-gayofa',
-    unitId: 'u2',
-    subtopicId: 'gayofa',
+    topicId: 'g3-gayofa',
+    unitId: 'g3-gayofa',
+    subtopicId: 'u05-division-within-10',
     prompt: '{a} ÷ {b} = ?',
     variables: {
       // Draw the divisor first, then build a dividend that divides exactly.
@@ -93,9 +93,9 @@ export const SAMPLE_TEMPLATES = [
   defineTemplate({
     id: 'g3-perimeter-rect',
     grade: 3,
-    topicId: 'perimetri',
-    unitId: 'u1',
-    subtopicId: 'perim',
+    topicId: 'g3-gazomva-geometria',
+    unitId: 'g3-gazomva-geometria',
+    subtopicId: 'u10-perimeter-calculations',
     prompt: 'მართკუთხედის გვერდებია {w} სმ და {h} სმ. პერიმეტრი?',
     hint: 'P = 2 × (სიგრძე + სიგანე)',
     variables: {
