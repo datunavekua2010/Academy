@@ -330,61 +330,6 @@ export const GRADE2_PLACEHOLDERS: QuestionTemplate[] = [
     explanation: ({ answer }) => `${answer} იყოფა 2-ზე, ამიტომ ლუწია.`,
   }),
 
-  // ================= U09: დამრგვალება =================
-  defineTemplate({
-    ...addr({ topicId: 'g2-damrgvaleba', subtopicId: 'u09-nearest-5' }),
-    prompt: 'დაამრგვალე {n} უახლოეს 5-მდე:',
-    variables: { n: { kind: 'int', min: 1, max: 99 } },
-    answer: (v) => Math.round(Number(v.n) / 5) * 5,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n}-ის უახლოესი 5-ის ჯერადია ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-damrgvaleba', subtopicId: 'u09-nearest-10' }),
-    prompt: 'დაამრგვალე {n} უახლოეს ათეულამდე (10-მდე):',
-    variables: { n: { kind: 'int', min: 11, max: 99 } },
-    answer: (v) => Math.round(Number(v.n) / 10) * 10,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n} უახლოეს ათეულამდე არის ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-damrgvaleba', subtopicId: 'u09-nearest-20' }),
-    prompt: 'დაამრგვალე {n} უახლოეს 20-მდე:',
-    variables: { n: { kind: 'int', min: 10, max: 90 } },
-    answer: (v) => Math.round(Number(v.n) / 20) * 20,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n} უახლოეს 20-მდე არის ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-damrgvaleba', subtopicId: 'u09-rounding-sums' }),
-    prompt: 'დაამრგვალე შესაკრებები ათეულამდე და შეაფასე ჯამი: {a} + {b} ≈ ?',
-    variables: {
-      a: { kind: 'int', min: 11, max: 49 },
-      b: { kind: 'int', min: 11, max: 49 },
-    },
-    answer: (v) => Math.round(Number(v.a) / 10) * 10 + Math.round(Number(v.b) / 10) * 10,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) =>
-      `${vars.a} ≈ ${Math.round(Number(vars.a) / 10) * 10}, ${vars.b} ≈ ${Math.round(Number(vars.b) / 10) * 10}, ჯამი ≈ ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-damrgvaleba', subtopicId: 'u09-rounding-differences' }),
-    prompt: 'დაამრგვალე რიცხვები ათეულამდე და შეაფასე სხვაობა: {a} − {b} ≈ ?',
-    variables: {
-      a: { kind: 'int', min: 51, max: 99 },
-      b: { kind: 'int', min: 11, max: 49 },
-    },
-    answer: (v) => Math.round(Number(v.a) / 10) * 10 - Math.round(Number(v.b) / 10) * 10,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) =>
-      `${vars.a} ≈ ${Math.round(Number(vars.a) / 10) * 10}, ${vars.b} ≈ ${Math.round(Number(vars.b) / 10) * 10}, სხვაობა ≈ ${answer}.`,
-  }),
-
   // ================= U10: მონაცემები და ალბათობა =================
   choiceFact({
     topicId: 'g2-monacemebi-albatoba',
