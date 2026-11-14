@@ -32,6 +32,7 @@ import { G2_U11_SUBTOPICS, G2_U11_TEMPLATES } from './g2-u11-measurement-geometr
 import { G2_U12_SUBTOPICS, G2_U12_TEMPLATES } from './g2-u12-money';
 import { G2_U13_SUBTOPICS, G2_U13_TEMPLATES } from './g2-u13-time';
 import { G2_U14_SUBTOPICS, G2_U14_TEMPLATES } from './g2-u14-patterns-logic';
+import { G2_U15_SUBTOPICS, G2_U15_TEMPLATES } from './g2-u15-fractions';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -111,6 +112,7 @@ const coveredGrade2Subtopics = new Set<string>([
   ...G2_U12_SUBTOPICS,
   ...G2_U13_SUBTOPICS,
   ...G2_U14_SUBTOPICS,
+  ...G2_U15_SUBTOPICS,
 ]);
 const remainingGrade2Placeholders = GRADE2_PLACEHOLDERS.filter(
   (template) => !coveredGrade2Subtopics.has(template.subtopicId),
@@ -136,6 +138,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G2_U12_TEMPLATES,
     ...G2_U13_TEMPLATES,
     ...G2_U14_TEMPLATES,
+    ...G2_U15_TEMPLATES,
     ...U01_TEMPLATES,
     ...U02_TEMPLATES,
     ...U03_TEMPLATES,
@@ -221,4 +224,6 @@ export {
   G2_U13_SUBTOPICS,
   G2_U14_TEMPLATES,
   G2_U14_SUBTOPICS,
+  G2_U15_TEMPLATES,
+  G2_U15_SUBTOPICS,
 };
