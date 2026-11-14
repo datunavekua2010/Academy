@@ -323,46 +323,70 @@ export const GRADE3_PLACEHOLDERS: QuestionTemplate[] = [
     explanation: ({ answer }) => `${answer} კენტი რიცხვია.`,
   }),
 
-  // ================= U03: შეკრება და გამოკლება (მრავალნიშნა) =================
+  // ================= U03: ერთნიშნა რიცხვებზე მოქმედებები =================
+  add({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-single-digit-addition' }, 5, 9, 5, 9),
+  sub({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-single-digit-subtraction' }, 11, 18, 4, 9),
+
   defineTemplate({
-    ...addr({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-hundreds-thousands' }),
-    prompt: '{a}00 + {b}00 = ?',
-    variables: {
-      a: { kind: 'int', min: 1, max: 5 },
-      b: { kind: 'int', min: 1, max: 4 },
-    },
-    answer: (v) => (Number(v.a) + Number(v.b)) * 100,
+    ...addr({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-doubling-halving' }),
+    prompt: 'გააორმაგე რიცხვი {n}.',
+    variables: { n: { kind: 'int', min: 5, max: 10 } },
+    answer: (v) => 2 * Number(v.n),
     format: { kind: 'integer', min: 0 },
     distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a}00 + ${vars.b}00 = ${answer}.`,
+    explanation: ({ vars, answer }) => `${vars.n} × 2 = ${answer}.`,
   }),
 
-  add({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-three-digit-no-regrouping' }, 100, 400, 100, 400),
-  add({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-three-digit-regrouping' }, 150, 490, 150, 490),
-  sub({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-column-addition-subtraction' }, 200, 900, 50, 400),
-  add({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-four-digit-operations' }, 1000, 4000, 1000, 4000),
-  sub({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-table-filling-sums-differences' }, 300, 800, 50, 250),
+  add({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-addition-within-20' }, 5, 9, 4, 8),
+  sub({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-subtraction-within-20' }, 12, 18, 5, 9),
 
   defineTemplate({
-    ...addr({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-true-equalities' }),
-    prompt: '{a} + {b} = ?',
-    variables: {
-      a: { kind: 'int', min: 110, max: 450 },
-      b: { kind: 'int', min: 50, max: 200 },
-    },
-    answer: (v) => Number(v.a) + Number(v.b),
+    ...addr({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-adding-subtracting-zero' }),
+    prompt: 'გამოთვალე: {n} + 0 = ?',
+    variables: { n: { kind: 'int', min: 4, max: 19 } },
+    answer: (v) => Number(v.n),
     format: { kind: 'integer', min: 0 },
     distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
+    explanation: ({ vars, answer }) => `${vars.n} + 0 = ${answer}.`,
   }),
 
   defineTemplate({
-    ...addr({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-three-number-word-problems' }),
-    prompt: '{a} + {b} + {c} = ?',
+    ...addr({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-missing-number-equality' }),
+    prompt: 'შეავსე: □ + {b} = {sum}',
     variables: {
-      a: { kind: 'int', min: 20, max: 150 },
-      b: { kind: 'int', min: 10, max: 100 },
-      c: { kind: 'int', min: 10, max: 100 },
+      b: { kind: 'int', min: 4, max: 8 },
+      a: { kind: 'int', min: 5, max: 9 },
+      sum: { kind: 'choice', values: (v) => [Number(v.a) + Number(v.b)] },
+    },
+    answer: (v) => Number(v.a),
+    format: { kind: 'integer', min: 0 },
+    distractors: ({ answer }) => nearMisses(Number(answer)),
+    explanation: ({ vars, answer }) => `□ = ${vars.sum} − ${vars.b} = ${answer}.`,
+  }),
+
+  defineTemplate({
+    ...addr({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-true-or-false' }),
+    prompt: 'სწორია თუ არა ტოლობა:\n\n{a} + {b} = {c}?',
+    variables: {
+      a: { kind: 'int', min: 5, max: 9 },
+      b: { kind: 'int', min: 5, max: 9 },
+      offset: { kind: 'choice', values: [0, 1] },
+      c: { kind: 'choice', values: (v) => [Number(v.a) + Number(v.b) + Number(v.offset)] },
+    },
+    optionCount: 2,
+    answer: (v) => (Number(v.offset) === 0 ? 'ჭეშმარიტი' : 'მცდარი'),
+    format: { kind: 'text' },
+    distractors: ({ answer }) => [answer === 'ჭეშმარიტი' ? 'მცდარი' : 'ჭეშმარიტი'],
+    explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${Number(vars.a) + Number(vars.b)}, ამიტომ ტოლობა არის ${answer}.`,
+  }),
+
+  defineTemplate({
+    ...addr({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-adding-three-numbers' }),
+    prompt: 'გამოთვალე: {a} + {b} + {c} = ?',
+    variables: {
+      a: { kind: 'int', min: 3, max: 6 },
+      b: { kind: 'int', min: 2, max: 5 },
+      c: { kind: 'int', min: 4, max: 7 },
     },
     answer: (v) => Number(v.a) + Number(v.b) + Number(v.c),
     format: { kind: 'integer', min: 0 },
@@ -371,33 +395,19 @@ export const GRADE3_PLACEHOLDERS: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-unknown-terms' }),
-    prompt: '{a} + x = {sum}. რას უდრის x?',
+    ...addr({ topicId: 'g3-ertnishna-moqmedebebi', subtopicId: 'u03-adding-four-or-more' }),
+    prompt: 'გამოთვალე: {a} + {b} + {c} + {d} = ?',
     variables: {
-      a: { kind: 'int', min: 50, max: 300 },
-      x: { kind: 'int', min: 20, max: 200 },
-      sum: { kind: 'choice', values: (v) => [Number(v.a) + Number(v.x)] },
+      a: { kind: 'int', min: 2, max: 5 },
+      b: { kind: 'int', min: 2, max: 5 },
+      c: { kind: 'int', min: 2, max: 5 },
+      d: { kind: 'int', min: 2, max: 5 },
     },
-    answer: (v) => Number(v.x),
+    answer: (v) => Number(v.a) + Number(v.b) + Number(v.c) + Number(v.d),
     format: { kind: 'integer', min: 0 },
     distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `x = ${vars.sum} − ${vars.a} = ${answer}.`,
+    explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} + ${vars.c} + ${vars.d} = ${answer}.`,
   }),
-
-  defineTemplate({
-    ...addr({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-inverse-indirect-methods' }),
-    prompt: 'x − {sub} = {diff}. რას უდრის x?',
-    variables: {
-      sub: { kind: 'int', min: 40, max: 250 },
-      diff: { kind: 'int', min: 50, max: 300 },
-    },
-    answer: (v) => Number(v.sub) + Number(v.diff),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `x = ${vars.diff} + ${vars.sub} = ${answer}.`,
-  }),
-
-  add({ topicId: 'g3-shekreba-gamokleba', subtopicId: 'u03-missing-digits-table' }, 120, 480, 80, 250),
 
   // ================= U04: გამრავლება =================
   mul({ topicId: 'g3-gamravleba', subtopicId: 'u04-facts-0-to-5' }, 2, 5, 2, 5),
