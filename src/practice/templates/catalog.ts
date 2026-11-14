@@ -22,6 +22,7 @@ import { G2_U01_SUBTOPICS, G2_U01_TEMPLATES } from './g2-u01-numbers100';
 import { G2_U02_SUBTOPICS, G2_U02_TEMPLATES } from './g2-u02-sequences';
 import { G2_U03_SUBTOPICS, G2_U03_TEMPLATES } from './g2-u03-single-digit';
 import { G2_U04_SUBTOPICS, G2_U04_TEMPLATES } from './g2-u04-two-digit-addition';
+import { G2_U05_SUBTOPICS, G2_U05_TEMPLATES } from './g2-u05-two-digit-subtraction';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -91,6 +92,7 @@ const coveredGrade2Subtopics = new Set<string>([
   ...G2_U02_SUBTOPICS,
   ...G2_U03_SUBTOPICS,
   ...G2_U04_SUBTOPICS,
+  ...G2_U05_SUBTOPICS,
 ]);
 const remainingGrade2Placeholders = GRADE2_PLACEHOLDERS.filter(
   (template) => !coveredGrade2Subtopics.has(template.subtopicId),
@@ -106,6 +108,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G2_U02_TEMPLATES,
     ...G2_U03_TEMPLATES,
     ...G2_U04_TEMPLATES,
+    ...G2_U05_TEMPLATES,
     ...U01_TEMPLATES,
     ...U02_TEMPLATES,
     ...U03_TEMPLATES,
@@ -171,4 +174,6 @@ export {
   G2_U03_SUBTOPICS,
   G2_U04_TEMPLATES,
   G2_U04_SUBTOPICS,
+  G2_U05_TEMPLATES,
+  G2_U05_SUBTOPICS,
 };

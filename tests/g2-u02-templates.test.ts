@@ -133,7 +133,8 @@ describe('Grade 2 — U02: დათვლა და მიმდევრობ
 
           let refill: ReturnType<typeof generateBatch> = [];
           if (state.queue.length <= 2) {
-            refill = generateBatch(ref, 4);
+            const avoid = new Set(state.answers.map((a) => a.questionId));
+            refill = generateBatch(ref, 6, { avoid });
           }
           state = advance(state, refill);
           steps += 1;
