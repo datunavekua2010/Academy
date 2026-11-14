@@ -29,6 +29,7 @@ import { G2_U08_SUBTOPICS, G2_U08_TEMPLATES } from './g2-u08-multistep-problems'
 import { G2_U09_SUBTOPICS, G2_U09_TEMPLATES } from './g2-u09-rounding';
 import { G2_U10_SUBTOPICS, G2_U10_TEMPLATES } from './g2-u10-data-probability';
 import { G2_U11_SUBTOPICS, G2_U11_TEMPLATES } from './g2-u11-measurement-geometry';
+import { G2_U12_SUBTOPICS, G2_U12_TEMPLATES } from './g2-u12-money';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -105,6 +106,7 @@ const coveredGrade2Subtopics = new Set<string>([
   ...G2_U09_SUBTOPICS,
   ...G2_U10_SUBTOPICS,
   ...G2_U11_SUBTOPICS,
+  ...G2_U12_SUBTOPICS,
 ]);
 const remainingGrade2Placeholders = GRADE2_PLACEHOLDERS.filter(
   (template) => !coveredGrade2Subtopics.has(template.subtopicId),
@@ -127,6 +129,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G2_U09_TEMPLATES,
     ...G2_U10_TEMPLATES,
     ...G2_U11_TEMPLATES,
+    ...G2_U12_TEMPLATES,
     ...U01_TEMPLATES,
     ...U02_TEMPLATES,
     ...U03_TEMPLATES,
@@ -206,4 +209,6 @@ export {
   G2_U10_SUBTOPICS,
   G2_U11_TEMPLATES,
   G2_U11_SUBTOPICS,
+  G2_U12_TEMPLATES,
+  G2_U12_SUBTOPICS,
 };
