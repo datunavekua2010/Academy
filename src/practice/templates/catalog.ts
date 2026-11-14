@@ -40,6 +40,7 @@ import { G3_U03_SUBTOPICS, G3_U03_TEMPLATES } from './g3-u03-single-digit';
 import { G3_U04_SUBTOPICS, G3_U04_TEMPLATES } from './g3-u04-multiplication';
 import { G3_U05_SUBTOPICS, G3_U05_TEMPLATES } from './g3-u05-division';
 import { G3_U06_SUBTOPICS, G3_U06_TEMPLATES } from './g3-u06-quantity-comparisons';
+import { G3_U07_SUBTOPICS, G3_U07_TEMPLATES } from './g3-u07-multi-operation';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -132,6 +133,7 @@ const coveredGrade3Subtopics = new Set<string>([
   ...G3_U04_SUBTOPICS,
   ...G3_U05_SUBTOPICS,
   ...G3_U06_SUBTOPICS,
+  ...G3_U07_SUBTOPICS,
 ]);
 const remainingGrade3Placeholders = GRADE3_PLACEHOLDERS.filter(
   (template) => !coveredGrade3Subtopics.has(template.subtopicId),
@@ -150,6 +152,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G3_U04_TEMPLATES,
     ...G3_U05_TEMPLATES,
     ...G3_U06_TEMPLATES,
+    ...G3_U07_TEMPLATES,
     ...G2_U01_TEMPLATES,
     ...G2_U02_TEMPLATES,
     ...G2_U03_TEMPLATES,
