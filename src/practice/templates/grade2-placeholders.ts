@@ -330,65 +330,6 @@ export const GRADE2_PLACEHOLDERS: QuestionTemplate[] = [
     explanation: ({ answer }) => `${answer} იყოფა 2-ზე, ამიტომ ლუწია.`,
   }),
 
-  // ================= U07: რაოდენობის მოდელები =================
-  defineTemplate({
-    ...addr({ topicId: 'g2-raodenobis-modelebi', subtopicId: 'u07-number-from-model' }),
-    prompt: 'მოდელზე მოცემულია {tens} ათეულის ბლოკი და {ones} ერთეული. რა რიცხვია გამოსახული?',
-    variables: {
-      tens: { kind: 'int', min: 1, max: 8 },
-      ones: { kind: 'int', min: 1, max: 9 },
-    },
-    answer: (v) => Number(v.tens) * 10 + Number(v.ones),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.tens} × 10 + ${vars.ones} = ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-raodenobis-modelebi', subtopicId: 'u07-model-from-number' }),
-    prompt: 'რიცხვი {n} რომ გამოვსახოთ ათეულების ბლოკებითა და ერთეულებით, რამდენი ათეულის ბლოკი დაგვჭირდება?',
-    variables: {
-      tens: { kind: 'int', min: 1, max: 9 },
-      ones: { kind: 'int', min: 1, max: 9 },
-      n: { kind: 'choice', values: (v) => [Number(v.tens) * 10 + Number(v.ones)] },
-    },
-    answer: (v) => Number(v.tens),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n}-ში არის ${answer} ათეული.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-raodenobis-modelebi', subtopicId: 'u07-shaded-part-number' }),
-    prompt: '10-უჯრიანი ზოლიდან გაფერადებულია {k} უჯრა. რამდენი უჯრაა გაუფერადებელი?',
-    variables: { k: { kind: 'int', min: 1, max: 9 } },
-    answer: (v) => 10 - Number(v.k),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `10 − ${vars.k} = ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-raodenobis-modelebi', subtopicId: 'u07-grouping-tens-ones' }),
-    prompt: '{tens}0 ერთეული დავაჯგუფეთ ათეულებად. რამდენი ათეული მივიღეთ?',
-    variables: { tens: { kind: 'int', min: 2, max: 9 } },
-    answer: (v) => Number(v.tens),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.tens}0 ერთეული = ${answer} ათეული.`,
-  }),
-  add2({ topicId: 'g2-raodenobis-modelebi', subtopicId: 'u07-adding-with-models' }, 10, 45, 10, 45, 'მოდელზე შევაერთეთ {a} და {b}. სულ რამდენია?'),
-  defineTemplate({
-    ...addr({ topicId: 'g2-raodenobis-modelebi', subtopicId: 'u07-required-quantity' }),
-    prompt: 'გვაქვს {have} კუბიკი. რამდენი კუბიკი აკლია {target}-მდე?',
-    variables: {
-      have: { kind: 'int', min: 10, max: 40 },
-      add: { kind: 'int', min: 5, max: 20 },
-      target: { kind: 'choice', values: (v) => [Number(v.have) + Number(v.add)] },
-    },
-    answer: (v) => Number(v.add),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.target} − ${vars.have} = ${answer}.`,
-  }),
-
   // ================= U08: მრავალნაბიჯიანი ამოცანები =================
   defineTemplate({
     ...addr({ topicId: 'g2-mravalnabijiani-amocanebi', subtopicId: 'u08-equalizing-sums-diffs' }),
