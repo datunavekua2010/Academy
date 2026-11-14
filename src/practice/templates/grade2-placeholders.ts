@@ -329,52 +329,6 @@ export const GRADE2_PLACEHOLDERS: QuestionTemplate[] = [
     distractors: ({ vars }) => [Number(vars.odd1), Number(vars.odd2), Number(vars.odd3)],
     explanation: ({ answer }) => `${answer} იყოფა 2-ზე, ამიტომ ლუწია.`,
   }),
-
-  // ================= U15: წილადები =================
-  choiceFact({
-    topicId: 'g2-wiladebi',
-    subtopicId: 'u15-parts-of-a-whole',
-    prompt: 'ვაშლი გაყვეს ორ ტოლ ნაწილად. თითოეულ ნაწილს ეწოდება:',
-    options: ['ნახევარი', 'მესამედი', 'მეოთხედი', 'მთელი'],
-    answer: 'ნახევარი',
-    why: 'ორის ტოლი ნაწილიდან თითოეული ნახევარია.',
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-wiladebi', subtopicId: 'u15-halves' }),
-    prompt: '{n}-ის ნახევარი არის:',
-    variables: {
-      k: { kind: 'int', min: 1, max: 20 },
-      n: { kind: 'choice', values: (v) => [Number(v.k) * 2] },
-    },
-    answer: (v) => Number(v.k),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n} ÷ 2 = ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-wiladebi', subtopicId: 'u15-thirds' }),
-    prompt: '{n}-ის მესამედი არის:',
-    variables: {
-      k: { kind: 'int', min: 1, max: 12 },
-      n: { kind: 'choice', values: (v) => [Number(v.k) * 3] },
-    },
-    answer: (v) => Number(v.k),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n} ÷ 3 = ${answer}.`,
-  }),
-  defineTemplate({
-    ...addr({ topicId: 'g2-wiladebi', subtopicId: 'u15-quarters' }),
-    prompt: '{n}-ის მეოთხედი არის:',
-    variables: {
-      k: { kind: 'int', min: 1, max: 12 },
-      n: { kind: 'choice', values: (v) => [Number(v.k) * 4] },
-    },
-    answer: (v) => Number(v.k),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.n} ÷ 4 = ${answer}.`,
-  }),
 ];
 
 /** One entry per template, used by catalog tests. */
