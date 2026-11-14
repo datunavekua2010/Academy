@@ -101,7 +101,7 @@ const div = (spec: G3Address, minB: number, maxB: number, minQ: number, maxQ: nu
   });
 
 /** Generic comparison */
-const comp = (spec: G3Address, min: number, max: number): QuestionTemplate =>
+export const comp = (spec: G3Address, min: number, max: number): QuestionTemplate =>
   defineTemplate({
     ...addr(spec),
     prompt: 'რომელი რიცხვია მეტი: {a} თუ {b}?',
@@ -215,62 +215,99 @@ export const GRADE3_PLACEHOLDERS: QuestionTemplate[] = [
     explanation: ({ vars, answer }) => `რომაული ${vars.roman} არის ${answer}.`,
   }),
 
-  // ================= U02: რთული მიმდევრობები და დალაგება =================
+  // ================= U02: თვლა და რიცხვითი მიმდევრობები =================
   defineTemplate({
-    ...addr({ topicId: 'g3-mimdevrobebi-dalageba', subtopicId: 'u02-operations-on-numbers' }),
-    prompt: 'გამოთვალე: {a} + {b} − {c} = ?',
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-even-odd' }),
+    prompt: 'ჩამოთვლილთაგან რომელი რიცხვია ლუწი? {variant}',
     variables: {
-      a: { kind: 'int', min: 20, max: 100 },
-      b: { kind: 'int', min: 10, max: 50 },
-      c: { kind: 'int', min: 5, max: 20 },
+      variant: { kind: 'choice', values: ['აირჩიე სწორი პასუხი.', 'მონიშნე სწორი ვარიანტი.', 'რომელია სწორი?'] },
+      k: { kind: 'int', min: 20, max: 48 },
+      even: { kind: 'choice', values: (v) => [Number(v.k) * 2] },
+      odd1: { kind: 'choice', values: (v) => [Number(v.k) * 2 + 1] },
+      odd2: { kind: 'choice', values: (v) => [Number(v.k) * 2 - 1] },
+      odd3: { kind: 'choice', values: (v) => [Number(v.k) * 2 + 3] },
     },
-    answer: (v) => Number(v.a) + Number(v.b) - Number(v.c),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} − ${vars.c} = ${answer}.`,
+    answer: (v) => Number(v.even),
+    format: { kind: 'integer', min: 10, max: 99 },
+    distractors: ({ vars }) => [Number(vars.odd1), Number(vars.odd2), Number(vars.odd3)],
+    explanation: ({ answer }) => `${answer} ლუწი რიცხვია.`,
   }),
 
   defineTemplate({
-    ...addr({ topicId: 'g3-mimdevrobebi-dalageba', subtopicId: 'u02-consecutive-numbers' }),
-    prompt: 'იპოვე {n}-ის მომდევნო ორი რიცხვის ჯამი:',
-    variables: { n: { kind: 'int', min: 10, max: 90 } },
-    answer: (v) => 2 * Number(v.n) + 3,
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `მომდევნო რიცხვებია ${Number(vars.n) + 1} და ${Number(vars.n) + 2}. მათი ჯამია ${answer}.`,
-  }),
-
-  defineTemplate({
-    ...addr({ topicId: 'g3-mimdevrobebi-dalageba', subtopicId: 'u02-arithmetic-mean' }),
-    prompt: 'იპოვე {a}-სა და {b}-ს არითმეტიკული საშუალო:',
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-counting-objects' }),
+    prompt: 'სურათზე არის {rows} რიგი, თითოეულში {cols} საგანია. სულ რამდენი საგანია?',
     variables: {
-      k: { kind: 'int', min: 10, max: 80 },
-      d: { kind: 'int', min: 2, max: 10 },
-      a: { kind: 'choice', values: (v) => [Number(v.k) - Number(v.d)] },
-      b: { kind: 'choice', values: (v) => [Number(v.k) + Number(v.d)] },
+      rows: { kind: 'int', min: 3, max: 8 },
+      cols: { kind: 'int', min: 3, max: 8 },
     },
-    answer: (v) => Number(v.k),
-    format: { kind: 'integer', min: 0 },
+    answer: (v) => Number(v.rows) * Number(v.cols),
+    format: { kind: 'integer', min: 1, max: 100 },
     distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `(${vars.a} + ${vars.b}) ÷ 2 = ${answer}.`,
+    explanation: ({ vars, answer }) => `${vars.rows} × ${vars.cols} = ${answer}.`,
   }),
 
   defineTemplate({
-    ...addr({ topicId: 'g3-mimdevrobebi-dalageba', subtopicId: 'u02-odd-even-quantities' }),
-    prompt: 'რამდენი ლუწი რიცხვია {start}-დან {end}-მდე (ორივეს ჩათვლით)?',
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-skip-counting' }),
+    prompt: 'გააგრძელე მიმდევრობა: {a}, {b}, {c}, __, {e}.',
     variables: {
-      start: { kind: 'choice', values: [2, 4, 6, 8, 10] },
-      steps: { kind: 'int', min: 2, max: 8 },
-      end: { kind: 'choice', values: (v) => [Number(v.start) + 2 * Number(v.steps)] },
+      step: { kind: 'choice', values: [3, 4, 5, 10] },
+      base: { kind: 'int', min: 2, max: 6 },
+      a: { kind: 'choice', values: (v) => [Number(v.base) * Number(v.step)] },
+      b: { kind: 'choice', values: (v) => [(Number(v.base) + 1) * Number(v.step)] },
+      c: { kind: 'choice', values: (v) => [(Number(v.base) + 2) * Number(v.step)] },
+      e: { kind: 'choice', values: (v) => [(Number(v.base) + 4) * Number(v.step)] },
     },
-    answer: (v) => Number(v.steps) + 1,
-    format: { kind: 'integer', min: 0 },
+    answer: (v) => (Number(v.base) + 3) * Number(v.step),
+    format: { kind: 'integer', min: 1, max: 100 },
     distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.start}-დან ${vars.end}-მდე სულ ${answer} ლუწი რიცხვია.`,
+    explanation: ({ vars, answer }) => `${vars.c} + ${vars.step} = ${answer}.`,
   }),
 
   defineTemplate({
-    ...addr({ topicId: 'g3-mimdevrobebi-dalageba', subtopicId: 'u02-sorting-even-odd' }),
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-counting-tables' }),
+    prompt: 'ცხრილის წესია „დაამატე {add}“. საწყისი რიცხვია {n}. რა რიცხვი მიიღება?',
+    variables: {
+      add: { kind: 'int', min: 3, max: 8 },
+      n: { kind: 'int', min: 12, max: 60 },
+    },
+    answer: (v) => Number(v.n) + Number(v.add),
+    format: { kind: 'integer', min: 1, max: 100 },
+    distractors: ({ answer }) => nearMisses(Number(answer)),
+    explanation: ({ vars, answer }) => `${vars.n} + ${vars.add} = ${answer}.`,
+  }),
+
+  defineTemplate({
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-number-patterns' }),
+    prompt: 'იპოვე გამოტოვებული რიცხვი: {a}, {b}, {c}, __, {e}.',
+    variables: {
+      start: { kind: 'int', min: 10, max: 40 },
+      step: { kind: 'choice', values: [3, 4, 5, 6] },
+      a: { kind: 'choice', values: (v) => [Number(v.start)] },
+      b: { kind: 'choice', values: (v) => [Number(v.start) + Number(v.step)] },
+      c: { kind: 'choice', values: (v) => [Number(v.start) + 2 * Number(v.step)] },
+      e: { kind: 'choice', values: (v) => [Number(v.start) + 4 * Number(v.step)] },
+    },
+    answer: (v) => Number(v.start) + 3 * Number(v.step),
+    format: { kind: 'integer', min: 1, max: 100 },
+    distractors: ({ answer }) => nearMisses(Number(answer)),
+    explanation: ({ vars, answer }) => `${vars.c} + ${vars.step} = ${answer}.`,
+  }),
+
+  defineTemplate({
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-number-line-movement' }),
+    prompt: 'რიცხვით ღერძზე დგახარ {start}-ზე. გადაადგილდი {step} ნაბიჯით მარჯვნივ. რომელ რიცხვზე აღმოჩნდები?',
+    variables: {
+      start: { kind: 'int', min: 15, max: 70 },
+      step: { kind: 'int', min: 4, max: 9 },
+    },
+    answer: (v) => Number(v.start) + Number(v.step),
+    format: { kind: 'integer', min: 1, max: 100 },
+    distractors: ({ answer }) => nearMisses(Number(answer)),
+    explanation: ({ vars, answer }) => `${vars.start} + ${vars.step} = ${answer}.`,
+  }),
+
+  defineTemplate({
+    ...addr({ topicId: 'g3-tvla-mimdevrobebi', subtopicId: 'u02-sorting-even-odd' }),
     prompt: 'ჩამოთვლილთაგან რომელი რიცხვია კენტი? {variant}',
     variables: {
       variant: { kind: 'choice', values: ['აირჩიე სწორი პასუხი.', 'მონიშნე სწორი ვარიანტი.', 'რომელია სწორი?'] },
@@ -285,8 +322,6 @@ export const GRADE3_PLACEHOLDERS: QuestionTemplate[] = [
     distractors: ({ vars }) => [Number(vars.even1), Number(vars.even2), Number(vars.even3)],
     explanation: ({ answer }) => `${answer} კენტი რიცხვია.`,
   }),
-
-  comp({ topicId: 'g3-mimdevrobebi-dalageba', subtopicId: 'u02-comparing-two-digit' }, 10, 99),
 
   // ================= U03: შეკრება და გამოკლება (მრავალნიშნა) =================
   defineTemplate({

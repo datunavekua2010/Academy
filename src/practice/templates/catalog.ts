@@ -35,6 +35,7 @@ import { G2_U13_SUBTOPICS, G2_U13_TEMPLATES } from './g2-u13-time';
 import { G2_U14_SUBTOPICS, G2_U14_TEMPLATES } from './g2-u14-patterns-logic';
 import { G2_U15_SUBTOPICS, G2_U15_TEMPLATES } from './g2-u15-fractions';
 import { G3_U01_SUBTOPICS, G3_U01_TEMPLATES } from './g3-u01-numbers100';
+import { G3_U02_SUBTOPICS, G3_U02_TEMPLATES } from './g3-u02-sequences';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -122,6 +123,7 @@ const remainingGrade2Placeholders = GRADE2_PLACEHOLDERS.filter(
 
 const coveredGrade3Subtopics = new Set<string>([
   ...G3_U01_SUBTOPICS,
+  ...G3_U02_SUBTOPICS,
 ]);
 const remainingGrade3Placeholders = GRADE3_PLACEHOLDERS.filter(
   (template) => !coveredGrade3Subtopics.has(template.subtopicId),
@@ -135,6 +137,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...remainingGrade2Placeholders,
     ...remainingGrade3Placeholders,
     ...G3_U01_TEMPLATES,
+    ...G3_U02_TEMPLATES,
     ...G2_U01_TEMPLATES,
     ...G2_U02_TEMPLATES,
     ...G2_U03_TEMPLATES,
@@ -240,4 +243,6 @@ export {
   G2_U15_SUBTOPICS,
   G3_U01_TEMPLATES,
   G3_U01_SUBTOPICS,
+  G3_U02_TEMPLATES,
+  G3_U02_SUBTOPICS,
 };
