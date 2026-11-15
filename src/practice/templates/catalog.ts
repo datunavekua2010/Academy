@@ -47,6 +47,7 @@ import { G3_U10_SUBTOPICS, G3_U10_TEMPLATES } from './g3-u10-measurement-geometr
 import { G3_U11_SUBTOPICS, G3_U11_TEMPLATES } from './g3-u11-money';
 import { G3_U12_SUBTOPICS, G3_U12_TEMPLATES } from './g3-u12-data-probability';
 import { G3_U13_SUBTOPICS, G3_U13_TEMPLATES } from './g3-u13-time-calendar';
+import { G3_U14_SUBTOPICS, G3_U14_TEMPLATES } from './g3-u14-patterns-logic';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -146,6 +147,7 @@ const coveredGrade3Subtopics = new Set<string>([
   ...G3_U11_SUBTOPICS,
   ...G3_U12_SUBTOPICS,
   ...G3_U13_SUBTOPICS,
+  ...G3_U14_SUBTOPICS,
 ]);
 const remainingGrade3Placeholders = GRADE3_PLACEHOLDERS.filter(
   (template) => !coveredGrade3Subtopics.has(template.subtopicId),
@@ -171,6 +173,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G3_U11_TEMPLATES,
     ...G3_U12_TEMPLATES,
     ...G3_U13_TEMPLATES,
+    ...G3_U14_TEMPLATES,
     ...G2_U01_TEMPLATES,
     ...G2_U02_TEMPLATES,
     ...G2_U03_TEMPLATES,
@@ -300,4 +303,6 @@ export {
   G3_U12_SUBTOPICS,
   G3_U13_TEMPLATES,
   G3_U13_SUBTOPICS,
+  G3_U14_TEMPLATES,
+  G3_U14_SUBTOPICS,
 };
