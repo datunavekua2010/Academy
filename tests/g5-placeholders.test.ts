@@ -90,10 +90,32 @@ describe('Grade 5 — placeholder coverage', () => {
     }
   });
 
-  it('declares no converted subtopics yet', () => {
-    // The list is how a real library retires its placeholder. It must start
-    // empty and only grow as units are authored.
-    expect(G5_CONVERTED_SUBTOPICS).toEqual([]);
+  it('declares exactly the subtopics a real library covers', () => {
+    // The list is how a real library retires its placeholder. It must name a
+    // subtopic only when the academy's own templates actually cover it —
+    // otherwise a subtopic loses its placeholder and gains nothing.
+    for (const subtopicId of G5_CONVERTED_SUBTOPICS) {
+      const covered = TEMPLATE_REGISTRY.all.some(
+        (template) => template.subtopicId === subtopicId && template.grade === 5,
+      );
+      expect(covered, `${subtopicId} is declared converted but has no templates`).toBe(true);
+    }
+
+    // And the reverse: no subtopic may still be running on its placeholder
+    // once real templates exist for it, because that would show the student
+    // the placeholder instead of the authored library.
+    for (const template of GRADE5_PLACEHOLDERS) {
+      const real = TEMPLATE_REGISTRY.all.some(
+        (candidate) =>
+          candidate.grade === 5 &&
+          candidate.subtopicId === template.subtopicId &&
+          candidate.id !== `g5-${template.subtopicId}`,
+      );
+      expect(
+        real && !G5_CONVERTED_SUBTOPICS.includes(template.subtopicId),
+        `${template.subtopicId} has real templates but still keeps its placeholder`,
+      ).toBe(false);
+    }
   });
 
   it('every subtopic of the plan is playable', () => {
@@ -101,10 +123,16 @@ describe('Grade 5 — placeholder coverage', () => {
       for (const subtopic of topicSubtopics(topic)) {
         const ref = { grade: 5 as const, topicId: topic.id, subtopicId: subtopic.id };
         expect(hasTemplates(ref, TEMPLATE_REGISTRY), `${topic.id}/${subtopic.id}`).toBe(true);
-        expect(
-          TEMPLATE_REGISTRY.forSubtopic(ref).map((template) => template.id),
-          `${topic.id}/${subtopic.id}`,
-        ).toEqual([`g5-${subtopic.id}`]);
+        // Either the placeholder or the academy's own library, never neither:
+        // a converted subtopic is playable through its real templates.
+        const ids = TEMPLATE_REGISTRY.forSubtopic(ref).map((template) => template.id);
+        const converted = G5_CONVERTED_SUBTOPICS.includes(subtopic.id);
+        expect(ids.length, `${topic.id}/${subtopic.id}`).toBeGreaterThan(0);
+        if (converted) {
+          expect(ids, `${topic.id}/${subtopic.id}`).not.toContain(`g5-${subtopic.id}`);
+        } else {
+          expect(ids, `${topic.id}/${subtopic.id}`).toEqual([`g5-${subtopic.id}`]);
+        }
       }
     }
   });

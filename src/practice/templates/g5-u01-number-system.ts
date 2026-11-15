@@ -35,6 +35,26 @@ const addr = (options: { id: string; subtopicId: G5U01SubtopicId; difficulty: 1 
   ...options,
 });
 
+/**
+ * Numbers as a student reads them: a true minus sign for negatives.
+ *
+ * The bank prints `−4°C` with U+2212, so an option reading `-4` looked like a
+ * different character from the one in the question. Integer answers here can be
+ * negative (U01.7), so they all render through this.
+ */
+export const displayNumber = (value: number | string): string =>
+  String(value).replace(/^-/, '\u2212');
+
+/**
+ * Distractors as the student reads them.
+ *
+ * Every numeric distractor in this unit is a near miss of an answer that may be
+ * negative, so each number has to go through `displayNumber` before it becomes
+ * an option; otherwise the wrong options read `-4` while the prompt and the
+ * correct option read `−4`.
+ */
+export const wrongNumbers = (values: number[]): string[] => values.map((v) => displayNumber(v));
+
 /** Georgian thousands separator, matching the bank's `624 381`. */
 const group = (n: number): string => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
@@ -59,7 +79,7 @@ export const nearMisses = (answer: number, count = 3, step = 1, min = 0): number
 export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   // ─────────────────────────── U01.4 — place-value form → number ───────────────────────────
   defineTemplate({
-    ...addr({ id: 'g5-u01-01', subtopicId: 'u01-04', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q01', subtopicId: 'u01-04', difficulty: 1 }),
     prompt: 'ჩაწერე ციფრებით რიცხვი, რომელშიც არის {m} ათასეული, {ht} ასეული, {t} ათეული და {u} ერთეული.',
     variables: {
       spec: {
@@ -86,7 +106,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 10),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ vars, answer }) =>
       `${vars.m} ათასეული = ${Number(vars.m) * 1000}, ${vars.ht} ასეული = ${Number(vars.ht) * 100}, ` +
       `${vars.t} ათეული = ${Number(vars.t) * 10}, ${vars.u} ერთეული = ${vars.u}. ` +
@@ -94,7 +114,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-02', subtopicId: 'u01-04', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q02', subtopicId: 'u01-04', difficulty: 1 }),
     prompt: 'ჩაწერე ციფრებით: {m} ათასეული ათასეული, {ht} ათასეული, {t} ასეული, {u} ათეული და {z} ერთეული.',
     variables: {
       spec: {
@@ -122,12 +142,12 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 100),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) => `სულ: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-03', subtopicId: 'u01-04', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q03', subtopicId: 'u01-04', difficulty: 2 }),
     prompt: 'წარმოადგინე რიცხვი {n} თანრიგების ჯამის სახით. რამდენია ათასეულების რაოდენობა?',
     variables: {
       spec: {
@@ -143,13 +163,13 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.thousands),
     format: { kind: 'integer', min: 0 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 10),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ vars, answer }) =>
       `${vars.n} — ათასეულების ჯგუფია ${answer}, ამიტომ ათასეულების რაოდენობა ${answer}-ია.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-04', subtopicId: 'u01-04', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q04', subtopicId: 'u01-04', difficulty: 2 }),
     prompt: 'რიცხვში {n} რამდენია ათიათასეული?',
     variables: {
       spec: {
@@ -171,7 +191,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-05', subtopicId: 'u01-04', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q05', subtopicId: 'u01-04', difficulty: 2 }),
     prompt: 'რიცხვში {n} რა ციფრი დგას ათასეულების თანრიგში?',
     variables: {
       spec: {
@@ -190,7 +210,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-06', subtopicId: 'u01-04', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q06', subtopicId: 'u01-04', difficulty: 3 }),
     prompt: 'ჩაწერე რიცხვი, რომელიც შედგება {m} ასეული ათასეულისგან, {ht} ათასეულისგან და {t} ათეულისგან.',
     variables: {
       spec: {
@@ -211,7 +231,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 100),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ vars, answer }) =>
       `${vars.m} ასეული ათასეული = ${Number(vars.m) * 100000}, ${vars.ht} ათასეული = ${Number(vars.ht) * 1000}, ` +
       `${vars.t} ათეული = ${Number(vars.t) * 10}. სულ: ${group(Number(answer))}.`,
@@ -219,7 +239,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
 
   // ─────────────────────────── U01.5 — missing digit ───────────────────────────
   defineTemplate({
-    ...addr({ id: 'g5-u01-07', subtopicId: 'u01-05', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q07', subtopicId: 'u01-05', difficulty: 1 }),
     prompt: 'აღადგინე რიცხვი: {m} ასეული ათასეული, {ht} ათასეული, {t} ასეული და {u} ერთეული. ჩაწერე ციფრებით.',
     variables: {
       spec: {
@@ -241,12 +261,12 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 10),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) => `სულ: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-08', subtopicId: 'u01-05', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q08', subtopicId: 'u01-05', difficulty: 2 }),
     prompt: 'რიცხვში {a}□{b} {c}{d} ათიათასეულების თანრიგში დგას ციფრი 7. ჩაწერე სრული რიცხვი.',
     variables: {
       spec: {
@@ -272,13 +292,13 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 100),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) =>
       `ათიათასეულების ადგილზე უნდა იდგეს 7, ამიტომ რიცხვია ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-09', subtopicId: 'u01-05', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q09', subtopicId: 'u01-05', difficulty: 2 }),
     prompt: 'რიცხვში {p}□ {c}{d}{u} ათასეულების თანრიგში დგას ციფრი 0. ჩაწერე სრული რიცხვი.',
     variables: {
       spec: {
@@ -304,13 +324,13 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 100),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) =>
       `ათასეულების ადგილზე 0 დგას, ამიტომ რიცხვია ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-10', subtopicId: 'u01-05', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q10', subtopicId: 'u01-05', difficulty: 2 }),
     prompt: 'რიცხვში {a}□{b} {c}{d}{e} ათიათასეულების თანრიგში დგას ციფრი 4. ჩაწერე სრული რიცხვი.',
     variables: {
       spec: {
@@ -337,13 +357,13 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1000),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) =>
       `ათიათასეულების ადგილზე 4 დგას, ამიტომ რიცხვია ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-11', subtopicId: 'u01-05', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q11', subtopicId: 'u01-05', difficulty: 3 }),
     prompt: 'რიცხვში {th} □{tail} ასეულების თანრიგში დგას ციფრი 9. ჩაწერე სრული რიცხვი.',
     variables: {
       spec: {
@@ -364,13 +384,13 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 100),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) =>
       `ასეულების ადგილზე 9 დგას, ამიტომ რიცხვია ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-12', subtopicId: 'u01-05', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q12', subtopicId: 'u01-05', difficulty: 3 }),
     prompt: 'რიცხვში {front}□ {tail} ათასეულების თანრიგში დგას ციფრი 5. ჩაწერე სრული რიცხვი.',
     variables: {
       spec: {
@@ -391,14 +411,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1000 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1000),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ answer }) =>
       `ათასეულების ადგილზე 5 დგას, ამიტომ რიცხვია ${group(Number(answer))}.`,
   }),
 
   // ─────────────────────────── U01.6 — Roman numerals ───────────────────────────
   defineTemplate({
-    ...addr({ id: 'g5-u01-13', subtopicId: 'u01-06', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q13', subtopicId: 'u01-06', difficulty: 1 }),
     prompt: 'ჩაწერე რომაული ციფრებით რიცხვი {n}.',
     variables: {
       spec: {
@@ -415,7 +435,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-14', subtopicId: 'u01-06', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q14', subtopicId: 'u01-06', difficulty: 1 }),
     prompt: 'ჩაწერე არაბული ციფრებით: {roman}.',
     variables: {
       spec: {
@@ -427,12 +447,12 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ vars, answer }) => `${vars.roman} არის ${answer}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-15', subtopicId: 'u01-06', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q15', subtopicId: 'u01-06', difficulty: 2 }),
     prompt: 'ჩაწერე რომაული ციფრებით რიცხვი {n}.',
     variables: {
       spec: {
@@ -450,7 +470,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-16', subtopicId: 'u01-06', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q16', subtopicId: 'u01-06', difficulty: 2 }),
     prompt: 'ჩაწერე არაბული ციფრებით: {roman}.',
     variables: {
       spec: {
@@ -462,13 +482,13 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.value),
     format: { kind: 'integer', min: 1 },
-    distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1),
+    distractors: (ctx) => wrongNumbers(nearMisses(Number(ctx.answer), 3)),
     explanation: ({ vars, answer }) =>
       `${vars.roman}: როცა მცირე ციფრი დიდის წინ დგას, ვაკლებთ — ამიტომ ${answer}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-17', subtopicId: 'u01-06', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q17', subtopicId: 'u01-06', difficulty: 2 }),
     prompt: 'რომელი რიცხვია მეტი: {a} თუ {b}?',
     variables: {
       spec: {
@@ -495,7 +515,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-18', subtopicId: 'u01-06', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q18', subtopicId: 'u01-06', difficulty: 3 }),
     prompt: 'ჩამოთვლილთაგან რომელია ყველაზე დიდი: {a}, {b}, {c}, {d}?',
     variables: {
       spec: {
@@ -525,7 +545,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
 
   // ─────────────────────────── U01.7 — negative numbers ───────────────────────────
   defineTemplate({
-    ...addr({ id: 'g5-u01-19', subtopicId: 'u01-07', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q19', subtopicId: 'u01-07', difficulty: 1 }),
     prompt: 'დილით ტემპერატურა იყო −{a}°C, შუადღეს კი {b}°C. რამდენი გრადუსით მოიმატა ტემპერატურამ?',
     variables: {
       spec: {
@@ -540,14 +560,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 1 },
     distractors: (ctx) => {
       const { a, b } = ctx.vars as { a: number; b: number };
-      return [...nearMisses(Number(ctx.answer), 3, 1), Math.abs(Number(a) - Number(b))];
+      return wrongNumbers([...nearMisses(Number(ctx.answer), 3, 1), Math.abs(Number(a) - Number(b))]);
     },
     explanation: ({ vars, answer }) =>
       `−${vars.a}-დან 0-მდე ${vars.a} გრადუსია, შემდეგ კიდევ ${vars.b}: ${vars.a} + ${vars.b} = ${answer} გრადუსი.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-20', subtopicId: 'u01-07', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q20', subtopicId: 'u01-07', difficulty: 1 }),
     prompt: 'შეადარე რიცხვები: −{a} და −{b}. რომელია ნაკლები?',
     variables: {
       spec: {
@@ -567,7 +587,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-21', subtopicId: 'u01-07', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q21', subtopicId: 'u01-07', difficulty: 2 }),
     prompt: 'დაალაგე ზრდადობით: −{a}, {b}, −{c}, 0, {d}. რომელია პირველი?',
     variables: {
       spec: {
@@ -594,7 +614,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-22', subtopicId: 'u01-07', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q22', subtopicId: 'u01-07', difficulty: 2 }),
     prompt: 'ლიფტი იყო −{a} სართულზე და ავიდა {b} სართულით. რომელ სართულზე აღმოჩნდა?',
     variables: {
       spec: {
@@ -609,14 +629,21 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       level: { kind: 'choice', values: (v) => [Number(v.b) - Number(v.a)] },
     },
     answer: (v) => Number(v.level),
-    format: { kind: 'integer' },
-    distractors: (ctx) => [Number((ctx.vars as { a: number }).a) + Number((ctx.vars as { b: number }).b), -(Number((ctx.vars as { a: number }).a)), Number((ctx.vars as { b: number }).b)].filter((n) => n !== Number(ctx.answer)),
+    format: { kind: 'integer', format: displayNumber },
+    distractors: (ctx) =>
+      wrongNumbers(
+        [
+          Number((ctx.vars as { a: number }).a) + Number((ctx.vars as { b: number }).b),
+          -Number((ctx.vars as { a: number }).a),
+          Number((ctx.vars as { b: number }).b),
+        ].filter((n) => n !== Number(ctx.answer)),
+      ),
     explanation: ({ vars, answer }) =>
       `−${vars.a} + ${vars.b} = ${answer}. ლიფტი აღმოჩნდა ${answer}-ე სართულზე.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-23', subtopicId: 'u01-07', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q23', subtopicId: 'u01-07', difficulty: 2 }),
     prompt: 'იპოვე: −{a} + {b}.',
     variables: {
       spec: {
@@ -628,19 +655,19 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       result: { kind: 'choice', values: (v) => [Number(v.b) - Number(v.a)] },
     },
     answer: (v) => Number(v.result),
-    format: { kind: 'integer' },
+    format: { kind: 'integer', format: displayNumber },
     distractors: (ctx) => {
       const { a, b } = ctx.vars as { a: number; b: number };
-      return [Number(a) + Number(b), Math.abs(Number(a) - Number(b)), -(Number(a) + Number(b)), -Number(b)].filter(
+      return wrongNumbers([Number(a) + Number(b), Math.abs(Number(a) - Number(b)), -(Number(a) + Number(b)), -Number(b)].filter(
         (n) => n !== Number(ctx.answer),
-      );
+      ));
     },
     explanation: ({ vars, answer }) =>
       `−${vars.a} + ${vars.b} = ${vars.b} − ${vars.a} = ${answer}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-24', subtopicId: 'u01-07', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q24', subtopicId: 'u01-07', difficulty: 3 }),
     prompt: 'იპოვე: {a} − {b}, სადაც {b} > {a}.',
     variables: {
       spec: {
@@ -655,12 +682,12 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       result: { kind: 'choice', values: (v) => [Number(v.a) - Number(v.b)] },
     },
     answer: (v) => Number(v.result),
-    format: { kind: 'integer' },
+    format: { kind: 'integer', format: displayNumber },
     distractors: (ctx) => {
       const { a, b } = ctx.vars as { a: number; b: number };
-      return [Number(b) - Number(a), Number(a) + Number(b), -(Number(a) + Number(b)), -Number(a)].filter(
+      return wrongNumbers([Number(b) - Number(a), Number(a) + Number(b), -(Number(a) + Number(b)), -Number(a)].filter(
         (n) => n !== Number(ctx.answer),
-      );
+      ));
     },
     explanation: ({ vars, answer }) =>
       `${vars.a} − ${vars.b} = −(${vars.b} − ${vars.a}) = ${answer}.`,
@@ -668,7 +695,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
 
   // ─────────────────────────── U01.8 — rounding ───────────────────────────
   defineTemplate({
-    ...addr({ id: 'g5-u01-25', subtopicId: 'u01-08', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q25', subtopicId: 'u01-08', difficulty: 1 }),
     prompt: 'დაამრგვალე {n} ათეულამდე.',
     variables: {
       spec: {
@@ -683,14 +710,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 0 },
     distractors: (ctx) => {
       const r = Number(ctx.answer);
-      return [r + 10, r - 10, r + 100, r - 100].filter((n) => n >= 0 && n !== r);
+      return wrongNumbers([r + 10, r - 10, r + 100, r - 100].filter((n) => n >= 0 && n !== r));
     },
     explanation: ({ answer }) =>
       `ბოლო ციფრი წყვეტს: დაახლოებული ათეულია ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-26', subtopicId: 'u01-08', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q26', subtopicId: 'u01-08', difficulty: 1 }),
     prompt: 'დაამრგვალე {n} ასეულამდე.',
     variables: {
       spec: {
@@ -705,14 +732,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 0 },
     distractors: (ctx) => {
       const r = Number(ctx.answer);
-      return [r + 100, r - 100, r + 10, r - 10].filter((n) => n >= 0 && n !== r);
+      return wrongNumbers([r + 100, r - 100, r + 10, r - 10].filter((n) => n >= 0 && n !== r));
     },
     explanation: ({ answer }) =>
       `ათეულებისა და ერთეულების ციფრები წყვეტს: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-27', subtopicId: 'u01-08', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q27', subtopicId: 'u01-08', difficulty: 1 }),
     prompt: 'დაამრგვალე {n} ათასეულამდე.',
     variables: {
       spec: {
@@ -730,14 +757,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 0 },
     distractors: (ctx) => {
       const r = Number(ctx.answer);
-      return [r + 1000, r - 1000, r + 100, r - 100].filter((n) => n >= 0 && n !== r);
+      return wrongNumbers([r + 1000, r - 1000, r + 100, r - 100].filter((n) => n >= 0 && n !== r));
     },
     explanation: ({ answer }) =>
       `ასეულების ციფრი წყვეტს: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-28', subtopicId: 'u01-08', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q28', subtopicId: 'u01-08', difficulty: 2 }),
     prompt: 'დაამრგვალე {n} ათიათასეულამდე.',
     variables: {
       spec: {
@@ -755,14 +782,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 0 },
     distractors: (ctx) => {
       const r = Number(ctx.answer);
-      return [r + 10000, r - 10000, r + 1000, r - 1000].filter((n) => n >= 0 && n !== r);
+      return wrongNumbers([r + 10000, r - 10000, r + 1000, r - 1000].filter((n) => n >= 0 && n !== r));
     },
     explanation: ({ answer }) =>
       `ათასეულების ციფრი წყვეტს: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-29', subtopicId: 'u01-08', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q29', subtopicId: 'u01-08', difficulty: 2 }),
     prompt: 'დაამრგვალე {n} ასეულ ათასეულამდე.',
     variables: {
       spec: {
@@ -781,14 +808,14 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 0 },
     distractors: (ctx) => {
       const r = Number(ctx.answer);
-      return [r + 100000, r - 100000, r + 10000, r - 10000].filter((n) => n >= 0 && n !== r);
+      return wrongNumbers([r + 100000, r - 100000, r + 10000, r - 10000].filter((n) => n >= 0 && n !== r));
     },
     explanation: ({ answer }) =>
       `ათიათასეულების ციფრი წყვეტს: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-30', subtopicId: 'u01-08', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q30', subtopicId: 'u01-08', difficulty: 3 }),
     prompt: 'დაამრგვალე {n} ასეულ ათასეულამდე.',
     variables: {
       spec: {
@@ -806,7 +833,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 0 },
     distractors: (ctx) => {
       const r = Number(ctx.answer);
-      return [r + 100000, r - 100000, r + 10000, r - 10000].filter((n) => n >= 0 && n !== r);
+      return wrongNumbers([r + 100000, r - 100000, r + 10000, r - 10000].filter((n) => n >= 0 && n !== r));
     },
     explanation: ({ answer }) =>
       `ათიათასეულების ციფრი წყვეტს: ${group(Number(answer))}.`,
@@ -814,7 +841,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
 
   // ─────────────────────────── U01.9 — even/odd and powers of ten ───────────────────────────
   defineTemplate({
-    ...addr({ id: 'g5-u01-31', subtopicId: 'u01-09', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q31', subtopicId: 'u01-09', difficulty: 1 }),
     prompt: 'განსაზღვრე, ლუწია თუ კენტია რიცხვი {n}.',
     variables: {
       spec: {
@@ -837,7 +864,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-32', subtopicId: 'u01-09', difficulty: 1 }),
+    ...addr({ id: 'g5-u01-q32', subtopicId: 'u01-09', difficulty: 1 }),
     prompt: 'განსაზღვრე, ლუწია თუ კენტია რიცხვი {n}.',
     variables: {
       spec: {
@@ -860,10 +887,10 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-33', subtopicId: 'u01-09', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q33', subtopicId: 'u01-09', difficulty: 2 }),
     prompt: 'გამოთვალე: 10^{k}.',
     variables: {
-      k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] },
+      k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
       value: { kind: 'choice', values: (v) => [10 ** Number(v.k)] },
       shown: { kind: 'choice', values: (v) => [group(Number(v.value))] },
     },
@@ -871,33 +898,33 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 10 },
     distractors: (ctx) => {
       const v = Number(ctx.answer);
-      return [v / 10, v * 10, v / 2, v + 10].filter((n) => Number.isInteger(n) && n > 0 && n !== v);
+      return wrongNumbers([v / 10, v * 10, v / 2, v + 10].filter((n) => Number.isInteger(n) && n > 0 && n !== v));
     },
     explanation: ({ vars, answer }) =>
       `10^${vars.k} — ერთიანს ${vars.k} ნული მოსდევს: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-34', subtopicId: 'u01-09', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q34', subtopicId: 'u01-09', difficulty: 2 }),
     prompt: 'რამდენი ნულია რიცხვში 10^{k}?',
     variables: {
-      k: { kind: 'choice', values: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] },
+      k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
     },
     answer: (v) => Number(v.k),
     format: { kind: 'integer', min: 2 },
     distractors: (ctx) => {
       const k = Number(ctx.answer);
-      return [k - 1, k + 1, k + 2].filter((n) => n > 0);
+      return wrongNumbers([k - 1, k + 1, k + 2].filter((n) => n > 0));
     },
     explanation: ({ vars, answer }) =>
       `10^${vars.k} — ათის ხარისხი, ამიტომ ნულების რაოდენობა ${answer}-ია.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-35', subtopicId: 'u01-09', difficulty: 2 }),
+    ...addr({ id: 'g5-u01-q35', subtopicId: 'u01-09', difficulty: 2 }),
     prompt: 'დაწერე რიცხვი ხარისხის სახით: 10-ის {k}-ე ხარისხი.',
     variables: {
-      k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20] },
+      k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
       value: { kind: 'choice', values: (v) => [10 ** Number(v.k)] },
       shown: { kind: 'choice', values: (v) => [group(Number(v.value))] },
     },
@@ -905,16 +932,16 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 10 },
     distractors: (ctx) => {
       const v = Number(ctx.answer);
-      return [v / 10, v * 10, v / 2, v * 2].filter((n) => Number.isInteger(n) && n > 0 && n !== v);
+      return wrongNumbers([v / 10, v * 10, v / 2, v * 2].filter((n) => Number.isInteger(n) && n > 0 && n !== v));
     },
     explanation: ({ vars, answer }) => `10^${vars.k} = ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
-    ...addr({ id: 'g5-u01-36', subtopicId: 'u01-09', difficulty: 3 }),
+    ...addr({ id: 'g5-u01-q36', subtopicId: 'u01-09', difficulty: 3 }),
     prompt: 'შეავსე გამოტოვებული რიცხვი: 10^{k} = 10 × ____.',
     variables: {
-      k: { kind: 'choice', values: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21] },
+      k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
       prev: { kind: 'choice', values: (v) => [10 ** (Number(v.k) - 1)] },
       shown: { kind: 'choice', values: (v) => [group(Number(v.prev))] },
     },
@@ -922,7 +949,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'integer', min: 10 },
     distractors: (ctx) => {
       const v = Number(ctx.answer);
-      return [v * 10, v / 10, v + 10, v * 2].filter((n) => Number.isInteger(n) && n >= 1 && n !== v);
+      return wrongNumbers([v * 10, v / 10, v + 10, v * 2].filter((n) => Number.isInteger(n) && n >= 1 && n !== v));
     },
     explanation: ({ vars, answer }) =>
       `10^${vars.k} = 10 × 10^${Number(vars.k) - 1} = 10 × ${group(Number(answer))}.`,
