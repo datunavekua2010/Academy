@@ -53,6 +53,7 @@ import { G3_U12_SUBTOPICS, G3_U12_TEMPLATES } from './g3-u12-data-probability';
 import { G3_U13_SUBTOPICS, G3_U13_TEMPLATES } from './g3-u13-time-calendar';
 import { G3_U14_SUBTOPICS, G3_U14_TEMPLATES } from './g3-u14-patterns-logic';
 import { G3_U15_SUBTOPICS, G3_U15_TEMPLATES } from './g3-u15-fractions';
+import { G5_U01_SUBTOPICS, G5_U01_TEMPLATES } from './g5-u01-number-system';
 import { G4_U01_SUBTOPICS, G4_U01_TEMPLATES } from './g4-u01-numbers';
 import { G4_U02_SUBTOPICS, G4_U02_TEMPLATES } from './g4-u02-addition-subtraction';
 import { G4_U03_SUBTOPICS, G4_U03_TEMPLATES } from './g4-u03-multiplication';
@@ -190,6 +191,7 @@ const remainingGrade5Placeholders = GRADE5_PLACEHOLDERS.filter(
 export const TEMPLATE_REGISTRY = createTemplateRegistry(
   [
     ...SAMPLE_TEMPLATES,
+    ...G5_U01_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -266,6 +268,8 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
 export {
   SAMPLE_TEMPLATES,
   COVERAGE_TEMPLATES,
+  G5_U01_TEMPLATES,
+  G5_U01_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,

@@ -90,7 +90,9 @@ const ROUND_NAME: Record<number, string> = {
  * academy's own content always wins and a placeholder can never shadow it.
  * Empty today: grade V runs entirely on placeholders.
  */
-export const G5_CONVERTED_SUBTOPICS: string[] = [];
+export const G5_CONVERTED_SUBTOPICS: string[] = [
+  'u01-04', 'u01-05', 'u01-06', 'u01-07', 'u01-08', 'u01-09',
+];
 
 export const GRADE5_PLACEHOLDERS: QuestionTemplate[] = [
 
