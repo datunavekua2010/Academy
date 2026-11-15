@@ -1034,7 +1034,7 @@ export const G4_U02_TEMPLATES: QuestionTemplate[] = [
       const b = Number(vars.b);
       return [b, a + b, Math.abs(a - b)].filter((x) => x !== Number(answer));
     },
-    explanation: ({ vars, answer }) => `შეკრების გადანაცვლებადობის თვისებით: შესაკრებთა გადანაცვლებით ჯამი არ იცვლება, ამიტომ გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ answer }) => `შეკრების გადანაცვლებადობის თვისებით: შესაკრებთა გადანაცვლებით ჯამი არ იცვლება, ამიტომ გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // Q52 (Level 2): შეავსე ტოლობა: A − B = A − □
@@ -1052,7 +1052,7 @@ export const G4_U02_TEMPLATES: QuestionTemplate[] = [
       const b = Number(vars.b);
       return [a, a - b, a + b].filter((x) => x !== Number(answer));
     },
-    explanation: ({ vars, answer }) => `ტოლობის ორივე მხარე ერთმანეთის ტოლი რომ იყოს, გამოტოვებული რიცხვი უნდა იყოს ${answer}.`,
+    explanation: ({ answer }) => `ტოლობის ორივე მხარე ერთმანეთის ტოლი რომ იყოს, გამოტოვებული რიცხვი უნდა იყოს ${answer}.`,
   }),
 
   // Q53 (Level 3): შებრუნებული მოქმედება: თუ A + B = S, მაშინ S − A = □

@@ -12,6 +12,8 @@
 
 import type { GradeId } from '../types';
 
+export type DifficultyLevel = 1 | 2 | 3;
+
 /** Values drawn for one variation, keyed by variable name. */
 export type VarValue = number | string | Array<number | string>;
 export type Vars = Record<string, VarValue>;
