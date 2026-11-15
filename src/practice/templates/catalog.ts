@@ -50,6 +50,7 @@ import { G3_U13_SUBTOPICS, G3_U13_TEMPLATES } from './g3-u13-time-calendar';
 import { G3_U14_SUBTOPICS, G3_U14_TEMPLATES } from './g3-u14-patterns-logic';
 import { G3_U15_SUBTOPICS, G3_U15_TEMPLATES } from './g3-u15-fractions';
 import { G4_U01_SUBTOPICS, G4_U01_TEMPLATES } from './g4-u01-numbers';
+import { G4_U02_SUBTOPICS, G4_U02_TEMPLATES } from './g4-u02-addition-subtraction';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -164,6 +165,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...remainingGrade2Placeholders,
     ...remainingGrade3Placeholders,
     ...G4_U01_TEMPLATES,
+    ...G4_U02_TEMPLATES,
     ...G3_U01_TEMPLATES,
     ...G3_U02_TEMPLATES,
     ...G3_U03_TEMPLATES,
@@ -314,4 +316,6 @@ export {
   G3_U15_SUBTOPICS,
   G4_U01_TEMPLATES,
   G4_U01_SUBTOPICS,
+  G4_U02_TEMPLATES,
+  G4_U02_SUBTOPICS,
 };
