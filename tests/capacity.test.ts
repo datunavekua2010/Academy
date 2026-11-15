@@ -64,7 +64,8 @@ describe('subtopic capacity', () => {
               (template) =>
                 template.id === `g1-${subtopic.id}` ||
                 template.id === `g2-${subtopic.id}` ||
-                template.id === `g3-${subtopic.id}`,
+                template.id === `g3-${subtopic.id}` ||
+                template.id === `g5-${subtopic.id}`,
             );
           const required = isPlaceholder ? PLACEHOLDER_MIN_UNIQUE : MIN_UNIQUE_QUESTIONS;
 

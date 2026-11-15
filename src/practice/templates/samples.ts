@@ -115,73 +115,6 @@ export const SAMPLE_TEMPLATES = [
   }),
 
   // --------------------------------------------------------------- grade IV
-  // ---------------------------------------------------------------- grade V
-  defineTemplate({
-    id: 'g5-add-fractions-same-denominator',
-    grade: 5,
-    topicId: 'wiladebi',
-    unitId: 'u1',
-    subtopicId: 'mniSvneli',
-    prompt: '{a}/{d} + {b}/{d} = ?',
-    hint: 'მნიშვნელები ერთი და იგივეა.',
-    variables: {
-      d: { kind: 'int', min: 4, max: 10 },
-      a: { kind: 'int', min: 1, max: (v) => Number(v.d) - 1 },
-      b: { kind: 'int', min: 1, max: (v) => Number(v.d) - Number(v.a) },
-    },
-    constraints: [
-      // Keep the sum below a whole (a/d + b/d <= 1) so the answer stays a fraction.
-      { test: (v) => Number(v.a) + Number(v.b) <= Number(v.d), note: 'ჯამი არ აღემატებოდეს ერთს' },
-      { test: (v) => Number(v.a) + Number(v.b) > 0 && Number(v.b) > 0, note: 'მრიცხველი დადებითი იყოს' },
-    ],
-    answer: (v) => {
-      const numerator = Number(v.a) + Number(v.b);
-      const denominator = Number(v.d);
-      const g = gcd(numerator, denominator);
-      if (numerator === denominator) return '1';
-      return `${numerator / g}/${denominator / g}`;
-    },
-    format: { kind: 'text' },
-    explanation: ({ vars, answer }) =>
-      `მნიშვნელი იგივეა, ამიტომ მრიცხველები ვკრიბავთ: ${vars.a} + ${vars.b} = ${Number(vars.a) + Number(vars.b)}, შედეგი ${answer}.`,
-    distractors: ({ vars, answer }) => {
-      const d = Number(vars.d);
-      return [
-        `${Number(vars.a) + Number(vars.b)}/${d * 2}`,
-        `${Number(vars.a) + Number(vars.b)}/${d + 1}`,
-        `${Number(vars.a) + Number(vars.b) + 1}/${d}`,
-        `${Math.max(1, Number(vars.a) + Number(vars.b) - 1)}/${d}`,
-        String(answer),
-      ];
-    },
-  }),
-
-  defineTemplate({
-    id: 'g5-angle-sum',
-    grade: 5,
-    topicId: 'kuTxeebi',
-    unitId: 'u2',
-    subtopicId: 'jami',
-    prompt: 'სამკუთხედის ორი კუთხეა {a}° და {b}°. მესამე კუთხე?',
-    hint: 'სამკუთხედის კუთხეების ჯამი 180°-ია.',
-    variables: {
-      a: { kind: 'int', min: 20, max: 120, step: 5 },
-      b: { kind: 'int', min: 20, max: 120, step: 5 },
-    },
-    constraints: [
-      { test: (v) => Number(v.a) + Number(v.b) < 180, note: 'დარჩენილი კუთხე დადებითი იყოს' },
-      { test: (v) => 180 - Number(v.a) - Number(v.b) >= 10, note: 'მესამე კუთხე ძალიან პატარა არ იყოს' },
-    ],
-    answer: (v) => 180 - Number(v.a) - Number(v.b),
-    format: { kind: 'integer', min: 1, max: 179, format: (value) => `${value}°` },
-    explanation: ({ vars, answer }) =>
-      `180° − ${vars.a}° − ${vars.b}° = ${answer}.`,
-    distractors: ({ answer }) => {
-      const value = Number(String(answer).replace('°', ''));
-      return [`${value + 10}°`, `${value - 10}°`, `${value + 5}°`, `${180 - value}°`];
-    },
-  }),
-
   // --------------------------------------------------------------- grade VI
   defineTemplate({
     id: 'g6-percent-of',
@@ -283,7 +216,3 @@ export const SAMPLE_TEMPLATES = [
     },
   }),
 ];
-
-function gcd(a: number, b: number): number {
-  return b === 0 ? Math.abs(a) : gcd(b, a % b);
-}

@@ -112,8 +112,9 @@ describe('unified homework + practice', () => {
     render(<StudentApp />);
 
     const triggers = screen.getAllByRole('button', { name: /ქვეთემა$/ });
-    // All topics of the grade are visible at once, none expanded.
-    expect(triggers.length).toBe(3);
+    // All topics of the grade are visible at once, none expanded. Grade V
+    // follows the academy's 19-unit plan, one topic per unit.
+    expect(triggers.length).toBe(19);
     for (const trigger of triggers) {
       expect(trigger.getAttribute('aria-expanded')).toBe('false');
     }
@@ -138,7 +139,8 @@ describe('unified homework + practice', () => {
     // Units appear, each collapsed, with their U1/U2 codes.
     const unitTriggers = [...document.querySelectorAll<HTMLButtonElement>('.accordion-unit-trigger')];
     expect(unitTriggers.length).toBeGreaterThan(0);
-    expect(unitTriggers[0].textContent).toContain('U1');
+    // The academy's own code is shown, so U01 rather than the positional U1.
+    expect(unitTriggers[0].textContent).toContain('U01');
     for (const unit of unitTriggers) {
       expect(unit.getAttribute('aria-expanded')).toBe('false');
     }
