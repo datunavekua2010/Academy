@@ -57,6 +57,7 @@ import { G4_U05_SUBTOPICS, G4_U05_TEMPLATES } from './g4-u05-algebra';
 import { G4_U06_SUBTOPICS, G4_U06_TEMPLATES } from './g4-u06-comparative-word-problems';
 import { G4_U07_SUBTOPICS, G4_U07_TEMPLATES } from './g4-u07-multi-step-problems';
 import { G4_U08_SUBTOPICS, G4_U08_TEMPLATES } from './g4-u08-data-analysis';
+import { G4_U09_SUBTOPICS, G4_U09_TEMPLATES } from './g4-u09-financial-literacy';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -178,6 +179,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G4_U06_TEMPLATES,
     ...G4_U07_TEMPLATES,
     ...G4_U08_TEMPLATES,
+    ...G4_U09_TEMPLATES,
     ...G3_U01_TEMPLATES,
     ...G3_U02_TEMPLATES,
     ...G3_U03_TEMPLATES,
@@ -342,4 +344,6 @@ export {
   G4_U07_SUBTOPICS,
   G4_U08_TEMPLATES,
   G4_U08_SUBTOPICS,
+  G4_U09_TEMPLATES,
+  G4_U09_SUBTOPICS,
 };
