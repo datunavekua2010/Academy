@@ -158,3 +158,17 @@ export const rowNumbers = (row: unknown, separator = '|'): number[] =>
   String(row)
     .split(separator)
     .map((part) => Number(part.replace(/[\s\u00a0\u2009]/g, '')));
+
+/**
+ * A division with remainder, as the student writes it: `quotient` and `rest`.
+ *
+ * The bank asks „მიუთითე განაყოფი და ნაშთი" — two numbers, not one. A single
+ * field would have to be read as `12 ნაშთი 3` and every spelling of that would
+ * be a different answer, so the pair is joined with a comma and offered as a
+ * choice, exactly the way the answer key writes it.
+ */
+export const divisionWithRemainder = (dividend: number, divisor: number): string => {
+  const quotient = Math.floor(dividend / divisor);
+  const rest = dividend % divisor;
+  return `${quotient}, ნაშთი ${rest}`;
+};
