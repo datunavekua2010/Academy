@@ -216,6 +216,11 @@ describe('Grade 5 — placeholder coverage', () => {
     const failures: string[] = [];
     for (const rule of rules) {
       const template = GRADE5_PLACEHOLDERS.find((item) => item.id === rule.id)!;
+      // Once a subtopic is converted, its placeholder is dead content: the
+      // registry serves the academy's own templates for that address, so a
+      // batch would be checked against the wrong arithmetic. The rule follows
+      // the placeholder it was written for, and retires with it.
+      if (G5_CONVERTED_SUBTOPICS.includes(template.subtopicId)) continue;
       const ref = { grade: 5 as const, topicId: template.topicId, subtopicId: template.subtopicId };
       for (const question of generateBatch(ref, 24, { seed: 909090 })) {
         if (rule.check(question.prompt, question.answer) === false) {

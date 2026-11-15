@@ -95,6 +95,8 @@ export const G5_CONVERTED_SUBTOPICS: string[] = [
   'u02-01', 'u02-02', 'u02-03', 'u02-04', 'u02-05',
   'u02-06', 'u02-07', 'u02-08', 'u02-09',
   'u03-01', 'u03-02', 'u03-03', 'u03-04', 'u03-05', 'u03-06',
+  'u04-01', 'u04-02', 'u04-03', 'u04-04', 'u04-05',
+  'u04-06', 'u04-07', 'u04-08', 'u04-09',
 ];
 
 export const GRADE5_PLACEHOLDERS: QuestionTemplate[] = [
