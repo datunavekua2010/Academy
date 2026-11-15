@@ -115,60 +115,6 @@ export const SAMPLE_TEMPLATES = [
   }),
 
   // --------------------------------------------------------------- grade IV
-  defineTemplate({
-    id: 'g4-round-ten',
-    grade: 4,
-    topicId: 'didi-ricxvebi',
-    unitId: 'u2',
-    subtopicId: 'damrgvaleba',
-    prompt: 'დაამრგვალე {n} უახლოეს ათეულამდე.',
-    variables: {
-      n: { kind: 'int', min: 11, max: 994 },
-    },
-    constraints: [
-      // Skip exact multiples of ten: "round 40 to ten" is a pointless question.
-      { test: (v) => Number(v.n) % 10 !== 0, note: 'რიცხვი ზუსტი ათეული არ იყოს' },
-    ],
-    answer: (v) => Math.round(Number(v.n) / 10) * 10,
-    format: { kind: 'integer', min: 0 },
-    explanation: ({ vars, answer }) =>
-      `${vars.n}-ის უახლოესი ათეულია ${answer}.`,
-    distractors: ({ vars, answer }) => {
-      const n = Number(vars.n);
-      const value = Number(answer);
-      return [
-        value + 10,
-        value - 10,
-        value + 20,
-        Math.floor(n / 10) * 10,
-        Math.ceil(n / 10) * 10,
-        value - 20,
-      ];
-    },
-  }),
-
-  defineTemplate({
-    id: 'g4-fraction-of',
-    grade: 4,
-    topicId: 'wiladebi',
-    unitId: 'u1',
-    subtopicId: 'wili',
-    prompt: 'რა არის {n}-ის 1/{d}?',
-    variables: {
-      d: { kind: 'int', min: 2, max: 6 },
-      q: { kind: 'int', min: 2, max: 9 },
-      n: { kind: 'int', min: (v) => Number(v.d) * Number(v.q), max: (v) => Number(v.d) * Number(v.q) },
-    },
-    answer: (v) => Number(v.n) / Number(v.d),
-    format: { kind: 'integer', min: 0 },
-    explanation: ({ vars, answer }) =>
-      `${vars.n} ÷ ${vars.d} = ${answer}.`,
-    distractors: ({ vars, answer }) => {
-      const n = Number(vars.n);
-      return [Number(answer) * 2, n - Number(answer), Number(vars.d), Number(answer) + 1];
-    },
-  }),
-
   // ---------------------------------------------------------------- grade V
   defineTemplate({
     id: 'g5-add-fractions-same-denominator',
