@@ -92,6 +92,8 @@ const ROUND_NAME: Record<number, string> = {
  */
 export const G5_CONVERTED_SUBTOPICS: string[] = [
   'u01-04', 'u01-05', 'u01-06', 'u01-07', 'u01-08', 'u01-09',
+  'u02-01', 'u02-02', 'u02-03', 'u02-04', 'u02-05',
+  'u02-06', 'u02-07', 'u02-08', 'u02-09',
 ];
 
 export const GRADE5_PLACEHOLDERS: QuestionTemplate[] = [
