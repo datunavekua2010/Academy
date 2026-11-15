@@ -165,14 +165,12 @@ describe('generated answers are mathematically correct', () => {
     }
   });
 
-  it('grade IV rounding and fractions of a number', () => {
-    for (const v of previewTemplate('g4-round-ten', 150)) {
+  it('grade IV rounding is always a whole ten', () => {
+    // The legacy g4-round-ten / g4-fraction-of sample templates were removed
+    // along with the seed topics they belonged to; U01 now owns rounding.
+    for (const v of previewTemplate('g4-u01-19', 150)) {
       expect(Number(v.answer)).toBe(Math.round(Number(v.vars.n) / 10) * 10);
       expect(Number(v.answer) % 10).toBe(0);
-    }
-    for (const v of previewTemplate('g4-fraction-of', 150)) {
-      expect(Number(v.answer)).toBe(Number(v.vars.n) / Number(v.vars.d));
-      expect(Number.isInteger(Number(v.answer))).toBe(true);
     }
   });
 

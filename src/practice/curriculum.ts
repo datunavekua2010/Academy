@@ -1150,51 +1150,6 @@ const g4: Topic[] = [
       ],
     },
   ]),
-  topic('didi-ricxvebi', 'მრავალნიშნა რიცხვები', '🔟', 'თანრიგები და დამრგვალება.', 'blue', [
-
-    {
-      title: 'თანრიგები',
-      subtopics: [
-        { id: 'tanrigi', title: 'თანრიგები', summary: 'ათასეული, ასეული, ათეული' },
-      ],
-    },
-    {
-      title: 'დამრგვალება',
-      subtopics: [
-        { id: 'damrgvaleba', title: 'დამრგვალება', summary: 'უახლოეს ათეულამდე და ასეულამდე' },
-      ],
-    },
-  ]),
-  topic('wiladebi', 'წილადები — საწყისი', '🍕', 'მთელის წილი და წილადების შედარება.', 'yellow', [
-
-    {
-      title: 'მთელი წილი',
-      subtopics: [
-        { id: 'wili', title: 'მთელის წილი', summary: '1/2, 1/3, 1/4 რიცხვიდან' },
-      ],
-    },
-    {
-      title: 'შედარება',
-      subtopics: [
-        { id: 'shedareba', title: 'წილადების შედარება', summary: 'ერთი და იგივე მთელი' },
-      ],
-    },
-  ]),
-  topic('mozraoba', 'მოძრაობის ამოცანები', '🚌', 'სიჩქარე, დრო და მანძილი.', 'teal', [
-
-    {
-      title: 'სიჩქარე და დრო',
-      subtopics: [
-        { id: 'sichqare', title: 'სიჩქარე და დრო', summary: 'v = s ÷ t' },
-      ],
-    },
-    {
-      title: 'მანძილი',
-      subtopics: [
-        { id: 'mandzili', title: 'მანძილი', summary: 's = v × t' },
-      ],
-    },
-  ]),
 ];
 
 const g5: Topic[] = [
