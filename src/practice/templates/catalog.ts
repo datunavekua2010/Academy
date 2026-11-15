@@ -3,6 +3,10 @@ import { SAMPLE_TEMPLATES } from './samples';
 import { GRADE1_PLACEHOLDERS } from './grade1-placeholders';
 import { GRADE2_PLACEHOLDERS } from './grade2-placeholders';
 import { GRADE3_PLACEHOLDERS } from './grade3-placeholders';
+import {
+  G5_CONVERTED_SUBTOPICS,
+  GRADE5_PLACEHOLDERS,
+} from './grade5-placeholders';
 import { U01_SUBTOPICS, U01_TEMPLATES } from './u01-space';
 import { U02_SUBTOPICS, U02_TEMPLATES } from './u02-numbers';
 import { U03_SUBTOPICS, U03_TEMPLATES } from './u03-counting';
@@ -173,6 +177,16 @@ const remainingGrade3Placeholders = GRADE3_PLACEHOLDERS.filter(
   (template) => !coveredGrade3Subtopics.has(template.subtopicId),
 );
 
+/**
+ * Grade V runs entirely on placeholders today, so there is no "real library"
+ * set to filter against — only the list a converted unit appends itself to as
+ * the academy's own templates land. Reading it from the file keeps the drop
+ * rule in one place: a converted subtopic never keeps its placeholder.
+ */
+const remainingGrade5Placeholders = GRADE5_PLACEHOLDERS.filter(
+  (template) => !G5_CONVERTED_SUBTOPICS.includes(template.subtopicId),
+);
+
 export const TEMPLATE_REGISTRY = createTemplateRegistry(
   [
     ...SAMPLE_TEMPLATES,
@@ -180,6 +194,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
     ...remainingGrade3Placeholders,
+    ...remainingGrade5Placeholders,
     ...G4_U01_TEMPLATES,
     ...G4_U02_TEMPLATES,
     ...G4_U03_TEMPLATES,
@@ -254,6 +269,8 @@ export {
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,
+  GRADE5_PLACEHOLDERS,
+  G5_CONVERTED_SUBTOPICS,
   U01_TEMPLATES,
   U01_SUBTOPICS,
   U02_TEMPLATES,

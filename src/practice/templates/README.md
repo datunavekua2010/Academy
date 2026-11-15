@@ -242,3 +242,30 @@ When you add a template with a new answer formula, add one line to
 Delete either array from the registry once the academy's templates are supplied.
 A subtopic with no template stays visible in the curriculum but shows
 "შაბლონი ჯერ არ არის დამატებული" instead of breaking the page.
+
+## Placeholder libraries
+
+A grade whose academy plan has landed but whose question banks have not yet
+runs on a *placeholder library*: one template per subtopic, correct by
+construction, so every subtopic is playable and correctly wired to its unit.
+
+- `grade1-placeholders.ts`, `grade2-placeholders.ts`, `grade3-placeholders.ts`
+- `grade5-placeholders.ts` — the full 19-unit / 157-subtopic plan
+
+A placeholder is retired as a unit is authored:
+
+```ts
+// grade5-placeholders.ts
+export const G5_CONVERTED_SUBTOPICS: string[] = ['u01-04', 'u01-05'];
+```
+
+`catalog.ts` drops any placeholder whose subtopic is listed, so the academy's
+own templates always win and a placeholder can never shadow them. Append the
+subtopic as each unit's real library lands; the list is also the record of how
+much of the grade is still placeholder.
+
+The tests hold a placeholder to three distinct variations rather than a full
+session (`tests/template-catalog.test.ts`, `tests/capacity.test.ts`). Grade V
+exceeds that bar — every one of its 157 templates produces at least twelve —
+because a placeholder that cannot fill a session still leaves a student stuck
+mid-run.

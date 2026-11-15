@@ -23,23 +23,25 @@ describe('nested curriculum accordion', () => {
   it('shows topics, units and subtopics for the selected grade only', () => {
     render(<StudentApp />);
 
-    // Grade V is the default grade.
-    expect(topicTrigger().length).toBe(3);
+    // Grade V is the default grade and follows the academy's 19-unit plan,
+    // one topic per unit.
+    expect(topicTrigger().length).toBe(19);
     fireEvent.click(topicTrigger()[0]);
 
     // Only the opened topic's panel is live; the others are inert.
     const live = document.querySelector('.accordion-panel:not([inert])')!;
     const units = [...live.querySelectorAll<HTMLElement>('.accordion-unit-trigger')];
-    expect(units.length).toBe(2);
-    expect(units[0].textContent).toContain('U1');
-    expect(units[1].textContent).toContain('U2');
+    expect(units.length).toBe(1);
+    expect(units[0].textContent).toContain('U01');
 
-    // Units start closed; opening U1 reveals its subtopic only.
+    // Units start closed; opening U01 reveals its subtopics only.
     expect(live.querySelectorAll('.accordion-unit-panel:not([inert])')).toHaveLength(0);
     fireEvent.click(units[0]);
     expect(live.querySelectorAll('.accordion-unit-panel:not([inert])')).toHaveLength(1);
-    // The unit title and its subtopic share the name; assert on the row.
-    expect(live.querySelector('.subtopic-row h3')?.textContent).toBe('სხვადასხვა მნიშვნელი');
+    // U01.4 is „რიცხვის ჩაწერა ადგილების მიხედვით“ — the first subtopic of the plan.
+    expect(live.querySelector('.subtopic-row h3')?.textContent).toBe(
+      'რიცხვის ჩაწერა ადგილების მიხედვით',
+    );
   });
 
   it('opens exercises for the exact grade/topic/unit/subtopic clicked', () => {
