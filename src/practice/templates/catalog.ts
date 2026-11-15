@@ -52,6 +52,7 @@ import { G3_U15_SUBTOPICS, G3_U15_TEMPLATES } from './g3-u15-fractions';
 import { G4_U01_SUBTOPICS, G4_U01_TEMPLATES } from './g4-u01-numbers';
 import { G4_U02_SUBTOPICS, G4_U02_TEMPLATES } from './g4-u02-addition-subtraction';
 import { G4_U03_SUBTOPICS, G4_U03_TEMPLATES } from './g4-u03-multiplication';
+import { G4_U04_SUBTOPICS, G4_U04_TEMPLATES } from './g4-u04-division';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -168,6 +169,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G4_U01_TEMPLATES,
     ...G4_U02_TEMPLATES,
     ...G4_U03_TEMPLATES,
+    ...G4_U04_TEMPLATES,
     ...G3_U01_TEMPLATES,
     ...G3_U02_TEMPLATES,
     ...G3_U03_TEMPLATES,
@@ -322,4 +324,6 @@ export {
   G4_U02_SUBTOPICS,
   G4_U03_TEMPLATES,
   G4_U03_SUBTOPICS,
+  G4_U04_TEMPLATES,
+  G4_U04_SUBTOPICS,
 };
