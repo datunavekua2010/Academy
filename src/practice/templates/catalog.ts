@@ -58,6 +58,15 @@ import { G4_U06_SUBTOPICS, G4_U06_TEMPLATES } from './g4-u06-comparative-word-pr
 import { G4_U07_SUBTOPICS, G4_U07_TEMPLATES } from './g4-u07-multi-step-problems';
 import { G4_U08_SUBTOPICS, G4_U08_TEMPLATES } from './g4-u08-data-analysis';
 import { G4_U09_SUBTOPICS, G4_U09_TEMPLATES } from './g4-u09-financial-literacy';
+import { G4_U10_SUBTOPICS, G4_U10_TEMPLATES } from './g4-u10-measurement';
+import { G4_U11_SUBTOPICS, G4_U11_TEMPLATES } from './g4-u11-geometry';
+import { G4_U12_SUBTOPICS, G4_U12_TEMPLATES } from './g4-u12-time';
+import { G4_U13_SUBTOPICS, G4_U13_TEMPLATES } from './g4-u13-speed-distance';
+import { G4_U14_SUBTOPICS, G4_U14_TEMPLATES } from './g4-u14-probability';
+import { G4_U15_SUBTOPICS, G4_U15_TEMPLATES } from './g4-u15-fractions';
+import { G4_U16_SUBTOPICS, G4_U16_TEMPLATES } from './g4-u16-decimals';
+import { G4_U17_SUBTOPICS, G4_U17_TEMPLATES } from './g4-u17-logic';
+import { G4_U18_SUBTOPICS, G4_U18_TEMPLATES } from './g4-u18-patterns';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -180,6 +189,15 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G4_U07_TEMPLATES,
     ...G4_U08_TEMPLATES,
     ...G4_U09_TEMPLATES,
+    ...G4_U10_TEMPLATES,
+    ...G4_U11_TEMPLATES,
+    ...G4_U12_TEMPLATES,
+    ...G4_U13_TEMPLATES,
+    ...G4_U14_TEMPLATES,
+    ...G4_U15_TEMPLATES,
+    ...G4_U16_TEMPLATES,
+    ...G4_U17_TEMPLATES,
+    ...G4_U18_TEMPLATES,
     ...G3_U01_TEMPLATES,
     ...G3_U02_TEMPLATES,
     ...G3_U03_TEMPLATES,
@@ -346,4 +364,22 @@ export {
   G4_U08_SUBTOPICS,
   G4_U09_TEMPLATES,
   G4_U09_SUBTOPICS,
+  G4_U10_TEMPLATES,
+  G4_U10_SUBTOPICS,
+  G4_U11_TEMPLATES,
+  G4_U11_SUBTOPICS,
+  G4_U12_TEMPLATES,
+  G4_U12_SUBTOPICS,
+  G4_U13_TEMPLATES,
+  G4_U13_SUBTOPICS,
+  G4_U14_TEMPLATES,
+  G4_U14_SUBTOPICS,
+  G4_U15_TEMPLATES,
+  G4_U15_SUBTOPICS,
+  G4_U16_TEMPLATES,
+  G4_U16_SUBTOPICS,
+  G4_U17_TEMPLATES,
+  G4_U17_SUBTOPICS,
+  G4_U18_TEMPLATES,
+  G4_U18_SUBTOPICS,
 };
