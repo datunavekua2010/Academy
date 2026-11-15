@@ -139,3 +139,22 @@ export const bank = (options: {
     explanation: options.explain,
   });
 };
+
+/** A `choice` variable that renders a numeric variable the way the bank writes it. */
+export const shownVar = (name: string): VariableSpec => ({
+  kind: 'choice',
+  values: (vars: Vars) => [group(num(vars, name))],
+});
+
+/** A `choice` variable that renders one field of the `spec` row, grouped. */
+export const shownField = (index: number, separator = '|'): VariableSpec => ({
+  kind: 'choice',
+  values: (vars: Vars) =>
+    [group(Number(String(vars.spec).split(separator)[index]!.replace(/[^\d-]/g, '')))],
+});
+
+/** A row's fields as numbers, tolerant of the bank's grouped spelling. */
+export const rowNumbers = (row: unknown, separator = '|'): number[] =>
+  String(row)
+    .split(separator)
+    .map((part) => Number(part.replace(/[\s\u00a0\u2009]/g, '')));

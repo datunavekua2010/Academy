@@ -55,6 +55,7 @@ import { G3_U14_SUBTOPICS, G3_U14_TEMPLATES } from './g3-u14-patterns-logic';
 import { G3_U15_SUBTOPICS, G3_U15_TEMPLATES } from './g3-u15-fractions';
 import { G5_U01_SUBTOPICS, G5_U01_TEMPLATES } from './g5-u01-number-system';
 import { G5_U02_SUBTOPICS, G5_U02_TEMPLATES } from './g5-u02-divisibility';
+import { G5_U03_SUBTOPICS, G5_U03_TEMPLATES } from './g5-u03-add-sub';
 import { G4_U01_SUBTOPICS, G4_U01_TEMPLATES } from './g4-u01-numbers';
 import { G4_U02_SUBTOPICS, G4_U02_TEMPLATES } from './g4-u02-addition-subtraction';
 import { G4_U03_SUBTOPICS, G4_U03_TEMPLATES } from './g4-u03-multiplication';
@@ -194,6 +195,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...SAMPLE_TEMPLATES,
     ...G5_U01_TEMPLATES,
     ...G5_U02_TEMPLATES,
+    ...G5_U03_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -274,6 +276,8 @@ export {
   G5_U01_SUBTOPICS,
   G5_U02_TEMPLATES,
   G5_U02_SUBTOPICS,
+  G5_U03_TEMPLATES,
+  G5_U03_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,
