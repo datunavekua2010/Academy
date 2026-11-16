@@ -10,3 +10,8 @@ dist/
 
 # scratch space for asset inspection
 .scratch/
+
+# Exported source documents from Google Drive (curriculum PDFs). These are
+# extraction material, not app content — the converted templates are the
+# artefact that belongs in the repository.
+google_drive/

@@ -114,6 +114,8 @@ export const bank = (options: {
   options?: (vars: Vars) => Array<number | string>;
   optionCount?: number;
   format?: QuestionTemplate['format'];
+  /** Whole-set rules, e.g. „the sides must really form a triangle“. */
+  constraints?: QuestionTemplate['constraints'];
   explain: (context: { vars: Vars; answer: string }) => string;
   visual?: (vars: Vars) => string;
   hint?: string;
@@ -133,6 +135,7 @@ export const bank = (options: {
     ...(options.distractors ? { distractors: options.distractors } : {}),
     ...(options.options ? { options: options.options } : {}),
     ...(options.optionCount ? { optionCount: options.optionCount } : {}),
+    ...(options.constraints ? { constraints: options.constraints } : {}),
     ...(options.format ? { format: options.format } : {}),
     ...(options.visual ? { visual: options.visual } : {}),
     ...(options.hint ? { hint: options.hint } : {}),
