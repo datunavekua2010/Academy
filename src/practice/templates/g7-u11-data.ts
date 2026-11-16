@@ -23,7 +23,7 @@ type Spec = Omit<Parameters<typeof q6>[0], 'id' | 'topic' | 'grade'>;
 const t = (spec: Spec): QuestionTemplate => q6({ id: nextId(), topic: T, grade: 7, ...spec });
 
 const g = (v: Vars, key: string): number => N(v, key);
-const WORDS = ['', 'ერთი', 'ორი', 'სამი', 'ოთხი', 'ხუთი', 'ექვსი', 'შვიდი', 'რვა', 'ცხრა', 'ათი'];
+export const WORDS = ['', 'ერთი', 'ორი', 'სამი', 'ოთხი', 'ხუთი', 'ექვსი', 'შვიდი', 'რვა', 'ცხრა', 'ათი'];
 const lst = (xs: number[]): string => xs.join(', ');
 const sum = (xs: number[]): number => xs.reduce((a, b) => a + b, 0);
 /** A deterministic shuffle: the same seed always gives the same order. */
@@ -34,7 +34,7 @@ const shuffle = (xs: number[], seed: number): number[] =>
     .map((e) => e.x);
 const pos = (n: number): string => String(n);
 /** Georgian genitive of a noun in -ი / -ა. */
-const genitive = (w: string): string => (w.endsWith('ა') ? `${w.slice(0, -1)}ის` : `${w}ს`);
+export const genitive = (w: string): string => (w.endsWith('ა') ? `${w.slice(0, -1)}ის` : `${w}ს`);
 
 // ───────────────────────── list builders ─────────────────────────
 /** `n` values with a whole mean `m`: the first n−1 are drawn, the last closes the sum. */
@@ -52,9 +52,9 @@ const meanOk = (lo: number, hi: number) => (v: Vars): boolean => {
 const sortedUp = (xs: number[]): number[] => [...xs].sort((a, b) => a - b);
 
 // ───────────────────────── probability-like fractions ─────────────────────────
-const slipFracs = (key: Frac, extra: Frac[]): string[] => {
+export const slipFracs = (key: Frac, extra: Frac[]): string[] => {
   const out: Frac[] = [...extra, fr(key.d - key.n, key.d), fr(key.n + 1, key.d), fr(key.n, key.d + 1), fr(1, key.d), fr(key.n + 2, key.d), fr(key.n, key.d + 2), fr(key.d, key.n + key.d)];
-  return out.filter((f) => f.n > 0 && f.d > 0 && f.n <= f.d && !(f.n === key.n && f.d === key.d)).map(fText);
+  return out.filter((f) => f.n > 0 && f.d > 0 && f.n < f.d && !(f.n === key.n && f.d === key.d)).map(fText);
 };
 
 // ───────────────────────── sets over a universe ─────────────────────────
