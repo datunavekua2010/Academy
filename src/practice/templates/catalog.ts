@@ -118,6 +118,7 @@ import { G7_U07_SUBTOPICS, G7_U07_TEMPLATES } from './g7-u07-equations';
 import { G7_U08_SUBTOPICS, G7_U08_TEMPLATES } from './g7-u08-proportion-percent';
 import { G7_U09_SUBTOPICS, G7_U09_TEMPLATES } from './g7-u09-multistep';
 import { G7_U10_SUBTOPICS, G7_U10_TEMPLATES } from './g7-u10-number-line';
+import { G7_U11_SUBTOPICS, G7_U11_TEMPLATES } from './g7-u11-data';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -284,6 +285,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G7_U08_TEMPLATES,
     ...G7_U09_TEMPLATES,
     ...G7_U10_TEMPLATES,
+    ...G7_U11_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -454,6 +456,8 @@ export {
   G7_U09_SUBTOPICS,
   G7_U10_TEMPLATES,
   G7_U10_SUBTOPICS,
+  G7_U11_TEMPLATES,
+  G7_U11_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,
