@@ -114,6 +114,7 @@ import { G7_U03_SUBTOPICS, G7_U03_TEMPLATES } from './g7-u03-sets';
 import { G7_U04_SUBTOPICS, G7_U04_TEMPLATES } from './g7-u04-sequences';
 import { G7_U05_SUBTOPICS, G7_U05_TEMPLATES } from './g7-u05-powers-roots';
 import { G7_U06_SUBTOPICS, G7_U06_TEMPLATES } from './g7-u06-expressions';
+import { G7_U07_SUBTOPICS, G7_U07_TEMPLATES } from './g7-u07-equations';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -276,6 +277,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G7_U04_TEMPLATES,
     ...G7_U05_TEMPLATES,
     ...G7_U06_TEMPLATES,
+    ...G7_U07_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -438,6 +440,8 @@ export {
   G7_U05_SUBTOPICS,
   G7_U06_TEMPLATES,
   G7_U06_SUBTOPICS,
+  G7_U07_TEMPLATES,
+  G7_U07_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,

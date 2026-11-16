@@ -25,7 +25,7 @@ const t = (spec: Spec): QuestionTemplate => q6({ id: nextId(), topic: T, grade: 
 // ───────────────────────────── polynomials ─────────────────────────────
 
 /** Coefficients, index = power. */
-type Poly = number[];
+export type Poly = number[];
 const LETTERS = ['x', 'y', 'z', 'm', 't', 'n'];
 const sup = (n: number): string => superscript(n);
 
@@ -48,7 +48,7 @@ const tm = (c: number, power: number, L: string, first: boolean): string => {
   return first ? `${c < 0 ? MINUS : ''}${body}` : ` ${c < 0 ? MINUS : '+'} ${body}`;
 };
 /** `3x² − 5x + 2`. */
-const pt = (p: Poly, L: string): string => {
+export const pt = (p: Poly, L: string): string => {
   let out = '';
   for (let i = p.length - 1; i >= 0; i -= 1) {
     const c = p[i] ?? 0;
@@ -59,8 +59,8 @@ const pt = (p: Poly, L: string): string => {
 };
 /** `(3x + 5)`. */
 const br = (p: Poly, L: string): string => `(${pt(p, L)})`;
-const lin = (a: number, b: number): Poly => [b, a];
-const quad = (a: number, b: number, c: number): Poly => [c, b, a];
+export const lin = (a: number, b: number): Poly => [b, a];
+export const quad = (a: number, b: number, c: number): Poly => [c, b, a];
 
 /** The key first, then slips, then neighbours of the key so four distinct always exist. */
 const polyOptions = (L: string, right: Poly, wrongs: Poly[]): string[] => {
