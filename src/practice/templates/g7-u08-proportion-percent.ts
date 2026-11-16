@@ -35,7 +35,7 @@ export const fmt = (n: number, unit: string): string => (unit === '%' || unit ==
 export const unitOptions = (key: number, unit: string, slips: number[]): string[] => {
   const out = [fmt(key, unit)];
   const step = key >= 100 ? 10 : key >= 20 ? 5 : 1;
-  for (const n of [...slips, key + step, key - step, key + 2 * step, key - 2 * step, key * 2, key + 1, key - 1]) {
+  for (const n of [...slips, key + step, key - step, key + 2 * step, key - 2 * step, key * 2, key + 1, key - 1, key + 3 * step, key + 4]) {
     if (!Number.isInteger(n) || n <= 0) continue;
     const text = fmt(n, unit);
     if (!out.includes(text)) out.push(text);

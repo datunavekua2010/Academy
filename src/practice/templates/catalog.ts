@@ -122,6 +122,7 @@ import { G7_U11_SUBTOPICS, G7_U11_TEMPLATES } from './g7-u11-data';
 import { G7_U12_SUBTOPICS, G7_U12_TEMPLATES } from './g7-u12-probability';
 import { G7_U13_SUBTOPICS, G7_U13_TEMPLATES } from './g7-u13-logic';
 import { G7_U14_SUBTOPICS, G7_U14_TEMPLATES } from './g7-u14-lines-circles';
+import { G7_U15_SUBTOPICS, G7_U15_TEMPLATES } from './g7-u15-triangles';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -292,6 +293,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G7_U12_TEMPLATES,
     ...G7_U13_TEMPLATES,
     ...G7_U14_TEMPLATES,
+    ...G7_U15_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -470,6 +472,8 @@ export {
   G7_U13_SUBTOPICS,
   G7_U14_TEMPLATES,
   G7_U14_SUBTOPICS,
+  G7_U15_TEMPLATES,
+  G7_U15_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,
