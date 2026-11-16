@@ -150,6 +150,8 @@ export const SPEC = (rows: string[]): VariableSpec => ({ kind: 'choice', values:
 export interface Q6Options {
   id: string;
   topic: string;
+  /** The grade the template belongs to (6 unless a Grade VII unit says otherwise). */
+  grade?: 6 | 7;
   sub: string;
   d?: 1 | 2 | 3;
   prompt: string;
@@ -167,11 +169,11 @@ export interface Q6Options {
   hint?: string;
 }
 
-/** Builds one Grade VI template. */
+/** Builds one Grade VI (or, with `grade: 7`, Grade VII) template. */
 export const q6 = (o: Q6Options): QuestionTemplate =>
   defineTemplate({
     id: o.id,
-    grade: 6,
+    grade: o.grade ?? 6,
     topicId: o.topic,
     unitId: o.topic,
     subtopicId: o.sub,

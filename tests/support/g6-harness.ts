@@ -14,13 +14,16 @@ export const standardSuite = (opts: {
   subtopics: readonly string[];
   templates: QuestionTemplate[];
   idPattern: RegExp;
+  /** 6 unless the library is a Grade VII one. */
+  grade?: 6 | 7;
   /** Subtopic ids that must reach the 20-question bar the capacity test applies. */
   minUnique?: number;
 }): void => {
   const { unit, topic, subtopics, templates, idPattern } = opts;
   const minUnique = opts.minUnique ?? 20;
+  const grade = opts.grade ?? 6;
 
-  describe(`G6 ${unit} — library shape`, () => {
+  describe(`G${grade} ${unit} — library shape`, () => {
     it('covers every subtopic of the unit', () => {
       const templated = new Set(templates.map((template) => template.subtopicId));
       for (const subtopicId of subtopics) {
@@ -28,9 +31,9 @@ export const standardSuite = (opts: {
       }
     });
 
-    it('addresses the unit topic only, under grade 6', () => {
+    it('addresses the unit topic only, under its own grade', () => {
       for (const template of templates) {
-        expect(template.grade, template.id).toBe(6);
+        expect(template.grade, template.id).toBe(grade);
         expect(template.topicId, template.id).toBe(topic);
         expect(subtopics, template.id).toContain(template.subtopicId);
         expect(template.id, template.id).toMatch(idPattern);
@@ -46,7 +49,7 @@ export const standardSuite = (opts: {
     });
   });
 
-  describe(`G6 ${unit} — every template renders a usable question`, () => {
+  describe(`G${grade} ${unit} — every template renders a usable question`, () => {
     for (const template of templates) {
       it(`${template.id} keeps its promises`, () => {
         const draws = previewTemplate(template.id, 25);
@@ -63,7 +66,7 @@ export const standardSuite = (opts: {
     }
   });
 
-  describe(`G6 ${unit} — conventions`, () => {
+  describe(`G${grade} ${unit} — conventions`, () => {
     it('never prints a caret, a hyphen minus, a decimal point, NaN or undefined', () => {
       for (const template of templates) {
         for (const draw of previewTemplate(template.id, 25)) {
@@ -77,10 +80,10 @@ export const standardSuite = (opts: {
     });
   });
 
-  describe(`G6 ${unit} — a session can be filled without repeating`, () => {
+  describe(`G${grade} ${unit} — a session can be filled without repeating`, () => {
     for (const subtopicId of subtopics) {
       it(`${subtopicId} yields ${minUnique} distinct questions`, () => {
-        const ref = { grade: 6 as const, topicId: topic, subtopicId };
+        const ref = { grade, topicId: topic, subtopicId };
         const batch = generateBatch(ref, 80, { seed: 1 });
         expect(new Set(batch.map((question) => question.signature)).size).toBeGreaterThanOrEqual(minUnique);
         const session = generateBatch(ref, 12, { seed: 20260117 });

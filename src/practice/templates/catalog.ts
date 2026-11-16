@@ -108,6 +108,7 @@ import { G6_U15_SUBTOPICS, G6_U15_TEMPLATES } from './g6-u15-statistics';
 import { G6_U16_SUBTOPICS, G6_U16_TEMPLATES } from './g6-u16-angles-circles';
 import { G6_U17_SUBTOPICS, G6_U17_TEMPLATES } from './g6-u17-triangles-quads';
 import { G6_U18_SUBTOPICS, G6_U18_TEMPLATES } from './g6-u18-area-volume';
+import { G7_U01_SUBTOPICS, G7_U01_TEMPLATES } from './g7-u01-numbers-ops';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -264,6 +265,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G6_U16_TEMPLATES,
     ...G6_U17_TEMPLATES,
     ...G6_U18_TEMPLATES,
+    ...G7_U01_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -414,6 +416,8 @@ export {
   G6_U17_SUBTOPICS,
   G6_U18_TEMPLATES,
   G6_U18_SUBTOPICS,
+  G7_U01_TEMPLATES,
+  G7_U01_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,
