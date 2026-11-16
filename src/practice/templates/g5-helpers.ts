@@ -143,6 +143,28 @@ export const bank = (options: {
   });
 };
 
+/**
+ * Digits as a raised index: `12` → `¹²`.
+ *
+ * A power is written the way a unit is (`სმ²`), not with a caret: `10^{6}` is
+ * bank LaTeX, and printed literally a child reads a brace and a caret rather
+ * than an index. One helper so every grade-5 unit writes powers identically.
+ */
+const SUPERSCRIPT_DIGITS: Record<string, string> = {
+  '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+  '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
+};
+
+export const superscript = (n: number | string): string =>
+  String(n)
+    .split('')
+    .map((digit) => SUPERSCRIPT_DIGITS[digit] ?? digit)
+    .join('');
+
+/** `base` raised to `exponent` as a student reads it: `10⁶`, `4²`. */
+export const powerText = (base: number | string, exponent: number | string): string =>
+  `${base}${superscript(exponent)}`;
+
 /** A `choice` variable that renders a numeric variable the way the bank writes it. */
 export const shownVar = (name: string): VariableSpec => ({
   kind: 'choice',

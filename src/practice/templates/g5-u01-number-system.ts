@@ -1,4 +1,5 @@
 import { defineTemplate, type QuestionTemplate } from './types';
+import { powerText } from './g5-helpers';
 
 /**
  * Grade V — Unit 01: რიცხვითი სისტემა და თანრიგები (number system and place value)
@@ -888,9 +889,10 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
 
   defineTemplate({
     ...addr({ id: 'g5-u01-q33', subtopicId: 'u01-09', difficulty: 2 }),
-    prompt: 'გამოთვალე: 10^{k}.',
+    prompt: 'გამოთვალე: {power}.',
     variables: {
       k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+      power: { kind: 'choice', values: (v) => [powerText(10, Number(v.k))] },
       value: { kind: 'choice', values: (v) => [10 ** Number(v.k)] },
       shown: { kind: 'choice', values: (v) => [group(Number(v.value))] },
     },
@@ -901,14 +903,15 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       return wrongNumbers([v / 10, v * 10, v / 2, v + 10].filter((n) => Number.isInteger(n) && n > 0 && n !== v));
     },
     explanation: ({ vars, answer }) =>
-      `10^${vars.k} — ერთიანს ${vars.k} ნული მოსდევს: ${group(Number(answer))}.`,
+      `${vars.power} — ერთიანს ${vars.k} ნული მოსდევს: ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
     ...addr({ id: 'g5-u01-q34', subtopicId: 'u01-09', difficulty: 2 }),
-    prompt: 'რამდენი ნულია რიცხვში 10^{k}?',
+    prompt: 'რამდენი ნულია რიცხვში {power}?',
     variables: {
       k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+      power: { kind: 'choice', values: (v) => [powerText(10, Number(v.k))] },
     },
     answer: (v) => Number(v.k),
     format: { kind: 'integer', min: 2 },
@@ -917,7 +920,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       return wrongNumbers([k - 1, k + 1, k + 2].filter((n) => n > 0));
     },
     explanation: ({ vars, answer }) =>
-      `10^${vars.k} — ათის ხარისხი, ამიტომ ნულების რაოდენობა ${answer}-ია.`,
+      `${vars.power} — ათის ხარისხი, ამიტომ ნულების რაოდენობა ${answer}-ია.`,
   }),
 
   defineTemplate({
@@ -925,6 +928,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
     prompt: 'დაწერე რიცხვი ხარისხის სახით: 10-ის {k}-ე ხარისხი.',
     variables: {
       k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+      power: { kind: 'choice', values: (v) => [powerText(10, Number(v.k))] },
       value: { kind: 'choice', values: (v) => [10 ** Number(v.k)] },
       shown: { kind: 'choice', values: (v) => [group(Number(v.value))] },
     },
@@ -934,14 +938,15 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       const v = Number(ctx.answer);
       return wrongNumbers([v / 10, v * 10, v / 2, v * 2].filter((n) => Number.isInteger(n) && n > 0 && n !== v));
     },
-    explanation: ({ vars, answer }) => `10^${vars.k} = ${group(Number(answer))}.`,
+    explanation: ({ vars, answer }) => `${vars.power} = ${group(Number(answer))}.`,
   }),
 
   defineTemplate({
     ...addr({ id: 'g5-u01-q36', subtopicId: 'u01-09', difficulty: 3 }),
-    prompt: 'შეავსე გამოტოვებული რიცხვი: 10^{k} = 10 × ____.',
+    prompt: 'შეავსე გამოტოვებული რიცხვი: {power} = 10 × ____.',
     variables: {
       k: { kind: 'choice', values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+      power: { kind: 'choice', values: (v) => [powerText(10, Number(v.k))] },
       prev: { kind: 'choice', values: (v) => [10 ** (Number(v.k) - 1)] },
       shown: { kind: 'choice', values: (v) => [group(Number(v.prev))] },
     },
@@ -952,7 +957,7 @@ export const G5_U01_TEMPLATES: QuestionTemplate[] = [
       return wrongNumbers([v * 10, v / 10, v + 10, v * 2].filter((n) => Number.isInteger(n) && n >= 1 && n !== v));
     },
     explanation: ({ vars, answer }) =>
-      `10^${vars.k} = 10 × 10^${Number(vars.k) - 1} = 10 × ${group(Number(answer))}.`,
+      `${vars.power} = 10 × ${powerText(10, Number(vars.k) - 1)} = 10 × ${group(Number(answer))}.`,
   }),
 ];
 
