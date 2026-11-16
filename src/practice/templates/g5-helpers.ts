@@ -172,3 +172,67 @@ export const divisionWithRemainder = (dividend: number, divisor: number): string
   const rest = dividend % divisor;
   return `${quotient}, ნაშთი ${rest}`;
 };
+
+// ─────────────────────────── fractions (U08–U10) ───────────────────────────
+
+/** Closed form of a fraction: lowest terms, and a whole number when it divides out. */
+export const fracText = (n: number, d: number): string => {
+  const g = gcd(n, d) || 1;
+  const rn = n / g;
+  const rd = d / g;
+  return rd === 1 ? String(rn) : `${rn}/${rd}`;
+};
+
+/** The fraction exactly as written, without reducing — for tenths/hundredths work. */
+export const rawFrac = (n: number, d: number): string => `${n}/${d}`;
+
+/** Improper fraction → mixed number, reducing the fractional part. */
+export const mixedReduced = (n: number, d: number): string => {
+  const whole = Math.floor(n / d);
+  const rest = n % d;
+  if (rest === 0) return String(whole);
+  const [rn, rd] = [rest / (gcd(rest, d) || 1), d / (gcd(rest, d) || 1)];
+  return whole === 0 ? `${rn}/${rd}` : `${whole} ${rn}/${rd}`;
+};
+
+/** Improper fraction → mixed number, keeping the denominator — for same-denominator work. */
+export const mixedKept = (n: number, d: number): string => {
+  const whole = Math.floor(n / d);
+  const rest = n % d;
+  if (rest === 0) return String(whole);
+  return whole === 0 ? `${rest}/${d}` : `${whole} ${rest}/${d}`;
+};
+
+/** Mixed number → improper fraction. */
+export const toImproper = (whole: number, n: number, d: number): number => whole * d + n;
+
+/**
+ * Exactly four distinct options, answer first.
+ *
+ * Distractor recipes drawn from arithmetic neighbours can coincide with one
+ * another or with the answer. The option count is fixed by the template, so pad
+ * with a numeric near-miss of the answer rather than shrinking to three.
+ */
+export const fourOptions = (right: string, candidates: string[]): string[] => {
+  const out: string[] = [right];
+  for (const candidate of candidates) {
+    if (out.length === 4) break;
+    if (!out.includes(candidate)) out.push(candidate);
+  }
+  let bump = 1;
+  while (out.length < 4 && bump <= 60) {
+    const shifted = right.replace(/\d+/, (digits) => String(Number(digits) + bump));
+    if (!out.includes(shifted)) out.push(shifted);
+    bump += 1;
+  }
+  return out;
+};
+
+/** `<`, `>` or `=` for two numeric values. */
+export const relation = (a: number, b: number): string => (a > b ? '>' : a < b ? '<' : '=');
+
+export const RELATION_OPTIONS = ['<', '=', '>'];
+
+/** Compare two fractions by cross-multiplication. */
+export const compareFractions = (a: number, b: number, c: number, d: number): string =>
+  relation(a * d, c * b);
