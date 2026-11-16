@@ -87,83 +87,9 @@ const textual = (spec: {
 export const COVERAGE_TEMPLATES: QuestionTemplate[] = [
   // ------------------------------------------------------------ grade IV
   // ------------------------------------------------------------ grade VI
-  textual({
-    id: 'cov-g6-compare-negatives',
-    grade: 6,
-    topicId: 'racionaluri',
-    unitId: 'u1',
-    subtopicId: 'uaryofa',
-    prompt: 'რომელი რიცხვია ნაკლები: {a} თუ {b}?',
-    hint: 'რიცხვით ღერძზე მარცხენა ნაკლებია.',
-    variables: {
-      a: { kind: 'choice', values: [-12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1] },
-      b: { kind: 'choice', values: [-12, -11, -10, -9, -8, -7, -6, -5, -4, -3, -2, 1, 2, 3] },
-    },
-    constraints: [{ test: (v) => v.a !== v.b, note: 'რიცხვები განსხვავებული იყოს' }],
-    answer: (v) => (Number(v.a) < Number(v.b) ? String(v.a) : String(v.b)),
-    wrong: (vars, answer) => {
-      const other = String(answer) === String(vars.a) ? String(vars.b) : String(vars.a);
-      return [other, String(Number(answer) + 1), String(Number(answer) - 1)];
-    },
-    explanation: (_vars, answer) => `${answer} უფრო მარცხნივაა რიცხვით ღერძზე.`,
-  }),
 
-  arithmetic({
-    id: 'cov-g6-discount',
-    grade: 6,
-    topicId: 'procenti',
-    unitId: 'u2',
-    subtopicId: 'fasdakleba',
-    prompt: 'პროდუქტი ღირს {p} ლარი. ფასდაკლება {d}%. რამდენს გადაიხდი?',
-    hint: 'ჯერ იპოვე ფასდაკლების თანხა.',
-    variables: {
-      d: { kind: 'choice', values: [10, 20, 25, 50] },
-      base: { kind: 'int', min: 2, max: 12 },
-      p: { kind: 'int', min: (v) => Number(v.base) * 20, max: (v) => Number(v.base) * 20 },
-    },
-    answer: (v) => Number(v.p) - (Number(v.p) * Number(v.d)) / 100,
-    explanation: (vars, answer) =>
-      `ფასდაკლება ${(Number(vars.p) * Number(vars.d)) / 100} ლარია, ამიტომ გადაიხდი ${answer} ლარს.`,
-    unit: ' ლარი',
-  }),
 
-  textual({
-    id: 'cov-g6-simplify',
-    grade: 6,
-    topicId: 'gamartiveba',
-    unitId: 'u1',
-    subtopicId: 'gamartiveba',
-    prompt: 'გაამარტივე: {a}x + {b}x',
-    variables: {
-      a: { kind: 'int', min: 2, max: 9 },
-      b: { kind: 'int', min: 2, max: 9 },
-    },
-    answer: (v) => `${Number(v.a) + Number(v.b)}x`,
-    wrong: (vars, answer) => [
-      `${vars.a}x + ${vars.b}`,
-      `${Number(vars.a) * Number(vars.b)}x`,
-      `${Number(vars.a) + Number(vars.b)}x + 1`,
-      `${Number(answer.replace('x', '')) + 1}x`,
-    ],
-    explanation: (vars, answer) => `მსგავსი წევრები: ${vars.a} + ${vars.b} = ${answer}.`,
-  }),
 
-  arithmetic({
-    id: 'cov-g6-simple-equation',
-    grade: 6,
-    topicId: 'gamartiveba',
-    unitId: 'u2',
-    subtopicId: 'gantoleba',
-    prompt: 'ამოხსენი: x + {a} = {b}',
-    hint: 'გადაიტანე რიცხვი მეორე მხარეს.',
-    variables: {
-      x: { kind: 'int', min: 2, max: 20 },
-      a: { kind: 'int', min: 2, max: 15 },
-      b: { kind: 'int', min: (v) => Number(v.x) + Number(v.a), max: (v) => Number(v.x) + Number(v.a) },
-    },
-    answer: (v) => Number(v.b) - Number(v.a),
-    explanation: (vars, answer) => `x = ${vars.b} − ${vars.a} = ${answer}.`,
-  }),
 
   // ----------------------------------------------------------- grade VII
   arithmetic({

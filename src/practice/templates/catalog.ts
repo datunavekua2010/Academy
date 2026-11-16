@@ -90,6 +90,24 @@ import { G4_U15_SUBTOPICS, G4_U15_TEMPLATES } from './g4-u15-fractions';
 import { G4_U16_SUBTOPICS, G4_U16_TEMPLATES } from './g4-u16-decimals';
 import { G4_U17_SUBTOPICS, G4_U17_TEMPLATES } from './g4-u17-logic';
 import { G4_U18_SUBTOPICS, G4_U18_TEMPLATES } from './g4-u18-patterns';
+import { G6_U01_SUBTOPICS, G6_U01_TEMPLATES } from './g6-u01-numbers';
+import { G6_U02_SUBTOPICS, G6_U02_TEMPLATES } from './g6-u02-whole-ops';
+import { G6_U03_SUBTOPICS, G6_U03_TEMPLATES } from './g6-u03-negative-rational';
+import { G6_U04_SUBTOPICS, G6_U04_TEMPLATES } from './g6-u04-fractions';
+import { G6_U05_SUBTOPICS, G6_U05_TEMPLATES } from './g6-u05-decimals';
+import { G6_U06_SUBTOPICS, G6_U06_TEMPLATES } from './g6-u06-mixed';
+import { G6_U07_SUBTOPICS, G6_U07_TEMPLATES } from './g6-u07-percent';
+import { G6_U08_SUBTOPICS, G6_U08_TEMPLATES } from './g6-u08-money';
+import { G6_U09_SUBTOPICS, G6_U09_TEMPLATES } from './g6-u09-multistep';
+import { G6_U10_SUBTOPICS, G6_U10_TEMPLATES } from './g6-u10-algebra';
+import { G6_U11_SUBTOPICS, G6_U11_TEMPLATES } from './g6-u11-measure-time';
+import { G6_U12_SUBTOPICS, G6_U12_TEMPLATES } from './g6-u12-coordinates';
+import { G6_U13_SUBTOPICS, G6_U13_TEMPLATES } from './g6-u13-powers-roots';
+import { G6_U14_SUBTOPICS, G6_U14_TEMPLATES } from './g6-u14-patterns-chance';
+import { G6_U15_SUBTOPICS, G6_U15_TEMPLATES } from './g6-u15-statistics';
+import { G6_U16_SUBTOPICS, G6_U16_TEMPLATES } from './g6-u16-angles-circles';
+import { G6_U17_SUBTOPICS, G6_U17_TEMPLATES } from './g6-u17-triangles-quads';
+import { G6_U18_SUBTOPICS, G6_U18_TEMPLATES } from './g6-u18-area-volume';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -228,6 +246,24 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G5_U17_TEMPLATES,
     ...G5_U18_TEMPLATES,
     ...G5_U19_TEMPLATES,
+    ...G6_U01_TEMPLATES,
+    ...G6_U02_TEMPLATES,
+    ...G6_U03_TEMPLATES,
+    ...G6_U04_TEMPLATES,
+    ...G6_U05_TEMPLATES,
+    ...G6_U06_TEMPLATES,
+    ...G6_U07_TEMPLATES,
+    ...G6_U08_TEMPLATES,
+    ...G6_U09_TEMPLATES,
+    ...G6_U10_TEMPLATES,
+    ...G6_U11_TEMPLATES,
+    ...G6_U12_TEMPLATES,
+    ...G6_U13_TEMPLATES,
+    ...G6_U14_TEMPLATES,
+    ...G6_U15_TEMPLATES,
+    ...G6_U16_TEMPLATES,
+    ...G6_U17_TEMPLATES,
+    ...G6_U18_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -342,6 +378,42 @@ export {
   G5_U18_SUBTOPICS,
   G5_U19_TEMPLATES,
   G5_U19_SUBTOPICS,
+  G6_U01_TEMPLATES,
+  G6_U01_SUBTOPICS,
+  G6_U02_TEMPLATES,
+  G6_U02_SUBTOPICS,
+  G6_U03_TEMPLATES,
+  G6_U03_SUBTOPICS,
+  G6_U04_TEMPLATES,
+  G6_U04_SUBTOPICS,
+  G6_U05_TEMPLATES,
+  G6_U05_SUBTOPICS,
+  G6_U06_TEMPLATES,
+  G6_U06_SUBTOPICS,
+  G6_U07_TEMPLATES,
+  G6_U07_SUBTOPICS,
+  G6_U08_TEMPLATES,
+  G6_U08_SUBTOPICS,
+  G6_U09_TEMPLATES,
+  G6_U09_SUBTOPICS,
+  G6_U10_TEMPLATES,
+  G6_U10_SUBTOPICS,
+  G6_U11_TEMPLATES,
+  G6_U11_SUBTOPICS,
+  G6_U12_TEMPLATES,
+  G6_U12_SUBTOPICS,
+  G6_U13_TEMPLATES,
+  G6_U13_SUBTOPICS,
+  G6_U14_TEMPLATES,
+  G6_U14_SUBTOPICS,
+  G6_U15_TEMPLATES,
+  G6_U15_SUBTOPICS,
+  G6_U16_TEMPLATES,
+  G6_U16_SUBTOPICS,
+  G6_U17_TEMPLATES,
+  G6_U17_SUBTOPICS,
+  G6_U18_TEMPLATES,
+  G6_U18_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,

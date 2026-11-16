@@ -67,9 +67,9 @@ describe('template generator', () => {
   });
 
   it('respects choice variables', () => {
-    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g6-percent-of')!;
+    const template = SAMPLE_TEMPLATES.find((t) => t.id === 'g2-meter-cm')!;
     for (const v of generateVariations(template, 40, { seed: 12 })) {
-      expect([10, 20, 25, 50]).toContain(Number(v.vars.p));
+      expect([0, 5, 10, 15, 20, 25, 30, 40, 50, 60]).toContain(Number(v.vars.cm));
     }
   });
 
@@ -189,16 +189,6 @@ describe('generated answers are mathematically correct', () => {
     for (const v of previewTemplate('g5-u15-03', 150)) {
       expect(v.answer).toBe(`${180 - Number(v.vars.a)}°`);
       expect(Number(v.answer.replace('°', ''))).toBeGreaterThan(0);
-    }
-  });
-
-  it('grade VI percentages and negative numbers', () => {
-    for (const v of previewTemplate('g6-percent-of', 150)) {
-      expect(Number(v.answer)).toBe((Number(v.vars.n) * Number(v.vars.p)) / 100);
-    }
-    for (const v of previewTemplate('g6-negative-add', 150)) {
-      expect(Number(v.answer)).toBe(Number(v.vars.a) + Number(v.vars.b));
-      expect(Number(v.vars.a)).toBeLessThan(0);
     }
   });
 

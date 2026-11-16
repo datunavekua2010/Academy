@@ -116,51 +116,7 @@ export const SAMPLE_TEMPLATES = [
 
   // --------------------------------------------------------------- grade IV
   // --------------------------------------------------------------- grade VI
-  defineTemplate({
-    id: 'g6-percent-of',
-    grade: 6,
-    topicId: 'procenti',
-    unitId: 'u1',
-    subtopicId: 'povna',
-    prompt: '{n}-ის {p}% = ?',
-    variables: {
-      p: { kind: 'choice', values: [10, 20, 25, 50] },
-      base: { kind: 'int', min: 2, max: 20 },
-      n: { kind: 'int', min: (v) => Number(v.base) * 10, max: (v) => Number(v.base) * 10 },
-    },
-    answer: (v) => (Number(v.n) * Number(v.p)) / 100,
-    format: { kind: 'integer', min: 0 },
-    explanation: ({ vars, answer }) =>
-      `${vars.n} × ${vars.p} ÷ 100 = ${answer}.`,
-    distractors: ({ vars, answer }) => {
-      const n = Number(vars.n);
-      const p = Number(vars.p);
-      return [Number(answer) * 2, n / p, Number(answer) + p, n - Number(answer)];
-    },
-  }),
 
-  defineTemplate({
-    id: 'g6-negative-add',
-    grade: 6,
-    topicId: 'racionaluri',
-    unitId: 'u2',
-    subtopicId: 'moqmedeba',
-    prompt: '{a} + {b} = ?',
-    hint: 'ყურადღება მიაქციე ნიშნებს.',
-    variables: {
-      a: { kind: 'choice', values: [-9, -8, -7, -6, -5, -4, -3, -2] },
-      b: { kind: 'int', min: 2, max: 12 },
-    },
-    answer: (v) => Number(v.a) + Number(v.b),
-    format: { kind: 'integer', min: -20, max: 20 },
-    explanation: ({ vars, answer }) =>
-      `${vars.a} + ${vars.b} = ${answer}.`,
-    distractors: ({ vars, answer }) => {
-      const a = Number(vars.a);
-      const b = Number(vars.b);
-      return [a - b, Number(answer) + 1, Number(answer) - 1, -(a + b)];
-    },
-  }),
 
   // -------------------------------------------------------------- grade VII
   defineTemplate({
