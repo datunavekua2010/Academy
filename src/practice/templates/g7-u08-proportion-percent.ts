@@ -25,14 +25,14 @@ const t = (spec: Spec): QuestionTemplate => q6({ id: nextId(), topic: T, grade: 
 
 const g = (v: Vars, key: string): number => N(v, key);
 /** A numeric variable shown with thousands grouping. */
-const G = (key: string) => D((v: Vars) => group(N(v, key)));
+export const G = (key: string) => D((v: Vars) => group(N(v, key)));
 const LETTERS = ['x', 'y', 't', 'm'];
 const Lvar = C(LETTERS);
 
 /** `36 ლარი`, `45%`, `40°`. */
-const fmt = (n: number, unit: string): string => (unit === '%' || unit === '°' ? `${n}${unit}` : unit ? `${group(n)} ${unit}` : group(n));
+export const fmt = (n: number, unit: string): string => (unit === '%' || unit === '°' ? `${n}${unit}` : unit ? `${group(n)} ${unit}` : group(n));
 /** The key first, then whole positive slips, then neighbours so four distinct always exist. */
-const unitOptions = (key: number, unit: string, slips: number[]): string[] => {
+export const unitOptions = (key: number, unit: string, slips: number[]): string[] => {
   const out = [fmt(key, unit)];
   const step = key >= 100 ? 10 : key >= 20 ? 5 : 1;
   for (const n of [...slips, key + step, key - step, key + 2 * step, key - 2 * step, key * 2, key + 1, key - 1]) {
@@ -42,12 +42,12 @@ const unitOptions = (key: number, unit: string, slips: number[]): string[] => {
   }
   return out;
 };
-const textOptions = (key: string, wrongs: string[]): string[] => {
+export const textOptions = (key: string, wrongs: string[]): string[] => {
   const out = [key];
   for (const w of wrongs) if (!out.includes(w)) out.push(w);
   return out;
 };
-const pair = (a: number, b: number, unit: string): string => `${fmt(a, unit)} და ${fmt(b, unit)}`;
+export const pair = (a: number, b: number, unit: string): string => `${fmt(a, unit)} და ${fmt(b, unit)}`;
 const triple = (a: number, b: number, c: number, unit: string): string => `${fmt(a, unit)}, ${fmt(b, unit)}, ${fmt(c, unit)}`;
 const YES = 'დიახ';
 const NO = 'არა';
