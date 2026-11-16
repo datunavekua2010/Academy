@@ -112,6 +112,7 @@ import { G7_U01_SUBTOPICS, G7_U01_TEMPLATES } from './g7-u01-numbers-ops';
 import { G7_U02_SUBTOPICS, G7_U02_TEMPLATES } from './g7-u02-comparing';
 import { G7_U03_SUBTOPICS, G7_U03_TEMPLATES } from './g7-u03-sets';
 import { G7_U04_SUBTOPICS, G7_U04_TEMPLATES } from './g7-u04-sequences';
+import { G7_U05_SUBTOPICS, G7_U05_TEMPLATES } from './g7-u05-powers-roots';
 import { COVERAGE_TEMPLATES } from './coverage';
 import { createTemplateRegistry } from './registry';
 
@@ -272,6 +273,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G7_U02_TEMPLATES,
     ...G7_U03_TEMPLATES,
     ...G7_U04_TEMPLATES,
+    ...G7_U05_TEMPLATES,
     ...COVERAGE_TEMPLATES,
     ...remainingPlaceholders,
     ...remainingGrade2Placeholders,
@@ -430,6 +432,8 @@ export {
   G7_U03_SUBTOPICS,
   G7_U04_TEMPLATES,
   G7_U04_SUBTOPICS,
+  G7_U05_TEMPLATES,
+  G7_U05_SUBTOPICS,
   GRADE1_PLACEHOLDERS,
   GRADE2_PLACEHOLDERS,
   GRADE3_PLACEHOLDERS,
