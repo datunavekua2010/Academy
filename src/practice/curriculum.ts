@@ -2157,51 +2157,6 @@ const g7: Topic[] = [
     },
   ]),
   // </g7-real>
-  topic('xazovani', 'ხაზოვანი განტოლებები', '🟰', 'განტოლების ამოხსნა და ტექსტური ამოცანები.', 'blue', [
-
-    {
-      title: 'ამოხსნა',
-      subtopics: [
-        { id: 'ertucnobiani', title: 'ამოხსნა', summary: 'x ორივე მხარეს' },
-      ],
-    },
-    {
-      title: 'ტექსტური ამოცანა',
-      subtopics: [
-        { id: 'amocana', title: 'ტექსტური ამოცანა', summary: 'ამოცანის გადაყვანა განტოლებად' },
-      ],
-    },
-  ]),
-  topic('damokidebuleba', 'ფუნქცია და გრაფიკი', '📈', 'კოორდინატები და წრფივი ფუნქცია.', 'violet', [
-
-    {
-      title: 'კოორდინატები',
-      subtopics: [
-        { id: 'koordinatebi', title: 'კოორდინატები', summary: 'სიბრტყე და წერტილები' },
-      ],
-    },
-    {
-      title: 'გრაფიკი',
-      subtopics: [
-        { id: 'grafiki', title: 'წრფივი გრაფიკი', summary: 'y = kx + b' },
-      ],
-    },
-  ]),
-  topic('geometria', 'გეომეტრია', '🔷', 'ფართობი და მოცულობა.', 'pink', [
-
-    {
-      title: 'ფართობი',
-      subtopics: [
-        { id: 'fartobi', title: 'ფართობი', summary: 'სამკუთხედი, პარალელოგრამი, წრე' },
-      ],
-    },
-    {
-      title: 'მოცულობა',
-      subtopics: [
-        { id: 'moculoba', title: 'მოცულობა', summary: 'კუბი და პარალელეპიპედი' },
-      ],
-    },
-  ]),
 ];
 
 export const CURRICULUM: GradeCurriculum[] = [

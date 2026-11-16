@@ -306,7 +306,7 @@ export const G6_U09_TEMPLATES: QuestionTemplate[] = [
     d: 2,
     prompt: 'წყლის ავზში {st} ლიტრი წყალი იყო. დაამატეს {at} ლიტრი და შემდეგ გამოიყენეს {ut} ლიტრი. რამდენი ლიტრი წყალი დარჩა?',
     vars: { s: I(301, 799), a: I(1001, 2999), u: I(101, 499), st: D((v) => fx(N(v, 's'), 1)), at: D((v) => fx(N(v, 'a'), 2)), ut: D((v) => fx(N(v, 'u'), 1)) },
-    constraints: [{ test: (v) => N(v, 's') % 10 !== 0 && N(v, 'a') % 10 !== 0 && N(v, 'u') % 10 !== 0 && N(v, 'a') > 1000, note: 'tidy decimals' }],
+    constraints: [{ test: (v) => N(v, 's') % 10 !== 0 && N(v, 'a') % 10 !== 0 && N(v, 'u') % 10 !== 0 && N(v, 'a') > 1000 && N(v, 's') * 10 + N(v, 'a') > N(v, 'u') * 10, note: 'tidy decimals, some water left' }],
     answer: (v) => dm((N(v, 's') * 10 + N(v, 'a') - N(v, 'u') * 10) / 100, 'ლ'),
     wrong: (v) => dslips((N(v, 's') * 10 + N(v, 'a') - N(v, 'u') * 10) / 100, 'ლ', [(N(v, 's') * 10 - N(v, 'a') - N(v, 'u') * 10) / 100, (N(v, 's') * 10 + N(v, 'a') + N(v, 'u') * 10) / 100]),
     why: (v, a) => `${v.st} + ${v.at} = ${ds((N(v, 's') * 10 + N(v, 'a')) / 100)}; ${ds((N(v, 's') * 10 + N(v, 'a')) / 100)} − ${v.ut} = ${a}.`,

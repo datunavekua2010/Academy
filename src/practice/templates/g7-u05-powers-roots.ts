@@ -172,7 +172,7 @@ export const G7_U05_TEMPLATES: QuestionTemplate[] = [
     prompt: 'გაამარტივე: ({L}{ex}){ey}.',
     vars: { L: C(LETTERS), m: I(2, 6), n: I(2, 5), ex: D((v) => superscript(N(v, 'm'))), ey: D((v) => superscript(N(v, 'n'))) },
     answer: (v) => `${v.L}${superscript(N(v, 'm') * N(v, 'n'))}`,
-    options: (v, right) => [right, `${v.L}${superscript(N(v, 'm') + N(v, 'n'))}`, `${v.L}${superscript(N(v, 'm') ** N(v, 'n') > 99 ? N(v, 'm') * N(v, 'n') + 2 : N(v, 'm') ** N(v, 'n'))}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + 1)}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') - 1)}`],
+    options: (v, right) => [right, `${v.L}${superscript(N(v, 'm') + N(v, 'n'))}`, `${v.L}${superscript(N(v, 'm') ** N(v, 'n') > 99 ? N(v, 'm') * N(v, 'n') + 2 : N(v, 'm') ** N(v, 'n'))}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + 1)}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') - 1)}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + 2)}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + 3)}`],
     why: (v, a) => `მაჩვენებლები მრავლდება: ${v.m} · ${v.n} = ${N(v, 'm') * N(v, 'n')}, ანუ ${a}.`,
   }),
   t({
@@ -189,7 +189,7 @@ export const G7_U05_TEMPLATES: QuestionTemplate[] = [
     prompt: 'გაამარტივე: ({L}{e1}){e2} · {L}{e3}.',
     vars: { L: C(LETTERS), m: I(2, 5), n: I(2, 4), k: I(2, 6), e1: D((v) => superscript(N(v, 'm'))), e2: D((v) => superscript(N(v, 'n'))), e3: D((v) => superscript(N(v, 'k'))) },
     answer: (v) => `${v.L}${superscript(N(v, 'm') * N(v, 'n') + N(v, 'k'))}`,
-    options: (v, right) => [right, `${v.L}${superscript(N(v, 'm') * N(v, 'n') * N(v, 'k'))}`, `${v.L}${superscript(N(v, 'm') + N(v, 'n') + N(v, 'k'))}`, `${v.L}${superscript(N(v, 'm') * (N(v, 'n') + N(v, 'k')))}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + N(v, 'k') + 1)}`],
+    options: (v, right) => [right, `${v.L}${superscript(N(v, 'm') * N(v, 'n') * N(v, 'k'))}`, `${v.L}${superscript(N(v, 'm') + N(v, 'n') + N(v, 'k'))}`, `${v.L}${superscript(N(v, 'm') * (N(v, 'n') + N(v, 'k')))}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + N(v, 'k') + 1)}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + N(v, 'k') + 2)}`, `${v.L}${superscript(N(v, 'm') * N(v, 'n') + N(v, 'k') - 1)}`],
     why: (v, a) => `ჯერ ${v.m} · ${v.n} = ${N(v, 'm') * N(v, 'n')}, შემდეგ ${N(v, 'm') * N(v, 'n')} + ${v.k} = ${N(v, 'm') * N(v, 'n') + N(v, 'k')}; პასუხი ${a}.`,
   }),
   t({
@@ -351,7 +351,7 @@ export const G7_U05_TEMPLATES: QuestionTemplate[] = [
     prompt: 'შეიტანე მამრავლი ფესვის ქვეშ: {c}√{r}.',
     vars: { c: I(2, 6), r: C([2, 3, 5, 6, 7, 11, 13]) },
     answer: (v) => `√${N(v, 'c') ** 2 * N(v, 'r')}`,
-    options: (v, right) => [right, `√${N(v, 'c') * N(v, 'r')}`, `√${N(v, 'c') + N(v, 'r')}`, `√${N(v, 'c') ** 2 + N(v, 'r')}`, `√${N(v, 'c') * N(v, 'r') ** 2}`],
+    options: (v, right) => [right, `√${N(v, 'c') * N(v, 'r')}`, `√${N(v, 'c') + N(v, 'r')}`, `√${N(v, 'c') ** 2 + N(v, 'r')}`, `√${N(v, 'c') * N(v, 'r') ** 2}`, `√${N(v, 'c') ** 2 * N(v, 'r') + 1}`, `√${N(v, 'c') ** 2 * N(v, 'r') - 1}`],
     why: (v, a) => `${v.c}√${v.r} = √(${N(v, 'c') ** 2} · ${v.r}) = ${a}.`,
   }),
   t({

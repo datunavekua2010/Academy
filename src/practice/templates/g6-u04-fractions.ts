@@ -52,6 +52,7 @@ const mixedSlips = (w: number, r: number, d: number): string[] => {
   if (r > 1) out.push(mixedText(w, d, r), `${r} ${w}/${d}`);
   if (w > 1) out.push(mixedText(w - 1, r, d));
   if (r + 1 < d) out.push(mixedText(w, r + 1, d));
+  out.push(mixedText(w + 2, r, d), mixedText(w, r, d + 2));
   return out;
 };
 
@@ -75,7 +76,7 @@ export const G6_U04_TEMPLATES: QuestionTemplate[] = [
     wrong: () => [],
     options: (v, right) => {
       const w = N(v, 'w'), r = N(v, 'r'), d = N(v, 'd');
-      return [right, `${w + r}/${d}`, `${w * r + d}/${d}`, ...(r > 1 ? [`${w * d + r}/${r}`] : []), `${w * d}/${d}`, `${w * d + r + d}/${d}`, `${w * d + r - 1}/${d}`];
+      return [right, `${w + r}/${d}`, `${w * r + d}/${d}`, ...(r > 1 ? [`${w * d + r}/${r}`] : []), `${w * d}/${d}`, `${w * d + r + d}/${d}`, `${w * d + r - 1}/${d}`, `${w * d + r + 1}/${d}`, `${w * d + r + 2}/${d}`];
     },
     why: (v, a) => `${N(v, 'w')} × ${N(v, 'd')} + ${N(v, 'r')} = ${N(v, 'w') * N(v, 'd') + N(v, 'r')}, ამიტომ ${a}.`,
   }),
@@ -110,7 +111,7 @@ export const G6_U04_TEMPLATES: QuestionTemplate[] = [
     answer: (v) => `${N(v, 'w') * N(v, 'd') + N(v, 'r')}/${N(v, 'd')}`,
     options: (v, right) => {
       const w = N(v, 'w'), r = N(v, 'r'), d = N(v, 'd');
-      return [right, `${w + r}/${d}`, `${w * r + d}/${d}`, ...(r > 1 ? [`${w * d + r}/${r}`] : []), `${w * d}/${d}`, `${w * d + r + d}/${d}`];
+      return [right, `${w + r}/${d}`, `${w * r + d}/${d}`, ...(r > 1 ? [`${w * d + r}/${r}`] : []), `${w * d}/${d}`, `${w * d + r + d}/${d}`, `${w * d + r + 1}/${d}`, `${w * d + r + 2}/${d}`];
     },
     why: (v, a) => `${N(v, 'w')} × ${N(v, 'd')} + ${N(v, 'r')} = ${N(v, 'w') * N(v, 'd') + N(v, 'r')}, ამიტომ ${a}.`,
   }),
@@ -200,7 +201,7 @@ export const G6_U04_TEMPLATES: QuestionTemplate[] = [
     options: (v, right) => {
       const [n, d] = nd(v, 'f');
       const k = N(v, 'k');
-      return [right, `${n + k}/${d + k}`, `${n * k}/${d * k + 1}`, `${n * k + 1}/${d * k}`, `${n * k}/${d + k}`];
+      return [right, `${n + k}/${d + k}`, `${n * k}/${d * k + 1}`, `${n * k + 1}/${d * k}`, `${n * k}/${d + k}`, `${n * k + 2}/${d * k}`, `${n * k}/${d * k + 2}`];
     },
     why: (v, a) => `მრიცხველიც და მნიშვნელიც ${N(v, 'k')}-ზე გავამრავლეთ: ${String(v.f)} = ${a}.`,
   }),

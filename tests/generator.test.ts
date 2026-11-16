@@ -41,7 +41,7 @@ describe('template generator', () => {
   });
 
   it('regenerates a stored question from its id after a reload', () => {
-    const original = previewTemplate('g7-linear-equation', 1)[0];
+    const original = previewTemplate('g2-meter-cm', 1)[0];
     const restored = regenerateFromId(original.id)!;
     expect(restored.id).toBe(original.id);
     expect(restored.prompt).toBe(original.prompt);
@@ -191,18 +191,6 @@ describe('generated answers are mathematically correct', () => {
       expect(Number(v.answer.replace('°', ''))).toBeGreaterThan(0);
     }
   });
-
-  it('grade VII linear equations and triangle area', () => {
-    for (const v of previewTemplate('g7-linear-equation', 150)) {
-      // The generated x must satisfy the equation it is printed with.
-      const { a, b, c } = v.vars;
-      expect(Number(a) * Number(v.answer) + Number(b)).toBe(Number(c));
-    }
-    for (const v of previewTemplate('g7-area-triangle', 150)) {
-      const expected = 0.5 * Number(v.vars.b) * Number(v.vars.h);
-      expect(Number(v.answer.replace(' სმ²', ''))).toBe(expected);
-    }
-  });
 });
 
 describe('registry', () => {
@@ -213,7 +201,7 @@ describe('registry', () => {
     expect(
       registry.forSubtopic({ grade: 1, topicId: 'Sekreba', subtopicId: 'SuratiT-10' }).length,
     ).toBeGreaterThan(1);
-    expect(registry.forSubtopic({ grade: 7, topicId: 'geometria', subtopicId: 'fartobi' })).toHaveLength(1);
+    expect(registry.forSubtopic({ grade: 7, topicId: 'g7-triangles', subtopicId: 'u15-12' })).toHaveLength(6);
     // An address with nothing behind it must report empty rather than throw.
     expect(
       registry.forSubtopic({ grade: 3, topicId: 'meoreklasebi', subtopicId: 'araarsebobs' }),

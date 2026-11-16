@@ -208,7 +208,7 @@ export const G7_U01_TEMPLATES: QuestionTemplate[] = [
     vars: { d: I(2, 12), w: I(1, 6), r: I(1, (v: Vars) => N(v, 'd') - 1), f: D((v) => `${N(v, 'w') * N(v, 'd') + N(v, 'r')}/${N(v, 'd')}`) },
     constraints: [{ test: (v: Vars) => gcd(N(v, 'r'), N(v, 'd')) === 1, note: 'proper part in lowest terms' }],
     answer: (v) => `${N(v, 'w')} ${N(v, 'r')}/${N(v, 'd')}`,
-    wrong: (v) => [`${N(v, 'w') + 1} ${N(v, 'r')}/${N(v, 'd')}`, `${N(v, 'w')} ${N(v, 'd') - N(v, 'r')}/${N(v, 'd')}`, `${N(v, 'w') - 1} ${N(v, 'r')}/${N(v, 'd')}`, `${N(v, 'r')} ${N(v, 'w')}/${N(v, 'd')}`],
+    wrong: (v) => [`${N(v, 'w') + 1} ${N(v, 'r')}/${N(v, 'd')}`, `${N(v, 'w')} ${N(v, 'd') - N(v, 'r')}/${N(v, 'd')}`, `${N(v, 'w') - 1} ${N(v, 'r')}/${N(v, 'd')}`, `${N(v, 'r')} ${N(v, 'w')}/${N(v, 'd')}`, `${N(v, 'w')} ${N(v, 'r')}/${N(v, 'd') + 1}`, `${N(v, 'w') + 2} ${N(v, 'r')}/${N(v, 'd')}`],
     why: (v, a) => `${v.f}: ${N(v, 'w') * N(v, 'd')} ÷ ${v.d} → ${v.w}, ნაშთი ${v.r}, ამიტომ ${a}.`,
   }),
   t({

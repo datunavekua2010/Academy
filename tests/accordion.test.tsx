@@ -47,28 +47,28 @@ describe('nested curriculum accordion', () => {
   it('opens exercises for the exact grade/topic/unit/subtopic clicked', () => {
     render(<StudentApp />);
 
-    // Choose grade 7, open "გეომეტრია", open U1 (ფართობი), start its subtopic.
+    // Choose grade 7, open "სამკუთხედები", open U15, start its first subtopic.
     fireEvent.click(screen.getAllByRole('tab')[6]);
-    const geo = topicTrigger().find((button) => button.textContent?.includes('გეომეტრია'))!;
+    const geo = topicTrigger().find((button) => button.textContent?.includes('სამკუთხედები'))!;
     fireEvent.click(geo);
 
     const live = document.querySelector('.accordion-panel:not([inert])')!;
     const units = [...live.querySelectorAll<HTMLElement>('.accordion-unit-trigger')];
-    const u1 = units.find((unit) => unit.textContent?.includes('U1'))!;
+    const u1 = units.find((unit) => unit.textContent?.includes('U15'))!;
     fireEvent.click(u1);
 
-    const panel = document.querySelector('#unit-panel-geometria-u1')!;
-    const start = within(panel as HTMLElement).getByRole('button', { name: /დაწყება/ });
+    const panel = document.querySelector('#unit-panel-g7-triangles-g7-triangles')!;
+    const start = within(panel as HTMLElement).getAllByRole('button', { name: /დაწყება/ })[0]!;
     fireEvent.click(start);
 
     // The runner shows the exact path that was clicked.
     const path = document.querySelector('.session-path')?.textContent ?? '';
-    expect(path).toContain('გეომეტრია');
-    expect(path).toContain('ფართობი');
+    expect(path).toContain('სამკუთხედები');
+    expect(path).toContain('სამკუთხედის ელემენტები');
 
     // The question was generated from that subtopic's template.
     const prompt = document.querySelector('.question-prompt')?.textContent ?? '';
-    expect(prompt).toMatch(/სმ²|ფართობი|სამკუთხედი|ფუძე|სიმაღლე/);
+    expect(prompt).toMatch(/სამკუთხედ|მედიან|ბისექტრის|სიმაღლე|შუამართობ|სმ/);
   });
 
   it('disables a subtopic that has no template yet instead of breaking', () => {
