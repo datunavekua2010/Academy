@@ -10,7 +10,7 @@ import type { Picture } from '../src/practice/pictures/types';
 
 afterEach(cleanup);
 
-const pictured = TEMPLATE_REGISTRY.all.filter((t) => /^g[12]-px-/.test(t.id));
+const pictured = TEMPLATE_REGISTRY.all.filter((t) => /^g[1-4]-px-/.test(t.id));
 
 type Rows = Extract<Picture, { kind: 'rows' }>;
 const iconCount = (p: Picture, icon?: string): number =>
@@ -26,10 +26,11 @@ function countTokens(tokens: Rows['rows'][number]['tokens'], icon?: string): num
 }
 const blockValue = (p: Picture): number => (p.kind === 'blocks' ? p.tens * 10 + p.ones : 0);
 
-describe('pictured templates (Grades I–II)', () => {
+describe('pictured templates (Grades I–IV)', () => {
   it('there are pictured templates in both grades', () => {
     expect(pictured.filter((t) => t.grade === 1).length).toBeGreaterThan(40);
     expect(pictured.filter((t) => t.grade === 2).length).toBeGreaterThan(55);
+    expect(pictured.filter((t) => t.grade === 3).length).toBeGreaterThan(40);
   });
 
   for (const template of pictured) {

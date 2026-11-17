@@ -66,7 +66,7 @@ describe('pictures the student has to read', () => {
 
   it('draws a clock question as a real clock face', () => {
     const ref = { grade: 1 as const, topicId: 'dro', subtopicId: 'saatis-wakitxva' };
-    const question = generateBatch(ref as never, 12, { level: 1 }).find((q) => q.visual?.includes('┼'))!;
+    const question = generateBatch(ref as never, 30, { level: 1 }).find((q) => q.visual?.includes('┼') && !q.visual.includes('#1'))!;
     expect(question, 'a clock question should draw a dial').toBeDefined();
     expect(question.clocks?.length, 'the generator records the exact times it drew').toBeGreaterThanOrEqual(1);
 

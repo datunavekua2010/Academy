@@ -198,6 +198,70 @@ describe('interaction widgets submit one canonical string', () => {
     expect(onSubmit).toHaveBeenCalledWith('+,−');
   });
 
+  it('array: grows a rectangle; reports the count, the perimeter or the sides', () => {
+    const count = setup({ kind: 'array', maxRows: 6, maxCols: 8, fixedRows: 3, output: 'count' });
+    expect(screen.queryByRole('button', { name: 'რიგი: მეტი' })).toBeNull();
+    press('სვეტი: მეტი', 3); // 1 → 4 columns
+    expect(screen.getByText(/3 × 4 = 12/)).toBeTruthy();
+    count.check();
+    expect(count.onSubmit).toHaveBeenCalledWith('12');
+    cleanup();
+    const perimeter = setup({ kind: 'array', maxRows: 6, maxCols: 8, fixedRows: 2, output: 'perimeter' });
+    press('სვეტი: მეტი', 4); // 2 rows × 5 columns
+    perimeter.check();
+    expect(perimeter.onSubmit).toHaveBeenCalledWith('14');
+    cleanup();
+    const dims = setup({ kind: 'array', maxRows: 6, maxCols: 8, output: 'dims' });
+    press('რიგი: მეტი', 2);
+    press('სვეტი: მეტი', 4);
+    dims.check();
+    expect(dims.onSubmit).toHaveBeenCalledWith('3,5');
+  });
+
+  it('angle: opens in steps, and cannot pass its limits', () => {
+    const { onSubmit, check } = setup({ kind: 'angle', step: 5 });
+    press(/გაზრდა 30 /, 3);
+    press(/შემცირება 5/);
+    expect(screen.getByText('კუთხე: 85°')).toBeTruthy();
+    press(/გაზრდა 5 /);
+    check();
+    expect(onSubmit).toHaveBeenCalledWith('90');
+    cleanup();
+    setup({ kind: 'angle', step: 5, start: 180 });
+    expect((screen.getByRole('button', { name: /გაზრდა 30/ }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('place value: one digit per column', () => {
+    const { onSubmit, check } = setup({ kind: 'place', digits: 4 });
+    press('ათასეულები: მეტი', 2);
+    press('ათეულები: მეტი', 7);
+    press('ერთეულები: მეტი', 5);
+    expect(screen.getByText('რიცხვი: 2075')).toBeTruthy();
+    check();
+    expect(onSubmit).toHaveBeenCalledWith('2075');
+  });
+
+  it('cards: fill the slots in order, take one back, then check', () => {
+    const { onSubmit, check } = setup({ kind: 'tiles', cards: ['3', '8', '5'], slots: 3 });
+    const submit = screen.getByRole('button', { name: 'შემოწმება' }) as HTMLButtonElement;
+    fireEvent.click(screen.getByRole('button', { name: '8' }));
+    fireEvent.click(screen.getByRole('button', { name: '5' }));
+    expect(submit.disabled).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'ადგილი 1: 8' })); // 8 goes back
+    fireEvent.click(screen.getByRole('button', { name: '3' }));
+    fireEvent.click(screen.getByRole('button', { name: '8' }));
+    check();
+    expect(onSubmit).toHaveBeenCalledWith('358');
+  });
+
+  it('fractions on the number line are labelled k/den and answered with k', () => {
+    const { onSubmit, check } = setup({ kind: 'line', min: 0, max: 4, format: 'frac', den: 4 });
+    expect(screen.getByText('3/4')).toBeTruthy();
+    press('3/4');
+    check();
+    expect(onSubmit).toHaveBeenCalledWith('3');
+  });
+
   it('after answering, the widget is read-only and shows the right solution', () => {
     render(<InteractionView spec={{ kind: 'line', min: 0, max: 10 }} answer="4" done chosen="7" onSubmit={() => {}} />);
     expect(screen.getByRole('button', { name: '7' })).toHaveProperty('disabled', true);
