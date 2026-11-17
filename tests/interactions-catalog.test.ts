@@ -27,7 +27,7 @@ function reachable(coins: number[], total: number, count: number | null): boolea
 
 /** Evaluates an expression of plain numbers and + − × ÷ (with the usual precedence). */
 function evaluate(expression: string): number {
-  const text = expression.replace(/−/g, '-').replace(/×/g, '*').replace(/÷/g, '/');
+  const text = expression.replace(/(\d),(\d)/g, '$1.$2').replace(/−/g, '-').replace(/×/g, '*').replace(/÷/g, '/');
   if (!/^[\d+\-*/().\s]+$/.test(text)) throw new Error(`cannot evaluate ${expression}`);
   return Function(`"use strict"; return (${text});`)() as number;
 }
@@ -195,7 +195,7 @@ function check(spec: InteractionSpec, answer: string): void {
       const slotCount = (spec.frame ?? Array.from({ length: spec.slots ?? spec.cards.length }, () => '?')).filter((t) => t === '?').length;
       const joiner = spec.joiner ?? '';
       const pool = [...spec.cards];
-      const parts = joiner ? answer.split(joiner) : spec.cards.length === slotCount ? [...answer] : [];
+      const parts = joiner ? answer.split(joiner) : slotCount === 1 ? [answer] : [...answer];
       expect(parts).toHaveLength(slotCount);
       for (const part of parts) {
         const at = pool.indexOf(part);
@@ -237,6 +237,7 @@ describe('interactive templates', () => {
     expect(interactive.filter((t) => t.grade === 1).length).toBeGreaterThan(40);
     expect(interactive.filter((t) => t.grade === 2).length).toBeGreaterThan(50);
     expect(interactive.filter((t) => t.grade === 3).length).toBeGreaterThan(50);
+    expect(interactive.filter((t) => t.grade === 4).length).toBeGreaterThan(70);
   });
 
   for (const template of interactive) {

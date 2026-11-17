@@ -71,3 +71,31 @@ export const WEEKDAY_SHORT = ['ორშ', 'სამ', 'ოთხ', 'ხუთ'
 /** A fraction option set: the key and the usual wrong ones. */
 export const fractionChoices = (num: number, den: number) => (): string[] =>
   [...new Set([`${num}/${den}`, `${den - num}/${den}`, `${num}/${den + 1}`, `1/${den}`, `${num + 1}/${den}`, `${den}/${num}`])].slice(0, 4);
+
+export const isPrime = (n: number): boolean => {
+  if (n < 2) return false;
+  for (let d = 2; d * d <= n; d += 1) if (n % d === 0) return false;
+  return true;
+};
+
+export const roman = (n: number): string => {
+  const table: Array<[number, string]> = [[50, 'L'], [40, 'XL'], [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']];
+  let left = n;
+  let out = '';
+  for (const [value, symbol] of table) {
+    while (left >= value) {
+      out += symbol;
+      left -= value;
+    }
+  }
+  return out;
+};
+
+/** `n` formatted as a decimal with a comma: 13 tenths → „1,3“. */
+export const tenths = (k: number): string => `${Math.floor(k / 10)},${k % 10}`;
+
+/** `items` rotated left by `by` places (a deterministic „shuffle“ driven by a drawn variable). */
+export const rotate = <T,>(items: T[], by: number): T[] => {
+  const k = ((by % items.length) + items.length) % items.length;
+  return [...items.slice(k), ...items.slice(0, k)];
+};

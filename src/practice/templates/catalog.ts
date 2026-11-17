@@ -27,6 +27,7 @@ import { G1_INTERACTIVE_TEMPLATES } from './ix-g1';
 import { G2_INTERACTIVE_TEMPLATES } from './ix-g2';
 import { G3_INTERACTIVE_TEMPLATES } from './ix-g3';
 import { G3_PICTURED_TEMPLATES } from './px-g3';
+import { G4_INTERACTIVE_TEMPLATES } from './ix-g4';
 import { G2_PICTURED_TEMPLATES } from './px-g2';
 import { G1_PICTURED_TEMPLATES } from './px-g1';
 import { G2_U01_SUBTOPICS, G2_U01_TEMPLATES } from './g2-u01-numbers100';
@@ -254,6 +255,7 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...G2_INTERACTIVE_TEMPLATES,
     ...G3_INTERACTIVE_TEMPLATES,
     ...G3_PICTURED_TEMPLATES,
+    ...G4_INTERACTIVE_TEMPLATES,
     ...G2_PICTURED_TEMPLATES,
     ...G1_PICTURED_TEMPLATES,
     ...G5_U01_TEMPLATES,
