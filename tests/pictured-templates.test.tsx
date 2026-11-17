@@ -10,7 +10,7 @@ import type { Picture } from '../src/practice/pictures/types';
 
 afterEach(cleanup);
 
-const pictured = TEMPLATE_REGISTRY.all.filter((t) => /^g[1-4]-px-/.test(t.id));
+const pictured = TEMPLATE_REGISTRY.all.filter((t) => /^g[1-6]-px-/.test(t.id));
 
 type Rows = Extract<Picture, { kind: 'rows' }>;
 const iconCount = (p: Picture, icon?: string): number =>
@@ -31,6 +31,8 @@ describe('pictured templates (Grades I–IV)', () => {
     expect(pictured.filter((t) => t.grade === 1).length).toBeGreaterThan(40);
     expect(pictured.filter((t) => t.grade === 2).length).toBeGreaterThan(55);
     expect(pictured.filter((t) => t.grade === 3).length).toBeGreaterThan(40);
+    expect(pictured.filter((t) => t.grade === 5).length).toBeGreaterThan(35);
+    expect(pictured.filter((t) => t.grade === 6).length).toBeGreaterThan(40);
   });
 
   for (const template of pictured) {

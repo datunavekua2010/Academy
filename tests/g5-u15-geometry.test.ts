@@ -104,7 +104,7 @@ describe('G5 U15 — units of measure and arithmetic', () => {
   it('re-derives the area of a right triangle from the printed legs', () => {
     for (const question of generateBatch(ref('u15-14'), 12, { seed: 616161 })) {
       const template = G5_U15_TEMPLATES.find((item) => item.id === question.templateId)!;
-      if (template.id !== 'g5-u15-q59') continue;
+      if (template?.id !== 'g5-u15-q59') continue;
       const legs = (question.prompt.match(/(\d+) სმ/g) ?? []).map((part) => Number(part.replace(' სმ', '')));
       expect(legs.length, question.prompt).toBeGreaterThanOrEqual(2);
       expect(Number(question.answer)).toBe((legs[0]! * legs[1]!) / 2);

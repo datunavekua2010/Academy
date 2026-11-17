@@ -58,7 +58,7 @@ function LineWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps &
   };
   const unit = spec.unit ? ` ${spec.unit}` : '';
   const tickText = (v: number): string =>
-    spec.format === 'frac' && spec.den ? (v === 0 ? '0' : v === spec.den ? '1' : `${v}/${spec.den}`) : spec.format === 'dec' && spec.den ? String(v / spec.den).replace('.', ',') : String(v);
+    spec.format === 'frac' && spec.den ? (v === 0 ? '0' : v === spec.den ? '1' : `${v}/${spec.den}`) : (spec.format === 'dec' && spec.den ? String(v / spec.den).replace('.', ',') : String(v)).replace('-', '−');
   return (
     <div className="ix-widget ix-line-widget">
       <div

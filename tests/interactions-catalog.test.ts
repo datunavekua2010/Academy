@@ -256,6 +256,8 @@ describe('interactive templates', () => {
     expect(interactive.filter((t) => t.grade === 2).length).toBeGreaterThan(50);
     expect(interactive.filter((t) => t.grade === 3).length).toBeGreaterThan(50);
     expect(interactive.filter((t) => t.grade === 4).length).toBeGreaterThan(70);
+    expect(interactive.filter((t) => t.grade === 5).length).toBeGreaterThan(60);
+    expect(interactive.filter((t) => t.grade === 6).length).toBeGreaterThan(60);
   });
 
   for (const template of interactive) {

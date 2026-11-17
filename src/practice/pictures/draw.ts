@@ -387,7 +387,7 @@ export function circlePic(o: CircleOptions = {}): Picture {
 /** Two circles whose centres are `d` apart, drawn to scale. */
 export function twoCirclesPic(r1v: number, r2v: number, d: number): Picture {
   const total = r1v + d + r2v;
-  const s = 250 / total;
+  const s = Math.min(250 / total, 66 / Math.max(r1v, r2v));
   const cy = 80;
   const x1 = 20 + r1v * s;
   const x2 = x1 + d * s;
@@ -566,7 +566,7 @@ export function cuboidPic(l: number, w: number, h: number, o: { grid?: boolean; 
   const u = o.unit ? ` ${o.unit}` : '';
   items.push(text(x0 + fw / 2, y0 + fh + 15, `${lab[0]}${u}`, { size: 14 }));
   items.push(text(x0 - 8, y0 + fh / 2, `${lab[2]}${u}`, { size: 14, anchor: 'end' }));
-  items.push(text(C[0] + dx / 2 + 14, C[1] - dy / 2 - 6, `${lab[1]}${u}`, { size: 14, anchor: 'start' }));
+  items.push(text(F[0] + 8, (C[1] + F[1]) / 2, `${lab[1]}${u}`, { size: 14, anchor: 'start' }));
   return diagram(Math.ceil(x0 + fw + dx + 70), Math.ceil(y0 + fh + 34), `მართკუთხა პარალელეპიპედი: ${lab[0]}${u}, ${lab[1]}${u}, ${lab[2]}${u}`, items);
 }
 
