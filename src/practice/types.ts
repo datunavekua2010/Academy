@@ -1,3 +1,5 @@
+import type { InteractionSpec } from './interactions/types';
+import type { Picture } from './pictures/types';
 /**
  * Curriculum model shared by the question bank, the practice engine and the
  * progress store.
@@ -46,7 +48,14 @@ export interface Question {
    * specification names (single choice, typed number, ordering, multi-select);
    * `time` joined in U13.
    */
-  answerMode?: 'choice' | 'number' | 'order' | 'time' | 'multi';
+  answerMode?: 'choice' | 'number' | 'order' | 'time' | 'multi' | 'interactive';
+  /**
+   * For `answerMode: 'interactive'` — what the student does to the picture.
+   * The answer is one canonical string (see `InteractionSpec`), compared exactly.
+   */
+  interaction?: InteractionSpec;
+  /** Drawn pictures the template supplies itself (as data), shown above the prompt. */
+  pictures?: Picture[];
   /** For `answerMode: 'order'` — the items to arrange, in display order. */
   orderItems?: string[];
   options: Answer[];

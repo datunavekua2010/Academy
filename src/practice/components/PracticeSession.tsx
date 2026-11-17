@@ -10,6 +10,7 @@ import { PictureView, pictureTargets } from '../pictures/PictureView';
 import type { PickProps } from '../pictures/PictureView';
 import { describedPictures, pictorialize } from '../pictures/parse';
 import type { Picture, Segment } from '../pictures/types';
+import { InteractionView } from '../interactions/InteractionView';
 
 const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
 
@@ -211,7 +212,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const promptSegments: Segment[] = question ? pictorialize(question.prompt, { isVisual: false }) : [];
   // A picture the question's words describe but never drew (a model of tens and ones).
   const described: Picture[] =
-    question && !question.visual && !pictorialize(question.prompt, { isVisual: false }).some((s) => s.type === 'picture')
+    question && !question.pictures?.length && !question.visual && !pictorialize(question.prompt, { isVisual: false }).some((s) => s.type === 'picture')
       ? describedPictures(question.prompt)
       : [];
   const hasVisualPicture = visualSegments.some((segment) => segment.type === 'picture');
@@ -336,6 +337,9 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             კითხვა #{session.correct + session.incorrect + 1}
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
+          {(question.pictures ?? []).map((picture, index) => (
+            <PictureView key={`t${index}`} picture={picture} />
+          ))}
           {described.map((picture, index) => (
             <PictureView key={`d${index}`} picture={picture} />
           ))}
@@ -362,7 +366,16 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             <p className="pic-pick-hint">შეგიძლია პასუხი სურათზეც მონიშნო — შეეხე სწორ ადგილს.</p>
           )}
 
-          {orderMode ? (
+          {question.answerMode === 'interactive' && question.interaction ? (
+            <InteractionView
+              key={question.id}
+              spec={question.interaction}
+              answer={question.answer}
+              done={answered}
+              chosen={answered ? choice : null}
+              onSubmit={submit}
+            />
+          ) : orderMode ? (
             <div className="answer-order">
               <p className="answer-order-hint">
                 შეეხე საგნებს იმ თანმიმდევრობით, როგორც უნდა იდგეს.

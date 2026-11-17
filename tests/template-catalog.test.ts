@@ -87,6 +87,12 @@ describe('every template in the catalog', () => {
           expect([...key].sort((a, b) => a - b)).toEqual(
             Array.from({ length: key.length }, (_, i) => i + 1),
           );
+        } else if (question.answerMode === 'interactive') {
+          // An interactive question offers no options: the student answers by
+          // acting on a picture, and the key is that picture's final state.
+          expect(question.options).toEqual([]);
+          expect(question.interaction).toBeTruthy();
+          expect(String(question.answer).length).toBeGreaterThan(0);
         } else if (question.answerMode === 'number' || question.answerMode === 'time') {
           // A typed answer is one value and no options: a number for a count, a
           // clock time for a time. `time` joined the list in U13, where the

@@ -67,7 +67,7 @@ export function pictureTargets(picture: Picture): string[] {
  * Pieces
  * ---------------------------------------------------------------- */
 
-function Icon({ name, state, size }: { name: string; state?: 'crossed' | 'faded'; size?: number }) {
+export function Icon({ name, state, size }: { name: string; state?: 'crossed' | 'faded'; size?: number }) {
   return (
     <svg
       className={`pic-icon ${state ? `is-${state}` : ''}`}
@@ -83,7 +83,7 @@ function Icon({ name, state, size }: { name: string; state?: 'crossed' | 'faded'
   );
 }
 
-function Rod({ color }: { color: string }) {
+export function Rod({ color }: { color: string }) {
   const fill = { blue: '#3f8be8', red: '#e8473f', green: '#4cae5a', yellow: '#f6d643', purple: '#8b5fd1', orange: '#f7a233' }[color] ?? '#3f8be8';
   return (
     <svg className="pic-rod" viewBox="0 0 16 48" aria-hidden="true" focusable="false">
@@ -355,7 +355,7 @@ function ClockPicture({ minutes }: { minutes: number }) {
   );
 }
 
-const COIN_STYLE: Record<number, { fill: string; ring: string; r: number }> = {
+export const COIN_STYLE: Record<number, { fill: string; ring: string; r: number }> = {
   1: { fill: '#c98a4a', ring: '#8c5a28', r: 19 },
   2: { fill: '#c98a4a', ring: '#8c5a28', r: 22 },
   5: { fill: '#d9b24a', ring: '#9a7a1c', r: 24 },

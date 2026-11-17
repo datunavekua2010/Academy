@@ -325,7 +325,8 @@ export function generateFromTemplate(
     // for it would be wasted work (and would make the template fail when it
     // could not invent enough of them). A `time` answer is typed too — one
     // `HH:MM` field — but carries its own words when it needs them.
-    const typed = template.format?.entry === true || template.format?.time === true;
+    const typed =
+      template.format?.entry === true || template.format?.time === true || Boolean(template.interaction);
     const entry = typed;
 
     // Distractors come from the drawn values, so they always relate to *this*
@@ -464,7 +465,11 @@ export function generateFromTemplate(
     // "which is in the middle?") — same prompt prefix, same picture, different
     // question. Keyed without the answer, one was mistaken for the other and a
     // session showed the same sentence twice.
-    const signature = `${template.id}|${prompt}|${visual}|${orderItems?.join(',') ?? ''}|${String(normalised.value)}`;
+    const drawn =
+      template.interaction || template.pictures
+        ? JSON.stringify([template.pictures?.(vars), template.interaction?.(vars)])
+        : '';
+    const signature = `${template.id}|${prompt}|${visual}|${drawn}|${orderItems?.join(',') ?? ''}|${String(normalised.value)}`;
 
     return {
       id: `${template.id}~${seed}`,
@@ -480,7 +485,17 @@ export function generateFromTemplate(
       visual: template.visual ? visual : undefined,
       clocks: clocks.length > 0 ? clocks : undefined,
       hint: template.hint,
-      answerMode: template.shuffle ? 'order' : template.format?.time ? 'time' : entry ? 'number' : 'choice',
+      answerMode: template.shuffle
+        ? 'order'
+        : template.interaction
+          ? 'interactive'
+          : template.format?.time
+            ? 'time'
+            : entry
+              ? 'number'
+              : 'choice',
+      interaction: template.interaction ? template.interaction(vars) : undefined,
+      pictures: template.pictures ? template.pictures(vars) : undefined,
       orderItems,
       // A typed-answer or ordering question must not ship options: an option
       // list would be a second, contradictory way to answer it (and a student
