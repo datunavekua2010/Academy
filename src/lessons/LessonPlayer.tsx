@@ -1,0 +1,387 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Mascot } from '../components/Mascot';
+import { Link } from '../router';
+import { clearFeedback, initialAttempt, showNextHint, submitAnswer, type AttemptState } from './attempt';
+import { discoveryLine, introLine, reactionLine, tapLine } from './dialogue';
+import { Feedback } from './exercises/Feedback';
+import { ResponseInput } from './exercises/ResponseInput';
+import { TilesBoard } from './exercises/TilesBoard';
+import { markCompleted, markStarted } from './progress';
+import { RichText, plainText } from './RichText';
+import { showDevLabels } from './content';
+import type { Activity, AnswerInput, ExplainActivity, ExplainBlock, Lesson, LessonEntry, Question, QuestionActivity, Stage, TilesActivity } from './types';
+
+/**
+ * The lesson player. It knows nothing about any particular lesson: everything
+ * it shows comes from the `Lesson` data and the catalog entry.
+ */
+
+const STAGE_LABEL: Record<Stage, string> = {
+  challenge: 'გამოწვევა',
+  explore: 'გამოკვლევა',
+  understand: 'გააზრება',
+  practice: 'პრაქტიკა',
+  check: 'შემოწმება',
+};
+
+interface Props {
+  entry: LessonEntry;
+  lesson: Lesson;
+  /** Where "back" goes: the unit's lesson list. */
+  backTo: string;
+}
+
+interface Coach {
+  kind: 'intro' | 'hint' | 'reaction' | 'discovery';
+  text: string;
+  label?: string;
+}
+
+const isQuestionLike = (a: Activity): a is QuestionActivity | TilesActivity => a.kind === 'question' || a.kind === 'tiles';
+
+function ExplainView({ activity }: { activity: ExplainActivity }) {
+  return (
+    <div className="lp-explain">
+      <RichText text={activity.prompt} className="lp-lead" />
+      {activity.blocks.map((block: ExplainBlock, i) => {
+        switch (block.type) {
+          case 'text':
+            return (
+              <p className="lp-text" key={i}>
+                <RichText text={block.text} />
+              </p>
+            );
+          case 'equation':
+            return (
+              <figure className="lp-equation" key={i}>
+                <div className="lp-equation-lines">
+                  {block.lines.map((line, k) => (
+                    <div key={k} className="lp-equation-line" style={{ animationDelay: `${k * 0.18}s` }}>
+                      <RichText text={`$${line}$`} />
+                    </div>
+                  ))}
+                </div>
+                {block.caption && <figcaption>{block.caption}</figcaption>}
+              </figure>
+            );
+          case 'worked':
+            return (
+              <section className="lp-worked" key={i} aria-label="ამოხსნილი მაგალითი">
+                <h3>
+                  <RichText text={block.title} />
+                </h3>
+                <ol>
+                  {block.steps.map((step, k) => (
+                    <li key={k}>
+                      <RichText text={step.text} />
+                      {step.math && (
+                        <div className="lp-step-math">
+                          <RichText text={`$${step.math}$`} />
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            );
+          case 'callout':
+            return (
+              <p className={`lp-callout is-${block.tone}`} key={i}>
+                <strong>{block.tone === 'warning' ? 'ფრთხილად: ' : 'რჩევა: '}</strong>
+                <RichText text={block.text} />
+              </p>
+            );
+        }
+      })}
+    </div>
+  );
+}
+
+export function LessonPlayer({ entry, lesson, backTo }: Props) {
+  const { activities } = lesson;
+  const [index, setIndex] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const [attempts, setAttempts] = useState<Record<string, AttemptState>>({});
+  const [inputs, setInputs] = useState<Record<string, AnswerInput>>({});
+  const [moved, setMoved] = useState<Record<string, number[]>>({});
+  const [coach, setCoach] = useState<Coach | null>(null);
+  const [waveKey, setWaveKey] = useState(0);
+  const [runKey, setRunKey] = useState(0);
+  const stepRef = useRef<HTMLHeadingElement>(null);
+
+  const activity = activities[index];
+  const total = activities.length;
+  const state = (isQuestionLike(activity) && attempts[activity.id]) || initialAttempt();
+
+  const introFor = (i: number): Coach | null => {
+    const a = activities[i];
+    if (!a || a.stage === 'understand' || a.stage === 'check') return null;
+    const firstOfStage = a.stage !== 'practice' || activities.findIndex((x) => x.stage === 'practice') === i;
+    return firstOfStage ? { kind: 'intro', text: introLine(a) } : null;
+  };
+
+  useEffect(() => {
+    markStarted(lesson.id);
+  }, [lesson.id]);
+
+  useEffect(() => {
+    setCoach(introFor(index));
+    stepRef.current?.focus({ preventScroll: true });
+    window.scrollTo?.({ top: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, runKey]);
+
+  const checkIds = useMemo(() => activities.filter((a) => a.stage === 'check' && a.kind === 'question').map((a) => a.id), [activities]);
+  const checkCorrect = checkIds.filter((id) => attempts[id]?.status === 'correct').length;
+  const passed = checkCorrect >= lesson.completion.minCheckCorrect;
+
+  const tileMoved = (a: TilesActivity): number[] => moved[a.id] ?? a.tiles.map(() => 0);
+  const allMoved = (a: TilesActivity): boolean => tileMoved(a).every((m, i) => m >= a.tiles[i].count);
+
+  const patch = (id: string, fn: (s: AttemptState) => AttemptState) => setAttempts((all) => ({ ...all, [id]: fn(all[id] ?? initialAttempt()) }));
+
+  const question = (a: QuestionActivity | TilesActivity): Question => a;
+
+  const askHint = () => {
+    if (!isQuestionLike(activity)) return;
+    const hints = question(activity).hints;
+    if (state.hintsShown >= hints.length) return;
+    patch(activity.id, (s) => showNextHint(s, activity));
+    setCoach({ kind: 'hint', text: hints[state.hintsShown], label: `მინიშნება ${state.hintsShown + 1} / ${hints.length}` });
+  };
+
+  const tapMascot = () => {
+    const hints = isQuestionLike(activity) ? question(activity).hints : [];
+    const line = tapLine(activity, hints, state.hintsShown);
+    if (line.usedHint && isQuestionLike(activity)) {
+      patch(activity.id, (s) => showNextHint(s, activity));
+      setCoach({ kind: 'hint', text: line.text, label: `მინიშნება ${state.hintsShown + 1} / ${hints.length}` });
+    } else {
+      setCoach({ kind: 'intro', text: line.text });
+    }
+  };
+
+  const submit = () => {
+    if (!isQuestionLike(activity) || state.status !== 'answering') return;
+    if (state.last?.verdict === 'incorrect') return; // must press "try again" first
+    const input = inputs[activity.id] ?? (activity.response.type === 'blanks' ? [] : '');
+    const next = submitAnswer(state, activity, activity.stage, input);
+    setAttempts((all) => ({ ...all, [activity.id]: next }));
+    if (next.status === 'correct' && activity.kind === 'tiles') {
+      const line = discoveryLine(activity);
+      setCoach(line ? { kind: 'discovery', text: line } : null);
+      setWaveKey((k) => k + 1);
+    } else if (next.status === 'correct') {
+      setCoach(null);
+    } else {
+      const text = reactionLine(next);
+      setCoach(text ? { kind: 'reaction', text } : null);
+    }
+  };
+
+  const retry = () => {
+    if (!isQuestionLike(activity)) return;
+    patch(activity.id, clearFeedback);
+    setCoach(null);
+    window.requestAnimationFrame(() => document.querySelector<HTMLElement>('.lp-question input:not([disabled])')?.focus());
+  };
+
+  const next = () => {
+    if (index < total - 1) {
+      setIndex(index + 1);
+    } else {
+      if (passed) markCompleted(lesson.id, checkCorrect, checkIds.length);
+      setCoach(null);
+      setFinished(true);
+      setWaveKey((k) => k + 1);
+    }
+  };
+
+  const restartCheck = () => {
+    const firstCheck = activities.findIndex((a) => a.stage === 'check');
+    setAttempts((all) => {
+      const copy = { ...all };
+      for (const id of checkIds) delete copy[id];
+      return copy;
+    });
+    setInputs((all) => {
+      const copy = { ...all };
+      for (const id of checkIds) delete copy[id];
+      return copy;
+    });
+    setFinished(false);
+    setIndex(Math.max(0, firstCheck));
+    setRunKey((k) => k + 1);
+  };
+
+  const isLast = index === total - 1;
+
+  // ───── the one primary action ─────
+  type Action = { label: string; onClick: () => void; disabled?: boolean };
+  let primary: Action;
+  let showHintButton = false;
+
+  if (!isQuestionLike(activity)) {
+    primary = { label: isLast ? 'გაკვეთილის დასრულება' : 'გაგრძელება', onClick: next };
+  } else if (state.status !== 'answering') {
+    primary = { label: isLast ? 'გაკვეთილის დასრულება' : 'გაგრძელება', onClick: next };
+  } else if (activity.kind === 'tiles' && !allMoved(activity)) {
+    primary = { label: 'გადაიტანე ყველა ფილა', onClick: () => undefined, disabled: true };
+  } else if (state.last?.verdict === 'incorrect') {
+    primary = { label: 'ხელახლა ცდა', onClick: retry };
+    showHintButton = state.hintsShown < activity.hints.length;
+  } else {
+    primary = { label: 'პასუხის შემოწმება', onClick: submit };
+    showHintButton = state.hintsShown < activity.hints.length;
+  }
+
+  const stepDone = !isQuestionLike(activity) ? false : state.status !== 'answering';
+  const progressPct = finished ? 100 : Math.round(((index + (stepDone ? 1 : 0)) / total) * 100);
+  const stage = activity.stage;
+  const showMascot = !finished && stage !== 'understand';
+  const showQuestion = isQuestionLike(activity) && (activity.kind === 'question' || allMoved(activity));
+
+  return (
+    <div className="lp-root" data-testid="lesson-player">
+      <header className="lp-top">
+        <div className="lp-top-row">
+          <Link to={backTo} className="lp-back" aria-label="უკან, გაკვეთილების სიაში">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M15 5l-7 7 7 7" />
+            </svg>
+          </Link>
+          <div className="lp-title">
+            <span className="lp-code">
+              {entry.code}
+              {showDevLabels() && lesson.status !== 'published' && <span className="lp-dev" data-testid="dev-label"> · DEV · {lesson.status === 'placeholder' ? 'დროებითი შინაარსი' : 'სამუშაო ვერსია'}</span>}
+            </span>
+            <span className="lp-name">{entry.title}</span>
+          </div>
+          <span className="lp-count" aria-hidden={finished}>
+            {finished ? 'დასრულდა' : `ნაბიჯი ${index + 1} / ${total}`}
+          </span>
+        </div>
+        <div className="lp-bar" role="progressbar" aria-label="გაკვეთილის პროგრესი" aria-valuemin={0} aria-valuemax={total} aria-valuenow={finished ? total : index + 1} aria-valuetext={finished ? 'დასრულდა' : `ნაბიჯი ${index + 1} ${total}-დან`}>
+          <div className="lp-bar-fill" style={{ width: `${progressPct}%` }} />
+        </div>
+      </header>
+
+      <div className="lp-body">
+        <div className="lp-inner">
+        {showMascot && (
+          <aside className="lp-coach" aria-label="Axi">
+            <Mascot key={waveKey} scale={0.3} thoughts={['']} showThoughtBubble={false} waveOnMount={waveKey > 0} onClick={tapMascot} className="lp-mascot" buttonLabel="Axi — მინიშნების თხოვნა" />
+            {coach && (
+              <div className={`lp-bubble is-${coach.kind}`} role="status" aria-live="polite" key={`${coach.kind}-${coach.text}`}>
+                {coach.label && <span className="lp-bubble-label">{coach.label}</span>}
+                <RichText text={coach.text} />
+                <button type="button" className="lp-bubble-close" onClick={() => setCoach(null)} aria-label="Axi-ს შეტყობინების დახურვა">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                    <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </aside>
+        )}
+
+        {!finished && (
+          <section className="lp-stage" key={`${runKey}-${activity.id}`}>
+            <p className={`lp-stage-label is-${stage}`}>{STAGE_LABEL[stage]}</p>
+            <h1 className="lp-heading" tabIndex={-1} ref={stepRef}>
+              {activity.kind === 'explain' ? activity.title : activity.kind === 'tiles' ? activity.title : <RichText text={activity.prompt} />}
+            </h1>
+
+            {activity.kind === 'explain' && <ExplainView activity={activity} />}
+
+            {activity.kind === 'tiles' && (
+              <>
+                <RichText text={activity.prompt} className="lp-lead" />
+                <TilesBoard
+                  groups={activity.tiles}
+                  moved={tileMoved(activity)}
+                  onMove={(gi) => setMoved((all) => ({ ...all, [activity.id]: tileMoved(activity).map((m, i) => (i === gi ? Math.min(m + 1, activity.tiles[gi].count) : m)) }))}
+                  onReset={() => setMoved((all) => ({ ...all, [activity.id]: activity.tiles.map(() => 0) }))}
+                  locked={state.status !== 'answering'}
+                />
+              </>
+            )}
+
+            {showQuestion && isQuestionLike(activity) && (
+              <div className="lp-question">
+                {activity.kind === 'tiles' && <RichText text={activity.askPrompt} className="lp-ask" />}
+                <ResponseInput
+                  response={activity.response}
+                  value={inputs[activity.id] ?? (activity.response.type === 'blanks' ? [] : '')}
+                  onChange={(v) => {
+                    setInputs((all) => ({ ...all, [activity.id]: v }));
+                    if (state.last?.verdict === 'incomplete') patch(activity.id, clearFeedback);
+                  }}
+                  onSubmit={() => (state.last?.verdict === 'incorrect' ? retry() : submit())}
+                  disabled={state.status !== 'answering' || state.last?.verdict === 'incorrect'}
+                  verdict={state.last?.verdict}
+                  label={plainText(activity.kind === 'tiles' ? activity.askPrompt : activity.prompt)}
+                />
+                <Feedback question={activity} state={state} />
+              </div>
+            )}
+          </section>
+        )}
+
+        {finished && (
+          <section className="lp-stage lp-done" key="done">
+            <p className="lp-stage-label is-done">{passed ? 'დასრულებულია' : 'კიდევ ერთი ცდა'}</p>
+            <h1 className="lp-heading" tabIndex={-1} ref={stepRef}>
+              {passed ? 'გაკვეთილი დასრულდა' : 'ჯერ არ დასრულებულა'}
+            </h1>
+            <div className="lp-summary">
+              <div className="lp-score">
+                <strong>
+                  {checkCorrect} / {checkIds.length}
+                </strong>
+                <span>სწორი პასუხი შემოწმებაში</span>
+              </div>
+              <p className="lp-objective">
+                <span>მიზანი:</span> <RichText text={lesson.objective} />
+              </p>
+              <p className="lp-done-note">{passed ? 'შენ დაძლიე ეს თემა. პროგრესი შენახულია.' : `დასრულებისთვის საჭიროა მინიმუმ ${lesson.completion.minCheckCorrect} სწორი პასუხი. სცადე შემოწმება ხელახლა.`}</p>
+            </div>
+            <div className="lp-done-coach">
+              <Mascot key={`done-${waveKey}`} scale={0.34} thoughts={['']} showThoughtBubble={false} waveOnMount className="lp-mascot" buttonLabel="Axi" />
+              <div className="lp-bubble is-intro">{passed ? (lesson.mascot?.complete ?? 'კარგი სამუშაო გააკეთე.') : (lesson.mascot?.retry ?? 'სცადე ისევ.')}</div>
+            </div>
+          </section>
+        )}
+        </div>
+      </div>
+
+      <footer className="lp-actions">
+        <div className="lp-actions-inner">
+          {!finished && showHintButton && (
+            <button type="button" className="btn btn-ghost lp-secondary" onClick={askHint}>
+              მინიშნება
+            </button>
+          )}
+          {!finished ? (
+            <button type="button" className="btn btn-primary lp-primary" onClick={primary.onClick} disabled={primary.disabled}>
+              {primary.label}
+            </button>
+          ) : passed ? (
+            <Link to={backTo} className="btn btn-primary lp-primary">
+              გაკვეთილების სიაში დაბრუნება
+            </Link>
+          ) : (
+            <>
+              <Link to={backTo} className="btn btn-ghost lp-secondary">
+                სიაში დაბრუნება
+              </Link>
+              <button type="button" className="btn btn-primary lp-primary" onClick={restartCheck}>
+                შემოწმების გამეორება
+              </button>
+            </>
+          )}
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -1,3 +1,7 @@
+import { LessonLibrary } from '../../lessons/LessonLibrary';
+import { LessonScreen } from '../../lessons/LessonScreen';
+import { parseLessonsRoute } from '../../lessons/routes';
+import { UnitPage } from '../../lessons/UnitPage';
 import { PageIntro } from './PageIntro';
 
 const LESSONS = [
@@ -39,17 +43,49 @@ const LESSONS = [
   },
 ];
 
-export function Lessons() {
-  const next = LESSONS[0];
-
+/**
+ * "My lessons". The lesson library (Axiom Learn) comes first; the live-class
+ * schedule below is the page's original demo content, unchanged.
+ * Sub-routes: `#/student/lessons/<unit>` and `#/student/lessons/<lesson>`.
+ */
+export function Lessons({ sub = '' }: { sub?: string }) {
+  const route = parseLessonsRoute(sub);
+  if (route.page === 'lesson') return <LessonScreen lessonId={route.lessonId} />;
+  if (route.page === 'unit') return <UnitPage unitId={route.unitId} />;
+  if (route.page === 'unknown') {
+    return (
+      <div className="student-page">
+        <div className="notfound-card">
+          <h1>ეს გვერდი არ არსებობს.</h1>
+          <a href="#/student/lessons" className="btn btn-primary" style={{ marginTop: 14 }}>
+            ჩემი გაკვეთილები
+          </a>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="student-page">
       <PageIntro
         eyebrow="ჩემი გაკვეთილები"
         title="გაკვეთილები და თემები"
-        description="აქ ნახავს შენს მიმდინარე და დასრულებულ გაკვეთილებს. თითოეული თემა ეყრდნობა წინა ცოდნას, ამიტომ თანმიმდევრობა მნიშვნელოვანია."
+        description="აქ ნახავ ინტერაქტიულ გაკვეთილებს და შენს მიმდინარე გაკვეთილებს. თითოეული თემა ეყრდნობა წინა ცოდნას, ამიტომ თანმიმდევრობა მნიშვნელოვანია."
       />
+      <LessonLibrary />
+      <LessonSchedule />
+    </div>
+  );
+}
 
+function LessonSchedule() {
+  const next = LESSONS[0];
+
+  return (
+    <>
+      <div className="section-label">
+        <h2>განრიგი</h2>
+        <span>ცოცხალი გაკვეთილები</span>
+      </div>
       <div className={`student-card tone-${next.tone}`} style={{ marginBottom: 18 }}>
         <div className="student-card-head">
           <div>
@@ -117,6 +153,6 @@ export function Lessons() {
         დემო მონაცემები — გაკვეთილების რეალური განრიგი და მასწავლებლები საიტის
         გაშვებისას უნდა შეავსოს აკადემიის სისტემამ.
       </p>
-    </div>
+    </>
   );
 }
