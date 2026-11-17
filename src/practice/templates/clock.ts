@@ -205,7 +205,22 @@ export const clockHands = (minutes: number): Hands => {
  * reads back. There is no second copy of the time in the drawing code, so the
  * picture cannot disagree with the answer it illustrates.
  */
+/**
+ * Every time a face was drawn for since the last `takeDrawnClocks()`.
+ *
+ * A character dial cannot tell every time apart — 2:30 and 3:30 put the hour hand
+ * in the same cell — so a picture read back *from the text* could show the wrong
+ * hour. The generator therefore asks the drawing code which times it drew, in
+ * order, and hands them to the renderer as data. The text stays what it was; the
+ * drawn clock is exact.
+ */
+const drawnClocks: number[] = [];
+
+/** The times drawn since the last call, in the order they were drawn. */
+export const takeDrawnClocks = (): number[] => drawnClocks.splice(0, drawnClocks.length);
+
 export const clockFace = (minutes: number): string => {
+  if (drawnClocks.length < 64) drawnClocks.push(minutes);
   const grid = dial();
   const hands = clockHands(minutes);
   line(grid, hands.minute, '·');

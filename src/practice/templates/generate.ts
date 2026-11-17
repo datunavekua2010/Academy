@@ -1,4 +1,5 @@
 import type { Question } from '../types';
+import { takeDrawnClocks } from './clock';
 import { makeRng, pick, randomInt, shuffleWith } from './rng';
 import type { AnswerFormat, ListVariable, QuestionTemplate, Vars } from './types';
 import { renderPrompt } from './types';
@@ -369,7 +370,9 @@ export function generateFromTemplate(
       normalised = { value: ordered.join(separator), display: ordered.join(separator) };
 
       const prompt = renderPrompt(template.prompt, vars);
+      takeDrawnClocks();
       const visual = template.visual ? template.visual(vars) : '';
+      const clocks = takeDrawnClocks();
       const signature = `${template.id}|${prompt}|${visual}||${ordered.join(',')}`;
       return {
         id: `${template.id}~${seed}`,
@@ -382,7 +385,8 @@ export function generateFromTemplate(
         topicId: template.topicId,
         subtopicId: template.subtopicId,
         prompt,
-        visual: template.visual ? template.visual(vars) : undefined,
+        visual: template.visual ? visual : undefined,
+        clocks: clocks.length > 0 ? clocks : undefined,
         hint: template.hint,
         answerMode: 'multi',
         orderItems: undefined,
@@ -452,7 +456,9 @@ export function generateFromTemplate(
     // every variation look identical, so the generator would reject its own
     // output as a repeat and fail with "ranges are too narrow" while holding a
     // perfectly good library of questions.
+    takeDrawnClocks();
     const visual = template.visual ? template.visual(vars) : '';
+    const clocks = takeDrawnClocks();
     // The answer belongs in the key too. Two questions can show the same row
     // and ask different things about it ("which is on the left?" against
     // "which is in the middle?") — same prompt prefix, same picture, different
@@ -471,7 +477,8 @@ export function generateFromTemplate(
       topicId: template.topicId,
       subtopicId: template.subtopicId,
       prompt,
-      visual: template.visual ? template.visual(vars) : undefined,
+      visual: template.visual ? visual : undefined,
+      clocks: clocks.length > 0 ? clocks : undefined,
       hint: template.hint,
       answerMode: template.shuffle ? 'order' : template.format?.time ? 'time' : entry ? 'number' : 'choice',
       orderItems,

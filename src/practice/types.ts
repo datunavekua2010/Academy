@@ -18,6 +18,12 @@ export interface Question {
   prompt: string;
   /** Optional support line drawn above the prompt (object row, groups, …). */
   visual?: string;
+  /**
+   * The exact times of the analogue clocks drawn in `visual`, in drawing order.
+   * The text dial cannot tell every time apart (2:30 looks like 3:30), so the
+   * drawn clock is built from these, not read back from the characters.
+   */
+  clocks?: number[];
   /** Optional supporting line (a number line hint, a diagram description…). */
   hint?: string;
   /**
