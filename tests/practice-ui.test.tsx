@@ -2,6 +2,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { StudentApp } from '../src/student/StudentApp';
+import { generateBatch } from '../src/practice/generator';
+import { saveDraft } from '../src/practice/store';
+import { startSession } from '../src/practice/session';
 
 /**
  * The generated questions must survive the real UI, not just the engine tests:
@@ -12,10 +15,16 @@ import { StudentApp } from '../src/student/StudentApp';
  * grade1-placeholders.ts) whose fixed-wording questions are correct but not
  * representative of what the engine can do.
  */
+/**
+ * A fixed set of plain (choose-or-type) questions, so these tests exercise the
+ * generic answer flow. Interactive questions (clock hands, ten-frames, …) are
+ * answered by their own widget and are covered in `interactions-widgets.test.tsx`.
+ */
 const startGrade2Subtopic = async () => {
+  const ref = { grade: 2 as const, topicId: 'g2-ertnishna-moqmedebebi', subtopicId: 'u03-single-digit-add-sub' };
+  const questions = generateBatch(ref as never, 40, { level: 1 }).filter((q) => !q.interaction).slice(0, 12);
+  saveDraft(startSession(ref as never, questions), window.localStorage);
   render(<StudentApp />);
-  fireEvent.click(screen.getAllByRole('tab')[1]);
-  fireEvent.click((await screen.findAllByRole('button', { name: /დაწყება/ }))[0]);
 };
 beforeEach(() => {
   window.localStorage.clear();
@@ -102,27 +111,11 @@ describe('typed answers', () => {
    * typed questions, so the test has to go there deliberately.
    */
   const startCounting = async () => {
+    const ref = { grade: 1 as const, topicId: 'mdebareoba', subtopicId: 'datvla-suratebidan' };
+    const typed = generateBatch(ref as never, 60, { level: 1 }).concat(generateBatch(ref as never, 60, { level: 2 })).filter((q) => q.answerMode === 'number');
+    expect(typed.length, 'counting asks typed questions').toBeGreaterThan(0);
+    saveDraft(startSession(ref as never, typed.slice(0, 6)), window.localStorage);
     render(<StudentApp />);
-    const tab = screen.getAllByRole('tab').find((t) => t.textContent?.startsWith('Iკლასი'));
-    expect(tab, 'grade I tab').toBeTruthy();
-    fireEvent.click(tab!);
-
-    const topic = [...document.querySelectorAll<HTMLElement>('.accordion-topic-trigger')].find((b) =>
-      b.textContent?.includes('მდებარეობა'),
-    );
-    expect(topic, 'the U01 topic').toBeTruthy();
-    fireEvent.click(topic!);
-
-    // U01 is one unit holding eight subtopic rows; counting is the last row.
-    const panel = document.querySelector('#unit-panel-mdebareoba-mdebareoba');
-    expect(panel, 'the U01 unit panel').toBeTruthy();
-    const rows = [...(panel as HTMLElement).querySelectorAll<HTMLElement>('.subtopic-row')];
-    expect(rows.length, 'eight U01 subtopics').toBe(8);
-    expect(rows[7].textContent).toContain('დათვლა სურათიდან');
-
-    const start = within(rows[7]).getByRole('button', { name: /დაწყება/ });
-    fireEvent.click(start);
-
     return (await screen.findByLabelText('ჩაწერე პასუხი')) as HTMLInputElement;
   };
 

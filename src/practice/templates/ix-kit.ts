@@ -11,7 +11,7 @@ import type { GradeId } from '../types';
 import type { InteractionSpec } from '../interactions/types';
 import type { Picture } from '../pictures/types';
 import { defineTemplate } from './types';
-import type { QuestionTemplate, VariableSpec, Vars } from './types';
+import type { QuestionTemplate, TemplateConstraint, VariableSpec, Vars } from './types';
 
 /** Things a child can count: the drawn icon and its Georgian noun (after a numeral). */
 export const OBJECTS: Array<{ icon: string; noun: string }> = [
@@ -69,10 +69,16 @@ export interface TemplateBody {
   constraints?: QuestionTemplate['constraints'];
   answer: QuestionTemplate['answer'];
   explanation: QuestionTemplate['explanation'];
-  interaction: (vars: Vars) => InteractionSpec;
+  interaction?: (vars: Vars) => InteractionSpec;
   pictures?: (vars: Vars) => Picture[];
   hint?: string;
   time?: boolean;
+  /** For a choice question with a fixed option set (letters, signs, „კი/არა“). */
+  options?: QuestionTemplate['options'];
+  optionCount?: number;
+  distractors?: QuestionTemplate['distractors'];
+  /** Set to 'text' when the answer is a word or a sign, not a number. */
+  text?: boolean;
 }
 
 /** A template factory bound to one grade/topic/unit. */
@@ -93,7 +99,10 @@ export function interactiveSet(grade: GradeId, topicId: string, prefix: string) 
       interaction: body.interaction,
       pictures: body.pictures,
       hint: body.hint,
-      format: { kind: body.time ? 'text' : undefined, time: body.time || undefined },
+      options: body.options,
+      optionCount: body.optionCount,
+      distractors: body.distractors,
+      format: { kind: body.time || body.text ? 'text' : undefined, time: body.time || undefined },
     });
 }
 
@@ -120,3 +129,31 @@ export const SHAPES: Array<{ icon: string; name: string; sides: number }> = [
   { icon: 'shape-pentagon', name: 'ხუთკუთხედი', sides: 5 },
   { icon: 'shape-hexagon', name: 'ექვსკუთხედი', sides: 6 },
 ];
+
+/* ---- small builders shared by the pictured templates ---- */
+
+/** Base-ten blocks for `n` (≤ 99), captioned. */
+export const blocksOf = (n: number, label?: string): Picture => ({ kind: 'blocks', tens: Math.floor(n / 10), ones: n % 10, label });
+/** Blocks with an explicit tens/ones split (so ones may exceed 9). */
+export const blocksTO = (tens: number, ones: number, label?: string): Picture => ({ kind: 'blocks', tens, ones, label });
+
+type Token = Extract<Picture, { kind: 'rows' }>['rows'][number]['tokens'][number];
+export const icons = (icon: string, count: number, state?: 'crossed' | 'faded'): Token[] =>
+  Array.from({ length: count }, () => ({ t: 'icon' as const, icon, state }));
+/** One captioned row of identical icons; `crossed` of them struck out. */
+export const iconRow = (icon: string, count: number, label?: string, crossed = 0): Picture => ({
+  kind: 'rows',
+  rows: [{ label, tokens: [...icons(icon, count - crossed), ...icons(icon, crossed, 'crossed')] }],
+});
+/** Several captioned rows at once. */
+export const manyRows = (rows: Array<{ label?: string; tokens: Token[] }>): Picture => ({ kind: 'rows', rows });
+
+/** The numbers must all differ. */
+export const distinct = (...keys: string[]): TemplateConstraint => ({
+  test: (v: Vars) => new Set(keys.map((k) => Number(v[k]))).size === keys.length,
+  note: 'რიცხვები განსხვავებულია',
+});
+/** A variable computed from the ones drawn before it (always one value). */
+export const derived = (fn: (v: Vars) => number | string): VariableSpec => ({ kind: 'choice', values: (v: Vars) => [fn(v)] });
+/** Options for a text answer: the key plus the others, in this fixed set. */
+export const fixed = (...values: string[]) => (): string[] => values;

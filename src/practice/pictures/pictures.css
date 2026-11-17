@@ -128,3 +128,17 @@
   .pic-count { transition: none; }
   .pic-count:hover, .pic-pick:hover { transform: none; }
 }
+
+/* story pictures */
+.pic-blocks-label { align-self: center; font-weight: 900; font-size: 1.15rem; color: #1d2a4a; min-width: 3ch; }
+.pic-tally { display: grid; gap: 8px; }
+.pic-tally-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ix-tally { display: inline-flex; gap: 8px; align-items: center; }
+.pic-model { display: grid; gap: 0; width: min(420px, 100%); }
+.pic-model-whole { text-align: center; padding: 8px; border: 3px solid #33415c; border-radius: 10px; background: #e8f0ff; font: 900 1.25rem/1 inherit; color: #1d2a4a; }
+.pic-model-brace { height: 14px; margin: 0 14px; border: 3px solid #33415c; border-top: 0; border-radius: 0 0 12px 12px; }
+.pic-model-parts { display: flex; gap: 6px; }
+.pic-model-part { flex: 1 1 0; text-align: center; padding: 8px; border: 3px solid #33415c; border-radius: 10px; background: #fff7d6; font: 900 1.25rem/1 inherit; color: #1d2a4a; }
+.pic-model-part.is-unknown, .pic-model-whole.is-unknown { background: #fff; border-style: dashed; color: #5b6b8c; }
+.pic-rect { width: min(240px, 80vw); height: auto; }
+.pic-line { width: min(440px, 100%); height: auto; }

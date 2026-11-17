@@ -5,6 +5,7 @@ import {
   isPictographic,
   stripVs,
 } from './iconMap';
+import { liftPictures } from './lift';
 import type { NumberCell, PicRow, PicToken, Picture, Segment } from './types';
 
 /**
@@ -669,8 +670,17 @@ function countTokens(tokens: PicToken[], counts: Map<string, number>) {
       counts.set('ათეული', (counts.get('ათეული') ?? 0) + 1);
     } else if (token.t === 'group') {
       countTokens(token.tokens, counts);
+    } else if (token.t === 'unknown') {
+      counts.set('უცნობი', (counts.get('უცნობი') ?? 0) + 1);
     }
   }
+}
+
+/** The numbers and signs written in a row (a chain such as „52 → −17 → +14 → ?“). */
+function writtenTokens(tokens: PicToken[]): string[] {
+  return tokens.flatMap((token) =>
+    token.t === 'text' ? [token.text] : token.t === 'group' ? writtenTokens(token.tokens) : token.t === 'sep' && token.style === 'arrow' ? ['→'] : [],
+  );
 }
 
 /** The picture in words, so nothing is lost for a student who cannot see it. */
@@ -682,6 +692,8 @@ export function describePicture(picture: Picture): string {
           const counts = new Map<string, number>();
           countTokens(row.tokens, counts);
           const parts = [...counts].map(([name, n]) => `${name}: ${n}`);
+          const written = writtenTokens(row.tokens).join(' ');
+          if (written) parts.push(written);
           return `${row.label ? `${row.label}. ` : ''}${parts.join(', ')}`;
         })
         .join('. ');
@@ -710,7 +722,15 @@ export function describePicture(picture: Picture): string {
     case 'chips':
       return picture.items.map((c) => (c.mark ? `მონიშნული ${c.text}` : c.text)).join(', ');
     case 'blocks':
-      return `${picture.tens} ათეული და ${picture.ones} ერთეული`;
+      return `${picture.label ? `${picture.label}: ` : ''}${picture.tens} ათეული და ${picture.ones} ერთეული`;
+    case 'model':
+      return `ზოლოვანი მოდელი: მთელი ${picture.whole}, ნაწილები ${picture.parts.join(' და ')}`;
+    case 'tally':
+      return picture.rows.map((r) => `${r.label ? `${r.label}: ` : ''}${r.count} აღრიცხვის ნიშანი`).join('; ');
+    case 'line':
+      return `რიცხვითი ხაზი ${picture.from}-დან ${picture.to}-მდე; მონიშნულია ${picture.marks.map((m) => m.value).join(', ')}`;
+    case 'rect':
+      return `მართკუთხედი: ${picture.width} და ${picture.height}`;
     case 'parts':
       return `ფიგურა დაყოფილია ${picture.bars.map((b) => b.length).join(' და ')} ნაწილად`;
   }
@@ -728,11 +748,13 @@ export function describePicture(picture: Picture): string {
  * describes is drawn above it, from the same numbers in the same sentence, so the
  * two cannot disagree. Only an exact, unambiguous phrase is drawn; anything with a
  * placeholder (❓, □, ___) is left as words, because there the number is the
- * thing being asked.
+ * thing being asked. The exception is `liftPictures`, which draws only what the
+ * numbers around the placeholder already fix (a part–whole model for
+ * „43 + ___ = 69“, the blocks for each operand).
  */
 export function describedPictures(prompt: string): Picture[] {
   const text = stripVs(prompt);
-  if (/[❓□]|_{2,}/.test(text)) return [];
+  if (/[❓□]|_{2,}/.test(text)) return liftPictures(prompt);
   const found: Picture[] = [];
   const blocks = /(\d+)\s*ათეულ[ა-ჰ]*(?:\s*\([^)]*\))?\s*(?:და|,)\s*(\d+)\s*ერთეულ/g;
   for (const m of text.matchAll(blocks)) {
@@ -741,5 +763,6 @@ export function describedPictures(prompt: string): Picture[] {
     if (tens >= 1 && tens <= 10 && ones <= 19) found.push({ kind: 'blocks', tens, ones });
   }
   // Only one model per question: two models are a comparison the words already make.
-  return found.length === 1 ? found : [];
+  if (found.length === 1) return found;
+  return found.length === 0 ? liftPictures(prompt) : [];
 }

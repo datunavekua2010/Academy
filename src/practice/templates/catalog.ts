@@ -25,6 +25,8 @@ import { U15_SUBTOPICS, U15_TEMPLATES } from './u15-parts';
 import { U16_SUBTOPICS, U16_TEMPLATES } from './u16-logic';
 import { G1_INTERACTIVE_TEMPLATES } from './ix-g1';
 import { G2_INTERACTIVE_TEMPLATES } from './ix-g2';
+import { G2_PICTURED_TEMPLATES } from './px-g2';
+import { G1_PICTURED_TEMPLATES } from './px-g1';
 import { G2_U01_SUBTOPICS, G2_U01_TEMPLATES } from './g2-u01-numbers100';
 import { G2_U02_SUBTOPICS, G2_U02_TEMPLATES } from './g2-u02-sequences';
 import { G2_U03_SUBTOPICS, G2_U03_TEMPLATES } from './g2-u03-single-digit';
@@ -248,6 +250,8 @@ export const TEMPLATE_REGISTRY = createTemplateRegistry(
     ...SAMPLE_TEMPLATES,
     ...G1_INTERACTIVE_TEMPLATES,
     ...G2_INTERACTIVE_TEMPLATES,
+    ...G2_PICTURED_TEMPLATES,
+    ...G1_PICTURED_TEMPLATES,
     ...G5_U01_TEMPLATES,
     ...G5_U02_TEMPLATES,
     ...G5_U03_TEMPLATES,

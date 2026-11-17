@@ -212,7 +212,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const promptSegments: Segment[] = question ? pictorialize(question.prompt, { isVisual: false }) : [];
   // A picture the question's words describe but never drew (a model of tens and ones).
   const described: Picture[] =
-    question && !question.pictures?.length && !question.visual && !pictorialize(question.prompt, { isVisual: false }).some((s) => s.type === 'picture')
+    question && !question.interaction && !question.pictures?.length && !question.visual && !pictorialize(question.prompt, { isVisual: false }).some((s) => s.type === 'picture')
       ? describedPictures(question.prompt)
       : [];
   const hasVisualPicture = visualSegments.some((segment) => segment.type === 'picture');

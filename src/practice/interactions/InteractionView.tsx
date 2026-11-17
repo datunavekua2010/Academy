@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import type { ReactElement } from 'react';
 import { CHAR_ICONS } from '../pictures/iconMap';
 import { drawIcon } from '../pictures/icons';
-import { COIN_STYLE, Icon, Rod } from '../pictures/PictureView';
+import { COIN_STYLE, Icon, Rod, TallyMarks } from '../pictures/PictureView';
 import type { InteractionSpec } from './types';
 import './interactions.css';
 
@@ -669,27 +669,6 @@ function BinsWidget({ spec, answer, done, onSubmit }: InteractionProps & { spec:
 /* ---------------------------------------------------------------- *\
  * Counters: bar chart, tally, pictogram
  * ---------------------------------------------------------------- */
-
-function TallyMarks({ count }: { count: number }) {
-  const groups = Math.floor(count / 5);
-  const rest = count % 5;
-  const stick = (x: number, key: string) => <line key={key} x1={x} y1="4" x2={x} y2="34" stroke="#1d2a4a" strokeWidth="3.2" strokeLinecap="round" />;
-  return (
-    <span className="ix-tally" aria-hidden="true">
-      {Array.from({ length: groups }, (_, g) => (
-        <svg key={g} viewBox="0 0 44 38" width="44" height="38">
-          {[6, 15, 24, 33].map((x) => stick(x, String(x)))}
-          <line x1="1" y1="30" x2="43" y2="8" stroke="#e8473f" strokeWidth="3.2" strokeLinecap="round" />
-        </svg>
-      ))}
-      {rest > 0 && (
-        <svg viewBox={`0 0 ${rest * 9 + 3} 38`} width={rest * 9 + 3} height="38">
-          {Array.from({ length: rest }, (_, i) => stick(6 + i * 9, String(i)))}
-        </svg>
-      )}
-    </span>
-  );
-}
 
 function CountersWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps & { spec: Extract<InteractionSpec, { kind: 'counters' }> }) {
   const [counts, setCounts] = useState<number[]>(() => spec.labels.map((_, i) => spec.start?.[i] ?? 0));

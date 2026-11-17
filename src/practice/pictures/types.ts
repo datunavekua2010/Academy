@@ -58,7 +58,15 @@ export type Picture =
   | { kind: 'cells'; label?: string; rows: string[] }
   | { kind: 'balance'; left: PicToken[]; right: PicToken[]; tilt: 'left' | 'right' | 'level'; leftCaption?: string; rightCaption?: string }
   | { kind: 'chips'; items: Array<{ text: string; mark?: boolean }>; arrows?: boolean }
-  | { kind: 'blocks'; tens: number; ones: number }
+  | { kind: 'blocks'; tens: number; ones: number; label?: string }
+  /** A bar model: a whole split into parts, one of them perhaps a „?“. */
+  | { kind: 'model'; whole: string; parts: string[] }
+  /** Tally marks, one row per label. */
+  | { kind: 'tally'; rows: Array<{ label?: string; count: number }> }
+  /** A rectangle (or square) with its side lengths written on it. */
+  | { kind: 'rect'; width: string; height: string; wv: number; hv: number }
+  /** A number line from `from` to `to`; `marks` are the values the question talks about. */
+  | { kind: 'line'; from: number; to: number; step: number; marks: Array<{ value: number; label?: string }> }
   | { kind: 'parts'; bars: Array<Array<{ size: number; shaded: boolean }>>; divider?: boolean; label?: string };
 
 /** What a picture tells a screen reader, in Georgian. */

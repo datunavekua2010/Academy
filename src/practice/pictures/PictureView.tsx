@@ -607,9 +607,109 @@ function ChipsPicture({ picture, pick }: { picture: Extract<Picture, { kind: 'ch
   );
 }
 
+export function TallyMarks({ count }: { count: number }) {
+  const groups = Math.floor(count / 5);
+  const rest = count % 5;
+  const stick = (x: number, key: string) => (
+    <line key={key} x1={x} y1="4" x2={x} y2="34" stroke="#1d2a4a" strokeWidth="3.2" strokeLinecap="round" />
+  );
+  return (
+    <span className="ix-tally" aria-hidden="true">
+      {Array.from({ length: groups }, (_, g) => (
+        <svg key={g} viewBox="-4 0 52 38" width="52" height="38">
+          {[6, 15, 24, 33].map((x) => stick(x, String(x)))}
+          <line x1="1" y1="30" x2="43" y2="8" stroke="#e8473f" strokeWidth="3.2" strokeLinecap="round" />
+        </svg>
+      ))}
+      {rest > 0 && (
+        <svg viewBox={`0 0 ${rest * 9 + 3} 38`} width={rest * 9 + 3} height="38">
+          {Array.from({ length: rest }, (_, i) => stick(6 + i * 9, String(i)))}
+        </svg>
+      )}
+    </span>
+  );
+}
+
+function TallyPicture({ picture }: { picture: Extract<Picture, { kind: 'tally' }> }) {
+  return (
+    <div className="pic-tally" role="img" aria-label={describePicture(picture)}>
+      {picture.rows.map((row, i) => (
+        <div className="pic-tally-row" key={i}>
+          {row.label && <span className="pic-label">{row.label}</span>}
+          <TallyMarks count={row.count} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ModelPicture({ picture }: { picture: Extract<Picture, { kind: 'model' }> }) {
+  const weight = (text: string) => {
+    const n = Number(text);
+    return Number.isFinite(n) && n > 0 ? n : Math.max(1, Math.round(Number(picture.parts.filter((p) => Number.isFinite(Number(p))).reduce((a, b) => a + Number(b), 0)) / 3) || 1);
+  };
+  return (
+    <div className="pic-model" role="img" aria-label={describePicture(picture)}>
+      <div className={`pic-model-whole ${picture.whole === '?' ? 'is-unknown' : ''}`}>{picture.whole}</div>
+      <div className="pic-model-brace" aria-hidden="true" />
+      <div className="pic-model-parts">
+        {picture.parts.map((part, i) => (
+          <div key={i} className={`pic-model-part ${part === '?' ? 'is-unknown' : ''}`} style={{ flexGrow: weight(part) }}>
+            {part}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LinePicture({ picture }: { picture: Extract<Picture, { kind: 'line' }> }) {
+  const { from, to, step } = picture;
+  const span = Math.max(1, to - from);
+  const x = (value: number) => 24 + ((value - from) / span) * 352;
+  const ticks: number[] = [];
+  for (let v = from; v <= to + 1e-9; v += step) ticks.push(v);
+  const marked = new Set(picture.marks.map((m) => m.value));
+  return (
+    <svg className="pic-line" viewBox="0 0 400 86" role="img" aria-label={describePicture(picture)}>
+      <line x1="14" y1="40" x2="386" y2="40" stroke="#33415c" strokeWidth="3" strokeLinecap="round" />
+      {ticks.map((v) => (
+        <g key={v}>
+          <line x1={x(v)} y1="32" x2={x(v)} y2="48" stroke="#33415c" strokeWidth="2.5" />
+          {(marked.has(v) || v === from || v === to || ticks.length <= 14) && (
+            <text x={x(v)} y="70" textAnchor="middle" fontSize="14" fontWeight="700" fill="#33415c">{v}</text>
+          )}
+        </g>
+      ))}
+      {picture.marks.map((m) => (
+        <g key={m.value}>
+          <circle cx={x(m.value)} cy="40" r="9" fill="#e8473f" stroke="#fff" strokeWidth="2.5" />
+          {m.label && <text x={x(m.value)} y="20" textAnchor="middle" fontSize="15" fontWeight="900" fill="#e8473f">{m.label}</text>}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function RectPicture({ picture }: { picture: Extract<Picture, { kind: 'rect' }> }) {
+  const scale = 120 / Math.max(picture.wv, picture.hv, 1);
+  const w = Math.max(50, picture.wv * scale);
+  const h = Math.max(50, picture.hv * scale);
+  return (
+    <svg className="pic-rect" viewBox={`0 0 ${w + 90} ${h + 60}`} role="img" aria-label={describePicture(picture)}>
+      <rect x="45" y="30" width={w} height={h} fill="#fff3c4" stroke="#33415c" strokeWidth="3" rx="3" />
+      <text x={45 + w / 2} y="20" textAnchor="middle" fontSize="16" fontWeight="800" fill="#1d2a4a">{picture.width}</text>
+      <text x={45 + w / 2} y={h + 52} textAnchor="middle" fontSize="16" fontWeight="800" fill="#1d2a4a">{picture.width}</text>
+      <text x="38" y={30 + h / 2 + 5} textAnchor="end" fontSize="16" fontWeight="800" fill="#1d2a4a">{picture.height}</text>
+      <text x={w + 52} y={30 + h / 2 + 5} textAnchor="start" fontSize="16" fontWeight="800" fill="#1d2a4a">{picture.height}</text>
+    </svg>
+  );
+}
+
 function BlocksPicture({ picture }: { picture: Extract<Picture, { kind: 'blocks' }> }) {
   return (
     <div className="pic-blocks" role="img" aria-label={describePicture(picture)}>
+      {picture.label && <span className="pic-blocks-label">{picture.label}</span>}
       <span className="pic-blocks-tens">
         {Array.from({ length: picture.tens }, (_, i) => (
           <Rod key={i} color="blue" />
@@ -674,6 +774,14 @@ export function PictureView({ picture, pick }: { picture: Picture; pick?: PickPr
         return <ChipsPicture picture={picture} pick={pick} />;
       case 'blocks':
         return <BlocksPicture picture={picture} />;
+      case 'model':
+        return <ModelPicture picture={picture} />;
+      case 'tally':
+        return <TallyPicture picture={picture} />;
+      case 'rect':
+        return <RectPicture picture={picture} />;
+      case 'line':
+        return <LinePicture picture={picture} />;
       case 'parts':
         return <PartsPicture picture={picture} />;
     }

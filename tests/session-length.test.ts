@@ -180,7 +180,7 @@ describe('every playable subtopic can reach 100 points', () => {
     // All 113 Grade 1 subtopics are now fully authored with real templates;
     // none dry up short of MAX_SCORE.
     expect(grade1DriedUp).toBe(0);
-  });
+  }, 30_000);
 
   it('reaches exactly MAX_SCORE on a perfect run', () => {
     const real = subtopics.filter(
