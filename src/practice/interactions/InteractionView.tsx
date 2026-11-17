@@ -5,7 +5,7 @@ import { drawIcon } from '../pictures/icons';
 import { COIN_STYLE, Icon, Rod, TallyMarks } from '../pictures/PictureView';
 import type { InteractionSpec } from './types';
 import { CheckButton, Stepper } from './shared';
-import { AngleWidget, ArrayWidget, PlaceWidget, TilesWidget } from './widgetsExtra';
+import { AngleWidget, ArrayWidget, PlaceWidget, PlaneWidget, TilesWidget } from './widgetsExtra';
 import './interactions.css';
 
 /**
@@ -845,5 +845,7 @@ export function InteractionView(props: InteractionProps): ReactElement {
       return <PlaceWidget {...props} spec={body} />;
     case 'tiles':
       return <TilesWidget {...props} spec={body} />;
+    case 'plane':
+      return <PlaneWidget {...props} spec={body} />;
   }
 }

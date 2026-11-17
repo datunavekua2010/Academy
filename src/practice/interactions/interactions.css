@@ -211,3 +211,14 @@
 .ix-tiles-slot.is-filled { border-style: solid; background: #fff7d6; }
 .ix-tiles-card { min-width: 52px; height: 56px; border: 3px solid #33415c; border-radius: 10px; background: #e8f0ff; font-size: 1.5rem; font-weight: 900; color: #1d2a4a; cursor: pointer; }
 .ix-tiles-card:disabled { opacity: 0.35; cursor: default; }
+
+/* coordinate plane + decimal place value */
+.ix-plane { display: grid; gap: 10px; justify-items: center; }
+.ix-plane-svg { width: 100%; height: auto; background: #f7f9ff; border: 2px solid #dbe3f6; border-radius: 12px; touch-action: manipulation; }
+.ix-plane-spot { fill: transparent; stroke: transparent; stroke-width: 3; cursor: pointer; outline: none; }
+.ix-plane-spot:hover, .ix-plane-spot:focus-visible { fill: rgba(47,125,225,.22); stroke: #2f7de1; }
+.ix-plane-spot.is-picked { fill: rgba(47,125,225,.35); stroke: #2f7de1; }
+.ix-plane-spot.is-correct { fill: rgba(46,157,91,.4); stroke: #2e9d5b; }
+.ix-plane-spot.is-wrong { fill: rgba(232,71,63,.35); stroke: #e8473f; }
+.ix-place-comma { align-self: center; font-size: 2rem; font-weight: 900; color: #33415c; padding-top: 18px; }
+.ix-place-col.is-decimal { background: #fff7e0; border-color: #ecd9a0; }

@@ -733,6 +733,8 @@ export function describePicture(picture: Picture): string {
       return `მართკუთხედი: ${picture.width} და ${picture.height}`;
     case 'parts':
       return `ფიგურა დაყოფილია ${picture.bars.map((b) => b.length).join(' და ')} ნაწილად`;
+    case 'diagram':
+      return picture.alt;
   }
 }
 

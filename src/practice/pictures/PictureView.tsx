@@ -747,6 +747,8 @@ function PartsPicture({ picture }: { picture: Extract<Picture, { kind: 'parts' }
  * Entry point
  * ---------------------------------------------------------------- */
 
+import { DiagramPicture } from './Diagram';
+
 export function PictureView({ picture, pick }: { picture: Picture; pick?: PickProps }): ReactElement {
   const body = (() => {
     switch (picture.kind) {
@@ -784,6 +786,8 @@ export function PictureView({ picture, pick }: { picture: Picture; pick?: PickPr
         return <LinePicture picture={picture} />;
       case 'parts':
         return <PartsPicture picture={picture} />;
+      case 'diagram':
+        return <DiagramPicture picture={picture} />;
     }
   })();
   return (

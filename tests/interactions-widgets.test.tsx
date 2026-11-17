@@ -307,4 +307,34 @@ describe('in a practice session', () => {
     expect(screen.getByText('არასწორია.')).toBeTruthy();
     expect(screen.getByRole('button', { name: question.answer }).className).toContain('is-correct');
   });
+
+  it('coordinate plane: tap one point, or several (sorted)', () => {
+    const one = setup({ kind: 'plane', xmin: -3, xmax: 3, ymin: -3, ymax: 3 });
+    expect(screen.getByRole('button', { name: 'შემოწმება' })).toHaveProperty('disabled', true);
+    press('(-2; 3)');
+    press('(2; -1)');
+    one.check();
+    expect(one.onSubmit).toHaveBeenCalledWith('2,-1');
+    cleanup();
+    const many = setup({ kind: 'plane', xmin: 0, xmax: 4, ymin: 0, ymax: 4, count: 2 });
+    press('(3; 1)');
+    press('(1; 4)');
+    press('(1; 4)');
+    press('(1; 2)');
+    many.check();
+    expect(many.onSubmit).toHaveBeenCalledWith('1,2;3,1');
+  });
+
+  it('place value with a decimal comma: no trailing zeros', () => {
+    const { onSubmit, check } = setup({ kind: 'place', digits: 2, decimals: 2 });
+    press('ერთეულები: მეტი', 3);
+    press('მეათედები: მეტი', 2);
+    check();
+    expect(onSubmit).toHaveBeenCalledWith('3,2');
+    cleanup();
+    const hundredths = setup({ kind: 'place', digits: 1, decimals: 2, start: 1.5 });
+    press('მეასედები: მეტი', 4);
+    hundredths.check();
+    expect(hundredths.onSubmit).toHaveBeenCalledWith('1,54');
+  });
 });

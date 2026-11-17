@@ -187,8 +187,26 @@ function check(spec: InteractionSpec, answer: string): void {
       return;
     }
     case 'place': {
-      expect(answer).toMatch(/^\d+$/);
-      expect(answer.length).toBeLessThanOrEqual(spec.digits);
+      expect(answer).toMatch(/^\d+(,\d*[1-9])?$/);
+      const [whole, fraction = ''] = answer.split(',');
+      expect(whole!.length).toBeLessThanOrEqual(spec.digits);
+      expect(fraction.length).toBeLessThanOrEqual(spec.decimals ?? 0);
+      return;
+    }
+    case 'plane': {
+      const points = answer.split(';').map((p) => p.split(',').map(Number) as [number, number]);
+      expect(points).toHaveLength(spec.count ?? 1);
+      for (const [x, y] of points) {
+        expect(Number.isInteger(x) && Number.isInteger(y)).toBe(true);
+        expect(x!).toBeGreaterThanOrEqual(spec.xmin);
+        expect(x!).toBeLessThanOrEqual(spec.xmax);
+        expect(y!).toBeGreaterThanOrEqual(spec.ymin);
+        expect(y!).toBeLessThanOrEqual(spec.ymax);
+      }
+      // sorted canonical order, no repeats
+      const sorted = [...points].sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+      expect(points).toEqual(sorted);
+      expect(new Set(answer.split(';')).size).toBe(points.length);
       return;
     }
     case 'tiles': {

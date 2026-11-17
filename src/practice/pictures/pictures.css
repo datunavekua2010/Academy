@@ -142,3 +142,7 @@
 .pic-model-part.is-unknown, .pic-model-whole.is-unknown { background: #fff; border-style: dashed; color: #5b6b8c; }
 .pic-rect { width: min(240px, 80vw); height: auto; }
 .pic-line { width: min(440px, 100%); height: auto; }
+
+/* diagrams (coordinate planes, triangles, circles, charts, solids) */
+.pic-diagram-wrap { display: grid; gap: 6px; justify-items: center; }
+.pic-diagram { width: 100%; height: auto; display: block; }
