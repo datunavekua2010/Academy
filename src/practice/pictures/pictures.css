@@ -107,6 +107,12 @@
 .pic-chip.is-mark { background: #ffe9a8; border-color: #e0a800; }
 .pic-chip.is-tappable { border-color: #8aa3d6; }
 .pic-chip.is-tappable:hover { background: #eaf1ff; }
+/* base-ten blocks: tens as rods, ones as cubes */
+.pic-blocks { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 22px; }
+.pic-blocks-tens { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; }
+.pic-blocks-tens .pic-rod { width: 18px; height: 56px; }
+.pic-blocks-ones { display: inline-flex; flex-wrap: wrap; gap: 3px; max-width: 150px; }
+.pic-blocks-ones .pic-icon { width: 26px; height: 26px; }
 /* parts of a whole */
 .pic-parts { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
 .pic-parts-bar { display: flex; width: min(260px, 100%); height: 44px; border: 3px solid #33415c; border-radius: 10px; overflow: hidden; background: #fff; }

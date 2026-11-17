@@ -58,6 +58,7 @@ export type Picture =
   | { kind: 'cells'; label?: string; rows: string[] }
   | { kind: 'balance'; left: PicToken[]; right: PicToken[]; tilt: 'left' | 'right' | 'level'; leftCaption?: string; rightCaption?: string }
   | { kind: 'chips'; items: Array<{ text: string; mark?: boolean }>; arrows?: boolean }
+  | { kind: 'blocks'; tens: number; ones: number }
   | { kind: 'parts'; bars: Array<Array<{ size: number; shaded: boolean }>>; divider?: boolean; label?: string };
 
 /** What a picture tells a screen reader, in Georgian. */

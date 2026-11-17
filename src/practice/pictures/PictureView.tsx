@@ -607,6 +607,23 @@ function ChipsPicture({ picture, pick }: { picture: Extract<Picture, { kind: 'ch
   );
 }
 
+function BlocksPicture({ picture }: { picture: Extract<Picture, { kind: 'blocks' }> }) {
+  return (
+    <div className="pic-blocks" role="img" aria-label={describePicture(picture)}>
+      <span className="pic-blocks-tens">
+        {Array.from({ length: picture.tens }, (_, i) => (
+          <Rod key={i} color="blue" />
+        ))}
+      </span>
+      <span className="pic-blocks-ones">
+        {Array.from({ length: picture.ones }, (_, i) => (
+          <Icon key={i} name="unit" size={26} />
+        ))}
+      </span>
+    </div>
+  );
+}
+
 function PartsPicture({ picture }: { picture: Extract<Picture, { kind: 'parts' }> }) {
   return (
     <div className="pic-parts" role="img" aria-label={describePicture(picture)}>
@@ -655,6 +672,8 @@ export function PictureView({ picture, pick }: { picture: Picture; pick?: PickPr
         return <BalancePicture picture={picture} />;
       case 'chips':
         return <ChipsPicture picture={picture} pick={pick} />;
+      case 'blocks':
+        return <BlocksPicture picture={picture} />;
       case 'parts':
         return <PartsPicture picture={picture} />;
     }

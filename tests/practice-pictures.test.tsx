@@ -183,3 +183,19 @@ describe('PictureView interaction', () => {
     expect(pictureTargets(pic!)).toEqual(['სამკუთხედი', 'მართკუთხედი', 'ექვსკუთხედი', 'კვადრატი']);
   });
 });
+
+import { describedPictures } from '../src/practice/pictures/parse';
+
+describe('pictures the wording describes', () => {
+  it('draws the model a sentence names, from the same numbers', () => {
+    expect(describedPictures('მოდელზე გამოსახულია 8 ათეული (ღერო) და 3 ერთეული (კუბი).\n\nრომელი რიცხვია გამოსახული?')).toEqual([
+      { kind: 'blocks', tens: 8, ones: 3 },
+    ]);
+    expect(describedPictures('რიცხვს აქვს 9 ათეული და 3 ერთეული. ჩაწერე რიცხვი:')).toEqual([{ kind: 'blocks', tens: 9, ones: 3 }]);
+  });
+
+  it('leaves a question alone when the number is the thing being asked', () => {
+    expect(describedPictures('რიცხვი 83 წარმოდგენილია 8 ათეულითა და ❓ ერთეულით.')).toEqual([]);
+    expect(describedPictures('83 = 8 ათეული და □ ერთეული')).toEqual([]);
+  });
+});

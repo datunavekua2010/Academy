@@ -8,7 +8,7 @@ import { bandForLevel, levelForScore, usesLevelBands } from '../levels';
 import { ScoreMeter } from './ScoreMeter';
 import { PictureView, pictureTargets } from '../pictures/PictureView';
 import type { PickProps } from '../pictures/PictureView';
-import { pictorialize } from '../pictures/parse';
+import { describedPictures, pictorialize } from '../pictures/parse';
 import type { Picture, Segment } from '../pictures/types';
 
 const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
@@ -209,6 +209,11 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
     ? pictorialize(question.visual, { isVisual: true, clocks: question.clocks })
     : [];
   const promptSegments: Segment[] = question ? pictorialize(question.prompt, { isVisual: false }) : [];
+  // A picture the question's words describe but never drew (a model of tens and ones).
+  const described: Picture[] =
+    question && !question.visual && !pictorialize(question.prompt, { isVisual: false }).some((s) => s.type === 'picture')
+      ? describedPictures(question.prompt)
+      : [];
   const hasVisualPicture = visualSegments.some((segment) => segment.type === 'picture');
   const hasPromptPicture = promptSegments.some((segment) => segment.type === 'picture');
   const allPictures: Picture[] = [...visualSegments, ...promptSegments].flatMap((segment) =>
@@ -331,6 +336,9 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             კითხვა #{session.correct + session.incorrect + 1}
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
+          {described.map((picture, index) => (
+            <PictureView key={`d${index}`} picture={picture} />
+          ))}
           {hasVisualPicture ? (
             visualSegments.map((segment, index) => renderSegment(segment, index, true))
           ) : (

@@ -709,7 +709,37 @@ export function describePicture(picture: Picture): string {
           : 'სასწორის მარჯვენა მხარე დაბლაა';
     case 'chips':
       return picture.items.map((c) => (c.mark ? `მონიშნული ${c.text}` : c.text)).join(', ');
+    case 'blocks':
+      return `${picture.tens} ათეული და ${picture.ones} ერთეული`;
     case 'parts':
       return `ფიგურა დაყოფილია ${picture.bars.map((b) => b.length).join(' და ')} ნაწილად`;
   }
+}
+
+/* ---------------------------------------------------------------- *\
+ * Pictures the wording describes
+ * ---------------------------------------------------------------- */
+
+/**
+ * Pictures a question *describes in words* but never drew.
+ *
+ * „მოდელზე გამოსახულია 8 ათეული და 3 ერთეული“ names a picture that was not
+ * there. The sentence stays — it is the question's own data — and the picture it
+ * describes is drawn above it, from the same numbers in the same sentence, so the
+ * two cannot disagree. Only an exact, unambiguous phrase is drawn; anything with a
+ * placeholder (❓, □, ___) is left as words, because there the number is the
+ * thing being asked.
+ */
+export function describedPictures(prompt: string): Picture[] {
+  const text = stripVs(prompt);
+  if (/[❓□]|_{2,}/.test(text)) return [];
+  const found: Picture[] = [];
+  const blocks = /(\d+)\s*ათეულ[ა-ჰ]*(?:\s*\([^)]*\))?\s*(?:და|,)\s*(\d+)\s*ერთეულ/g;
+  for (const m of text.matchAll(blocks)) {
+    const tens = Number(m[1]);
+    const ones = Number(m[2]);
+    if (tens >= 1 && tens <= 10 && ones <= 19) found.push({ kind: 'blocks', tens, ones });
+  }
+  // Only one model per question: two models are a comparison the words already make.
+  return found.length === 1 ? found : [];
 }
