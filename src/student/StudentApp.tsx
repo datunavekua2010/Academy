@@ -47,21 +47,24 @@ function NotFound() {
 function StudentRoutes() {
   const path = useHashRoute();
   const segment = path.replace(/^\/student\/?/, '').replace(/\/+$/, '');
+  // Pages can own sub-routes (`lessons/<unit>`), so match on the first part.
+  const [head, ...restParts] = segment.split('/');
+  const rest = restParts.join('/');
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    document.title = `${TITLES[segment] ?? 'გვერდი ვერ მოიძებნა'} — Axiom Academy`;
+    document.title = `${(head === 'lessons' || !rest ? TITLES[head] : undefined) ?? 'გვერდი ვერ მოიძებნა'} — Axiom Academy`;
     // Move screen-reader / keyboard focus to the new page content.
     document.getElementById('student-main')?.focus({ preventScroll: true });
-  }, [path, segment]);
+  }, [path, head, rest]);
 
   let page: ReactNode;
-  switch (segment) {
+  switch (head) {
     case '':
       page = <Dashboard />;
       break;
     case 'lessons':
-      page = <Lessons />;
+      page = <Lessons sub={rest} />;
       break;
     case 'homework':
       page = <Homework />;
@@ -78,6 +81,7 @@ function StudentRoutes() {
     default:
       page = <NotFound />;
   }
+  if (head !== 'lessons' && rest) page = <NotFound />;
 
   return (
     <StudentLayout>
