@@ -190,3 +190,24 @@
 
 .ix-line-widget { max-width: 100%; overflow-x: auto; padding: 0 8px 4px; box-sizing: border-box; }
 .ix-chart-head { text-align: center; font-weight: 800; font-size: .72rem; color: #4a5a7d; }
+
+/* Grades III–IV widgets */
+.ix-array { display: grid; gap: 12px; justify-items: center; }
+.ix-array-grid { display: grid; gap: 3px; padding: 10px; background: #f3f6ff; border: 2px solid #c9d3ee; border-radius: 12px; max-width: 100%; overflow: auto; }
+.ix-array-cell { width: 26px; height: 26px; background: #ffd966; border: 2px solid #c79a00; border-radius: 4px; }
+.ix-array-controls { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
+.ix-array-controls label { display: grid; gap: 4px; justify-items: center; }
+.ix-angle { display: grid; gap: 10px; justify-items: center; }
+.ix-angle-svg { width: min(360px, 100%); height: auto; background: #f7f9ff; border: 2px solid #dbe3f6; border-radius: 12px; }
+.ix-angle-buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.ix-place { display: grid; gap: 10px; justify-items: center; }
+.ix-place-cols { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.ix-place-col { display: grid; gap: 4px; justify-items: center; padding: 8px; background: #f3f6ff; border: 2px solid #c9d3ee; border-radius: 10px; }
+.ix-place-number { font-size: 1.3rem; font-weight: 900; }
+.ix-tiles { display: grid; gap: 12px; justify-items: center; }
+.ix-tiles-frame, .ix-tiles-cards { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.ix-tiles-fixed { font-size: 1.5rem; font-weight: 900; color: #1d2a4a; }
+.ix-tiles-slot { min-width: 52px; height: 56px; border: 3px dashed #8fa0c8; border-radius: 10px; background: #fff; font-size: 1.5rem; font-weight: 900; color: #1d2a4a; }
+.ix-tiles-slot.is-filled { border-style: solid; background: #fff7d6; }
+.ix-tiles-card { min-width: 52px; height: 56px; border: 3px solid #33415c; border-radius: 10px; background: #e8f0ff; font-size: 1.5rem; font-weight: 900; color: #1d2a4a; cursor: pointer; }
+.ix-tiles-card:disabled { opacity: 0.35; cursor: default; }

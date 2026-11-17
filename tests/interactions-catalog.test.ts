@@ -25,10 +25,11 @@ function reachable(coins: number[], total: number, count: number | null): boolea
   return walk(total, 0);
 }
 
-/** Evaluates `a + b − c` (left to right) from tokens that are plain numbers and + / −. */
+/** Evaluates an expression of plain numbers and + − × ÷ (with the usual precedence). */
 function evaluate(expression: string): number {
-  const parts = expression.replace(/−/g, '-').match(/[+-]?\s*\d+/g) ?? [];
-  return parts.reduce((sum, part) => sum + Number(part.replace(/\s+/g, '')), 0);
+  const text = expression.replace(/−/g, '-').replace(/×/g, '*').replace(/÷/g, '/');
+  if (!/^[\d+\-*/().\s]+$/.test(text)) throw new Error(`cannot evaluate ${expression}`);
+  return Function(`"use strict"; return (${text});`)() as number;
 }
 
 function check(spec: InteractionSpec, answer: string): void {
@@ -154,6 +155,55 @@ function check(spec: InteractionSpec, answer: string): void {
       rows.forEach((row, i) => expect(row).toBe([...spec.rows[i]!].reverse().join('')));
       return;
     }
+    case 'array': {
+      if (spec.output === 'dims') {
+        const [r, c] = answer.split(',').map(Number);
+        expect(r).toBeGreaterThanOrEqual(1);
+        expect(r).toBeLessThanOrEqual(spec.maxRows);
+        expect(c).toBeGreaterThanOrEqual(1);
+        expect(c).toBeLessThanOrEqual(spec.maxCols);
+        return;
+      }
+      // One side is fixed: the other side is whatever makes the key true, and it must fit the grid.
+      const value = Number(answer);
+      const rows = spec.fixedRows;
+      const cols = spec.fixedCols;
+      expect(rows !== undefined || cols !== undefined).toBe(true);
+      const fixed = (rows ?? cols)!;
+      const free = spec.output === 'count' ? value / fixed : value / 2 - fixed;
+      expect(Number.isInteger(free)).toBe(true);
+      expect(free).toBeGreaterThanOrEqual(1);
+      expect(free).toBeLessThanOrEqual(rows !== undefined ? spec.maxCols : spec.maxRows);
+      if (rows !== undefined) expect(rows).toBeLessThanOrEqual(spec.maxRows);
+      if (cols !== undefined) expect(cols).toBeLessThanOrEqual(spec.maxCols);
+      return;
+    }
+    case 'angle': {
+      const degrees = Number(answer);
+      const step = spec.step ?? 5;
+      expect(degrees % step).toBe(0);
+      expect(degrees).toBeGreaterThanOrEqual(0);
+      expect(degrees).toBeLessThanOrEqual(spec.max ?? 180);
+      return;
+    }
+    case 'place': {
+      expect(answer).toMatch(/^\d+$/);
+      expect(answer.length).toBeLessThanOrEqual(spec.digits);
+      return;
+    }
+    case 'tiles': {
+      const slotCount = (spec.frame ?? Array.from({ length: spec.slots ?? spec.cards.length }, () => '?')).filter((t) => t === '?').length;
+      const joiner = spec.joiner ?? '';
+      const pool = [...spec.cards];
+      const parts = joiner ? answer.split(joiner) : spec.cards.length === slotCount ? [...answer] : [];
+      expect(parts).toHaveLength(slotCount);
+      for (const part of parts) {
+        const at = pool.indexOf(part);
+        expect(at).toBeGreaterThanOrEqual(0);
+        pool.splice(at, 1);
+      }
+      return;
+    }
     case 'slots': {
       const symbols = answer.split(',');
       expect(symbols).toHaveLength(spec.tokens.filter((token) => token === '?').length);
@@ -186,6 +236,7 @@ describe('interactive templates', () => {
   it('there are interactive templates in both grades', () => {
     expect(interactive.filter((t) => t.grade === 1).length).toBeGreaterThan(40);
     expect(interactive.filter((t) => t.grade === 2).length).toBeGreaterThan(50);
+    expect(interactive.filter((t) => t.grade === 3).length).toBeGreaterThan(50);
   });
 
   for (const template of interactive) {

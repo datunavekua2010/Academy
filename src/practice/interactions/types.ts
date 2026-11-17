@@ -20,6 +20,10 @@
  * | sequence | continues a pattern from a palette            | icon keys joined by `,`|
  * | cells    | completes a mirror image                      | right half, rows `/` (`#` filled, `.` empty) |
  * | slots    | sets signs in an expression                   | symbols joined by `,`  |
+ * | array    | builds a rectangle of squares (rows × columns) | `count`, `perimeter` or `rows,cols` |
+ * | angle    | opens an angle to a size in degrees           | the degrees            |
+ * | place    | sets one digit per place (ones, tens, …)      | the number             |
+ * | tiles    | puts digit/number cards into slots            | cards joined by `joiner`|
  */
 export type InteractionSpec =
   | {
@@ -37,6 +41,12 @@ export type InteractionSpec =
       barIcon?: string;
       /** Suffix shown in the tapped reading, e.g. „სმ“ or „°C“. */
       unit?: string;
+      /**
+       * Label the ticks as fractions (`k/den`) or decimals (`k/den` as 0,k) — the
+       * ticks are still the whole numbers min…max and the answer is the tapped k.
+       */
+      format?: 'frac' | 'dec';
+      den?: number;
     }
   | {
       kind: 'chart';
@@ -89,4 +99,27 @@ export type InteractionSpec =
     }
   | { kind: 'sequence'; shown: string[]; palette: string[]; length: number }
   | { kind: 'cells'; rows: string[] }
-  | { kind: 'slots'; tokens: string[]; options: string[] };
+  | { kind: 'slots'; tokens: string[]; options: string[] }
+  | {
+      kind: 'array';
+      maxRows: number;
+      maxCols: number;
+      startRows?: number;
+      startCols?: number;
+      /** One side given: the student sets only the other. */
+      fixedRows?: number;
+      fixedCols?: number;
+      output: 'count' | 'perimeter' | 'dims';
+      /** What one square is called in the readout, e.g. „სმ²“. */
+      unit?: string;
+    }
+  | { kind: 'angle'; max?: number; step?: number; start?: number }
+  | { kind: 'place'; digits: number; start?: number }
+  | {
+      kind: 'tiles';
+      cards: string[];
+      /** Around the slots: `?` marks a slot, anything else is fixed text. Default: all slots in a row. */
+      frame?: string[];
+      slots?: number;
+      joiner?: string;
+    };

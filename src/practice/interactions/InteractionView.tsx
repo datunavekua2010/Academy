@@ -4,6 +4,8 @@ import { CHAR_ICONS } from '../pictures/iconMap';
 import { drawIcon } from '../pictures/icons';
 import { COIN_STYLE, Icon, Rod, TallyMarks } from '../pictures/PictureView';
 import type { InteractionSpec } from './types';
+import { CheckButton, Stepper } from './shared';
+import { AngleWidget, ArrayWidget, PlaceWidget, TilesWidget } from './widgetsExtra';
 import './interactions.css';
 
 /**
@@ -33,72 +35,6 @@ const iconName = (key: string): string =>
   Object.values(CHAR_ICONS).find((info) => info.key === key)?.ka ?? key;
 
 /* ---------------------------------------------------------------- *\
- * Shared
- * ---------------------------------------------------------------- */
-
-function CheckButton({
-  ready,
-  done,
-  onClick,
-  label = 'შემოწმება',
-}: {
-  ready: boolean;
-  done: boolean;
-  onClick: () => void;
-  label?: string;
-}) {
-  return (
-    <button type="button" className="btn btn-primary ix-check" disabled={done || !ready} onClick={onClick}>
-      {label}
-    </button>
-  );
-}
-
-function Stepper({
-  label,
-  value,
-  onChange,
-  min = 0,
-  max,
-  step = 1,
-  disabled,
-}: {
-  label: string;
-  value: number;
-  onChange: (next: number) => void;
-  min?: number;
-  max: number;
-  step?: number;
-  disabled?: boolean;
-}) {
-  return (
-    <span className="ix-stepper">
-      <button
-        type="button"
-        className="ix-step"
-        aria-label={`${label}: ნაკლები`}
-        disabled={disabled || value - step < min}
-        onClick={() => onChange(value - step)}
-      >
-        −
-      </button>
-      <strong className="ix-step-value" aria-live="polite">
-        {value}
-      </strong>
-      <button
-        type="button"
-        className="ix-step"
-        aria-label={`${label}: მეტი`}
-        disabled={disabled || value + step > max}
-        onClick={() => onChange(value + step)}
-      >
-        +
-      </button>
-    </span>
-  );
-}
-
-/* ---------------------------------------------------------------- *\
  * Number line, ruler, thermometer
  * ---------------------------------------------------------------- */
 
@@ -121,6 +57,8 @@ function LineWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps &
     return v === picked ? 'is-picked' : '';
   };
   const unit = spec.unit ? ` ${spec.unit}` : '';
+  const tickText = (v: number): string =>
+    spec.format === 'frac' && spec.den ? (v === 0 ? '0' : v === spec.den ? '1' : `${v}/${spec.den}`) : spec.format === 'dec' && spec.den ? String(v / spec.den).replace('.', ',') : String(v);
   return (
     <div className="ix-widget ix-line-widget">
       <div
@@ -149,13 +87,13 @@ function LineWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps &
             type="button"
             className={`ix-tick ${stateOf(v)}`}
             style={vertical ? { bottom: `${pct(v)}%` } : { left: `${pct(v)}%` }}
-            aria-label={`${v}${unit}`}
+            aria-label={`${tickText(v)}${unit}`}
             aria-pressed={v === shown}
             disabled={done}
             onClick={() => setPicked(v)}
           >
             <span className="ix-tick-mark" />
-            {(v - spec.min) % (labelEvery * step) === 0 && <span className="ix-tick-label">{v}</span>}
+            {(v - spec.min) % (labelEvery * step) === 0 && <span className="ix-tick-label">{tickText(v)}</span>}
           </button>
         ))}
         {shown !== null && shown !== undefined && !Number.isNaN(shown) && (
@@ -167,7 +105,7 @@ function LineWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps &
         )}
       </div>
       <p className="ix-readout" aria-live="polite">
-        {done ? '' : picked === null ? 'შეეხე შესაბამის ადგილს.' : `არჩეულია: ${picked}${unit}`}
+        {done ? '' : picked === null ? 'შეეხე შესაბამის ადგილს.' : `არჩეულია: ${tickText(picked)}${unit}`}
       </p>
       <CheckButton ready={picked !== null} done={done} onClick={() => picked !== null && onSubmit(String(picked))} />
     </div>
@@ -899,5 +837,13 @@ export function InteractionView(props: InteractionProps): ReactElement {
       return <CellsWidget {...props} spec={body} />;
     case 'slots':
       return <SlotsWidget {...props} spec={body} />;
+    case 'array':
+      return <ArrayWidget {...props} spec={body} />;
+    case 'angle':
+      return <AngleWidget {...props} spec={body} />;
+    case 'place':
+      return <PlaceWidget {...props} spec={body} />;
+    case 'tiles':
+      return <TilesWidget {...props} spec={body} />;
   }
 }
