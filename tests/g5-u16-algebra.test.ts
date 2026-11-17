@@ -128,7 +128,7 @@ describe('G5 U16 — the printed arithmetic is the answer', () => {
 
     for (const question of generateBatch(ref('u16-01'), 12, { seed: 161601 })) {
       const template = G5_U16_TEMPLATES.find((item) => item.id === question.templateId)!;
-      if (template.id !== 'g5-u16-q01') continue;
+      if (template?.id !== 'g5-u16-q01') continue;
       const printed = question.prompt.replace('გამოთვალე: ', '').replace(/\.$/, '');
       expect(Number(question.answer), question.prompt).toBe(evaluate(printed));
     }

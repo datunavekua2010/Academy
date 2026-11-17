@@ -46,6 +46,15 @@ export interface NumberCell {
   pointer?: boolean;
 }
 
+/** One drawn primitive of a `diagram` (coordinates are in the diagram's own pixel space). */
+export type DrawItem =
+  | { t: 'poly'; pts: Array<[number, number]>; fill?: string; stroke?: string; width?: number; dash?: boolean; open?: boolean }
+  | { t: 'line'; from: [number, number]; to: [number, number]; stroke?: string; width?: number; dash?: boolean; arrow?: boolean }
+  | { t: 'circle'; c: [number, number]; r: number; fill?: string; stroke?: string; width?: number; dash?: boolean }
+  | { t: 'path'; d: string; fill?: string; stroke?: string; width?: number; dash?: boolean }
+  | { t: 'text'; at: [number, number]; text: string; size?: number; anchor?: 'start' | 'middle' | 'end'; color?: string; bold?: boolean }
+  | { t: 'dot'; at: [number, number]; r?: number; color?: string };
+
 export type Picture =
   | { kind: 'rows'; rows: PicRow[] }
   | { kind: 'strip'; cells: NumberCell[] }
@@ -67,7 +76,13 @@ export type Picture =
   | { kind: 'rect'; width: string; height: string; wv: number; hv: number }
   /** A number line from `from` to `to`; `marks` are the values the question talks about. */
   | { kind: 'line'; from: number; to: number; step: number; marks: Array<{ value: number; label?: string }> }
-  | { kind: 'parts'; bars: Array<Array<{ size: number; shaded: boolean }>>; divider?: boolean; label?: string };
+  | { kind: 'parts'; bars: Array<Array<{ size: number; shaded: boolean }>>; divider?: boolean; label?: string }
+  /**
+   * A drawn figure: a coordinate plane, a triangle with its angles, a circle, a pie
+   * chart, a cuboid … Built from data by the helpers in `draw.ts`, so the drawing is
+   * always made from the same numbers as the question. `alt` is what a screen reader hears.
+   */
+  | { kind: 'diagram'; width: number; height: number; alt: string; items: DrawItem[]; label?: string };
 
 /** What a picture tells a screen reader, in Georgian. */
 export type Described = { picture: Picture; alt: string };

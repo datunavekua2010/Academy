@@ -24,6 +24,7 @@
  * | angle    | opens an angle to a size in degrees           | the degrees            |
  * | place    | sets one digit per place (ones, tens, …)      | the number             |
  * | tiles    | puts digit/number cards into slots            | cards joined by `joiner`|
+ * | plane    | taps lattice point(s) on a coordinate plane    | `x,y` (several: sorted, joined by `;`) |
  */
 export type InteractionSpec =
   | {
@@ -114,7 +115,29 @@ export type InteractionSpec =
       unit?: string;
     }
   | { kind: 'angle'; max?: number; step?: number; start?: number }
-  | { kind: 'place'; digits: number; start?: number }
+  | {
+      kind: 'place';
+      /** Digits before the decimal comma. */
+      digits: number;
+      /** Digits after the decimal comma (tenths, hundredths, …). */
+      decimals?: number;
+      start?: number;
+    }
+  | {
+      kind: 'plane';
+      xmin: number;
+      xmax: number;
+      ymin: number;
+      ymax: number;
+      /** Pixels per unit (default 30). */
+      cell?: number;
+      /** Points already on the plane (labelled, not tappable targets). */
+      points?: Array<{ x: number; y: number; label?: string }>;
+      segments?: Array<[[number, number], [number, number]]>;
+      polygon?: Array<[number, number]>;
+      /** `many`: tap this many points; the answer is them sorted, `x,y;x,y`. */
+      count?: number;
+    }
   | {
       kind: 'tiles';
       cards: string[];

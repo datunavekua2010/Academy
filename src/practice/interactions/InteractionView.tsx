@@ -5,7 +5,7 @@ import { drawIcon } from '../pictures/icons';
 import { COIN_STYLE, Icon, Rod, TallyMarks } from '../pictures/PictureView';
 import type { InteractionSpec } from './types';
 import { CheckButton, Stepper } from './shared';
-import { AngleWidget, ArrayWidget, PlaceWidget, TilesWidget } from './widgetsExtra';
+import { AngleWidget, ArrayWidget, PlaceWidget, PlaneWidget, TilesWidget } from './widgetsExtra';
 import './interactions.css';
 
 /**
@@ -58,7 +58,7 @@ function LineWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps &
   };
   const unit = spec.unit ? ` ${spec.unit}` : '';
   const tickText = (v: number): string =>
-    spec.format === 'frac' && spec.den ? (v === 0 ? '0' : v === spec.den ? '1' : `${v}/${spec.den}`) : spec.format === 'dec' && spec.den ? String(v / spec.den).replace('.', ',') : String(v);
+    spec.format === 'frac' && spec.den ? (v === 0 ? '0' : v === spec.den ? '1' : `${v}/${spec.den}`) : (spec.format === 'dec' && spec.den ? String(v / spec.den).replace('.', ',') : String(v)).replace('-', '−');
   return (
     <div className="ix-widget ix-line-widget">
       <div
@@ -845,5 +845,7 @@ export function InteractionView(props: InteractionProps): ReactElement {
       return <PlaceWidget {...props} spec={body} />;
     case 'tiles':
       return <TilesWidget {...props} spec={body} />;
+    case 'plane':
+      return <PlaneWidget {...props} spec={body} />;
   }
 }

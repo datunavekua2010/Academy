@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { InteractionProps } from './InteractionView';
 import type { InteractionSpec } from './types';
 import { CheckButton, Stepper } from './shared';
+import { DrawItems } from '../pictures/Diagram';
+import { planeItems, planeSize, planeX, planeY } from '../pictures/draw';
 
 /**
  * Widgets added for Grades III–IV: building arrays (multiplication, area,
@@ -119,11 +121,22 @@ export function AngleWidget({ spec, answer, done, onSubmit }: InteractionProps &
  * ---------------------------------------------------------------- */
 
 const PLACE_NAMES = ['ერთეულები', 'ათეულები', 'ასეულები', 'ათასეულები', 'ათი ათასეულები', 'ასი ათასეულები', 'მილიონები'];
+const DECIMAL_NAMES = ['მეათედები', 'მეასედები', 'მეათასედები', 'მეათიათასედები'];
+
+/** A number the way the keys write it: a decimal comma, no trailing zeros. */
+export const decimalText = (intPart: number, fraction: number[]): string => {
+  const f = fraction.join('').replace(/0+$/, '');
+  return f ? `${intPart},${f}` : String(intPart);
+};
 
 export function PlaceWidget({ spec, answer, done, onSubmit }: InteractionProps & { spec: Spec<'place'> }) {
-  const initial = String(spec.start ?? 0).padStart(spec.digits, '0').split('').map(Number);
-  const [digits, setDigits] = useState<number[]>(initial);
-  const value = Number(digits.join(''));
+  const decimals = spec.decimals ?? 0;
+  const start = spec.start ?? 0;
+  const startInt = Math.floor(start + 1e-9);
+  const startFrac = String(Math.round((start - startInt) * 10 ** decimals)).padStart(decimals, '0').slice(0, decimals);
+  const [digits, setDigits] = useState<number[]>(String(startInt).padStart(spec.digits, '0').split('').map(Number));
+  const [fraction, setFraction] = useState<number[]>(decimals ? startFrac.split('').map(Number) : []);
+  const text = decimalText(Number(digits.join('')), fraction);
   return (
     <div className="ix-widget ix-place">
       <div className="ix-place-cols">
@@ -142,11 +155,96 @@ export function PlaceWidget({ spec, answer, done, onSubmit }: InteractionProps &
             </div>
           );
         })}
+        {decimals > 0 && <span className="ix-place-comma" aria-hidden="true">,</span>}
+        {fraction.map((d, i) => {
+          const name = DECIMAL_NAMES[i]!;
+          return (
+            <div className="ix-place-col is-decimal" key={`f${i}`}>
+              <span className="ix-build-title">{name}</span>
+              <Stepper
+                label={name}
+                value={d}
+                max={9}
+                disabled={done}
+                onChange={(next) => setFraction(fraction.map((x, j) => (j === i ? next : x)))}
+              />
+            </div>
+          );
+        })}
       </div>
       <p className="ix-readout ix-place-number" aria-live="polite">
-        {done ? `სწორი პასუხი: ${answer}` : `რიცხვი: ${value}`}
+        {done ? `სწორი პასუხი: ${answer}` : `რიცხვი: ${text}`}
       </p>
-      <CheckButton ready done={done} onClick={() => onSubmit(String(value))} />
+      <CheckButton ready done={done} onClick={() => onSubmit(text)} />
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- *\
+ * Coordinate plane
+\* ---------------------------------------------------------------- */
+
+export function PlaneWidget({ spec, answer, done, chosen, onSubmit }: InteractionProps & { spec: Spec<'plane'> }) {
+  const many = spec.count !== undefined;
+  const box = { xmin: spec.xmin, xmax: spec.xmax, ymin: spec.ymin, ymax: spec.ymax, cell: spec.cell ?? 30 };
+  const { w, h } = planeSize(box);
+  const [picked, setPicked] = useState<Array<[number, number]>>([]);
+  const key = (p: Array<[number, number]>): string => [...p].sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(([x, y]) => `${x},${y}`).join(';');
+  const base = planeItems({ ...box, points: spec.points, segments: spec.segments, polygon: spec.polygon });
+  const toggle = (x: number, y: number) => {
+    if (done) return;
+    const has = picked.some((p) => p[0] === x && p[1] === y);
+    if (many) setPicked(has ? picked.filter((p) => !(p[0] === x && p[1] === y)) : picked.length < spec.count! ? [...picked, [x, y]] : picked);
+    else setPicked([[x, y]]);
+  };
+  const keyed = new Set(answer.split(';'));
+  const chosenSet = new Set((chosen ?? '').split(';'));
+  const state = (x: number, y: number): string => {
+    const id = `${x},${y}`;
+    if (done) return keyed.has(id) ? 'is-correct' : chosenSet.has(id) ? 'is-wrong' : '';
+    return picked.some((p) => p[0] === x && p[1] === y) ? 'is-picked' : '';
+  };
+  const spots: Array<[number, number]> = [];
+  for (let y = spec.ymax; y >= spec.ymin; y -= 1) for (let x = spec.xmin; x <= spec.xmax; x += 1) spots.push([x, y]);
+  const ready = many ? picked.length === spec.count : picked.length === 1;
+  return (
+    <div className="ix-widget ix-plane">
+      <svg className="ix-plane-svg" viewBox={`0 0 ${w + 18} ${h + 6}`} style={{ maxWidth: (w + 18) * 1.4 }} role="group" aria-label="საკოორდინატო სიბრტყე">
+        <defs>
+          <marker id="diagram-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#33415c" />
+          </marker>
+        </defs>
+        <DrawItems items={base} />
+        {spots.map(([x, y]) => (
+          <circle
+            key={`${x},${y}`}
+            className={`ix-plane-spot ${state(x, y)}`}
+            cx={planeX(box, x)}
+            cy={planeY(box, y)}
+            r={Math.max(7, box.cell * 0.34)}
+            role="button"
+            tabIndex={done ? -1 : 0}
+            aria-label={`(${x}; ${y})`}
+            aria-pressed={picked.some((p) => p[0] === x && p[1] === y)}
+            onClick={() => toggle(x, y)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggle(x, y);
+              }
+            }}
+          />
+        ))}
+      </svg>
+      <p className="ix-readout" aria-live="polite">
+        {done
+          ? `სწორი პასუხი: ${answer.split(';').map((p) => `(${p.replace(',', '; ')})`).join(' ')}`
+          : picked.length === 0
+            ? many ? `შეეხე ${spec.count} წერტილს.` : 'შეეხე შესაბამის წერტილს.'
+            : `არჩეულია: ${picked.map(([x, y]) => `(${x}; ${y})`).join(' ')}`}
+      </p>
+      <CheckButton ready={ready} done={done} onClick={() => onSubmit(key(picked))} />
     </div>
   );
 }
