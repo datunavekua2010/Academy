@@ -47,52 +47,36 @@ describe('pictures the student has to read', () => {
     }
   });
 
-  it('keeps the newline when it reaches the screen', () => {
+  it('shows an above/below pair as two stacked rows of drawn objects', () => {
+    // The picture is drawn artwork now, not characters: the two objects are two
+    // rows, one over the other, so the vertical meaning survives.
     const question = generateBatch(ABOVE_BELOW as never, 6, { level: 1 }).find((q) =>
       q.visual?.includes('\n'),
     )!;
     saveDraft(startSession(ABOVE_BELOW as never, [question]), window.localStorage);
 
     render(<StudentApp />);
-    const visual = document.querySelector('.question-visual')!;
-    expect(visual.textContent).toBe(question.visual);
-
-    // The element keeps the newline; whether it *renders* as a break depends on
-    // one CSS declaration. jsdom does not load the stylesheet, so read the rule
-    // from the file the browser gets — that is the thing that was missing.
-    const css = readFileSync(path.resolve(process.cwd(), 'src/student/student.css'), 'utf8');
-    const rule = css.slice(css.indexOf('.question-visual {'));
-    const body = rule.slice(0, rule.indexOf('}'));
-    expect(body).toMatch(/white-space:\s*pre-(line|wrap)/);
+    const picture = document.querySelector('[data-picture="rows"]')!;
+    expect(picture, 'the pair is drawn as a picture').not.toBeNull();
+    expect(picture.querySelectorAll('.pic-row')).toHaveLength(question.visual!.split('\n').filter((l) => l.trim()).length);
+    expect(picture.querySelectorAll('svg.pic-icon').length).toBeGreaterThanOrEqual(2);
+    // The old character drawing is gone.
+    expect(document.querySelector('.question-visual')).toBeNull();
   });
 
-  it('gives a clock face the one font and whitespace rule its picture needs', () => {
-    // A dial is drawn on a grid of spaces: the numerals are placed by column and
-    // the hands run along rows. `.question-visual` is proportional and
-    // `pre-line`, which is right for a row of objects and turns a dial into a
-    // smear — so the dial gets its own class, and jsdom cannot see the difference
-    // because it loads no stylesheet. Read the rule from the file the browser gets.
+  it('draws a clock question as a real clock face', () => {
     const ref = { grade: 1 as const, topicId: 'dro', subtopicId: 'saatis-wakitxva' };
     const question = generateBatch(ref as never, 12, { level: 1 }).find((q) => q.visual?.includes('┼'))!;
     expect(question, 'a clock question should draw a dial').toBeDefined();
+    expect(question.clocks?.length, 'the generator records the exact times it drew').toBeGreaterThanOrEqual(1);
 
     saveDraft(startSession(ref as never, [question]), window.localStorage);
     render(<StudentApp />);
 
-    const visual = document.querySelector('.question-visual')!;
-    expect(visual.textContent).toBe(question.visual);
-    expect(visual.className, 'a dial must opt into the monospace rule').toContain('question-visual-dial');
-
-    const css = readFileSync(path.resolve(process.cwd(), 'src/student/student.css'), 'utf8');
-    const rule = css.slice(css.indexOf('.question-visual-dial {'));
-    const body = rule.slice(0, rule.indexOf('}'));
-    // Every space the picture is drawn with is kept. `pre` exactly: `pre-line`
-    // also matches /pre\b/, and collapsing the runs of spaces is the failure
-    // this class exists to prevent — a version of this assertion that accepted
-    // `pre-line` passed against a deliberately broken stylesheet.
-    expect(body).toMatch(/white-space:\s*pre\s*;/);
-    // …and every character is the same width, or the columns do not line up.
-    expect(body).toMatch(/font-family:[^;]*monospace/);
+    const clocks = document.querySelectorAll('[data-picture="clock"] svg.pic-clock');
+    expect(clocks.length, 'every dial is drawn as a clock face, not characters').toBe(question.clocks!.length);
+    expect(clocks[0]!.querySelectorAll('text')).toHaveLength(12);
+    expect(document.querySelector('.question-visual')).toBeNull();
   });
 
   it('leaves a row-of-objects picture on the emoji-friendly default', () => {
@@ -102,12 +86,7 @@ describe('pictures the student has to read', () => {
     expect('🍎 🍎 🍎'.includes('╭')).toBe(false);
   });
 
-  it('gives a coin purse the one font and whitespace rule its picture needs', () => {
-    // A purse is drawn as box-drawing tokens with the denomination centred
-    // inside: the borders only meet at the corners in a fixed-width font, and
-    // `pre-line` strips the padding that centres a one-digit value in a
-    // two-digit cell. jsdom loads no stylesheet, so read the rule the browser
-    // gets — the same reason as the dial above.
+  it('draws a coin purse as coins, one for each coin in the question', () => {
     const ref = { grade: 1 as const, topicId: 'fasebi', subtopicId: 'monetebis-vertoba' };
     const question = generateBatch(ref as never, 12, { level: 1 }).find((q) => q.visual?.includes('╭'))!;
     expect(question, 'a money question should draw coins').toBeDefined();
@@ -115,23 +94,10 @@ describe('pictures the student has to read', () => {
     saveDraft(startSession(ref as never, [question]), window.localStorage);
     render(<StudentApp />);
 
-    const visual = document.querySelector('.question-visual')!;
-    expect(visual.textContent).toBe(question.visual);
-    expect(visual.className, 'coins must opt into the monospace rule').toContain('question-visual-coins');
-    // …and the coin picture must NOT steal the dial's class or vice versa.
-    expect(visual.className).not.toContain('question-visual-dial');
-
-    const css = readFileSync(path.resolve(process.cwd(), 'src/student/student.css'), 'utf8');
-    const rule = css.slice(css.indexOf('.question-visual-coins {'));
-    const body = rule.slice(0, rule.indexOf('}'));
-    // `pre` exactly — `pre-line` matches /pre\b/ too, and collapsing the runs of
-    // spaces is the very failure this class exists to prevent. (The dial test
-    // above has the same shape; it is written the same way for the same reason.)
-    expect(body).toMatch(/white-space:\s*pre\s*;/);
-    expect(body).toMatch(/font-family:[^;]*monospace/);
-    // The box characters and the digits must advance by the same amount, or the
-    // token's right edge walks away from its top-right corner.
-    expect(body).toMatch(/letter-spacing:\s*0\s*;/);
+    const drawn = [...(question.visual ?? '').matchAll(/│\s*(\d+)\s*│/g)].map((m) => m[1]);
+    const coins = document.querySelectorAll('[data-picture="coins"] .pic-coin-row > button');
+    expect([...coins].map((c) => c.getAttribute('aria-label'))).toEqual(drawn.map((n) => `${n} თეთრი`));
+    expect(document.querySelector('.question-visual')).toBeNull();
   });
 });
 
@@ -265,15 +231,18 @@ describe('a picture a screen reader cannot see', () => {
     expect(spoken).toContain(`${amount} თეთრი`);
   });
 
-  it('keeps the picture itself out of the accessibility tree', () => {
-    // The spoken line replaces the picture for assistive technology; it does not
-    // duplicate it. A screen reader must not read both.
+  it('keeps the drawn artwork out of the accessibility tree and gives its words instead', () => {
+    // The spoken line replaces the artwork for assistive technology; it does not
+    // duplicate it. Every icon is decorative, and the card carries one description.
     const { ref, question } = withVisual('monetebis-vertoba');
     saveDraft(startSession(ref as never, [question]), window.localStorage);
     render(<StudentApp />);
 
-    const picture = document.querySelector('.question-visual')!;
-    expect(picture.getAttribute('aria-hidden')).toBe('true');
+    const card = document.querySelector('.pic-card')!;
+    expect(card.querySelector('.visually-hidden')!.textContent).toMatch(/თეთრი/);
+    for (const icon of card.querySelectorAll('svg')) {
+      expect(icon.getAttribute('aria-hidden') === 'true' || icon.getAttribute('role') === 'img').toBe(true);
+    }
   });
 
   it('puts the spoken line out of the visual layout, not out of the a11y tree', () => {

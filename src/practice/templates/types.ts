@@ -12,6 +12,9 @@
 
 import type { GradeId } from '../types';
 
+import type { InteractionSpec } from '../interactions/types';
+import type { Picture } from '../pictures/types';
+
 export type DifficultyLevel = 1 | 2 | 3;
 
 /** Values drawn for one variation, keyed by variable name. */
@@ -180,6 +183,19 @@ export interface QuestionTemplate {
   visual?: (vars: Vars) => string;
   /** Optional Georgian instruction line above the prompt. */
   hint?: string;
+  /**
+   * Drawn pictures for this variation, as data (see `pictures/types.ts`). Unlike
+   * `visual` they are not text, so they can be exact: a clock at 3:30, a model of
+   * 4 tens and 7 ones, a balance that tips to the left.
+   */
+  pictures?: (vars: Vars) => Picture[];
+  /**
+   * Makes the question *interactive*: the student does something to a picture
+   * (sets a clock, fills a ten-frame, taps a number line) instead of choosing or
+   * typing. `answer` must return the interaction's canonical answer string — see
+   * `InteractionSpec` for the format of each kind. No options are generated.
+   */
+  interaction?: (vars: Vars) => InteractionSpec;
 
   variables: Record<string, VariableSpec>;
   constraints?: TemplateConstraint[];

@@ -56,6 +56,14 @@ function answersMatch(question: Question, choice: string): boolean {
     return typed !== null && expected !== null && typed === expected;
   }
 
+  // A clock the student set is the same moment on a 12-hour dial, however the
+  // hour is written: 3:30 and 15:30 are one position of the hands.
+  if (question.answerMode === 'interactive' && question.interaction?.kind === 'clock') {
+    const typed = clockMinutes(choice);
+    const expected = clockMinutes(question.answer);
+    return typed !== null && expected !== null && typed % 720 === expected % 720;
+  }
+
   // A multi-select is right only when the marked *set* is the right set: every
   // option that fits, and none that does not. Marking three right ones out of
   // three but also the one wrong option is wrong; so is stopping one short.

@@ -1,4 +1,5 @@
 import type { Question } from '../types';
+import { takeDrawnClocks } from './clock';
 import { makeRng, pick, randomInt, shuffleWith } from './rng';
 import type { AnswerFormat, ListVariable, QuestionTemplate, Vars } from './types';
 import { renderPrompt } from './types';
@@ -324,7 +325,8 @@ export function generateFromTemplate(
     // for it would be wasted work (and would make the template fail when it
     // could not invent enough of them). A `time` answer is typed too — one
     // `HH:MM` field — but carries its own words when it needs them.
-    const typed = template.format?.entry === true || template.format?.time === true;
+    const typed =
+      template.format?.entry === true || template.format?.time === true || Boolean(template.interaction);
     const entry = typed;
 
     // Distractors come from the drawn values, so they always relate to *this*
@@ -369,7 +371,9 @@ export function generateFromTemplate(
       normalised = { value: ordered.join(separator), display: ordered.join(separator) };
 
       const prompt = renderPrompt(template.prompt, vars);
+      takeDrawnClocks();
       const visual = template.visual ? template.visual(vars) : '';
+      const clocks = takeDrawnClocks();
       const signature = `${template.id}|${prompt}|${visual}||${ordered.join(',')}`;
       return {
         id: `${template.id}~${seed}`,
@@ -382,7 +386,8 @@ export function generateFromTemplate(
         topicId: template.topicId,
         subtopicId: template.subtopicId,
         prompt,
-        visual: template.visual ? template.visual(vars) : undefined,
+        visual: template.visual ? visual : undefined,
+        clocks: clocks.length > 0 ? clocks : undefined,
         hint: template.hint,
         answerMode: 'multi',
         orderItems: undefined,
@@ -452,13 +457,19 @@ export function generateFromTemplate(
     // every variation look identical, so the generator would reject its own
     // output as a repeat and fail with "ranges are too narrow" while holding a
     // perfectly good library of questions.
+    takeDrawnClocks();
     const visual = template.visual ? template.visual(vars) : '';
+    const clocks = takeDrawnClocks();
     // The answer belongs in the key too. Two questions can show the same row
     // and ask different things about it ("which is on the left?" against
     // "which is in the middle?") — same prompt prefix, same picture, different
     // question. Keyed without the answer, one was mistaken for the other and a
     // session showed the same sentence twice.
-    const signature = `${template.id}|${prompt}|${visual}|${orderItems?.join(',') ?? ''}|${String(normalised.value)}`;
+    const drawn =
+      template.interaction || template.pictures
+        ? JSON.stringify([template.pictures?.(vars), template.interaction?.(vars)])
+        : '';
+    const signature = `${template.id}|${prompt}|${visual}|${drawn}|${orderItems?.join(',') ?? ''}|${String(normalised.value)}`;
 
     return {
       id: `${template.id}~${seed}`,
@@ -471,9 +482,20 @@ export function generateFromTemplate(
       topicId: template.topicId,
       subtopicId: template.subtopicId,
       prompt,
-      visual: template.visual ? template.visual(vars) : undefined,
+      visual: template.visual ? visual : undefined,
+      clocks: clocks.length > 0 ? clocks : undefined,
       hint: template.hint,
-      answerMode: template.shuffle ? 'order' : template.format?.time ? 'time' : entry ? 'number' : 'choice',
+      answerMode: template.shuffle
+        ? 'order'
+        : template.interaction
+          ? 'interactive'
+          : template.format?.time
+            ? 'time'
+            : entry
+              ? 'number'
+              : 'choice',
+      interaction: template.interaction ? template.interaction(vars) : undefined,
+      pictures: template.pictures ? template.pictures(vars) : undefined,
       orderItems,
       // A typed-answer or ordering question must not ship options: an option
       // list would be a second, contradictory way to answer it (and a student

@@ -6,6 +6,11 @@ import { MAX_SCORE } from '../scoring';
 import type { Submission } from '../session';
 import { bandForLevel, levelForScore, usesLevelBands } from '../levels';
 import { ScoreMeter } from './ScoreMeter';
+import { PictureView, pictureTargets } from '../pictures/PictureView';
+import type { PickProps } from '../pictures/PictureView';
+import { describedPictures, pictorialize } from '../pictures/parse';
+import type { Picture, Segment } from '../pictures/types';
+import { InteractionView } from '../interactions/InteractionView';
 
 const LETTERS = ['ა', 'ბ', 'გ', 'დ', 'ე', 'ვ'];
 
@@ -197,6 +202,67 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
     );
   };
 
+  // The question's pictures. Templates draw them as text; `pictorialize` reads
+  // that text back as data and the renderer draws real artwork instead. The
+  // wording of the question is untouched — only the lines that were a picture
+  // are lifted out of it.
+  const visualSegments: Segment[] = question?.visual
+    ? pictorialize(question.visual, { isVisual: true, clocks: question.clocks })
+    : [];
+  const promptSegments: Segment[] = question ? pictorialize(question.prompt, { isVisual: false }) : [];
+  // A picture the question's words describe but never drew (a model of tens and ones).
+  const described: Picture[] =
+    question && !question.interaction && !question.pictures?.length && !question.visual && !pictorialize(question.prompt, { isVisual: false }).some((s) => s.type === 'picture')
+      ? describedPictures(question.prompt)
+      : [];
+  const hasVisualPicture = visualSegments.some((segment) => segment.type === 'picture');
+  const hasPromptPicture = promptSegments.some((segment) => segment.type === 'picture');
+  const allPictures: Picture[] = [...visualSegments, ...promptSegments].flatMap((segment) =>
+    segment.type === 'picture' ? [segment.picture] : [],
+  );
+
+  /**
+   * Answering on the picture. If the answer to the question is something the
+   * picture itself shows — a number on the chart, a coin, a day, a shape — the
+   * student may tap it there instead of choosing it from the list. The tap is
+   * submitted exactly like a chosen option, so the engine marks it the same way.
+   * A „how many“ question is never answered by tapping, because a count is not
+   * one of the things drawn.
+   */
+  const answerText = question ? String(question.answer) : '';
+  const targetValues = allPictures.flatMap((picture) => pictureTargets(picture));
+  const asksCount = question ? /რამდენ/.test(question.prompt) : false;
+  const pickable =
+    Boolean(question) &&
+    (question?.answerMode === 'choice' || question?.answerMode === 'number' || question?.answerMode === undefined) &&
+    !asksCount &&
+    targetValues.some((value) => normalisePick(value, answerText) === answerText);
+  const pick: PickProps | undefined = pickable
+    ? {
+        enabled: !answered,
+        onPick: (value) => submit(normalisePick(value, answerText)),
+        stateOf: (value) => {
+          if (!answered) return undefined;
+          const normalised = normalisePick(value, answerText);
+          if (normalised === answerText) return 'correct';
+          return normalised === choice ? 'wrong' : undefined;
+        },
+      }
+    : undefined;
+
+  const renderSegment = (segment: Segment, index: number, asVisual: boolean) =>
+    segment.type === 'picture' ? (
+      <PictureView key={`${asVisual ? 'v' : 'p'}${index}`} picture={segment.picture} pick={pick} />
+    ) : asVisual ? (
+      <p key={`v${index}`} className={visualClass(segment.text)}>
+        {segment.text}
+      </p>
+    ) : (
+      <p key={`p${index}`} className="question-prompt">
+        {segment.text}
+      </p>
+    );
+
   return (
     <div className="practice-stage">
       <div className="session-top">
@@ -271,28 +337,45 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             კითხვა #{session.correct + session.incorrect + 1}
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
-          {question.visual && (
-            /* Two kinds of picture share this slot: rows of objects, where the
-               width of a character does not matter, and the U13 clock face,
-               where it is the *whole* picture — the numerals are placed on a
-               character grid and a proportional font would smear them off the
-               radii, while `pre-line` collapses the runs of spaces they are
-               drawn with. The dial gets a class that pins both. */
-            <>
-              <p className={visualClass(question.visual)} aria-hidden="true">
-                {question.visual}
-              </p>
-              {/* The drawn picture is hidden from assistive technology because
-                  box-drawing and emoji stacks read aloud as noise — but the
-                  question lives in the picture, so its meaning is given as a
-                  sentence instead. It is visually hidden, not `display: none`,
-                  so screen readers still find it. */}
-              <p className="visually-hidden">{visualText(question.visual)}</p>
-            </>
+          {(question.pictures ?? []).map((picture, index) => (
+            <PictureView key={`t${index}`} picture={picture} />
+          ))}
+          {described.map((picture, index) => (
+            <PictureView key={`d${index}`} picture={picture} />
+          ))}
+          {hasVisualPicture ? (
+            visualSegments.map((segment, index) => renderSegment(segment, index, true))
+          ) : (
+            question.visual && (
+              /* Text visuals that could not be read as a picture keep their
+                 old drawing: a row of objects, or the character grid. */
+              <>
+                <p className={visualClass(question.visual)} aria-hidden="true">
+                  {question.visual}
+                </p>
+                <p className="visually-hidden">{visualText(question.visual)}</p>
+              </>
+            )
           )}
-          <p className="question-prompt">{question.prompt}</p>
+          {hasPromptPicture ? (
+            promptSegments.map((segment, index) => renderSegment(segment, index, false))
+          ) : (
+            <p className="question-prompt">{question.prompt}</p>
+          )}
+          {pick?.enabled && (
+            <p className="pic-pick-hint">შეგიძლია პასუხი სურათზეც მონიშნო — შეეხე სწორ ადგილს.</p>
+          )}
 
-          {orderMode ? (
+          {question.answerMode === 'interactive' && question.interaction ? (
+            <InteractionView
+              key={question.id}
+              spec={question.interaction}
+              answer={question.answer}
+              done={answered}
+              chosen={answered ? choice : null}
+              onSubmit={submit}
+            />
+          ) : orderMode ? (
             <div className="answer-order">
               <p className="answer-order-hint">
                 შეეხე საგნებს იმ თანმიმდევრობით, როგორც უნდა იდგეს.
@@ -525,6 +608,15 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
       ) : null}
     </div>
   );
+}
+
+/**
+ * A tapped picture target, written the way the question's answer is written.
+ * A coin is tapped as „50“ but a question may expect „50 თეთრი“.
+ */
+function normalisePick(value: string, answer: string): string {
+  if (/^\d+$/.test(value) && answer === `${value} თეთრი`) return answer;
+  return value;
 }
 
 /** How many correct answers remain until 100, using the current band. */
