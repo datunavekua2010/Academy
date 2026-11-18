@@ -1,0 +1,175 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U09.5 "Solving Balance Puzzles with Numbers".
+ * Demonstration content only. A balanced scale is a clue: whatever is on the two pans has the same total, and that is
+ * enough to find an unknown weight.
+ */
+export const g1u09l5: Lesson = {
+  id: 'g1-u09-l5',
+  status: 'placeholder',
+  objective: 'ვხსნი სასწორის თავსატეხებს და ვპოულობ უცნობ რაოდენობას მინიშნებების მიხედვით.',
+  prerequisites: ['უცნობი რიცხვის პოვნა (U09.4)'],
+  minutes: 12,
+  concepts: ['თავსატეხი', 'უცნობი წონა', 'გაყოფა თანაბარ ნაწილებად', 'შემოწმება'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! სასწორის თავსატეხი წყდება მაშინ, როცა იპოვი, რამდენია ერთი უცნობი წონა.',
+    retry: 'სცადე ისევ. იპოვე ის თარო, სადაც მხოლოდ უცნობი წონებია, და გაყავი რიცხვი მათ რაოდენობაზე.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'სასწორზე ორი უცნობი წონა 8-ს უდრის. რამდენია ერთი?',
+      visual: { type: 'scale', left: [4, 4], right: [8] },
+      mascot: { intro: 'თუ ორი ერთნაირი წონა ერთად 8-ია, ერთი მათგანი ნახევარია.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: '4', text: '4' },
+          { id: '8', text: '8' },
+          { id: '2', text: '2' },
+        ],
+        answer: '4',
+      },
+      hints: ['8 გაყავი ორ თანაბარ ნაწილად.'],
+      explanation: '2 × 4 = 8, ამიტომ ერთი უცნობი წონა 4-ია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 8 უნდა გაიყოს ორ თანაბარ ნაწილად.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'თავსატეხები',
+      prompt: 'გადახედე სასწორებს. ერთ თაროზე მხოლოდ უცნობი წონებია, მეორეზე — რიცხვი. იპოვე ერთი უცნობის მნიშვნელობა.',
+      hints: ['გაყავი რიცხვი უცნობი წონების რაოდენობაზე.', 'თუ 3 ცალი = 9, მაშინ ერთი = 9 ÷ 3 = 3.'],
+      tool: {
+        tool: 'puzzle-lab',
+        puzzles: [
+          { unknown: 'x', clues: [{ unknownCount: 2, known: 8, onLeft: true }], answer: 4 },
+          { unknown: 'x', clues: [{ unknownCount: 3, known: 9, onLeft: true }], answer: 3 },
+          { unknown: 'x', clues: [{ unknownCount: 2, known: 10, onLeft: false }], answer: 5 },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'როგორ იხსნება სასწორის თავსატეხი',
+      prompt: 'ვნახოთ, როგორ გვეხმარება თანაბარი სასწორი უცნობის პოვნაში.',
+      blocks: [
+        { type: 'text', text: 'სასწორი თანაბარია — ორივე თაროზე იგივე რაოდენობაა. ეს არის ჩვენი მინიშნება.' },
+        { type: 'scale', left: [1, 1, 1], right: [9] },
+        { type: 'text', text: 'სამი ერთნაირი უცნობი წონა ერთად 9-ია. ამიტომ ერთი მათგანი 9 ÷ 3 = 3-ია.' },
+        {
+          type: 'worked',
+          title: 'თავსატეხის ამოხსნა',
+          steps: [
+            { text: 'იპოვე ის თარო, სადაც მხოლოდ უცნობი წონებია.', math: 'x + x + x = 9' },
+            { text: 'გაყავი მეორე თაროს რიცხვი უცნობების რაოდენობაზე.', math: '9 \u00f7 3 = 3' },
+            { text: 'შეამოწმე: ჩასვი პოვნილი რიცხვი და ნახე, თანაბარია თუ არა.', math: '3 + 3 + 3 = 9' },
+          ],
+        },
+        { type: 'callout', tone: 'tip', text: 'თუ თაროზე ორი ან მეტი უცნობი წონაა, ისინი ყოველთვის თანაბრად იყოფა — ამიტომ ვიყენებთ გაყოფას.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'სასწორზე 2 უცნობი = 8. რამდენია x?',
+      response: { type: 'balance-puzzle', unknown: 'x', clues: [{ unknownCount: 2, known: 8, onLeft: true }], answer: 4 },
+      hints: ['8 ÷ 2 = ?'],
+      explanation: 'x = 4, რადგან 2 × 4 = 8.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაყავი 8 ორზე.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'სასწორზე 3 უცნობი = 9. რამდენია x?',
+      response: { type: 'balance-puzzle', unknown: 'x', clues: [{ unknownCount: 3, known: 9, onLeft: true }], answer: 3 },
+      hints: ['9 ÷ 3 = ?'],
+      explanation: 'x = 3, რადგან 3 × 3 = 9.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაყავი 9 სამზე.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი რიცხვები იძლევიან ერთსა და იმავე ჯამს?',
+      visual: { type: 'sentence', left: { a: 2, op: '+', b: 4 }, right: 6 },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'a', text: '3 + 3 = 6 (იგივე ჯამი)' },
+          { id: 'b', text: '2 + 5 = 6' },
+          { id: 'c', text: '1 + 2 = 6' },
+        ],
+        answer: 'a',
+      },
+      hints: ['გამოთვალე თითოეული ჯამი.'],
+      explanation: '2 + 4 = 6 და 3 + 3 = 6 — ორივე ერთსა და იმავე ჯამს იძლევა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გამოთვალე ყველა ჯამი.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'სასწორზე 2 უცნობი = 10. რამდენია x?',
+      response: { type: 'balance-puzzle', unknown: 'x', clues: [{ unknownCount: 2, known: 10, onLeft: false }], answer: 5 },
+      hints: ['10 ÷ 2 = ?'],
+      explanation: 'x = 5, რადგან 2 × 5 = 10.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაყავი 10 ორზე.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'სასწორზე 4 უცნობი = 12. რამდენია x?',
+      response: { type: 'balance-puzzle', unknown: 'x', clues: [{ unknownCount: 4, known: 12, onLeft: true }], answer: 3 },
+      hints: [],
+      explanation: 'x = 3, რადგან 4 × 3 = 12.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაყავი 12 ოთხზე.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი ორი წინადადება აღწერს ერთსა და იმავე სასწორს?',
+      response: {
+        type: 'sentence-pick',
+        sentences: [
+          { id: 'a', left: { a: 5, op: '+', b: 2 }, right: 7 },
+          { id: 'b', left: { a: 6, op: '+', b: 2 }, right: 7 },
+          { id: 'c', left: { a: 3, op: '+', b: 4 }, right: 7 },
+        ],
+      },
+      hints: [],
+      explanation: '5 + 2 = 7 და 3 + 4 = 7 — ორივე 7-ს იძლევა. 6 + 2 = 8, არა 7.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გამოთვალე სამივე ჯამი.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რა გვეხმარება სასწორის თავსატეხის ამოხსნაში?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'divide', text: 'ვიპოვოთ თარო მხოლოდ უცნობი წონებით და გავყოთ რიცხვი მათ რაოდენობაზე' },
+          { id: 'guess', text: 'შევხედოთ, რომელი თარო უფრო მაღალია' },
+          { id: 'count', text: 'დავითვალოთ, რამდენი თაროა სურათზე' },
+        ],
+        answer: 'divide',
+      },
+      hints: [],
+      explanation: 'თანაბარი სასწორი გვეუბნება, რომ უცნობი წონები ერთად ცნობილი რიცხვის ტოლია — ამიტომ ვყოფთ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაიხსენე, როგორ იპოვე x, როცა 2 ცალი = 8 იყო.',
+    },
+  ],
+};

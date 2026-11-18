@@ -39,6 +39,16 @@ import { g1u08l2 } from './g1-u08-l2';
 import { g1u08l3 } from './g1-u08-l3';
 import { g1u08l4 } from './g1-u08-l4';
 import { g1u08l5 } from './g1-u08-l5';
+import { g1u09l1 } from './g1-u09-l1';
+import { g1u09l2 } from './g1-u09-l2';
+import { g1u09l3 } from './g1-u09-l3';
+import { g1u09l4 } from './g1-u09-l4';
+import { g1u09l5 } from './g1-u09-l5';
+import { g1u10l1 } from './g1-u10-l1';
+import { g1u10l2 } from './g1-u10-l2';
+import { g1u10l3 } from './g1-u10-l3';
+import { g1u10l4 } from './g1-u10-l4';
+import { g1u10l5 } from './g1-u10-l5';
 import { g6u10l3 } from './g6-u10-l3';
 
 /**
@@ -88,6 +98,16 @@ export const LESSON_CONTENT: Record<string, Lesson> = {
   [g1u08l3.id]: g1u08l3,
   [g1u08l4.id]: g1u08l4,
   [g1u08l5.id]: g1u08l5,
+  [g1u09l1.id]: g1u09l1,
+  [g1u09l2.id]: g1u09l2,
+  [g1u09l3.id]: g1u09l3,
+  [g1u09l4.id]: g1u09l4,
+  [g1u09l5.id]: g1u09l5,
+  [g1u10l1.id]: g1u10l1,
+  [g1u10l2.id]: g1u10l2,
+  [g1u10l3.id]: g1u10l3,
+  [g1u10l4.id]: g1u10l4,
+  [g1u10l5.id]: g1u10l5,
   [g6u10l3.id]: g6u10l3,
 };
 

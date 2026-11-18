@@ -1,0 +1,217 @@
+import type { Lesson } from '../types';
+
+const objects = [
+  { id: 'r1', colour: 'red', kind: 'circle', size: 'small', label: 'წითელი წრე' },
+  { id: 'r2', colour: 'red', kind: 'triangle', size: 'large', label: 'წითელი სამკუთხედი' },
+  { id: 'b1', colour: 'blue', kind: 'circle', size: 'large', label: 'ლურჯი წრე' },
+  { id: 'b2', colour: 'blue', kind: 'triangle', size: 'small', label: 'ლურჯი სამკუთხედი' },
+  { id: 'y1', colour: 'yellow', kind: 'circle', size: 'large', label: 'ყვითელი წრე' },
+] as const;
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U10.3 "Understanding Groups and Overlapping Groups".
+ * Demonstration content only. An object can belong to two groups at once; the overlap is a place in its own right,
+ * and so is the outside.
+ */
+export const g1u10l3: Lesson = {
+  id: 'g1-u10-l3',
+  status: 'placeholder',
+  objective: 'ვიცი, რომ საგანი შეიძლება ორ ჯგუფს ეკუთვნოდეს ერთდროულად, და ვათავსებ მას ვენის დიაგრამაზე.',
+  prerequisites: ['დალაგება ორი ნიშნით (U10.2)'],
+  minutes: 10,
+  concepts: ['გადამკვეთი ჯგუფები', 'ვენის დიაგრამა', 'ორივეში', 'არც ერთში'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! გადაკვეთაში ხვდება ის საგანი, რომელსაც ორივე ნიშანი აქვს — და ის ეკუთვნის ორივე ჯგუფს.',
+    retry: 'სცადე ისევ. ჰკითხე თავს: ეკუთვნის პირველ წრეს? მეორეს? ორივეს? არც ერთს?',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'ორი წრე გადაკვეთილია: ერთი „წითელი“, მეორე „სამკუთხედი“. სად ხვდება წითელი სამკუთხედი?',
+      visual: {
+        type: 'venn',
+        leftLabel: 'წითელი',
+        rightLabel: 'სამკუთხედი',
+        regions: [{ region: 'both', objects: [objects[1]] }],
+      },
+      mascot: { intro: 'გადაკვეთაში ხვდება ის, რაც ორივე ჯგუფს ეკუთვნის.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'both', text: 'ორივე წრის გადაკვეთაში' },
+          { id: 'left', text: 'მხოლოდ წითელ წრეში' },
+          { id: 'none', text: 'არც ერთ წრეში' },
+        ],
+        answer: 'both',
+      },
+      hints: ['ის წითელიცაა და სამკუთხედიც.'],
+      explanation: 'ის ეკუთვნის ორივე ჯგუფს, ამიტომ გადაკვეთაშია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. სად ხვდება ორივე ნიშანი?',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'ვენის დიაგრამა',
+      prompt: 'ჩადე საგნები ორ გადამკვეთ წრეში. გადაკვეთა ცალკე ადგილია, გარეთა ნაწილიც ცალკე.',
+      hints: ['თუ საგანი ორივე ჯგუფს ეკუთვნის — გადაკვეთაში.', 'თუ არც ერთს — წრეების გარეთ.'],
+      tool: {
+        tool: 'venn-lab',
+        objects: [...objects],
+        pairs: [
+          { leftAttr: 'colour', leftValue: 'red', rightAttr: 'kind', rightValue: 'triangle' },
+          { leftAttr: 'colour', leftValue: 'blue', rightAttr: 'kind', rightValue: 'circle' },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'რას ნიშნავს გადაკვეთა',
+      prompt: 'ვნახოთ, სად აღმოჩნდება თითოეული საგანი.',
+      blocks: [
+        { type: 'text', text: 'მარცხენა წრე — „წითელი“. მარჯვენა წრე — „სამკუთხედი“.' },
+        {
+          type: 'sort-demo',
+          mode: 'venn',
+          attr: 'colour',
+          second: 'kind',
+          leftValue: 'red',
+          rightValue: 'triangle',
+          objects: [...objects],
+          steps: [
+            'წითელი წრე და წითელი კვადრატი მარცხენა წრეში არიან.',
+            'სამკუთხედი, რომელიც წითელია, ორივე წრეშია — ამიტომ გადაკვეთაში.',
+            'ლურჯი წრე არც წითელია, არც სამკუთხედი — წრეების გარეთ.',
+            'გადაკვეთა ცალკე ადგილია, არა შეცდომა.',
+          ],
+          caption: 'საგანი შეიძლება ორ ჯგუფს ეკუთვნოდეს ერთდროულად.',
+        },
+        { type: 'callout', tone: 'tip', text: 'სამი კითხვა: ეკუთვნის პირველ წრეს? ეკუთვნის მეორეს? ორივეს? თუ არც ერთს — გარეთ.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ჩადე საგნები წრეებში: „წითელი“ და „სამკუთხედი“.',
+      response: { type: 'venn-sort', leftAttr: 'colour', leftValue: 'red', rightAttr: 'kind', rightValue: 'triangle', objects: [...objects] },
+      hints: ['გადაკვეთაში — რაც ორივეა.'],
+      explanation: 'წითელი სამკუთხედი გადაკვეთაშია; ლურჯი წრე — გარეთ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეამოწმე ორივე ნიშანი.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ჩადე საგნები წრეებში: „ლურჯი“ და „წრე“.',
+      response: { type: 'venn-sort', leftAttr: 'colour', leftValue: 'blue', rightAttr: 'kind', rightValue: 'circle', objects: [...objects] },
+      hints: ['ლურჯი წრე ორივეა — გადაკვეთაში.'],
+      explanation: 'ლურჯი წრე გადაკვეთაშია; წითელი წრე მხოლოდ წრეების წრეში; ყვითელი წრე — მხოლოდ წრეების წრეში.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. სად არის ლურჯი წრე?',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რა ხვდება ორივე წრეში ერთდროულად?',
+      visual: {
+        type: 'venn',
+        leftLabel: 'წითელი',
+        rightLabel: 'წრე',
+        regions: [{ region: 'both', objects: [objects[0]] }],
+      },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'both', text: 'წითელი წრე' },
+          { id: 'left', text: 'ყველა წითელი საგანი' },
+          { id: 'right', text: 'ყველა წრე' },
+        ],
+        answer: 'both',
+      },
+      hints: ['უნდა იყოს წითელიც და წრეც.'],
+      explanation: 'მხოლოდ წითელი წრეა ორივე ჯგუფში.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ორივე ნიშანი ერთად?',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი საგანი ხვდება წრეების გარეთ?',
+      visual: {
+        type: 'venn',
+        leftLabel: 'წითელი',
+        rightLabel: 'სამკუთხედი',
+        regions: [
+          { region: 'left', objects: [objects[0]] },
+          { region: 'both', objects: [objects[1]] },
+          { region: 'none', objects: [objects[4]] },
+        ],
+      },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'none', text: 'ყვითელი წრე — ის არც წითელია, არც სამკუთხედი' },
+          { id: 'both', text: 'წითელი სამკუთხედი' },
+          { id: 'left', text: 'წითელი წრე' },
+        ],
+        answer: 'none',
+      },
+      hints: ['გარეთ არის ის, რაც არც ერთ ჯგუფს არ ეკუთვნის.'],
+      explanation: 'ყვითელი წრე არც წითელია და არც სამკუთხედი, ამიტომ გარეთა ნაწილშია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. იპოვე საგანი, რომელიც არც ერთ წრეში არ არის.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რას ნიშნავს გადაკვეთა ორ წრეს შორის?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'both', text: 'საგნები, რომლებიც ორივე ჯგუფს ეკუთვნის' },
+          { id: 'neither', text: 'საგნები, რომლებიც არც ერთს არ ეკუთვნის' },
+          { id: 'one', text: 'საგნები, რომლებიც მხოლოდ პირველს ეკუთვნის' },
+        ],
+        answer: 'both',
+      },
+      hints: [],
+      explanation: 'გადაკვეთა არის ორივე ჯგუფის საერთო ნაწილი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. სად არის წითელი სამკუთხედი?',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ჩადე საგნები წრეებში: „წრე“ და „დიდი“.',
+      response: { type: 'venn-sort', leftAttr: 'kind', leftValue: 'circle', rightAttr: 'size', rightValue: 'large', objects: [...objects] },
+      hints: [],
+      explanation: 'ლურჯი და ყვითელი წრე დიდია — გადაკვეთაში; წითელი წრე პატარაა — მხოლოდ წრეების წრეში.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეამოწმე ზომაც.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი საგანია ორივე წრეში, თუ წრეებია „ლურჯი“ და „დიდი“?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'b1', text: 'ლურჯი წრე' },
+          { id: 'y1', text: 'ყვითელი წრე' },
+          { id: 'b2', text: 'ლურჯი სამკუთხედი' },
+        ],
+        answer: 'b1',
+      },
+      hints: [],
+      explanation: 'ლურჯი წრე ერთადერთია, რომელიც ლურჯიცაა და დიდიც.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეამოწმე ფერიც და ზომაც.',
+    },
+  ],
+};

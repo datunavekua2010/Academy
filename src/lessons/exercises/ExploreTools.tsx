@@ -15,6 +15,8 @@ import { NumberLine } from './NumberLine';
 import { Quantity, SequenceRow, quantityText } from './Visuals';
 import { ExploreToolViewMeasure } from './MeasureTools';
 import { ExploreToolViewClock, ExploreToolViewShapes2D } from './TimeShapeTools';
+import { ExploreToolViewBalance } from './BalanceTools';
+import { ExploreToolViewSort } from './SortTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -458,5 +460,15 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
     case 'flat-lab':
     case 'room-lab':
       return <ExploreToolViewShapes2D tool={tool} />;
+    case 'balance-lab':
+    case 'equal-groups-lab':
+    case 'sentence-lab':
+    case 'puzzle-lab':
+      return <ExploreToolViewBalance tool={tool} />;
+    case 'sort-lab':
+    case 'grid-lab':
+    case 'venn-lab':
+    case 'chart-lab':
+      return <ExploreToolViewSort tool={tool} />;
   }
 }

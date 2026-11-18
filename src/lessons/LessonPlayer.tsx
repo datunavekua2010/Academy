@@ -18,6 +18,8 @@ import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, Qu
 import { MeasureDemo } from './exercises/MeasureTools';
 import { ObjectRow } from './exercises/LengthBoard';
 import { ClockDemo, Shape2DDemo } from './exercises/TimeShapeTools';
+import { BalanceDemo } from './exercises/BalanceTools';
+import { ChartDemo, SortDemo } from './exercises/SortTools';
 import { ClockFace } from './exercises/ClockBoard';
 import { Shape2DRow } from './exercises/Shape2DBoard';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
@@ -136,6 +138,12 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <ClockDemo key={i} block={block} />;
           case 'shape2d-demo':
             return <Shape2DDemo key={i} block={block} />;
+          case 'balance-demo':
+            return <BalanceDemo key={i} block={block} />;
+          case 'sort-demo':
+            return <SortDemo key={i} block={block} />;
+          case 'chart-demo':
+            return <ChartDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

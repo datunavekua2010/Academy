@@ -297,7 +297,103 @@ export type ResponseSpec =
    * Choose every object in a picture that has the asked shape. Stored as the comma-separated ids chosen.
    * A picture item is only right when its outline really is that shape.
    */
-  | { type: 'find-shapes'; kind: Flat; items: Array<{ id: string; label: string; spec: FlatSpec }> };
+  | { type: 'find-shapes'; kind: Flat; items: Array<{ id: string; label: string; spec: FlatSpec }> }
+  /**
+   * Weigh two pans until they balance. `left` and `right` are the starting weights; the student moves weights between
+   * them. Correct only when the two totals are equal — the beam's look is computed from those totals, never the other
+   * way round. Stored as `left:right` weight lists, e.g. `"3,2:4,1"`.
+   */
+  | { type: 'balance-pans'; weights: number[]; left: number[]; right: number[]; unit?: string }
+  /**
+   * Make two groups equal: `a` objects in the first group, `b` in the second. The student adds or removes objects.
+   * Correct when the two counts match, whatever colour, shape or arrangement the pictures use. Stored as `"a,b"`.
+   */
+  | { type: 'equal-groups'; a: number; b: number; glyph?: Glyph; max?: number }
+  /**
+   * Complete a number sentence from number and sign cards. `template` has one `{}` per place, e.g. `"{1} {2} {3} = 5"`;
+   * `answers` are the cards that belong in those places, in order. Stored as the comma-separated cards placed.
+   */
+  | { type: 'sentence-build'; template: string; answers: string[]; cards: number[]; signs: Array<'+' | '−'> }
+  /**
+   * Pick every sentence that is true. A sentence holds only when its two sides have the same value, computed from the
+   * numbers. Stored as the comma-separated ids of the chosen sentences.
+   */
+  | { type: 'sentence-pick'; sentences: Array<{ id: string; left: TermSpec; right: number }> }
+  /**
+   * A balance puzzle: the clues are scales. The student types the value of one unknown weight. Stored as the value.
+   */
+  | { type: 'balance-puzzle'; unknown: string; clues: PuzzleClue[]; answer: number; unit?: string }
+  /**
+   * Sort objects into the groups of one attribute. Correct when each object sits in the group its own attribute value
+   * names. Stored as the comma-separated group value of each object, in the objects' order.
+   */
+  | { type: 'sort-groups'; attr: SortAttr; objects: SortObjSpec[] }
+  /**
+   * A two-way grid: rows are one attribute, columns the other. Correct when each object is in the cell of its own pair
+   * of attributes. Stored as the comma-separated `row|col` cell keys, in the objects' order.
+   */
+  | { type: 'sort-grid'; rowAttr: SortAttr; colAttr: SortAttr; rows: string[]; cols: string[]; objects: SortObjSpec[] }
+  /**
+   * Two overlapping circles. Correct when each object is in the region decided by its attributes (both, only the
+   * first, only the second, neither). Stored as the comma-separated region of each object.
+   */
+  | { type: 'venn-sort'; leftAttr: SortAttr; leftValue: string; rightAttr: SortAttr; rightValue: string; objects: SortObjSpec[] }
+  /**
+   * Read a picture chart: choose the category the question asks about. The count for each row is the number of symbols
+   * in it, so a chart can never claim a count its pictures do not show. Stored as the chosen label.
+   */
+  | { type: 'chart-read'; chart: ChartSpecData; ask: 'most' | 'least' | 'more' | 'fewer' | 'same'; compareWith?: string }
+  /**
+   * Build a picture chart: the student adds one symbol at a time until each row matches `target`. Stored as the
+   * comma-separated counts of the rows.
+   */
+  | { type: 'chart-build'; glyph: ChartSpecData['glyph']; labels: string[]; target: number[] }
+  /**
+   * Pick every object that satisfies all the clues. Correct when the picked set is exactly the objects that do.
+   * Stored as the comma-separated ids.
+   */
+  | { type: 'clue-pick'; clues: PuzzleClue2[]; objects: SortObjSpec[] };
+
+// ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
+
+/** One side of a number sentence: `a + b`, or a single value. */
+export interface TermSpec {
+  a: number;
+  op?: '+' | '−';
+  b?: number;
+}
+
+/** One clue in a balance puzzle: `unknownCount` unknowns on one pan, `known` on the other. */
+export interface PuzzleClue {
+  unknownCount: number;
+  known: number;
+  onLeft?: boolean;
+}
+
+/** A sortable object, by its attributes. The attributes decide every group it belongs to. */
+export interface SortObjSpec {
+  id: string;
+  colour: 'red' | 'blue' | 'yellow';
+  kind: 'circle' | 'triangle' | 'square' | 'rectangle';
+  size: 'small' | 'large';
+  label?: string;
+}
+
+/** The attributes a collection can be sorted by. */
+export type SortAttr = 'colour' | 'kind' | 'size';
+
+/** One clue in a classification puzzle: an attribute equals (or does not equal) a value. */
+export interface PuzzleClue2 {
+  attr: SortAttr;
+  value: string;
+  negate?: boolean;
+}
+
+/** A picture chart: one row per category, one symbol per thing counted. */
+export interface ChartSpecData {
+  glyph: 'star' | 'apple' | 'fish' | 'ball' | 'circle';
+  rows: Array<{ label: string; count: number }>;
+}
 
 // ───────────────────────────── shapes (Unit 5) ─────────────────────────────
 
@@ -384,7 +480,20 @@ export type VisualSpec =
   /** A clock face, with or without its hands, at a given time. */
   | { type: 'clock'; time: ClockTime; showHands?: boolean; labels?: number[] }
   /** One or more 2D shapes side by side, drawn from their outlines. */
-  | { type: 'flat'; shapes: FlatSpec[]; showSides?: boolean };
+  | { type: 'flat'; shapes: FlatSpec[]; showSides?: boolean }
+  /** A balance scale with fixed weights on its pans. The beam is drawn from the two totals. */
+  | { type: 'scale'; left: number[]; right: number[]; unit?: string }
+  /** Two groups of objects side by side, each labelled with its count. */
+  | { type: 'groups'; a: number; b: number; glyph?: Glyph }
+  /** A number sentence shown with its sign, for "is this true?" questions. */
+  | { type: 'sentence'; left: TermSpec; right: number }
+  /** A picture chart, with one symbol per thing counted. */
+  | { type: 'chart'; glyph: ChartSpecData['glyph']; rows: Array<{ label: string; count: number }> }
+  /** Objects sorted into named groups, already arranged — for "what is the rule?" questions. */
+  | { type: 'sorted-groups'; attr: SortAttr; groups: Array<{ value: string; objects: SortObjSpec[] }> }
+  /** Two overlapping circles with objects already placed, for reading a diagram. */
+  | { type: 'venn'; leftLabel: string; rightLabel: string; regions: Array<{ region: 'both' | 'left' | 'right' | 'none'; objects: SortObjSpec[] }> };
+
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -540,7 +649,25 @@ export type ExploreTool =
   /** A collection of shapes to identify, count and sort; tap a side or a corner to count it. */
   | { tool: 'flat-lab'; shapes: FlatSpec[] }
   /** An illustrated room: tap the objects that have the asked shape. */
-  | { tool: 'room-lab'; target: Flat; items: Array<{ id: string; label: string; spec: FlatSpec }> };
+  | { tool: 'room-lab'; target: Flat; items: Array<{ id: string; label: string; spec: FlatSpec }> }
+  /** Weights to put on two pans freely, with the totals and the difference always shown. */
+  | { tool: 'balance-lab'; weights: number[]; start?: { left: number[]; right: number[] }; unit?: string }
+  /** Two groups of objects to add to or take from, watching the comparison sign change. */
+  | { tool: 'equal-groups-lab'; start: { a: number; b: number }; glyph?: Glyph; max?: number }
+  /** Number cards and signs to build any sentence, and see whether it is true. */
+  /** Cards and signs to build `a op b = result` and see whether the sentence holds. */
+  | { tool: 'sentence-lab'; cards: number[]; signs: Array<'+' | '−'>; result: number }
+  /** Balance puzzles to work through, one at a time. */
+  | { tool: 'puzzle-lab'; puzzles: Array<{ unknown: string; clues: PuzzleClue[]; answer: number }> }
+  /** A collection to sort by any of its attributes, one at a time. */
+  | { tool: 'sort-lab'; objects: SortObjSpec[]; attrs: SortAttr[] }
+  /** A two-way grid to fill in, with the attributes of each axis chosen by the student. */
+  | { tool: 'grid-lab'; objects: SortObjSpec[]; rowAttr: SortAttr; colAttr: SortAttr; rows: string[]; cols: string[] }
+  /** Two overlapping circles to sort into; the student can switch which pair of groups the circles mean. */
+  | { tool: 'venn-lab'; objects: SortObjSpec[]; pairs: Array<{ leftAttr: SortAttr; leftValue: string; rightAttr: SortAttr; rightValue: string }> }
+  /** Build a picture chart symbol by symbol and read the counts back. */
+  | { tool: 'chart-lab'; glyph: ChartSpecData['glyph']; labels: string[]; target?: number[] };
+
 
 export interface ExploreActivity extends ActivityBase {
   kind: 'explore';
@@ -620,7 +747,29 @@ export type ExplainBlock =
    */
   | { type: 'clock-demo'; mode: 'hands' | 'oclock' | 'half' | 'five'; time: ClockTime; times?: ClockTime[]; steps: string[]; caption?: string }
   /** A shape story told one step at a time: the outline, the sides, the corners, or the same shape turned. */
-  | { type: 'shape2d-demo'; mode: 'sides' | 'corners' | 'turn'; spec: FlatSpec; contrast?: FlatSpec; steps: string[]; caption?: string };
+  | { type: 'shape2d-demo'; mode: 'sides' | 'corners' | 'turn'; spec: FlatSpec; contrast?: FlatSpec; steps: string[]; caption?: string }
+  /**
+   * A balance story told one step at a time. `level` (4): two equal pans, the beam level, the equals sign between
+   * them, and the same total written two ways. `tilt` (4): an unequal pair, which side is heavier, what to add, and
+   * the moment it levels. `solve` (4): a blank in a sentence, the same sentence as a scale, the missing amount, and
+   * the sentence completed.
+   */
+  | { type: 'balance-demo'; mode: 'level' | 'tilt' | 'solve'; left: number[]; right: number[]; add?: number; sentence?: { left: TermSpec; right: number; blank: 'first' | 'second' | 'total' }; steps: string[]; caption?: string }
+  /**
+   * A sorting story: `one` (4) sorts a collection by one attribute, `two` (4) builds a two-way grid, `venn` (4) moves
+   * the same objects into two overlapping circles (both, only one, neither). `attr` and `second` say which attributes.
+   */
+  | { type: 'sort-demo'; mode: 'one' | 'two' | 'venn'; attr: SortAttr; second?: SortAttr; objects: SortObjSpec[]; leftValue?: string; rightValue?: string; steps: string[]; caption?: string }
+  /** A picture chart shown as it grows: one symbol per step, then read back. */
+  | { type: 'chart-demo'; glyph: ChartSpecData['glyph']; rows: Array<{ label: string; count: number }>; steps: string[]; caption?: string }
+  /** Pictures that are also useful in an explanation: a scale, two groups, a sentence, a chart, sorted groups, a diagram. */
+  | { type: 'scale'; left: number[]; right: number[]; unit?: string }
+  | { type: 'groups'; a: number; b: number; glyph?: Glyph }
+  | { type: 'sentence'; left: TermSpec; right: number }
+  | { type: 'chart'; glyph: ChartSpecData['glyph']; rows: Array<{ label: string; count: number }> }
+  | { type: 'sorted-groups'; attr: SortAttr; groups: Array<{ value: string; objects: SortObjSpec[] }> }
+  | { type: 'venn'; leftLabel: string; rightLabel: string; regions: Array<{ region: 'both' | 'left' | 'right' | 'none'; objects: SortObjSpec[] }> };
+
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';
