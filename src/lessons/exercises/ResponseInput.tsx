@@ -14,6 +14,8 @@ import { StoryAnswer } from './StoryTools';
 import { TakeAwayBoard } from './TakeAwayBoard';
 import { CutBoard, ReassembleBoard, SelectBoard, SortBoard, parseGroups } from './ShapeAnswers';
 import { ComparableBoard, describeShape } from './ShapeBoard';
+import { AlignCompareBoard, LengthSortBoard, MeasureUnitsBoard, RulerReadBoard, UnitPickAnswer } from './LengthAnswers';
+import { FindShapesAnswer, HandPickAnswer, MatchTimeAnswer, ReadClockAnswer, SetClockAnswer, ShapeSortAnswer, TapPartsAnswer } from './TimeShapeAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -319,6 +321,70 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
     }
     case 'reassemble':
       return <ReassembleBoard shape={response.shape} decoys={response.decoys} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'hand-pick':
+      return <HandPickAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'set-clock':
+      return <SetClockAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'read-clock':
+      return <ReadClockAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'match-time':
+      return <MatchTimeAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'shape-sort':
+      return <ShapeSortAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'tap-parts':
+      return <TapPartsAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'find-shapes':
+      return <FindShapesAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'align-compare':
+      return (
+        <AlignCompareBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'length-sort':
+      return (
+        <LengthSortBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'measure-units':
+      return (
+        <MeasureUnitsBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'ruler-read':
+      return (
+        <RulerReadBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'unit-pick':
+      return (
+        <UnitPickAnswer
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
     case 'cut':
       return (
         <CutBoard

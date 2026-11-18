@@ -1,0 +1,173 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U07.3 "Reading Half-Past Times".
+ * Demonstration content only. Half past is thirty minutes after the hour: the minute hand is on 6 and the hour
+ * hand sits halfway between the two numbers — a fact the clock board computes.
+ */
+export const g1u07l3: Lesson = {
+  id: 'g1-u07-l3',
+  status: 'placeholder',
+  objective: 'ვკითხულობ ნახევარს: წუთის ისარი 6-ზეა, საათის ისარი ორ ციფრს შორის.',
+  prerequisites: ["ზუსტი საათები (U07.2)"],
+  minutes: 10,
+  concepts: ['ნახევარი', '30 წუთი', 'წუთის ისარი 6-ზე', 'ისარი ციფრებს შორის'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! ნახევარზე წუთის ისარი 6-ზეა, საათის ისარი — ორ ციფრს შორის.',
+    retry: 'სცადე ისევ. დააკვირდი, რომ ნახევარზე საათის ისარი ციფრზე არ დგას, არამედ ციფრებს შორისაა.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'საათი 3:30-ს აჩვენებს. რომელ ციფრზე დგას წუთის ისარი?',
+      visual: { type: 'clock', time: { h: 3, m: 30 } },
+      mascot: { intro: 'ნახევარი ნიშნავს 30 წუთს — წუთის ისარი 6-ზეა.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: '6', text: '6-ზე' },
+          { id: '12', text: '12-ზე' },
+          { id: '3', text: '3-ზე' },
+        ],
+        answer: '6',
+      },
+      hints: ['30 წუთი ნახევარი ბრუნია. ზევით რომ 12-ია, ნახევარზე ისარი ქვემოთ, 6-ზეა.'],
+      explanation: 'ნახევარზე წუთის ისარი 6-ზეა. აქ ის 6-ზეა, საათის ისარი კი 3-სა და 4-ს შორის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ნახევარი = 30 წუთი, ისარი 6-ზე.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'ნახევრის დაყენება',
+      prompt: 'დააყენე ნახევრის დროები. დააკვირდი: წუთის ისარი 6-ზეა, საათის ისარი კი ორ ციფრს შორის.',
+      hints: ['წუთის ისარი 6-ზე დააყენე, მერე საათის ისარი სწორ ციფრს შორის მოათავსე.', 'ნახევარზე საათის ისარი ზუსტად შუაშია: 4:30 → 4-სა და 5-ს შორის.'],
+      tool: {
+        tool: 'time-set-lab',
+        step: 5,
+        times: [
+          { h: 4, m: 30 },
+          { h: 7, m: 30 },
+          { h: 12, m: 30 },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'ნახევარი საათი',
+      prompt: 'ვნახოთ, რას ნიშნავს „ნახევარი“ და სად დგას ისრები.',
+      blocks: [
+        {
+          type: 'clock-demo',
+          mode: 'half',
+          time: { h: 3, m: 30 },
+          steps: [
+            'ნახევარი ნიშნავს 30 წუთს — საათის ნახევარს.',
+            '30 წუთი ნახევარი ბრუნია: წუთის ისარი 12-დან 6-ზე გადავიდა.',
+            'ამ დროს საათის ისარი უკვე 3-ს გადასცდა და 4-ისკენ მიემართება — ამიტომ ის 3-სა და 4-ს შორისაა.',
+            'ვკითხულობთ: 3 საათი და ნახევარი (3:30).',
+          ],
+          caption: 'ნახევარზე წუთის ისარი 6-ზეა, საათის ისარი — ციფრებს შორის.',
+        },
+        { type: 'callout', tone: 'warning', text: 'თუ საათის ისარი ზუსტად ციფრზე დგას, დრო ნახევარი არ არის — ის ზუსტი საათია.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი დროა?',
+      response: { type: 'read-clock', time: { h: 2, m: 30 }, options: [{ h: 2, m: 30 }, { h: 2, m: 0 }, { h: 6, m: 0 }] },
+      hints: ['წუთის ისარი 6-ზეა → ნახევარი. საათის ისარი 2-სა და 3-ს შორისაა.'],
+      explanation: '2:30 — ორი საათი და ნახევარი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეხედე წუთის ისარს.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დააყენე საათი 6:30-ზე.',
+      response: { type: 'set-clock', ask: { h: 6, m: 30 }, step: 5 },
+      hints: ['წუთის ისარი 6-ზე, საათის ისარი 6-სა და 7-ს შორის.'],
+      explanation: '6:30 — წუთის ისარი 6-ზე, საათის ისარი 6-სა და 7-ს შორის.',
+      misconceptions: [
+        { id: 'between', answers: ['between'], feedback: 'საათის ისარი 6-სა და 7-ს შორის უნდა იყოს, არა ზუსტად 6-ზე.' },
+        { id: 'minute', answers: ['minute'], feedback: 'საათი ახლოს არის, მაგრამ წუთის ისარი 6-ზე უნდა იყოს.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ნახევარზე წუთის ისარი 6-ზეა.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი წუთია ნახევარ საათში?',
+      response: { type: 'numeric', answer: 30, unit: 'წუთი' },
+      hints: ['ნახევარი = 60 ÷ 2.'],
+      explanation: '60 ÷ 2 = 30. ნახევარი საათი 30 წუთია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 60 გაყავი 2-ზე.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი წინადადებაა სწორი?',
+      visual: { type: 'clock', time: { h: 5, m: 30 } },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'between', text: 'ეს 5:30-ია: წუთის ისარი 6-ზეა, საათის ისარი 5-სა და 6-ს შორის' },
+          { id: 'five', text: 'ეს 5:00-ია: წუთის ისარი 12-ზე უნდა იდგეს' },
+          { id: 'six', text: 'ეს 6:00-ია: წუთის ისარი 6-ზეა' },
+        ],
+        answer: 'between',
+      },
+      hints: ['წუთის ისარი 6-ზეა, ანუ ნახევარი. საათის ისარი 5-სა და 6-ს შორისაა.'],
+      explanation: '5:30 — წუთის ისარი 6-ზე, საათის ისარი 5-სა და 6-ს შორის. ამიტომ ვკითხულობთ „5 საათი და ნახევარი“.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეამოწმე ორივე ისარი.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი დროა?',
+      response: { type: 'read-clock', time: { h: 9, m: 30 }, options: [{ h: 9, m: 0 }, { h: 9, m: 30 }, { h: 6, m: 30 }] },
+      hints: [],
+      explanation: '9:30 — ცხრა საათი და ნახევარი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეხედე ორივე ისარს.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დააყენე საათი 11:30-ზე.',
+      response: { type: 'set-clock', ask: { h: 11, m: 30 }, step: 5 },
+      hints: [],
+      explanation: '11:30 — წუთის ისარი 6-ზე, საათის ისარი 11-სა და 12-ს შორის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. წუთის ისარი 6-ზე უნდა იყოს.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ნახევარის დროს სად დგას საათის ისარი?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'between', text: 'ორ ციფრს შორის, შუაში' },
+          { id: 'on', text: 'ზუსტად ციფრზე' },
+          { id: 'twelve', text: 'ყოველთვის 12-ზე' },
+        ],
+        answer: 'between',
+      },
+      hints: [],
+      explanation: 'ნახევარზე საათის ისარი უკვე გადასულია ციფრს და მომდევნო ციფრისკენ მიემართება, ამიტომ შუაშია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაიხსენე 3:30 — ისარი 3-სა და 4-ს შორის.',
+    },
+  ],
+};

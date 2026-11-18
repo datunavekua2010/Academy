@@ -1,0 +1,217 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U08.4 "Comparing and Sorting 2D Shapes".
+ * Demonstration content only. Shapes are sorted by properties the student can count — kind, number of sides,
+ * number of corners — so a small or turned shape still goes with its own group.
+ */
+export const g1u08l4: Lesson = {
+  id: 'g1-u08-l4',
+  status: 'placeholder',
+  objective: 'ვალაგებ ფიგურებს სახეობის, გვერდებისა და კუთხეების მიხედვით და ვადარებ მათ თვისებებს.',
+  prerequisites: ['გვერდები (U08.2)', 'კუთხეები (U08.3)'],
+  minutes: 12,
+  concepts: ['დაჯგუფება', 'თვისებების შედარება', 'კვადრატი და მართკუთხედი', 'მობრუნება და ზომა'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! ფიგურები თვისებებით იჯგუფება — ზომა და მობრუნება მათ არ ცვლის.',
+    retry: 'სცადე ისევ. დაითვალე გვერდები ან კუთხეები და მერე გადაწყვიტე ჯგუფი.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'როგორ განვასხვავოთ კვადრატი მართკუთხედისგან?',
+      visual: {
+        type: 'flat',
+        shapes: [
+          { kind: 'square', size: 80 },
+          { kind: 'rectangle', size: 66 },
+        ],
+      },
+      mascot: { intro: 'ორივეს ოთხი გვერდი და ოთხი კუთხე აქვს. განსხვავება გვერდების სიგრძეშია.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'lengths', text: 'კვადრატს ოთხივე გვერდი ტოლი აქვს, მართკუთხედს — არა' },
+          { id: 'corners', text: 'კვადრატს ოთხი კუთხე აქვს, მართკუთხედს — სამი' },
+          { id: 'sides', text: ' კვადრატს სამი გვერდი აქვს' },
+        ],
+        answer: 'lengths',
+      },
+      hints: ['დაითვალე კუთხეები ორივეზე. შემდეგ შეადარე გვერდების სიგრძეები.'],
+      explanation: 'ორივეს ოთხი გვერდი და ოთხი კუთხე აქვს; კვადრატში ოთხივე გვერდი ტოლია, მართკუთხედში — ორი გრძელი და ორი მოკლე.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე გვერდების სიგრძეები.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'სამი ნაირად დალაგება',
+      prompt: 'აირჩიე დალაგების წესი — სახეობით, გვერდებით ან კუთხეებით — და ნახე, როგორ იცვლება ჯგუფები.',
+      hints: ['სახეობით: წრე, სამკუთხედი, კვადრატი, მართკუთხედი.', 'გვერდებით: 0, 3, 4. კუთხეებითაც ზუსტად ასე.'],
+      tool: {
+        tool: 'flat-lab',
+        shapes: [
+          { kind: 'circle', radius: 40 },
+          { kind: 'triangle', size: 86 },
+          { kind: 'square', size: 78, rotate: 15 },
+          { kind: 'rectangle', size: 64 },
+          { kind: 'square', size: 54 },
+          { kind: 'triangle', size: 62, rotate: 30 },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'შედარება თვისებებით',
+      prompt: 'შევადაროთ ფიგურები გვერდებითა და კუთხეებით.',
+      blocks: [
+        { type: 'flat', shapes: [{ kind: 'triangle', size: 84 }, { kind: 'square', size: 76 }, { kind: 'rectangle', size: 62 }, { kind: 'circle', radius: 40 }], showSides: true },
+        { type: 'text', text: 'წრე: 0 გვერდი, 0 კუთხე. სამკუთხედი: 3 და 3. კვადრატი: 4 და 4, ყველა გვერდი ტოლი. მართკუთხედი: 4 და 4, გვერდები სხვადასხვა სიგრძისა.' },
+        {
+          type: 'shape2d-demo',
+          mode: 'turn',
+          spec: { kind: 'square', size: 86 },
+          contrast: { kind: 'square', size: 54, rotate: 25 },
+          steps: ['ეს კვადრატია.', 'ესეც კვადრატია — პატარა და მობრუნებული, მაგრამ მაინც კვადრატი.', 'ორივეს ოთხი ტოლი გვერდი და ოთხი კუთხე აქვს.'],
+          caption: 'ზომა და მობრუნება ერთსა და იმავე ჯგუფში ტოვებს.',
+        },
+        { type: 'callout', tone: 'tip', text: 'დაჯგუფებისას იკითხე: რამდენი გვერდი? რამდენი კუთხე? არა: როგორ გამოიყურება?' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე ფიგურები სახეობის მიხედვით.',
+      response: {
+        type: 'shape-sort',
+        groupBy: 'kind',
+        shapes: [
+          { kind: 'circle', radius: 40 },
+          { kind: 'triangle', size: 84 },
+          { kind: 'square', size: 76, rotate: 20 },
+          { kind: 'rectangle', size: 62 },
+        ],
+      },
+      hints: ['შეეხე ფიგურას, მერე ჯგუფს. მობრუნებული კვადრატი კვადრატებშია.'],
+      explanation: 'წრე წრეებში, სამკუთხედი სამკუთხედებში, მობრუნებული კვადრატი კვადრატებში, მართკუთხედი მართკუთხედებში.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. მობრუნება და ზომა ჯგუფს არ ცვლის.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე ფიგურები გვერდების რაოდენობის მიხედვით.',
+      response: {
+        type: 'shape-sort',
+        groupBy: 'sides',
+        shapes: [
+          { kind: 'triangle', size: 82 },
+          { kind: 'circle', radius: 38 },
+          { kind: 'rectangle', size: 60 },
+        ],
+      },
+      hints: ['სამკუთხედი — 3, მართკუთხედი — 4, წრე — 0.'],
+      explanation: 'სამკუთხედი 3 გვერდი, მართკუთხედი 4, წრე 0.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაითვალე თითოეული ფიგურის გვერდები.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე ფიგურები კუთხეების რაოდენობის მიხედვით.',
+      response: {
+        type: 'shape-sort',
+        groupBy: 'corners',
+        shapes: [
+          { kind: 'square', size: 74 },
+          { kind: 'triangle', size: 80, rotate: 12 },
+          { kind: 'circle', radius: 36 },
+        ],
+      },
+      hints: ['კუთხეების რაოდენობა გვერდების რაოდენობას ემთხვევა.'],
+      explanation: 'კვადრატი 4 კუთხე, სამკუთხედი 3, წრე 0.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაითვალე კუთხეები.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი წინადადებაა სწორი?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'same-group', text: 'პატარა მობრუნებული კვადრატი იმავე ჯგუფშია, რაც დიდი კვადრატი' },
+          { id: 'other-group', text: 'პატარა კვადრატი სხვა ფიგურაა' },
+          { id: 'rectangle-group', text: 'მობრუნებული კვადრატი მართკუთხედებში უნდა ჩაიდოს' },
+        ],
+        answer: 'same-group',
+      },
+      hints: ['დაითვალე პატარა მობრუნებული კვადრატის გვერდები — ოთხი, ყველა ტოლი.'],
+      explanation: 'ზომა და მობრუნება ფიგურას არ ცვლის: პატარა მობრუნებული კვადრატიც კვადრატია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გვერდები დაითვალე, არა ზომა.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაალაგე ფიგურები გვერდების რაოდენობის მიხედვით.',
+      response: {
+        type: 'shape-sort',
+        groupBy: 'sides',
+        shapes: [
+          { kind: 'square', size: 72, rotate: 18 },
+          { kind: 'triangle', size: 78 },
+          { kind: 'circle', radius: 40 },
+          { kind: 'rectangle', size: 64 },
+        ],
+      },
+      hints: [],
+      explanation: 'წრე — 0, სამკუთხედი — 3, კვადრატი (მობრუნებულიც) და მართკუთხედი — 4.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაითვალე გვერდები.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი კუთხე აქვს სამკუთხედს და რამდენი კვადრატს? სულ?',
+      response: { type: 'numeric', answer: 7, unit: 'კუთხე' },
+      hints: [],
+      explanation: '3 + 4 = 7 კუთხე.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეკრიბე 3 და 4.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი ფიგურა განსხვავდება დანარჩენებისგან?',
+      visual: {
+        type: 'flat',
+        shapes: [
+          { kind: 'square', size: 76 },
+          { kind: 'square', size: 54, rotate: 22 },
+          { kind: 'rectangle', size: 66 },
+          { kind: 'circle', radius: 38 },
+        ],
+      },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'circle', text: 'წრე — მას არც გვერდი და არც კუთხე აქვს' },
+          { id: 'small-square', text: 'პატარა მობრუნებული კვადრატი' },
+          { id: 'rectangle', text: 'მართკუთხედი' },
+        ],
+        answer: 'circle',
+      },
+      hints: [],
+      explanation: 'სამი ფიგურა სწორი გვერდებით შედგება (4 გვერდი), წრეს კი არც გვერდი და არც კუთხე აქვს.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაითვალე გვერდები.',
+    },
+  ],
+};
