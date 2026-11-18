@@ -96,7 +96,22 @@ export type ResponseSpec =
    * Missing numbers inside a sentence. `template` marks blanks as `{1}`, `{2}`…
    * (any other text, including `$…$` maths, is shown as written).
    */
-  | { type: 'blanks'; template: string; answers: number[] };
+  | { type: 'blanks'; template: string; answers: number[] }
+  /**
+   * The student places a marker on a number line (drag, tap a tick, or the
+   * arrow buttons). `labelled` ticks always show their number; the rest are
+   * unlabelled so the student has to count. The marker's own number is only
+   * shown when `showValue` is set (it would give the answer away).
+   */
+  | { type: 'line'; min: number; max: number; answer: number; labelled?: number[]; start?: number; arrows?: boolean; showValue?: boolean };
+
+/** Something drawn next to a question. Purely visual: it is never the answer control. */
+export type VisualSpec =
+  /** `null` is the hidden number. `arrows` labels the step between neighbours, e.g. `+1`. */
+  | { type: 'sequence'; items: Array<number | null>; arrows?: string }
+  /** A number as groups of ten and single objects. */
+  | { type: 'quantity'; tens: number; ones: number }
+  | { type: 'line'; min: number; max: number; labelled?: number[]; marker?: number; hops?: number[] };
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -145,6 +160,7 @@ interface ActivityBase {
 
 export interface QuestionActivity extends ActivityBase, Question {
   kind: 'question';
+  visual?: VisualSpec;
 }
 
 export interface TileGroup {
@@ -161,18 +177,42 @@ export interface TilesActivity extends ActivityBase, Question {
   askPrompt: string;
 }
 
+/** Free exploration tools. Nothing here is graded. */
+export type ExploreTool =
+  /** A row of numbered tiles with a highlighted number and forward / backward arrows. */
+  | { tool: 'tile-walk'; from: number; to: number; start: number }
+  /** Numeral, number name and quantity shown side by side. */
+  | { tool: 'representations'; numbers: number[] }
+  /** Sequences the student extends one number at a time. */
+  | { tool: 'sequence-extend'; sequences: Array<{ label: string; start: number; step: number; shown: number; total: number }> }
+  /** A number line to tap, drag and step along. */
+  | { tool: 'number-line'; min: number; max: number; start: number }
+  /** A number line where each tap hops by the chosen step. */
+  | { tool: 'skip-line'; min: number; max: number; steps: number[] };
+
+export interface ExploreActivity extends ActivityBase {
+  kind: 'explore';
+  tool: ExploreTool;
+}
+
 export type ExplainBlock =
   | { type: 'text'; text: string }
   | { type: 'equation'; lines: string[]; caption?: string }
   | { type: 'worked'; title: string; steps: Array<{ text: string; math?: string }> }
-  | { type: 'callout'; tone: 'tip' | 'warning'; text: string };
+  | { type: 'callout'; tone: 'tip' | 'warning'; text: string }
+  /** Numbers joined by equal steps; a highlight walks along them (with replay). `label` is the step, e.g. `+1`. */
+  | { type: 'chain'; numbers: number[]; label: string; direction: 'forward' | 'backward' | 'steps'; caption?: string }
+  /** A marker hops from `from` to `to` on a number line, one step at a time (with replay). */
+  | { type: 'hops'; min: number; max: number; from: number; to: number; step?: number; caption?: string }
+  /** Numerals shown as digits, a number name and groups of ten and ones. */
+  | { type: 'quantities'; numbers: number[] };
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';
   blocks: ExplainBlock[];
 }
 
-export type Activity = QuestionActivity | TilesActivity | ExplainActivity;
+export type Activity = QuestionActivity | TilesActivity | ExplainActivity | ExploreActivity;
 
 export interface Lesson {
   /** Catalog lesson id, e.g. `g6-u10-l3`. The title comes from the catalog. */
@@ -184,6 +224,8 @@ export interface Lesson {
   prerequisites: string[];
   /** Rough duration, for display only. */
   minutes?: number;
+  /** Skills named on the completion screen. */
+  concepts?: string[];
   activities: Activity[];
   completion: {
     /** Independent-check questions that must be answered correctly (within the allowed attempts). */
