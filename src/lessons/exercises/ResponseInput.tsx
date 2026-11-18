@@ -1,5 +1,7 @@
 import { useId, type KeyboardEvent } from 'react';
+import { parseNumber } from '../algebra';
 import { RichText } from '../RichText';
+import { NumberLine } from './NumberLine';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -96,6 +98,26 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
           {response.type === 'numeric' && response.unit && <span className="lp-unit">{response.unit}</span>}
         </div>
       );
+    case 'line': {
+      const picked = parseNumber(typeof value === 'string' ? value : '');
+      const shown = picked ?? response.start ?? null;
+      return (
+        <div className="lp-line">
+          <NumberLine
+            min={response.min}
+            max={response.max}
+            value={shown}
+            start={response.start ?? null}
+            labelled={response.labelled}
+            arrows={response.arrows !== false}
+            showValue={response.showValue}
+            disabled={disabled}
+            onChange={(n) => onChange(String(n))}
+            ariaLabel={`${label}. რიცხვითი ღერძი ${response.min}-დან ${response.max}-მდე`}
+          />
+        </div>
+      );
+    }
     case 'blanks': {
       const values = Array.isArray(value) ? value : [];
       return (

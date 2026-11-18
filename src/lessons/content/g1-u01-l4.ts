@@ -1,0 +1,126 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U01.4 "Understanding and Using the Number Line".
+ *
+ * Demonstration content only (see g1-u01-l1.ts). In the check the ◀ ▶ arrows
+ * are switched off (`arrows: false`) but the number line stays: the student
+ * taps a tick or drags the marker.
+ */
+export const g1u01l4: Lesson = {
+  id: 'g1-u01-l4',
+  status: 'placeholder',
+  objective: 'რიცხვით ღერძზე ვპოულობ რიცხვს და ვმოძრაობ ნაბიჯ-ნაბიჯ: მარჯვნივ მეტია, მარცხნივ ნაკლები.',
+  prerequisites: ['თვლა წინ და უკან (U01.1)', 'მიმდევრობები (U01.3)'],
+  minutes: 8,
+  concepts: ['რიცხვითი ღერძი', 'რიცხვის პოვნა ღერძზე', 'ნაბიჯები მარჯვნივ და მარცხნივ'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'რიცხვით ღერძზე თავისუფლად მოძრაობ. შემდეგ დიდ ნახტომებს ვცდით.',
+    retry: 'სცადე ისევ. ნაბიჯები ერთად დათვალე და მარკერი ზუსტად ხაზზე დააყენე.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'დააყენე მარკერი რიცხვ 7-ზე.',
+      mascot: { intro: 'ეს რიცხვითი ღერძია. რიცხვები მარცხნიდან მარჯვნივ იზრდება. სცადე 7-ის პოვნა.' },
+      response: { type: 'line', min: 0, max: 10, answer: 7, labelled: [0, 5, 10], start: 0 },
+      maxAttempts: 2,
+      revealOnExhaust: false,
+      hints: ['დაიწყე 5-დან და დათვალე ორი ნაბიჯი მარჯვნივ.'],
+      explanation: 'კარგია! 7 დგას 5-ის შემდეგ ორ ნაბიჯზე.',
+      misconceptions: [
+        { id: 'off-by-one-left', answers: [6], feedback: '6 ერთი ნაბიჯით ახლოსაა. 5-დან დათვალე: ექვსი, შვიდი.' },
+        { id: 'off-by-one-right', answers: [8], feedback: '8 ერთი ნაბიჯით შორსაა. 5-დან დათვალე: ექვსი, შვიდი.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. რიცხვები მარჯვნივ იზრდება: დაიწყე 5-დან და დათვალე ნაბიჯები.',
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'იმოძრავე რიცხვით ღერძზე',
+      prompt: 'შეეხე რიცხვს, გადაათრიე მარკერი ან გამოიყენე ისრები. ნახე, რა ემართება რიცხვს მარჯვნივ და მარცხნივ.',
+      tool: { tool: 'number-line', min: 0, max: 20, start: 5 },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'ნაბიჯები ღერძზე',
+      prompt: 'მარჯვნივ ნაბიჯი ერთით მეტია, მარცხნივ — ერთით ნაკლები.',
+      blocks: [
+        { type: 'hops', min: 0, max: 10, from: 5, to: 8, caption: '5-დან 8-მდე სამი ნაბიჯია მარჯვნივ.' },
+        { type: 'callout', tone: 'tip', text: 'ნაბიჯები დათვალე, მაგრამ დაწყების წერტილი არ დათვალო.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დააყენე მარკერი რიცხვ 12-ზე.',
+      response: { type: 'line', min: 0, max: 20, answer: 12, labelled: [0, 10, 20], start: 10 },
+      hints: ['მარკერი 10-ზეა. 12 უფრო დიდია, ამიტომ მარჯვნივ წადი.'],
+      explanation: '10-დან ორი ნაბიჯი მარჯვნივ არის 12.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 10-დან ორი ნაბიჯით მარჯვნივ გადადი.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'მარკერი 9-ზეა. გადაიტანე ორი ნაბიჯით მარცხნივ.',
+      response: { type: 'line', min: 0, max: 10, answer: 7, labelled: [0, 5, 10], start: 9 },
+      hints: ['მარცხნივ რიცხვი მცირდება.', 'ერთხელ გადადი: 8. კიდევ ერთხელ?'],
+      explanation: '9-დან ერთი ნაბიჯი მარცხნივ არის 8, კიდევ ერთი — 7.',
+      misconceptions: [{ id: 'one-step', answers: [8], feedback: '8 არის ერთი ნაბიჯის შემდეგ. საჭიროა ორი ნაბიჯი მარცხნივ.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. მარცხნივ ყოველ ნაბიჯზე რიცხვი ერთით მცირდება.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელ რიცხვზეა მარკერი?',
+      visual: { type: 'line', min: 10, max: 20, labelled: [10, 15, 20], marker: 14 },
+      response: { type: 'numeric', answer: 14 },
+      hints: ['ჯერ 15 იპოვე. მარკერი მასთან ახლოსაა.'],
+      explanation: 'მარკერი 15-ის წინ ერთი ნაბიჯით დგას, ამიტომ ეს 14-ია.',
+      misconceptions: [{ id: 'nearest-label', answers: [15], feedback: '15 ახლოსაა, მაგრამ მარკერი მასზე ერთი ნაბიჯით მარცხნივ დგას.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 15-დან ნაბიჯები დათვალე.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დააყენე მარკერი რიცხვ 17-ზე.',
+      response: { type: 'line', min: 0, max: 20, answer: 17, labelled: [0, 10, 20], start: 10, arrows: false },
+      hints: ['17 მეტია 10-ზე და ნაკლები 20-ზე.'],
+      explanation: '17 არის 20-მდე სამი ნაბიჯით ადრე.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დათვალე ნაბიჯები მიახლოებული რიცხვიდან.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'მარკერი 2-ზეა. გადაიტანე ოთხი ნაბიჯით მარჯვნივ.',
+      response: { type: 'line', min: 0, max: 10, answer: 6, labelled: [0, 5, 10], start: 2, arrows: false },
+      hints: ['ნაბიჯები ერთად დათვალე: სამი, ოთხი, ხუთი, ექვსი.'],
+      explanation: '2-დან ოთხი ნაბიჯი მარჯვნივ არის 6.',
+      misconceptions: [{ id: 'counted-start', answers: [5], feedback: '5 მიიღება, თუ დაწყების წერტილსაც დაითვლი. ითვლე მხოლოდ ნაბიჯები.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 2-დან ოთხი ნაბიჯი მარჯვნივ გადადი.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელ რიცხვზეა მარკერი?',
+      visual: { type: 'line', min: 10, max: 20, labelled: [10, 15, 20], marker: 16 },
+      response: { type: 'numeric', answer: 16 },
+      hints: ['ჯერ 15 იპოვე.'],
+      explanation: 'მარკერი 15-ის შემდეგ ერთი ნაბიჯით დგას, ანუ 16-ზე.',
+      misconceptions: [{ id: 'nearest-label', answers: [15], feedback: '15 ახლოსაა, მაგრამ მარკერი მასზე ერთი ნაბიჯით მარჯვნივ დგას.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 15-დან ნაბიჯები დათვალე.',
+    },
+  ],
+};

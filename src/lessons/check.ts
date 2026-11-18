@@ -24,6 +24,7 @@ const MSG = {
   needExpression: 'ჩაწერე გამოსახულება, მაგალითად 4x.',
   needAll: 'შეავსე ყველა ცარიელი ადგილი.',
   needChoice: 'აირჩიე ერთ-ერთი პასუხი.',
+  needMarker: 'გადაიტანე მარკერი რიცხვით ღერძზე და შემდეგ შეამოწმე.',
   notSimplified: 'მნიშვნელობა სწორია, მაგრამ გამოსახულება ჯერ არ არის გამარტივებული. ჩაწერე ყველაზე მარტივი სახით.',
 };
 
@@ -62,6 +63,12 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       });
       return wrong(question, hit);
     }
+    case 'line': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: MSG.needMarker };
+      if (n === response.answer) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === n));
+    }
     case 'blanks': {
       const values = Array.isArray(input) ? input : [];
       if (values.length < response.answers.length || values.slice(0, response.answers.length).some((v) => !v || !v.trim())) {
@@ -88,5 +95,7 @@ export function describeAnswer(response: ResponseSpec): string {
       return response.answer;
     case 'blanks':
       return response.answers.join(', ');
+    case 'line':
+      return String(response.answer);
   }
 }

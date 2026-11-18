@@ -1,0 +1,136 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U01.1 "Counting Forwards and Backwards".
+ *
+ * Demonstration content that exercises the layout and interactions. It is NOT
+ * an approved lesson and NOT the Grade 1 question bank. Replace the text,
+ * numbers and questions (and change `status`) when the real lesson is supplied;
+ * the player needs no changes.
+ */
+export const g1u01l1: Lesson = {
+  id: 'g1-u01-l1',
+  status: 'placeholder',
+  objective: 'ვითვლი წინ და უკან: წინ ერთით მეტი რიცხვი მოდის, უკან ერთით ნაკლები.',
+  prerequisites: ['რიცხვების ცნობა 1-დან 10-მდე'],
+  minutes: 6,
+  concepts: ['წინ თვლა', 'უკან თვლა', 'ერთით მეტი და ერთით ნაკლები'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შენ წინაც ითვლი და უკანაც. შემდეგ რიცხვებს წავიკითხავთ და დავწერთ.',
+    retry: 'კიდევ ერთხელ სცადე. თვლისას ყოველ ჯერზე მხოლოდ ერთი ნაბიჯი გადადგი.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რომელი რიცხვი მოდის 6-ის შემდეგ?',
+      mascot: { intro: 'ერთი კითხვით დავიწყოთ. თუ არ იცი, არაუშავს: სცადე.' },
+      response: { type: 'numeric', answer: 7 },
+      maxAttempts: 2,
+      revealOnExhaust: false,
+      hints: ['დაითვალე: ხუთი, ექვსი... რა მოდის შემდეგ?'],
+      explanation: 'კარგია! 6-ის შემდეგ 7 მოდის. ახლა თვლას თვითონ გამოვიკვლევთ.',
+      misconceptions: [{ id: 'went-back', answers: [5], feedback: '5 არის 6-მდე. ჩვენ ვეძებთ რიცხვს, რომელიც 6-ის შემდეგ მოდის.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაითვალე ერთით წინ: 6-ის შემდეგ რომელი რიცხვია?',
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'ითვალე ფილებზე',
+      prompt: 'აირჩიე „წინ თვლა“ ან „უკან თვლა“ და დააჭირე ღილაკს. დააკვირდი, რა ემართება მონიშნულ რიცხვს.',
+      tool: { tool: 'tile-walk', from: 1, to: 10, start: 6 },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'წინ და უკან',
+      prompt: 'ერთი ნაბიჯი წინ — ერთით მეტი. ერთი ნაბიჯი უკან — ერთით ნაკლები.',
+      blocks: [
+        { type: 'chain', numbers: [6, 7, 8, 9], label: '+1', direction: 'forward', caption: 'წინ თვლისას რიცხვები იზრდება: 6, 7, 8, 9.' },
+        { type: 'chain', numbers: [9, 8, 7, 6], label: '−1', direction: 'backward', caption: 'უკან თვლისას რიცხვები მცირდება: 9, 8, 7, 6.' },
+        { type: 'callout', tone: 'tip', text: 'თვლისას თითოეული რიცხვი ერთხელ დაასახელე და ერთი ნაბიჯით გადადი შემდეგზე.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაითვალე წინ. რომელი რიცხვი მოდის შემდეგ?',
+      visual: { type: 'sequence', items: [3, 4, 5, null], arrows: '+1' },
+      response: { type: 'numeric', answer: 6 },
+      hints: ['ყოველ ნაბიჯზე ერთი ემატება.', 'ბოლო რიცხვია 5. რა მოდის მის შემდეგ?'],
+      explanation: '5-ის შემდეგ 6 მოდის: ერთით მეტია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეხედე ბოლო რიცხვს და გადადი ერთით წინ.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაითვალე უკან. რომელი რიცხვი მოდის შემდეგ?',
+      visual: { type: 'sequence', items: [9, 8, 7, null], arrows: '−1' },
+      response: { type: 'numeric', answer: 6 },
+      hints: ['ახლა რიცხვები მცირდება.', 'ბოლო რიცხვია 7. რომელია მასზე ერთით ნაკლები რიცხვი?'],
+      explanation: '7-ის შემდეგ უკან თვლისას 6 მოდის: ერთით ნაკლებია.',
+      misconceptions: [{ id: 'repeat', answers: [8], feedback: '8 უკვე დავთვალეთ: 9, 8, 7. ახლა კიდევ ერთი ნაბიჯი უკან.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. უკან თვლისას ყოველ ნაბიჯზე რიცხვი ერთით მცირდება.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი რიგია უკან თვლა?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'a', text: '5, 6, 7, 8' },
+          { id: 'b', text: '8, 7, 6, 5' },
+          { id: 'c', text: '5, 7, 6, 8' },
+        ],
+        answer: 'b',
+      },
+      hints: ['უკან თვლისას ყოველი შემდეგი რიცხვი უფრო პატარაა.'],
+      explanation: '8, 7, 6, 5 — ყოველ ნაბიჯზე რიცხვი ერთით მცირდება.',
+      misconceptions: [
+        { id: 'forward-row', answers: ['a'], feedback: 'ეს რიგი წინ მიდის: რიცხვები იზრდება. უკან თვლისას უნდა მცირდებოდეს.' },
+        { id: 'mixed-row', answers: ['c'], feedback: 'ამ რიგში რიცხვები ერთ მიმართულებით არ მიდის. შეხედე, იზრდება თუ მცირდება.' },
+      ],
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაითვალე წინ. რომელი რიცხვი მოდის შემდეგ?',
+      visual: { type: 'sequence', items: [14, 15, 16, null] },
+      response: { type: 'numeric', answer: 17 },
+      hints: ['ბოლო რიცხვია 16. ერთით წინ გადადი.'],
+      explanation: '16-ის შემდეგ 17 მოდის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. წინ თვლისას ბოლო რიცხვს ერთი ემატება.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაითვალე უკან. რომელი რიცხვი მოდის შემდეგ?',
+      visual: { type: 'sequence', items: [20, 19, 18, null] },
+      response: { type: 'numeric', answer: 17 },
+      hints: ['უკან თვლისას რიცხვი მცირდება.'],
+      explanation: '18-ის შემდეგ უკან თვლისას 17 მოდის.',
+      misconceptions: [{ id: 'forward', answers: [19], feedback: '19 უკვე იყო. უკან თვლისას ახალი რიცხვი უფრო პატარა უნდა იყოს.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. უკან თვლისას ბოლო რიცხვს ერთი აკლდება.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი რიცხვი მოდის 99-ის შემდეგ?',
+      response: { type: 'numeric', answer: 100 },
+      hints: ['წინ დაითვალე: 98, 99, ...'],
+      explanation: '99-ის შემდეგ 100 მოდის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 99-ს ერთი დაუმატე და ნახე, რომელ რიცხვს მიიღებ.',
+    },
+  ],
+};

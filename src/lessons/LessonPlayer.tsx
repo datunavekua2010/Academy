@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Mascot } from '../components/Mascot';
 import { Link } from '../router';
+import { getUnit, nextLessonInUnit } from './catalog';
+import { lessonHref } from './routes';
 import { clearFeedback, initialAttempt, showNextHint, submitAnswer, type AttemptState } from './attempt';
 import { discoveryLine, introLine, reactionLine, tapLine } from './dialogue';
 import { Feedback } from './exercises/Feedback';
 import { ResponseInput } from './exercises/ResponseInput';
+import { ExploreToolView } from './exercises/ExploreTools';
 import { TilesBoard } from './exercises/TilesBoard';
-import { markCompleted, markStarted } from './progress';
+import { ChainDemo, HopDemo, QuantitiesBlock, VisualView } from './exercises/Visuals';
+import { markCompleted, markStarted, useLessonProgress } from './progress';
 import { RichText, plainText } from './RichText';
-import { showDevLabels } from './content';
+import { getLessonContent, showDevLabels } from './content';
 import type { Activity, AnswerInput, ExplainActivity, ExplainBlock, Lesson, LessonEntry, Question, QuestionActivity, Stage, TilesActivity } from './types';
 
 /**
@@ -84,6 +88,12 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
                 </ol>
               </section>
             );
+          case 'chain':
+            return <ChainDemo key={i} block={block} />;
+          case 'hops':
+            return <HopDemo key={i} block={block} />;
+          case 'quantities':
+            return <QuantitiesBlock key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>
@@ -108,6 +118,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   const [waveKey, setWaveKey] = useState(0);
   const [runKey, setRunKey] = useState(0);
   const stepRef = useRef<HTMLHeadingElement>(null);
+  const progress = useLessonProgress();
 
   const activity = activities[index];
   const total = activities.length;
@@ -216,6 +227,12 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
 
   const isLast = index === total - 1;
 
+  // what comes after this lesson (completion screen)
+  const nextEntry = nextLessonInUnit(lesson.id);
+  const nextPlayable = nextEntry && getLessonContent(nextEntry.id) ? nextEntry : undefined;
+  const unitLessons = getUnit(entry.unitId)?.lessons ?? [];
+  const unitComplete = passed && unitLessons.length > 0 && unitLessons.every((l) => l.id === lesson.id || progress[l.id]?.status === 'completed');
+
   // ───── the one primary action ─────
   type Action = { label: string; onClick: () => void; disabled?: boolean };
   let primary: Action;
@@ -289,8 +306,17 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
           <section className="lp-stage" key={`${runKey}-${activity.id}`}>
             <p className={`lp-stage-label is-${stage}`}>{STAGE_LABEL[stage]}</p>
             <h1 className="lp-heading" tabIndex={-1} ref={stepRef}>
-              {activity.kind === 'explain' ? activity.title : activity.kind === 'tiles' ? activity.title : <RichText text={activity.prompt} />}
+              {activity.kind === 'explain' || activity.kind === 'tiles' || activity.kind === 'explore' ? activity.title : <RichText text={activity.prompt} />}
             </h1>
+
+            {activity.kind === 'explore' && (
+              <>
+                <RichText text={activity.prompt} className="lp-lead" />
+                <ExploreToolView tool={activity.tool} />
+              </>
+            )}
+
+            {activity.kind === 'question' && activity.visual && <VisualView spec={activity.visual} />}
 
             {activity.kind === 'explain' && <ExplainView activity={activity} />}
 
@@ -344,6 +370,21 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
               <p className="lp-objective">
                 <span>მიზანი:</span> <RichText text={lesson.objective} />
               </p>
+              {lesson.concepts && lesson.concepts.length > 0 && (
+                <div className="lp-concepts">
+                  <span>ეს გავივარჯიშეთ:</span>
+                  <ul>
+                    {lesson.concepts.map((c) => (
+                      <li key={c}>{c}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {unitComplete && (
+                <p className="lp-unit-done" role="status">
+                  <strong>{entry.unitCode} დასრულდა.</strong> {entry.unitTitle}: ყველა გაკვეთილი გავიარე.
+                </p>
+              )}
               <p className="lp-done-note">{passed ? 'შენ დაძლიე ეს თემა. პროგრესი შენახულია.' : `დასრულებისთვის საჭიროა მინიმუმ ${lesson.completion.minCheckCorrect} სწორი პასუხი. სცადე შემოწმება ხელახლა.`}</p>
             </div>
             <div className="lp-done-coach">
@@ -366,6 +407,15 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
             <button type="button" className="btn btn-primary lp-primary" onClick={primary.onClick} disabled={primary.disabled}>
               {primary.label}
             </button>
+          ) : passed && nextPlayable ? (
+            <>
+              <Link to={backTo} className="btn btn-ghost lp-secondary">
+                {entry.unitCode}-ზე დაბრუნება
+              </Link>
+              <Link to={lessonHref(nextPlayable.id)} className="btn btn-primary lp-primary">
+                გაგრძელება: {nextPlayable.code}
+              </Link>
+            </>
           ) : passed ? (
             <Link to={backTo} className="btn btn-primary lp-primary">
               გაკვეთილების სიაში დაბრუნება
