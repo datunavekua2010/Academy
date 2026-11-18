@@ -16,6 +16,8 @@ import { CutBoard, ReassembleBoard, SelectBoard, SortBoard, parseGroups } from '
 import { ComparableBoard, describeShape } from './ShapeBoard';
 import { AlignCompareBoard, LengthSortBoard, MeasureUnitsBoard, RulerReadBoard, UnitPickAnswer } from './LengthAnswers';
 import { FindShapesAnswer, HandPickAnswer, MatchTimeAnswer, ReadClockAnswer, SetClockAnswer, ShapeSortAnswer, TapPartsAnswer } from './TimeShapeAnswers';
+import { BalancePansAnswer, BalancePuzzleAnswer, CluePickAnswer, EqualGroupsAnswer, SentenceBuildAnswer, SentencePickAnswer } from './BalanceAnswers';
+import { ChartBuildAnswer, ChartReadAnswer, SortGridAnswer, SortGroupsAnswer, VennSortAnswer } from './SortAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -385,6 +387,28 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
           label={label}
         />
       );
+    case 'balance-pans':
+      return <BalancePansAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'equal-groups':
+      return <EqualGroupsAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'sentence-build':
+      return <SentenceBuildAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'sentence-pick':
+      return <SentencePickAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'balance-puzzle':
+      return <BalancePuzzleAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'sort-groups':
+      return <SortGroupsAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'sort-grid':
+      return <SortGridAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'venn-sort':
+      return <VennSortAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'chart-read':
+      return <ChartReadAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'chart-build':
+      return <ChartBuildAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'clue-pick':
+      return <CluePickAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'cut':
       return (
         <CutBoard

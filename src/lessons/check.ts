@@ -3,6 +3,9 @@ import { divisionFromLines, divisionOf, groupOf, hasEqualParts, parseLines, rule
 import { aligned, compareGroup, orderOf, px, readingAt, suitableUnit, unitsIn, zeroAligned } from './exercises/MeasureGeometry';
 import { hourHandBetween, normalHour, normalMinute, parseDigital, sameTime, timeOf, timeText } from './exercises/ClockGeometry';
 import { FLAT_NAME, sidesOf, shapeGroup, verticesOf } from './exercises/Shape2DGeometry';
+import { isBalanced, panTotal, sentenceHolds, type TermSpec } from './exercises/BalanceGeometry';
+import { cellKey, chartCount, vennRegion, type SortObj } from './exercises/SortGeometry';
+import { VENN_REGION_NAME } from './exercises/SortGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -59,6 +62,17 @@ const MSG = {
   needTapSides: 'შეეხე ფიგურის ყველა გვერდს და შემდეგ შეამოწმე.',
   needTapCorners: 'შეეხე ფიგურის ყველა კუთხეს და შემდეგ შეამოწმე.',
   needFindShapes: 'შეეხე ყველა საგანს, რომელსაც ეს ფიგურა აქვს.',
+  needPans: 'დააწყვე წონები ორ თაროზე და შემდეგ შეამოწმე.',
+  needEqualGroups: 'დაამატე ან წაიღე საგნები, სანამ ორივე ჯგუფი ერთნაირი არ იქნება.',
+  needSentence: 'შეავსე წინადადების ყველა ადგილი.',
+  needSentencePick: 'აირჩიე ყველა მართალი წინადადება.',
+  needPuzzle: 'ჩაწერე უცნობი წონის მნიშვნელობა რიცხვით.',
+  needSortGroups: 'ყველა საგანი ჯგუფში უნდა ჩადო.',
+  needSortGrid: 'ყველა საგანი ცხრილის უჯრაში უნდა ჩადო.',
+  needVenn: 'ყველა საგანი უნდა მოხვდეს წრეებში ან მათ გარეთ.',
+  needChartRead: 'აირჩიე ერთი კატეგორია.',
+  needChartBuild: 'დაამატე სიმბოლოები, სანამ ყველა რიგი შეივსება.',
+  needClue: 'აირჩიე ყველა საგანი, რომელიც ყველა პირობას აკმაყოფილებს.',
   needStoryNumber: 'ჩაწერე პასუხი რიცხვით.',
   frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
@@ -367,8 +381,144 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       const wrongIndex = picks.findIndex((p, i) => p !== right[i]);
       return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex)));
     }
+    case 'balance-pans': {
+      // both pans are always "filled": an empty pan is a real state, not an unfinished answer
+      const raw = typeof input === 'string' ? input : '';
+      if (!raw.includes(':')) return { verdict: 'incomplete', feedback: MSG.needPans };
+      const [l = '', r = ''] = raw.split(':');
+      const nums = (t: string): number[] => t.split(',').filter((v) => v !== '').map(Number);
+      const left = nums(l);
+      const right = nums(r);
+      // the weights on the pans must be the ones handed out, counted with multiplicity
+      const pool = [...response.weights];
+      for (const w of [...left, ...right]) {
+        const at = pool.indexOf(w);
+        if (at < 0) return { verdict: 'incorrect', feedback: question.fallbackFeedback, misconceptionId: 'invented' };
+        pool.splice(at, 1);
+      }
+      if (left.length === 0 && right.length === 0) return { verdict: 'incomplete', feedback: MSG.needPans };
+      // the question may already have weights sitting on a pan; the student's own weights are added to those
+      const fullLeft = [...(response.left ?? []), ...left];
+      const fullRight = [...(response.right ?? []), ...right];
+      if (isBalanced({ left: { weights: fullLeft }, right: { weights: fullRight } })) return { verdict: 'correct' };
+      const heavier = panTotal({ weights: fullLeft }) > panTotal({ weights: fullRight }) ? 'left' : 'right';
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === heavier || a === 'unbalanced'));
+    }
+    case 'equal-groups': {
+      const raw = typeof input === 'string' ? input : '';
+      const [aText = '', bText = ''] = raw.split(',');
+      if (aText === '' || bText === '') return { verdict: 'incomplete', feedback: MSG.needEqualGroups };
+      const a = Number(aText);
+      const b = Number(bText);
+      if (!Number.isFinite(a) || !Number.isFinite(b)) return { verdict: 'incomplete', feedback: MSG.needEqualGroups };
+      // untouched is unfinished — unless the two groups started out equal, in which case "nothing to do" is the answer
+      if (a === response.a && b === response.b && response.a !== response.b)
+        return { verdict: 'incomplete', feedback: MSG.needEqualGroups };
+      if (a === b) return { verdict: 'correct' };
+      const diff = Math.abs(a - b);
+      return wrong(question, findMisconception(question.misconceptions, (x) => Number(x) === diff || x === (a > b ? 'a' : 'b')));
+    }
+    case 'sentence-build': {
+      const places = response.template.split('{}').length - 1;
+      const values = typeof input === 'string' && input ? input.split(',') : [];
+      if (values.length < places || values.slice(0, places).some((v) => !v)) return { verdict: 'incomplete', feedback: MSG.needSentence };
+      const ok = values.slice(0, places).every((v, i) => v === response.answers[i]);
+      if (ok) return { verdict: 'correct' };
+      const wrongIndex = values.slice(0, places).findIndex((v, i) => v !== response.answers[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex) || a === response.answers[wrongIndex]));
+    }
+    case 'sentence-pick': {
+      const picked = typeof input === 'string' && input ? input.split(',').filter(Boolean) : [];
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: MSG.needSentencePick };
+      const right = response.sentences.filter((s) => sentenceHolds({ left: s.left, right: s.right })).map((s) => s.id);
+      if (picked.length === right.length && right.every((id) => picked.includes(id))) return { verdict: 'correct' };
+      const extra = picked.find((id) => !right.includes(id));
+      const missing = right.find((id) => !picked.includes(id));
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === extra || a === missing || a === 'extra' || a === 'missing'));
+    }
+    case 'balance-puzzle': {
+      const text = typeof input === 'string' ? input.trim() : '';
+      if (!text) return { verdict: 'incomplete', feedback: MSG.needPuzzle };
+      const n = Number(text.replace(',', '.'));
+      if (!Number.isFinite(n)) return { verdict: 'incomplete', feedback: MSG.needPuzzle };
+      if (n === response.answer) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === n || a === 'wrong'));
+    }
+    case 'sort-groups': {
+      const groups = typeof input === 'string' && input ? input.split(',').map((g) => g.trim()) : [];
+      const objs = response.objects as SortObj[];
+      if (groups.length !== objs.length || groups.some((g) => !g)) return { verdict: 'incomplete', feedback: MSG.needSortGroups };
+      const right = objs.map((o) => o[response.attr]);
+      if (groups.every((g, i) => g === right[i])) return { verdict: 'correct' };
+      const wrongIndex = groups.findIndex((g, i) => g !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex) || a === right[wrongIndex]));
+    }
+    case 'sort-grid': {
+      const cells = typeof input === 'string' && input ? input.split(',').map((c) => c.trim()) : [];
+      const objs = response.objects as SortObj[];
+      if (cells.length !== objs.length || cells.some((c) => !c)) return { verdict: 'incomplete', feedback: MSG.needSortGrid };
+      const right = objs.map((o) => cellKey(o, response.rowAttr, response.colAttr));
+      if (cells.every((c, i) => c === right[i])) return { verdict: 'correct' };
+      const wrongIndex = cells.findIndex((c, i) => c !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex) || a === right[wrongIndex]));
+    }
+    case 'venn-sort': {
+      const regions = typeof input === 'string' && input ? input.split(',').map((r) => r.trim()) : [];
+      const objs = response.objects as SortObj[];
+      if (regions.length !== objs.length || regions.some((r) => !r)) return { verdict: 'incomplete', feedback: MSG.needVenn };
+      const right = objs.map((o) => vennRegion(o, response.leftAttr, response.leftValue, response.rightAttr, response.rightValue));
+      if (regions.every((r, i) => r === right[i])) return { verdict: 'correct' };
+      const wrongIndex = regions.findIndex((r, i) => r !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === regions[wrongIndex] || a === right[wrongIndex] || String(a) === String(wrongIndex)));
+    }
+    case 'chart-read': {
+      const picked = typeof input === 'string' ? input.trim() : '';
+      if (!picked) return { verdict: 'incomplete', feedback: MSG.needChartRead };
+      const chart = { glyph: response.chart.glyph, rows: response.chart.rows };
+      const counts = response.chart.rows.map((r) => r.count);
+      let right: string[] = [];
+      if (response.ask === 'most') {
+        const max = Math.max(...counts);
+        right = response.chart.rows.filter((r) => r.count === max).map((r) => r.label);
+      } else if (response.ask === 'least') {
+        const min = Math.min(...counts);
+        right = response.chart.rows.filter((r) => r.count === min).map((r) => r.label);
+      } else if (response.ask === 'same') {
+        const other = response.compareWith ?? '';
+        const target = chartCount(chart, other);
+        right = response.chart.rows.filter((r) => r.label !== other && r.count === target).map((r) => r.label);
+      } else {
+        const other = chartCount(chart, response.compareWith ?? '');
+        right = response.chart.rows.filter((r) => (response.ask === 'more' ? r.count > other : r.count < other)).map((r) => r.label);
+      }
+      if (right.includes(picked)) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === picked));
+    }
+    case 'chart-build': {
+      const counts = typeof input === 'string' && input ? input.split(',').map((c) => Number(c || 0)) : [];
+      if (counts.length < response.labels.length) return { verdict: 'incomplete', feedback: MSG.needChartBuild };
+      const shown = counts.slice(0, response.labels.length);
+      if (shown.every((c, i) => c === response.target[i])) return { verdict: 'correct' };
+      if (shown.every((c) => c === 0)) return { verdict: 'incomplete', feedback: MSG.needChartBuild };
+      const wrongIndex = shown.findIndex((c, i) => c !== response.target[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex) || a === 'count'));
+    }
+    case 'clue-pick': {
+      const picked = typeof input === 'string' && input ? input.split(',').filter(Boolean) : [];
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: MSG.needClue };
+      const right = (response.objects as SortObj[])
+        .filter((o) => response.clues.every((c) => (o[c.attr] === c.value) !== Boolean(c.negate)))
+        .map((o) => o.id);
+      if (picked.length === right.length && right.every((id) => picked.includes(id))) return { verdict: 'correct' };
+      const extra = picked.find((id) => !right.includes(id));
+      const missing = right.find((id) => !picked.includes(id));
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === extra || a === missing || a === 'extra' || a === 'missing'));
+    }
   }
 }
+
+/** `3 + 2`, for describing a sentence. */
+const termWords = (t: TermSpec): string => (t.op === undefined || t.b === undefined ? String(t.a) : `${t.a} ${t.op} ${t.b}`);
 
 /** The right order of an `order` response's tiles. */
 export function correctOrder(response: Extract<ResponseSpec, { type: 'order' }>): number[] {
@@ -447,5 +597,41 @@ export function describeAnswer(response: ResponseSpec): string {
     }
     case 'find-shapes':
       return `${FLAT_NAME[response.kind]}: ${response.items.filter((item) => shapeGroup(item.spec) === response.kind).map((item) => item.label).join(', ')}`;
+    case 'balance-pans':
+      return `თანაბარი: ${response.left.join(' + ') || 0} = ${response.right.join(' + ') || 0}`;
+    case 'equal-groups':
+      return `${response.a} = ${response.b} (თანაბარი ჯგუფები)`;
+    case 'sentence-build':
+      return response.answers.join(' ');
+    case 'sentence-pick':
+      return response.sentences
+        .filter((s) => sentenceHolds({ left: s.left, right: s.right }))
+        .map((s) => `${termWords(s.left)} = ${s.right}`)
+        .join(', ');
+    case 'balance-puzzle':
+      return `${response.unknown} = ${response.answer}`;
+    case 'sort-groups':
+      return (response.objects as SortObj[]).map((o) => `${o.label ?? o.id}: ${o[response.attr]}`).join(', ');
+    case 'sort-grid':
+      return (response.objects as SortObj[]).map((o) => `${o.label ?? o.id}: ${o[response.rowAttr]}|${o[response.colAttr]}`).join(', ');
+    case 'venn-sort':
+      return (response.objects as SortObj[])
+        .map((o) => `${o.label ?? o.id}: ${VENN_REGION_NAME[vennRegion(o, response.leftAttr, response.leftValue, response.rightAttr, response.rightValue)]}`)
+        .join(', ');
+    case 'chart-read': {
+      if (response.ask === 'most') {
+        const max = Math.max(...response.chart.rows.map((r) => r.count));
+        return response.chart.rows.filter((r) => r.count === max).map((r) => r.label).join(', ');
+      }
+      if (response.ask === 'least') {
+        const min = Math.min(...response.chart.rows.map((r) => r.count));
+        return response.chart.rows.filter((r) => r.count === min).map((r) => r.label).join(', ');
+      }
+      return response.chart.rows.map((r) => `${r.label}: ${r.count}`).join(', ');
+    }
+    case 'chart-build':
+      return response.labels.map((l, i) => `${l}: ${response.target[i]}`).join(', ');
+    case 'clue-pick':
+      return (response.objects as SortObj[]).filter((o) => response.clues.every((c) => (o[c.attr] === c.value) !== Boolean(c.negate))).map((o) => o.label ?? o.id).join(', ');
   }
 }

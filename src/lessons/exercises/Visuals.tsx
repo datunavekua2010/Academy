@@ -12,6 +12,9 @@ import { divisionOf } from './ShapeGeometry';
 import { ObjectRow } from './LengthBoard';
 import { ClockFace } from './ClockBoard';
 import { Shape2DRow } from './Shape2DBoard';
+import { BalanceScale, GroupsBoard, SentenceLine } from './BalanceBoard';
+import { PictureChart, SortChip, VennBoard } from './SortBoard';
+import { valueLabel } from './SortBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -143,8 +146,46 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <ClockFace time={spec.time} showHands={spec.showHands !== false} size={132} label={`საათი`} />;
     case 'flat':
       return <Shape2DRow shapes={spec.shapes} compact showSides={spec.showSides} />;
+    case 'scale':
+      return <BalanceScale scale={{ left: { weights: spec.left }, right: { weights: spec.right }, unit: spec.unit }} size={252} label="სასწორი" />;
+    case 'groups':
+      return <GroupsBoard a={spec.a} b={spec.b} glyph={spec.glyph ? GLYPH_OF[spec.glyph] : undefined} label="ორი ჯგუფი" />;
+    case 'sentence':
+      return <SentenceLine sentence={{ left: spec.left, right: spec.right }} />;
+    case 'chart':
+      return <PictureChart chart={{ glyph: spec.glyph, rows: spec.rows }} label="ნახატი დიაგრამა" />;
+    case 'sorted-groups':
+      return (
+        <div className="lab-sort-groups">
+          {spec.groups.map((g) => (
+            <section key={g.value} className="lab-sort-group" aria-label={valueLabel(spec.attr, g.value)}>
+              <h4>{valueLabel(spec.attr, g.value)} <small>({g.objects.length})</small></h4>
+              <div className="lab-sort-items">
+                {g.objects.map((o) => (
+                  <SortChip key={o.id} obj={o as never} size={44} />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      );
+    case 'venn':
+      return (
+        <VennBoard
+          objects={spec.regions.flatMap((r) => r.objects as never[])}
+          leftLabel={spec.leftLabel}
+          rightLabel={spec.rightLabel}
+          placement={spec.regions.flatMap((r) => r.objects.map(() => r.region))}
+          onChange={() => undefined}
+          disabled
+          label="ვენის დიაგრამა"
+        />
+      );
   }
 }
+
+/** The characters used for a group of objects, so a picture is never only a colour. */
+const GLYPH_OF: Record<string, string> = { star: '★', apple: '●', fish: '◆', ball: '●' };
 
 export function VisualView({ spec }: { spec: VisualSpec }) {
   return (
