@@ -29,6 +29,8 @@ export interface NumberLineProps {
   highlight?: [number, number];
   /** Visited numbers, in order. Neighbours are joined with a hop arc. */
   hops?: number[];
+  /** Named positions drawn as labelled flags (e.g. two numbers being compared). */
+  pins?: Array<{ value: number; label: string }>;
   /** Show the ◀ ▶ one-step buttons. */
   arrows?: boolean;
   disabled?: boolean;
@@ -49,7 +51,7 @@ export function valueAtX(clientX: number, rect: { left: number; width: number },
   return clampToLine(min + fraction * (max - min), min, max);
 }
 
-export function NumberLine({ min, max, value = null, onChange, labelled = [], labelEvery, start = null, destination = null, highlight, hops = [], arrows = false, disabled = false, showValue = false, ariaLabel }: NumberLineProps) {
+export function NumberLine({ min, max, value = null, onChange, labelled = [], labelEvery, start = null, destination = null, highlight, hops = [], pins = [], arrows = false, disabled = false, showValue = false, ariaLabel }: NumberLineProps) {
   const span = max - min;
   const stripRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -115,7 +117,7 @@ export function NumberLine({ min, max, value = null, onChange, labelled = [], la
             <div key={`${a}-${b}-${i}`} className="nl-arc" style={{ left: pos(Math.min(a, b)), width: widthOf(a, b) }} aria-hidden="true" />
           ))}
           {ticks.map((v) => {
-            const showLabel = labelled_.has(v) || visited.has(v) || (v - min) % every === 0 || v === max || v === start || v === destination;
+            const showLabel = labelled_.has(v) || visited.has(v) || (v - min) % every === 0 || v === max || v === start || v === destination || pins.some((p) => p.value === v);
             const inner = (
               <>
                 <span className="nl-tick-mark" aria-hidden="true" />
@@ -143,6 +145,11 @@ export function NumberLine({ min, max, value = null, onChange, labelled = [], la
               <span>მიზანი</span>
             </div>
           )}
+          {pins.map((p, i) => (
+            <div key={`${p.label}-${p.value}`} className={`nl-flag is-pin ${i % 2 ? 'is-low' : ''}`} style={{ left: pos(p.value) }}>
+              <span>{p.label}</span>
+            </div>
+          ))}
           {value !== null && (
             <div
               className={`nl-marker ${dragging ? 'is-dragging' : ''}`}

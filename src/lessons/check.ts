@@ -24,6 +24,12 @@ const MSG = {
   needExpression: 'ჩაწერე გამოსახულება, მაგალითად 4x.',
   needAll: 'შეავსე ყველა ცარიელი ადგილი.',
   needChoice: 'აირჩიე ერთ-ერთი პასუხი.',
+  needObjects: 'შეეხე საგნებს და აირჩიე საჭირო რაოდენობა.',
+  needMove: 'გადაანაცვლე ფილები სწორ რიგში და შემდეგ შეამოწმე.',
+  needCounters: 'გადაიტანე კუბიკები ყუთებში და შემდეგ შეამოწმე.',
+  firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
+  firstLargest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე დიდი რიცხვი უნდა იდგეს.',
+  closeOrder: 'დასაწყისი სწორია. შეადარე დანარჩენი რიცხვები ერთმანეთს.',
   needMarker: 'გადაიტანე მარკერი რიცხვით ღერძზე და შემდეგ შეამოწმე.',
   notSimplified: 'მნიშვნელობა სწორია, მაგრამ გამოსახულება ჯერ არ არის გამარტივებული. ჩაწერე ყველაზე მარტივი სახით.',
 };
@@ -69,6 +75,28 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       if (n === response.answer) return { verdict: 'correct' };
       return wrong(question, findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === n));
     }
+    case 'collect': {
+      const picked = typeof input === 'string' && input ? new Set(input.split(',').filter(Boolean)) : new Set<string>();
+      if (picked.size === 0) return { verdict: 'incomplete', feedback: MSG.needObjects };
+      if (picked.size === response.answer) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === picked.size));
+    }
+    case 'order': {
+      const order = typeof input === 'string' && input ? input.split(',').map(Number) : [];
+      if (order.length !== response.items.length || order.some((n) => !Number.isFinite(n))) return { verdict: 'incomplete', feedback: MSG.needMove };
+      const right = correctOrder(response);
+      if (order.every((n, i) => n === right[i])) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === order.join(','));
+      if (hit) return wrong(question, hit);
+      const generic = order[0] !== right[0] ? (response.direction === 'asc' ? MSG.firstSmallest : MSG.firstLargest) : MSG.closeOrder;
+      return { verdict: 'incorrect', feedback: generic };
+    }
+    case 'split': {
+      const left = parseNumber(typeof input === 'string' ? input : '');
+      if (left === null || left === response.total) return { verdict: 'incomplete', feedback: MSG.needCounters };
+      if (left === response.answer) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === left));
+    }
     case 'blanks': {
       const values = Array.isArray(input) ? input : [];
       if (values.length < response.answers.length || values.slice(0, response.answers.length).some((v) => !v || !v.trim())) {
@@ -84,6 +112,12 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
   }
 }
 
+/** The right order of an `order` response's tiles. */
+export function correctOrder(response: Extract<ResponseSpec, { type: 'order' }>): number[] {
+  const sorted = [...response.items].sort((a, b) => a - b);
+  return response.direction === 'asc' ? sorted : sorted.reverse();
+}
+
 /** The correct answer as readable text, for the "show answer" state. */
 export function describeAnswer(response: ResponseSpec): string {
   switch (response.type) {
@@ -96,6 +130,11 @@ export function describeAnswer(response: ResponseSpec): string {
     case 'blanks':
       return response.answers.join(', ');
     case 'line':
+    case 'collect':
       return String(response.answer);
+    case 'order':
+      return correctOrder(response).join(', ');
+    case 'split':
+      return `${response.answer} და ${response.total - response.answer}`;
   }
 }

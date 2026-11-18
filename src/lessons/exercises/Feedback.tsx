@@ -37,7 +37,7 @@ export function Feedback({ question, state }: { question: Question; state: Attem
     body = question.explanation;
     if (question.revealOnExhaust !== false) {
       const raw = describeAnswer(question.response);
-      revealed = question.response.type === 'choice' ? raw : `$${raw}$`;
+      revealed = ['numeric', 'expression', 'blanks', 'line'].includes(question.response.type) ? `$${raw}$` : raw;
     }
   } else if (last?.verdict === 'incorrect') {
     kind = 'no';

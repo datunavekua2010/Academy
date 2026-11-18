@@ -1,0 +1,156 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U02.1 "Counting Objects to 20".
+ *
+ * Demonstration content that exercises the layout and interactions. It is NOT
+ * an approved lesson and NOT the Grade 1 question bank: every collection,
+ * number and answer option below is an illustrative stand-in. Replace them (and
+ * change `status`) when the real lesson is supplied; the player needs no changes.
+ */
+export const g1u02l1: Lesson = {
+  id: 'g1-u02-l1',
+  status: 'placeholder',
+  objective: 'ვითვლი საგნებს 20-მდე: ყოველ საგანს ერთხელ ვითვლი და ბოლო რიცხვი მეუბნება, რამდენია სულ.',
+  prerequisites: ['თვლა 1-დან 10-მდე'],
+  minutes: 8,
+  concepts: ['საგნების თვლა 20-მდე', 'ყოველ საგანს ერთხელ ვითვლით', 'ბოლო რიცხვი გვიჩვენებს რაოდენობას'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავი თვლა! შენ იცი, როგორ დათვალო საგნების ჯგუფი.',
+    retry: 'სცადე ისევ. ყოველ საგანს ერთხელ შეეხე და დაიმახსოვრე, საიდან დაიწყე.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რამდენი ვარსკვლავია?',
+      visual: { type: 'objects', count: 13, glyph: 'star', layout: 'scatter', seed: 4 },
+      mascot: { intro: 'რამდენი საგნის დათვლა შეგიძლია?' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'a', text: '12' },
+          { id: 'b', text: '13' },
+          { id: 'c', text: '14' },
+        ],
+        answer: 'b',
+      },
+      maxAttempts: 2,
+      revealOnExhaust: false,
+      hints: ['ყოველ ვარსკვლავს ერთხელ შეხედე და ერთი მხრიდან მეორისკენ იარე.'],
+      explanation: 'ბრავო! კარგად დათვალე ვარსკვლავები.',
+      fallbackFeedback: 'ყურადღებით დავთვალოთ. ყოველი ვარსკვლავი მხოლოდ ერთხელ უნდა დათვალო.',
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'როგორ არ დავკარგოთ თვლა?',
+      prompt: 'შეეხე საგნებს ერთმანეთის მიყოლებით. დათვლილი საგანი გამოიყოფა და მთვლელი ერთით გაიზრდება.',
+      mascot: { intro: 'გამოსცადე: რა ხდება, როცა საგანს ერთხელ შეეხები?' },
+      hints: ['სცადე ყოველი საგანი ერთხელ დათვალო, ერთი მხრიდან მეორისკენ.'],
+      tool: {
+        tool: 'count-objects',
+        glyph: 'apple',
+        counts: [9, 17],
+        layouts: [{ layout: 'rows' }, { layout: 'scatter', seed: 3 }],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'თვლა გვეუბნება, რამდენია',
+      prompt: 'თვლით ვიგებთ, რამდენი საგანია ჯგუფში.',
+      blocks: [
+        { type: 'text', text: '1. დავიწყოთ ერთიდან. 2. ყოველ საგანს ერთხელ ვთვლით. 3. ბოლო რიცხვი გვეუბნება, რამდენია სულ.' },
+        { type: 'count-demo', glyph: 'fish', count: 6, second: { layout: 'scatter', seed: 2 } },
+        { type: 'callout', tone: 'tip', text: 'საგნები შეიძლება სხვანაირად დავალაგოთ, მაგრამ თუ იგივე რაოდენობა გვაქვს, რიცხვიც იგივე რჩება.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'შეეხე 5 ბურთს.',
+      response: { type: 'collect', total: 8, answer: 5, glyph: 'ball', layout: 'rows' },
+      hints: ['ყოველ შეხებაზე ერთი რიცხვი თქვი. შეჩერდი 5-ზე.'],
+      explanation: 'კარგია! ზუსტად 5 ბურთი აირჩიე.',
+      misconceptions: [{ id: 'one-more', answers: [6], feedback: 'ერთი ბურთი მეტი აირჩიე. შენი ბოლო რიცხვი 5 უნდა ყოფილიყო.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დათვალე არჩეული ბურთები: ზუსტად 5 უნდა იყოს.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი თევზია? შეგიძლია თევზებს შეეხო, რომ თვლა არ აგერიოს.',
+      visual: { type: 'objects', count: 14, glyph: 'fish', layout: 'rows', markable: true },
+      response: { type: 'numeric', answer: 14 },
+      hints: ['ყოველ თევზს ერთხელ შეეხე.', 'დაიმახსოვრე, რომელ თევზზე დაიწყე.'],
+      explanation: 'სულ 14 თევზია.',
+      misconceptions: [
+        { id: 'missed-one', answers: [13], feedback: 'ერთი თევზი გამოგრჩა. ისევ დათვალე და ყოველ თევზს შეეხე.' },
+        { id: 'counted-twice', answers: [15], feedback: 'ერთი თევზი ორჯერ დაითვალე. ყოველ საგანს მხოლოდ ერთხელ ვთვლით.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაიწყე თავიდან და ყოველ თევზს ერთხელ შეეხე.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი ვარსკვლავია?',
+      visual: { type: 'objects', count: 17, glyph: 'star', layout: 'scatter', seed: 7, markable: true },
+      response: { type: 'numeric', answer: 17 },
+      hints: ['დაიწყე ერთი კუთხიდან და ისე იარე, რომ არცერთი არ გამოგრჩეს.', 'შეეხე ვარსკვლავებს, რომ დათვლილები გამოიყოს.'],
+      explanation: 'სულ 17 ვარსკვლავია.',
+      misconceptions: [
+        { id: 'missed-one', answers: [16], feedback: 'ერთი ვარსკვლავი გამოგრჩა. შეეხე ყველა ვარსკვლავს, სანამ არცერთი არ დარჩება.' },
+        { id: 'counted-twice', answers: [18], feedback: 'ერთი ვარსკვლავი ორჯერ დაითვალე. შეხებით მონიშნული ვარსკვლავი ისევ არ დათვალო.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ისევ დათვალე და ყოველ ვარსკვლავს ერთხელ შეეხე.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი ვაშლია?',
+      visual: { type: 'objects', count: 7, glyph: 'apple', layout: 'scatter', seed: 5 },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'a', text: '6' },
+          { id: 'b', text: '7' },
+          { id: 'c', text: '8' },
+        ],
+        answer: 'b',
+      },
+      hints: ['ყოველ ვაშლს ერთხელ დათვალე.'],
+      explanation: 'სულ 7 ვაშლია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ისევ დათვალე: ყოველი ვაშლი ერთხელ.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი ბურთია?',
+      visual: { type: 'objects', count: 16, glyph: 'ball', layout: 'scatter', seed: 9 },
+      response: { type: 'numeric', answer: 16 },
+      hints: ['დაიწყე ერთი კუთხიდან და თითით ან თვალით გაჰყევი ბურთებს.'],
+      explanation: 'სულ 16 ბურთია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ისევ დათვალე ნელა, ყოველი ბურთი ერთხელ.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი თევზია?',
+      visual: { type: 'objects', count: 19, glyph: 'fish', layout: 'scatter', seed: 11 },
+      response: { type: 'numeric', answer: 19 },
+      hints: ['თევზები არათანაბრად არიან განლაგებული. ყურადღებით გაჰყევი თითო-თითოს.'],
+      explanation: 'სულ 19 თევზია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ისევ დათვალე: არცერთი გამოტოვო და არცერთი ორჯერ არ დათვალო.',
+    },
+  ],
+};
