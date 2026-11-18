@@ -15,6 +15,8 @@ import { JumpDemo } from './exercises/JumpTools';
 import { TenDemo } from './exercises/MakeTenTools';
 import { StoryDemo } from './exercises/StoryTools';
 import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, QuantitiesBlock, ShapeDemo, VisualView } from './exercises/Visuals';
+import { MeasureDemo } from './exercises/MeasureTools';
+import { ObjectRow } from './exercises/LengthBoard';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
 import { RichText, plainText } from './RichText';
 import { getLessonContent, showDevLabels } from './content';
@@ -119,6 +121,10 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <StoryDemo key={i} block={block} />;
           case 'shape-demo':
             return <ShapeDemo key={i} block={block} />;
+          case 'measure-demo':
+            return <MeasureDemo key={i} block={block} />;
+          case 'length':
+            return <ObjectRow key={i} objects={block.objects} align={block.align} showCm={block.showCm} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

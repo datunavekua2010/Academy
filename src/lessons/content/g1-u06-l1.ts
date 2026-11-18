@@ -1,0 +1,153 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U06.1 "Comparing Objects by Length".
+ * Demonstration content only. Two objects are compared honestly only when they start at the same point: a long
+ * pencil that begins far to the right can be beaten by a short one that begins on the line. Every comparison here
+ * is decided by the real lengths in centimetres, never by how a drawing looks.
+ */
+export const g1u06l1: Lesson = {
+  id: 'g1-u06-l1',
+  status: 'placeholder',
+  objective: 'ვიცი, რომ სიგრძის შესადარებლად ორივე საგანი ერთი ადგილიდან უნდა დაიწყოს.',
+  prerequisites: ['«უფრო გრძელი» და «უფრო მოკლე» ყოველდღიური სიტყვები'],
+  minutes: 10,
+  concepts: ['სიგრძე', 'საერთო დასაწყისი', 'შედარება'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! საგნები ერთი ხაზიდან რომ იწყება, სიგრძეს თვალითაც კარგად ვადარებთ.',
+    retry: 'სცადე ისევ. ჯერ ორივე საგანი ერთ დასაწყის ხაზთან მიიტანე, მერე შეადარე.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'ორი ფანქარია. რომელია უფრო გრძელი?',
+      visual: { type: 'length', objects: [{ kind: 'pencil', cm: 12 }, { kind: 'crayon', cm: 9 }], align: true, showCm: false },
+      mascot: { intro: 'როცა ორივე ერთი ხაზიდან იწყებს, გრძელი ისაა, რომლის ბოლოც უფრო შორსაა.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'pencil', text: 'ფანქარი (ზედა)' },
+          { id: 'crayon', text: 'ფერადი ფანქარი (ქვედა)' },
+          { id: 'same', text: 'ორივე იგივე სიგრძისაა' },
+        ],
+        answer: 'pencil',
+      },
+      hints: ['ორივე საგანი ერთი ვერტიკალური ხაზიდან იწყებს. შეხედე, რომელი უფრო შორს აღწევს.'],
+      explanation: 'ფანქარი 12 სმ-ია, ფერადი ფანქარი — 9 სმ. 12 > 9, ამიტომ ფანქარი უფრო გრძელია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეხედე, რომელი საგანი უფრო შორს აღწევს დასაწყისი ხაზიდან.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'საერთო დასაწყისი',
+      prompt: 'აირჩიე წყვილი და მიიტანე ორივე საგანი დასაწყის ხაზთან. მერე შეადარე: რომელია უფრო გრძელი?',
+      hints: ['გადაათრიე საგანი ხაზისკენ, ან დააჭირე ღილაკს «დასაწყისთან».', 'როცა ორივე ერთ ხაზზე დგას, საკმარისია შევხედოთ, რომლის ბოლოც უფრო მარჯვნივაა.'],
+      tool: {
+        tool: 'length-lab',
+        pairs: [
+          { label: 'ფანქარი და ლენტი', a: { kind: 'pencil', cm: 12 }, b: { kind: 'ribbon', cm: 15 } },
+          { label: 'წიგნი და ჩხირი', a: { kind: 'book', cm: 14 }, b: { kind: 'stick', cm: 10 } },
+          { label: 'ორი ერთნაირი', a: { kind: 'pencil', cm: 10 }, b: { kind: 'crayon', cm: 10 } },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'ვაყენებთ ერთ ხაზზე',
+      prompt: 'ნახე, რა იცვლება, როცა ორი საგანი ერთი წერტილიდან იწყებს.',
+      blocks: [
+        {
+          type: 'measure-demo',
+          mode: 'align',
+          a: { kind: 'pencil', cm: 12 },
+          b: { kind: 'stick', cm: 14 },
+          steps: [
+            'აი ორი საგანი. ერთი მოკლეა, მეორე გრძელი — მაგრამ ისინი სხვადასხვა ადგილიდან იწყებენ.',
+            'პირველი საგანი დასაწყის ხაზთან მივიტანეთ.',
+            'ახლა მეორეც დასაწყისთან დგას. შედარება ახლა სამართლიანია: ჩხირი 14 სმ-ია და ფანქარზე (12 სმ) გრძელია.',
+          ],
+          caption: 'ერთი ხაზიდან დაწყებული საგნები სამართლიანად შედარებადია.',
+        },
+        { type: 'callout', tone: 'tip', text: 'თუ საგნები ერთ ხაზზე არ იწყებენ, ვიზუალურად შედარება მცდარია. ჯერ ერთ ხაზზე დააყენე, მერე შეადარე.' },
+        { type: 'equation', lines: ['12\\text{ სმ} < 14\\text{ სმ}'], caption: 'ფანქარი 12 სმ, ჩხირი 14 სმ: ჩხირი უფრო გრძელია.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ჯერ ორივე საგანი დასაწყის ხაზთან მიიტანე, შემდეგ აირჩიე უფრო გრძელი.',
+      response: { type: 'align-compare', a: { kind: 'pencil', cm: 13 }, b: { kind: 'ribbon', cm: 11 } },
+      hints: ['გადაათრიე თითოეული საგანი ვერტიკალურ ხაზამდე.', '13 სმ მეტია 11 სმ-ზე.'],
+      explanation: 'ფანქარი 13 სმ-ია, ლენტი — 11 სმ. 13 > 11, ამიტომ ფანქარი უფრო გრძელია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ჯერ ორივე ერთ ხაზზე დააყენე და მერე შეადარე.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'მიიტანე ორივე საგანი დასაწყისთან და აირჩიე უფრო მოკლე.',
+      response: { type: 'align-compare', a: { kind: 'book', cm: 16 }, b: { kind: 'stick', cm: 14 }, ask: 'shorter' },
+      hints: ['უფრო მოკლე ნიშნავს იმას, რომლის ბოლოც უფრო ახლოსაა.', '16 სმ და 14 სმ: 14 ნაკლებია.'],
+      explanation: 'წიგნი 16 სმ-ია, ჩხირი — 14 სმ. 14 < 16, ამიტომ ჩხირი უფრო მოკლეა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ეძებე ის საგანი, რომლის ბოლოც დასაწყისთან უფრო ახლოა.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'მიიტანე ორივე ფანქარი დასაწყისთან. რომელია უფრო გრძელი?',
+      response: { type: 'align-compare', a: { kind: 'crayon', cm: 10 }, b: { kind: 'pencil', cm: 10 } },
+      hints: ['ორივე ერთი ხაზიდან იწყებს. შეხედე: ერთი და იმავე ადგილას ბრუნდება თუ არა ბოლოები?'],
+      explanation: 'ორივე 10 სმ-ია: ისინი იგივე სიგრძისაა. ფერი და ფორმა სიგრძეს არ ცვლის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე ბოლოები: ერთ ხაზზე დგას თუ არა?',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'მიიტანე საგნები დასაწყისთან და აირჩიე უფრო მოკლე.',
+      response: { type: 'align-compare', a: { kind: 'ribbon', cm: 18 }, b: { kind: 'ladder', cm: 15 }, ask: 'shorter' },
+      hints: ['18 სმ და 15 სმ: რომელი რიცხვი უფრო პატარაა?'],
+      explanation: 'ლენტი 18 სმ-ია, კიბე — 15 სმ. 15 < 18, ამიტომ კიბე უფრო მოკლეა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე სიგრძეები, არა ნახატის სიმაღლე.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'მიიტანე ორივე საგანი დასაწყის ხაზთან და აირჩიე უფრო გრძელი.',
+      response: { type: 'align-compare', a: { kind: 'stick', cm: 8 }, b: { kind: 'book', cm: 13 } },
+      hints: [],
+      explanation: 'ჩხირი 8 სმ-ია, წიგნი — 13 სმ. 13 > 8, ამიტომ წიგნი უფრო გრძელია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ჯერ საერთო დასაწყისამდე მიიტანე და მერე შეადარე.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ორი ლენტია. მიიტანე ისინი დასაწყისთან და თქვი: რომელია უფრო გრძელი?',
+      response: { type: 'align-compare', a: { kind: 'ribbon', cm: 9 }, b: { kind: 'crayon', cm: 9 } },
+      hints: [],
+      explanation: 'ორივე 9 სმ-ია, ამიტომ ისინი იგივე სიგრძისაა. საერთო დასაწყისი ამას ცხადს ხდის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ერთ ხაზზე დააყენე და შეადარე ბოლოები.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'მიიტანე საგნები დასაწყისთან და აირჩიე უფრო მოკლე.',
+      response: { type: 'align-compare', a: { kind: 'pencil', cm: 12 }, b: { kind: 'ribbon', cm: 14 }, ask: 'shorter' },
+      hints: [],
+      explanation: 'ფანქარი 12 სმ-ია, ლენტი — 14 სმ. 12 < 14, ამიტომ ფანქარი უფრო მოკლეა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე 12 და 14.',
+    },
+  ],
+};

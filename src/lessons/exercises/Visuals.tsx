@@ -9,6 +9,7 @@ import { JumpLinePicture } from './JumpTools';
 import { StoryVisual } from './StoryTools';
 import { CompareStage, ShapeBoard, ShapePicture, describeShape } from './ShapeBoard';
 import { divisionOf } from './ShapeGeometry';
+import { ObjectRow } from './LengthBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -134,6 +135,8 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <StoryVisual spec={spec} />;
     case 'shape':
       return <ShapePicture item={spec} compact={compact} />;
+    case 'length':
+      return <ObjectRow objects={spec.objects} align={spec.align} showCm={spec.showCm} />;
   }
 }
 

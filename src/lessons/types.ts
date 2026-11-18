@@ -1,3 +1,5 @@
+import type { MeasureKind } from './exercises/MeasureGeometry';
+
 /**
  * Lesson system model.
  *
@@ -87,6 +89,22 @@ export interface ChoiceOption {
   text: string;
   /** A picture instead of (or beside) the text, e.g. a quantity to match to a numeral. */
   visual?: VisualSpec;
+}
+
+// ───────────────────────────── length (Unit 6) ─────────────────────────────
+
+/** A thing that can be measured. `cm` is its real length; the picture is drawn from that number. */
+export interface LengthObject {
+  kind?: MeasureKind;
+  cm: number;
+  /** Drawn standing up: the same length. Orientation never changes a measurement. */
+  turn?: 'straight' | 'up';
+}
+/** A named length, for the unit-choice questions ("კარი", 200 cm → metres). */
+export interface LengthItem {
+  label: string;
+  cm: number;
+  kind?: MeasureKind;
 }
 
 /** How a question is answered, and what the right answer is. */
@@ -192,7 +210,34 @@ export type ResponseSpec =
    * Misconception ids: `count` (wrong number of pieces), `unequal`. With `compare` the student can lay two pieces
    * on top of each other.
    */
-  | { type: 'cut'; shape: ShapeKind; parts: 2 | 4; maxCuts: number; skin?: SkinId; compare?: boolean };
+  | { type: 'cut'; shape: ShapeKind; parts: 2 | 4; maxCuts: number; skin?: SkinId; compare?: boolean }
+  /**
+   * Two objects to compare. First the student drags both to the common starting line (a picture that is not
+   * aligned cannot be compared by eye), then picks the one that is longer (or shorter, per `ask`).
+   * Stored as `"<aligned>,<choice>"`, e.g. `"1,a"`; `same` is offered when the two lengths match.
+   */
+  | { type: 'align-compare'; a: LengthObject; b: LengthObject; ask?: 'longer' | 'shorter' }
+  /**
+   * Sort objects into three groups by comparing each with `reference`: longer (`l`), shorter (`s`), the same
+   * length (`e`). Grouping comes from the lengths, never from how the pictures look.
+   * Stored as the comma-separated group of each item.
+   */
+  | { type: 'length-sort'; reference: LengthObject; items: LengthObject[] }
+  /**
+   * Measure with identical units: the student lays `unitCm`-long units end to end along the object (no gaps, no
+   * overlaps) and counts them. Stored as the number of units placed.
+   */
+  | { type: 'measure-units'; object: LengthObject; unitCm: number; unitName: string }
+  /**
+   * Read a ruler: slide it under the object so the zero mark meets the object's start, then choose the
+   * measurement. Stored as `"<rulerZero>,<cm>"`; both parts must be right.
+   */
+  | { type: 'ruler-read'; object: LengthObject; rulerStart: number; options: number[]; answerCm: number }
+  /**
+   * Choose the unit that suits each object: centimetres for short things, metres for things at least a metre long.
+   * Stored as the comma-separated choice of each item (`cm`/`m`).
+   */
+  | { type: 'unit-pick'; items: LengthItem[] };
 
 // ───────────────────────────── shapes (Unit 5) ─────────────────────────────
 
@@ -273,7 +318,9 @@ export type VisualSpec =
    */
   | { type: 'story'; glyph: Glyph; first: number; change: number; mode: 'join' | 'separate' }
   /** A shape or object, whole, divided, or with its pieces apart. */
-  | ({ type: 'shape' } & ShapeItem);
+  | ({ type: 'shape' } & ShapeItem)
+  /** One or more objects drawn to scale, one above the other; `align` marks a common starting line. */
+  | { type: 'length'; objects: LengthObject[]; align?: boolean; showCm?: boolean };
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -407,7 +454,17 @@ export type ExploreTool =
    * Halves (`parts` 2) or quarters (`parts` 4): a whole is divided in front of the student, the parts are picked out one
    * by one and put back together; `unequal` pictures have the right number of pieces but not equal ones.
    */
-  | { tool: 'fraction-lab'; parts: 2 | 4; examples: Array<{ label: string; spec: ShapeSpec }>; unequal: Array<{ label: string; spec: ShapeSpec }> };
+  | { tool: 'fraction-lab'; parts: 2 | 4; examples: Array<{ label: string; spec: ShapeSpec }>; unequal: Array<{ label: string; spec: ShapeSpec }> }
+  /** Two objects to slide to a common starting line, then compare. */
+  | { tool: 'length-lab'; pairs: Array<{ label: string; a: LengthObject; b: LengthObject }> }
+  /** Objects to sort into longer / shorter / the same length as the reference. */
+  | { tool: 'length-sort-lab'; reference: LengthObject; items: LengthObject[] }
+  /** Measure an object with different-sized units: the count changes, the object does not. */
+  | { tool: 'units-lab'; objects: Array<{ label: string; object: LengthObject }>; units: Array<{ cm: number; name: string }> }
+  /** Slide a ruler under objects, line up the zero, and see the reading change. */
+  | { tool: 'ruler-lab'; objects: Array<{ label: string; object: LengthObject }> }
+  /** A metre strip beside a centimetre scale, and objects to measure in centimetres or metres. */
+  | { tool: 'metre-lab'; items: LengthItem[]; demoCm: number[] };
 
 export interface ExploreActivity extends ActivityBase {
   kind: 'explore';
@@ -465,7 +522,16 @@ export type ExplainBlock =
    * `contrast`. `cut` (5): whole, line, parts, parts compared, an unequal division. `half` (6) and `quarter` (6): whole, the equal
    * parts, one part, the next, all together, and the same number of parts that are not equal (`contrast`).
    */
-  | { type: 'shape-demo'; mode: 'whole-parts' | 'compare' | 'cut' | 'half' | 'quarter'; shape: ShapeSpec; contrast: ShapeSpec; steps: string[]; caption?: string };
+  | { type: 'shape-demo'; mode: 'whole-parts' | 'compare' | 'cut' | 'half' | 'quarter'; shape: ShapeSpec; contrast: ShapeSpec; steps: string[]; caption?: string }
+  /**
+   * A length story told one step at a time (`steps` are the captions). `align` (4): two objects apart, moved to a
+   * common start, compared, and the difference named. `units` (4): an object, units laid along it, the count, and
+   * the same object measured with another unit. `ruler` (4): the object, the ruler, the zero lined up, the reading.
+   * `metre` (4): a centimetre, a hundred of them, a pencil and a ladder, and which unit suits each.
+   */
+  | { type: 'measure-demo'; mode: 'align' | 'units' | 'ruler' | 'metre'; a: LengthObject; b: LengthObject; steps: string[]; unitCm?: number; caption?: string }
+  /** Objects drawn at their real lengths, for a static comparison in an explanation. */
+  | { type: 'length'; objects: LengthObject[]; align?: boolean; showCm?: boolean };
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';

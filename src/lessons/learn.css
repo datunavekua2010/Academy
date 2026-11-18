@@ -892,3 +892,110 @@ button.tab-obj:focus-visible { outline: 3px solid rgba(37, 99, 235, .55); outlin
   .nl-marker, .tab-obj, .dbl-item, .sc-card, .jd-steps li { transition: none; }
   .jb-review, .jd-chip, .sw-item, .sd-chip, .sd-eq, .dbl-link { animation: none; }
 }
+
+/* ─────────────────────────── U06: length and measurement ─────────────────────────── */
+
+.ln-board { display: block; width: 100%; height: auto; max-width: 420px; margin: 0 auto; }
+.ln-obj { display: block; width: 100%; height: auto; }
+/* pictures that share one scale: the width is fixed so a short object is not blown up next to a long one */
+.ln-scale { display: grid; gap: 8px; }
+.ln-row { max-width: 360px; }
+.ln-cm { font-size: 10px; font-weight: 800; fill: #3b4a63; }
+.ln-card .ln-obj { width: 120px; max-width: 100%; }
+.ln-card.is-small .ln-obj { width: 84px; }
+.ln-reference { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 12px; background: #f5f8ff; border: 1px solid #d9e2f0; }
+.ln-reference-text { font-weight: 800; color: var(--navy); font-size: .9rem; }
+.ln-reference .ln-obj { width: 160px; max-width: 100%; }
+
+/* two objects and their common starting line */
+.al { display: grid; gap: 10px; }
+.al-board { touch-action: none; }
+.al-line-text { font-size: 8px; font-weight: 800; fill: #166534; }
+.al-item { cursor: grab; transition: transform .28s ease; }
+.al-item.is-dragging { transition: none; cursor: grabbing; }
+.al-item:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.al-item.is-aligned { cursor: default; }
+.al-tick { fill: #166534; stroke: #fff; stroke-width: 1.4; }
+.al-baseline { stroke: #166534; stroke-width: 2.2; }
+.al-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.al-controls .btn.is-on { border-color: #166534; color: #166534; }
+.al-status { margin: 0; font-size: .9rem; color: #3b4a63; line-height: 1.5; }
+.al-answer { display: grid; gap: 12px; }
+.al-choices { grid-template-columns: 1fr; }
+
+/* units laid along an object */
+.un { display: grid; gap: 10px; justify-items: center; }
+.un-board { touch-action: manipulation; }
+.un-unit-box { fill: #e0e7ff; stroke: #4338ca; stroke-width: 1.6; }
+.un-unit-n { font-size: 9px; font-weight: 800; fill: #312e81; }
+.un-unit { animation: un-pop .25s ease; }
+@keyframes un-pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.un-base { stroke: #475569; stroke-width: 1.4; stroke-dasharray: 4 3; }
+.un-end { stroke: #b45309; stroke-width: 1.6; stroke-dasharray: 4 3; }
+.un-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.un-answer { display: grid; gap: 10px; }
+.un-task { margin: 0; color: #3b4a63; line-height: 1.55; }
+.un-note { margin: 0; font-size: .9rem; font-weight: 700; color: #92400e; }
+.un-count { font-size: .95rem; }
+
+/* the ruler */
+.rl { display: grid; gap: 10px; }
+.rl-board { max-width: 440px; touch-action: none; }
+.rl-rule { fill: #fef3c7; stroke: #92400e; stroke-width: 1.8; }
+.rl-body { cursor: grab; }
+.rl-body.is-dragging { cursor: grabbing; }
+.rl-body:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.rl-tick { stroke: #78350f; stroke-width: 1.1; }
+.rl-tick.is-big { stroke-width: 1.8; }
+.rl-num { font-size: 8px; font-weight: 700; fill: #78350f; }
+.rl-zero { font-size: 8px; font-weight: 800; fill: #b91c1c; }
+.rl-zero-mark { stroke: #b91c1c; stroke-width: 1.4; stroke-dasharray: 3 3; }
+.rl-start, .rl-end { stroke: #1e3a8a; stroke-width: 1.6; stroke-dasharray: 4 3; }
+.rl-reading { font-size: 9px; font-weight: 800; fill: #475569; }
+.rl-reading.is-right { fill: #166534; }
+.rl-controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.rl-answer { display: grid; gap: 10px; }
+.rl-status { margin: 0; font-size: .9rem; color: #3b4a63; }
+.rl-choices { grid-template-columns: repeat(2, 1fr); }
+
+/* a metre */
+.ms { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto; }
+.ms-body { fill: #fef3c7; stroke: #92400e; stroke-width: 1.6; }
+.ms-tick { stroke: #92400e; stroke-width: .7; }
+.ms-tick.is-ten { stroke-width: 1.6; }
+.ms-text { font-size: 9px; font-weight: 800; fill: #78350f; }
+
+/* choosing a unit */
+.up { display: grid; gap: 8px; }
+.up-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 2px solid #d9e2f0; border-radius: 12px; background: #fff; }
+.up-row.is-chosen { border-color: #2563eb; background: #f8fbff; }
+.up-label { font-weight: 800; color: var(--navy); }
+.up-btns { display: flex; gap: 6px; }
+.up-btn { min-height: 40px; padding: 6px 10px; border-radius: 10px; border: 2px solid #c3d2ea; background: #fff; font: inherit; font-size: .85rem; font-weight: 800; color: #3b4a63; cursor: pointer; }
+.up-btn.is-on { border-color: #166534; background: #f0fdf4; color: #166534; }
+.up-btn:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.up-task { margin: 0; color: #3b4a63; line-height: 1.55; }
+
+/* the explain demo */
+.ms-demo { display: grid; gap: 10px; }
+.ms-steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: #3b4a63; line-height: 1.5; }
+.ms-steps li.is-on { font-weight: 800; color: var(--navy); }
+.ms-steps li.is-past { opacity: .6; }
+.ms-caption { margin: 0; font-size: .88rem; color: #66758d; }
+.ms-demo-metre { display: grid; gap: 8px; }
+
+@media (max-width: 520px) {
+  .ln-board, .rl-board { max-width: 100%; }
+  .rl-choices { grid-template-columns: 1fr; }
+  .up-row { flex-direction: column; align-items: stretch; }
+  .up-btns { justify-content: stretch; }
+  .up-btn { flex: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .al-item { transition: none; }
+  .un-unit { animation: none; }
+  .nl-marker, .tab-obj, .dbl-item, .sc-card, .jd-steps li { transition: none; }
+  .jb-review, .jd-chip, .sw-item, .sd-chip, .sd-eq, .dbl-link { animation: none; }
+  .sh-piece, .rs-piece, .sh-stage-a-wrap { transition: none; }
+  .sh-cutline { animation: none; stroke-dashoffset: 0; }
+}

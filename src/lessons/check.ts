@@ -1,5 +1,6 @@
 import { parseNumber, parsePoly, polyEqual } from './algebra';
 import { divisionFromLines, divisionOf, groupOf, hasEqualParts, parseLines, ruleHolds } from './exercises/ShapeGeometry';
+import { aligned, compareGroup, orderOf, px, readingAt, suitableUnit, unitsIn, zeroAligned } from './exercises/MeasureGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -41,6 +42,13 @@ const MSG = {
   needSelect: 'შეეხე საჭირო ნაწილებს და მერე შეამოწმე.',
   needReassemble: 'ყველა ნაწილი თავის ადგილზე უნდა დადო.',
   needCut: 'წერტილებზე შეეხე და ხაზები გაავლე, რომ ფიგურა დაიყოს.',
+  needAlign: 'ჯერ ორივე საგანი საერთო დასაწყის ხაზამდე მიიტანე.',
+  needLengthChoice: 'აირჩიე, რომელია უფრო გრძელი ან უფრო მოკლე.',
+  needLengthSort: 'ყველა საგანი ჯგუფში უნდა ჩადო: უფრო გრძელი, უფრო მოკლე თუ იგივე სიგრძე.',
+  needUnits: 'დაალაგე ერთნაირი ერთეულები საგანზე და შემდეგ შეამოწმე.',
+  needRuler: 'მიიტანე სახაზავი საგანს და ნული დასაწყისთან დააყენე.',
+  needCm: 'აირჩიე გაზომვა სანტიმეტრებში.',
+  needUnitPick: 'ყველა საგნისთვის აირჩიე სანტიმეტრი ან მეტრი.',
   needStoryNumber: 'ჩაწერე პასუხი რიცხვით.',
   frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
@@ -219,6 +227,53 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       }
       return { verdict: 'correct' };
     }
+    case 'align-compare': {
+      const [didAlign, choice = ''] = String(input ?? '').split(',');
+      // the unit always draws both objects from one line; an unaligned picture is never a valid comparison
+      if (didAlign !== '1' || !aligned([0, 0])) return { verdict: 'incomplete', feedback: MSG.needAlign };
+      if (!choice) return { verdict: 'incomplete', feedback: MSG.needLengthChoice };
+      const order = orderOf(response.a.cm, response.b.cm);
+      const longer = order === 'first-longer' ? 'a' : order === 'second-longer' ? 'b' : 'same';
+      const shorter = order === 'first-longer' ? 'b' : order === 'second-longer' ? 'a' : 'same';
+      const right = (response.ask ?? 'longer') === 'longer' ? longer : shorter;
+      if (choice === right) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === choice));
+    }
+    case 'length-sort': {
+      const groups = typeof input === 'string' && input ? input.split(',').map((g) => g.trim()) : [];
+      if (groups.length !== response.items.length || groups.some((g) => !g)) return { verdict: 'incomplete', feedback: MSG.needLengthSort };
+      const right = response.items.map((item) => compareGroup(item.cm, response.reference.cm));
+      if (groups.every((g, i) => g === right[i])) return { verdict: 'correct' };
+      const wrongIndex = groups.findIndex((g, i) => g !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex)));
+    }
+    case 'measure-units': {
+      const placed = Number(String(input ?? '').trim());
+      if (!Number.isFinite(placed) || placed <= 0) return { verdict: 'incomplete', feedback: MSG.needUnits };
+      const right = unitsIn(response.object.cm, response.unitCm);
+      if (placed === right) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === placed));
+    }
+    case 'ruler-read': {
+      const [zeroText = '', cmText = ''] = String(input ?? '').split(',');
+      const zero = Number(zeroText);
+      const cm = Number(cmText);
+      if (zeroText === '' || !Number.isFinite(zero)) return { verdict: 'incomplete', feedback: MSG.needRuler };
+      if (cmText === '' || !Number.isFinite(cm)) return { verdict: 'incomplete', feedback: MSG.needCm };
+      // the zero mark has to sit under the object's start; only then is the tick at the end its length
+      if (!zeroAligned(0, px(zero))) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'zero'));
+      // the tick at the far end is the length only when the zero is at the start, and the answer must be that reading
+      if (cm === readingAt(px(response.object.cm), px(zero)) && cm === response.answerCm) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === cm));
+    }
+    case 'unit-pick': {
+      const picks = typeof input === 'string' && input ? input.split(',').map((p) => p.trim()) : [];
+      if (picks.length !== response.items.length || picks.some((p) => !p)) return { verdict: 'incomplete', feedback: MSG.needUnitPick };
+      const right = response.items.map((item) => suitableUnit(item.cm));
+      if (picks.every((p, i) => p === right[i])) return { verdict: 'correct' };
+      const wrongIndex = picks.findIndex((p, i) => p !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex)));
+    }
   }
 }
 
@@ -268,5 +323,19 @@ export function describeAnswer(response: ResponseSpec): string {
       return 'ყველა ნაწილი თავის ადგილზე';
     case 'cut':
       return `${response.parts} ტოლი ნაწილი`;
+    case 'align-compare': {
+      const order = orderOf(response.a.cm, response.b.cm);
+      const which = order === 'first-longer' ? 'პირველი' : order === 'second-longer' ? 'მეორე' : 'ორივე';
+      if (order === 'same') return 'ორივე იგივე სიგრძისაა';
+      return (response.ask ?? 'longer') === 'longer' ? `${which} უფრო გრძელია` : `${which} უფრო მოკლეა`;
+    }
+    case 'length-sort':
+      return 'თითოეული საგანი თავის ჯგუფში';
+    case 'measure-units':
+      return `${unitsIn(response.object.cm, response.unitCm)} ${response.unitName}`;
+    case 'ruler-read':
+      return `ნული დასაწყისთან, ${response.answerCm} სმ`;
+    case 'unit-pick':
+      return response.items.map((item) => `${item.label}: ${suitableUnit(item.cm) === 'cm' ? 'სმ' : 'მ'}`).join(', ');
   }
 }

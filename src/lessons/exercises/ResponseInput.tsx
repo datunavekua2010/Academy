@@ -14,6 +14,7 @@ import { StoryAnswer } from './StoryTools';
 import { TakeAwayBoard } from './TakeAwayBoard';
 import { CutBoard, ReassembleBoard, SelectBoard, SortBoard, parseGroups } from './ShapeAnswers';
 import { ComparableBoard, describeShape } from './ShapeBoard';
+import { AlignCompareBoard, LengthSortBoard, MeasureUnitsBoard, RulerReadBoard, UnitPickAnswer } from './LengthAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -319,6 +320,56 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
     }
     case 'reassemble':
       return <ReassembleBoard shape={response.shape} decoys={response.decoys} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'align-compare':
+      return (
+        <AlignCompareBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'length-sort':
+      return (
+        <LengthSortBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'measure-units':
+      return (
+        <MeasureUnitsBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'ruler-read':
+      return (
+        <RulerReadBoard
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    case 'unit-pick':
+      return (
+        <UnitPickAnswer
+          response={response}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
     case 'cut':
       return (
         <CutBoard
