@@ -12,6 +12,8 @@ import { JumpBoard } from './JumpTools';
 import { MakeTenBoard } from './MakeTenTools';
 import { StoryAnswer } from './StoryTools';
 import { TakeAwayBoard } from './TakeAwayBoard';
+import { CutBoard, ReassembleBoard, SelectBoard, SortBoard, parseGroups } from './ShapeAnswers';
+import { ComparableBoard, describeShape } from './ShapeBoard';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -245,5 +247,92 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
         </div>
       );
     }
+    case 'classify': {
+      const groups = parseGroups(typeof value === 'string' ? value : '', response.items.length);
+      return (
+        <SortBoard
+          items={response.items}
+          rule={response.rule}
+          groups={groups}
+          onChange={(next) => onChange(next.join(','))}
+          disabled={disabled}
+          label={label}
+        />
+      );
+    }
+    case 'judge': {
+      const picked = typeof value === 'string' ? value : '';
+      const options =
+        response.rule === 'equal'
+          ? [
+              { id: 'e', label: 'ტოლი ნაწილები', icon: '＝' },
+              { id: 'u', label: 'არატოლი ნაწილები', icon: '≠' },
+            ]
+          : [
+              { id: 'y', label: response.rule === 'halves' ? 'დიახ, ნახევრებია' : 'დიახ, მეოთხედებია', icon: '✓' },
+              { id: 'n', label: response.rule === 'halves' ? 'არა, ნახევრები არ არის' : 'არა, მეოთხედები არ არის', icon: '✗' },
+            ];
+      return (
+        <div className="judge">
+          <ComparableBoard spec={response.shape} label={describeShape(response.shape)} compare={Boolean(response.compare)} explain={false} />
+          <div className="lp-choices judge-choices" role="radiogroup" aria-label="პასუხის ვარიანტები">
+            {options.map((option) => {
+              const selected = picked === option.id;
+              const mark = selected && verdict === 'correct' ? 'correct' : selected && verdict === 'incorrect' ? 'wrong' : '';
+              return (
+                <label key={option.id} className={`lp-choice ${selected ? 'is-selected' : ''} ${mark ? `is-${mark}` : ''} ${disabled ? 'is-locked' : ''}`}>
+                  <input type="radio" name={label} value={option.id} checked={selected} disabled={disabled} onChange={() => onChange(option.id)} />
+                  <span className="lp-choice-dot" aria-hidden="true" />
+                  <span className="lp-choice-text">
+                    <span aria-hidden="true">{option.icon}</span> {option.label}
+                  </span>
+                  {mark === 'correct' && (
+                    <span className="lp-choice-tag">
+                      <CheckIcon /> სწორია
+                    </span>
+                  )}
+                  {mark === 'wrong' && (
+                    <span className="lp-choice-tag">
+                      <CrossIcon /> არასწორია
+                    </span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+    case 'select-parts': {
+      const picked = typeof value === 'string' && value ? value.split(',').map(Number).filter((n) => Number.isInteger(n)) : [];
+      return (
+        <SelectBoard
+          spec={response.shape}
+          need={response.need}
+          picked={picked}
+          onChange={(next) => onChange(next.join(','))}
+          disabled={disabled}
+          label={label}
+          noun={response.noun}
+        />
+      );
+    }
+    case 'reassemble':
+      return <ReassembleBoard shape={response.shape} decoys={response.decoys} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'cut':
+      return (
+        <CutBoard
+          shape={response.shape}
+          parts={response.parts}
+          maxCuts={response.maxCuts}
+          skin={response.skin}
+          compare={Boolean(response.compare)}
+          tell="count"
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+        />
+      );
   }
 }

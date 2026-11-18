@@ -161,7 +161,74 @@ export type ResponseSpec =
    * Stored as `"+,9"` or `"-,5"`. A wrong operation is routed to the misconception
    * with the answer `"operation"`.
    */
-  | { type: 'story'; operation: 'add' | 'subtract'; answer: number };
+  | { type: 'story'; operation: 'add' | 'subtract'; answer: number }
+  /**
+   * The student sorts pictures into groups. `rule` decides the right group of each picture from its
+   * geometry: `equal` (equal / unequal parts), `halves`, `quarters` (yes / no), or `wholeparts`
+   * (one whole / parts of one whole / pieces that do not belong together, from each picture's `view`).
+   * Stored as the comma-separated group of each picture (empty: not sorted yet).
+   */
+  | { type: 'classify'; rule: DivisionRule | 'wholeparts'; items: ShapeItem[] }
+  /**
+   * One divided shape and a yes/no answer decided by its geometry (`equal`: equal parts? `halves`: two equal
+   * parts? `quarters`: four equal parts?). With `compare` the student may lay two parts on top of each other.
+   * Stored as the option id (`e`/`u` for equal, `y`/`n` otherwise).
+   */
+  | { type: 'judge'; rule: DivisionRule; shape: ShapeSpec; compare?: boolean }
+  /**
+   * The student taps `need` pieces of a divided shape. Only the pieces in `from` (all by default) are right.
+   * Stored as the comma-separated piece numbers (from 1).
+   */
+  | { type: 'select-parts'; shape: ShapeSpec; need: number; from?: number[]; noun?: string }
+  /**
+   * The pieces of a shape wait in a tray; the student puts each into its place in the outline (tap a piece, then a
+   * place, or drag). A piece goes only where it fits exactly. `decoys` are pieces of other shapes that fit nowhere.
+   * Stored as the comma-separated place of each tray item (`-`: still in the tray).
+   */
+  | { type: 'reassemble'; shape: ShapeSpec; decoys?: Array<{ spec: ShapeSpec; piece: number }> }
+  /**
+   * The student divides a shape by tapping the dots on its edge: two dots make a dividing line (up to `maxCuts`).
+   * Correct when the lines make exactly `parts` pieces of exactly equal area. Stored as `"i-j;k-l"` (dot numbers).
+   * Misconception ids: `count` (wrong number of pieces), `unequal`. With `compare` the student can lay two pieces
+   * on top of each other.
+   */
+  | { type: 'cut'; shape: ShapeKind; parts: 2 | 4; maxCuts: number; skin?: SkinId; compare?: boolean };
+
+// ───────────────────────────── shapes (Unit 5) ─────────────────────────────
+
+/** A whole shape: a circle or square (100 × 100) or a rectangle (150 × 100), in drawing units. */
+export type ShapeKind = 'circle' | 'square' | 'rect';
+/**
+ * A straight dividing line through two points, written as fractions of the shape's width and
+ * height: `[x1, y1, x2, y2]`. The line is infinite; where it crosses the shape is what divides it.
+ */
+export type Cut = [number, number, number, number];
+/** How the whole looks: a plain shape or a familiar object. Looks never change the sizes of the pieces. */
+export type SkinId = 'plain' | 'chocolate' | 'cookie' | 'paper' | 'sandwich' | 'pizza';
+/** A shape and the lines that divide it. The pieces, and whether they are equal, are computed from this. */
+export interface ShapeSpec {
+  shape: ShapeKind;
+  cuts: Cut[];
+  skin?: SkinId;
+  /** Colours of plain pieces: all different (default), all alike, or alternating. Colour never says what is equal. */
+  tone?: 'varied' | 'same' | 'alt';
+}
+/** What a picture of a shape shows. `mixed`: pieces taken from two different shapes. */
+export type ShapeView = 'whole' | 'cut' | 'apart' | 'mixed';
+export interface ShapeItem extends ShapeSpec {
+  view?: ShapeView;
+  /** Show only these pieces (numbered from 1 in reading order: top to bottom, left to right). */
+  take?: number[];
+  /** Draw these pieces as empty dashed outlines (a gap to fill). */
+  ghost?: number[];
+  /** Highlight these pieces (with an outline and a tick, not only colour). */
+  mark?: number[];
+  numbers?: boolean;
+  /** For `mixed`: the second shape and the pieces of it that are shown. */
+  mix?: ShapeSpec & { take: number[] };
+}
+/** The question asked about a divided shape. */
+export type DivisionRule = 'equal' | 'halves' | 'quarters';
 
 export type Glyph = 'star' | 'apple' | 'fish' | 'ball';
 /** Drawn objects, or plain counters (discs). */
@@ -204,7 +271,9 @@ export type VisualSpec =
    * A story picture: `first` objects. `join`: `change` more objects arrive (dashed outline).
    * `separate`: `change` of the objects leave (dashed outline, struck through). The result is never shown.
    */
-  | { type: 'story'; glyph: Glyph; first: number; change: number; mode: 'join' | 'separate' };
+  | { type: 'story'; glyph: Glyph; first: number; change: number; mode: 'join' | 'separate' }
+  /** A shape or object, whole, divided, or with its pieces apart. */
+  | ({ type: 'shape' } & ShapeItem);
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -327,7 +396,18 @@ export type ExploreTool =
    */
   | { tool: 'doubles-lab'; max: number; doubles: number[]; near: number[] }
   /** Story problems the student acts out (add or remove objects) and then writes as + or −. */
-  | { tool: 'story-workspace'; stories: Array<{ mode: 'join' | 'separate'; glyph: Glyph; text: string; first: number; change: number }> };
+  | { tool: 'story-workspace'; stories: Array<{ mode: 'join' | 'separate'; glyph: Glyph; text: string; first: number; change: number }> }
+  /** Wholes that fall apart into pieces and are put back together (tap or drag the pieces home). */
+  | { tool: 'parts-lab'; examples: Array<{ label: string; spec: ShapeSpec }> }
+  /** Divided shapes: tap two parts to lay one on the other, and sort divided shapes into equal and unequal. */
+  | { tool: 'compare-lab'; examples: Array<{ label: string; spec: ShapeSpec }>; sort: ShapeItem[] }
+  /** Divide a shape by tapping dots on its edge; see the parts and compare them. `shapes` are tried one at a time. */
+  | { tool: 'cut-lab'; shapes: Array<{ label: string; shape: ShapeKind; skin?: SkinId }> }
+  /**
+   * Halves (`parts` 2) or quarters (`parts` 4): a whole is divided in front of the student, the parts are picked out one
+   * by one and put back together; `unequal` pictures have the right number of pieces but not equal ones.
+   */
+  | { tool: 'fraction-lab'; parts: 2 | 4; examples: Array<{ label: string; spec: ShapeSpec }>; unequal: Array<{ label: string; spec: ShapeSpec }> };
 
 export interface ExploreActivity extends ActivityBase {
   kind: 'explore';
@@ -378,7 +458,14 @@ export type ExplainBlock =
    */
   | { type: 'doubles-demo'; a: number; b: number; steps: string[]; caption?: string }
   /** A story solved in seven steps, with the picture, the operation and the check appearing one by one. `steps` has seven texts. */
-  | { type: 'story-demo'; mode: 'join' | 'separate'; glyph: Glyph; first: number; change: number; text: string; steps: string[]; caption?: string };
+  | { type: 'story-demo'; mode: 'join' | 'separate'; glyph: Glyph; first: number; change: number; text: string; steps: string[]; caption?: string }
+  /**
+   * A shape story told one step at a time, with `steps` as the captions. `whole-parts` (4): whole, parts apart, parts back,
+   * parts that are not equal. `compare` (5): the divided shape, one part, another part, one laid on the other, the same for
+   * `contrast`. `cut` (5): whole, line, parts, parts compared, an unequal division. `half` (6) and `quarter` (6): whole, the equal
+   * parts, one part, the next, all together, and the same number of parts that are not equal (`contrast`).
+   */
+  | { type: 'shape-demo'; mode: 'whole-parts' | 'compare' | 'cut' | 'half' | 'quarter'; shape: ShapeSpec; contrast: ShapeSpec; steps: string[]; caption?: string };
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';

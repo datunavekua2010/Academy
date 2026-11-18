@@ -1,4 +1,5 @@
 import { parseNumber, parsePoly, polyEqual } from './algebra';
+import { divisionFromLines, divisionOf, groupOf, hasEqualParts, parseLines, ruleHolds } from './exercises/ShapeGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -35,6 +36,11 @@ const MSG = {
   needTakeAway: 'შეეხე საგნებს, რომ გამოიტანო ისინი ჯგუფიდან.',
   needIntoFrame: 'გადაიტანე კუბიკები ჩარჩოში და შემდეგ შეამოწმე.',
   needStoryOperation: 'აირჩიე + ან − და ჩაწერე პასუხი.',
+  needSort: 'ყველა ნახატი ჯგუფში უნდა ჩადო. შეეხე ნახატს და მერე ჯგუფს.',
+  needJudge: 'შეადარე ნაწილები და აირჩიე პასუხი.',
+  needSelect: 'შეეხე საჭირო ნაწილებს და მერე შეამოწმე.',
+  needReassemble: 'ყველა ნაწილი თავის ადგილზე უნდა დადო.',
+  needCut: 'წერტილებზე შეეხე და ხაზები გაავლე, რომ ფიგურა დაიყოს.',
   needStoryNumber: 'ჩაწერე პასუხი რიცხვით.',
   frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
@@ -168,6 +174,51 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       const joined = nums.join(',');
       return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === joined));
     }
+    case 'classify': {
+      const groups = typeof input === 'string' && input ? input.split(',') : [];
+      if (groups.length !== response.items.length || groups.some((g) => !g)) return { verdict: 'incomplete', feedback: MSG.needSort };
+      const right = response.items.map((item) => groupOf(response.rule, item));
+      if (groups.every((g, i) => g === right[i])) return { verdict: 'correct' };
+      const wrongIndex = groups.findIndex((g, i) => g !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex)));
+    }
+    case 'judge': {
+      const value = typeof input === 'string' ? input : '';
+      if (!value) return { verdict: 'incomplete', feedback: MSG.needJudge };
+      const yes = ruleHolds(response.rule, divisionOf(response.shape));
+      const expected = response.rule === 'equal' ? (yes ? 'e' : 'u') : yes ? 'y' : 'n';
+      if (value === expected) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === value));
+    }
+    case 'select-parts': {
+      const picked = typeof input === 'string' && input ? input.split(',').map(Number).filter((n) => Number.isInteger(n)) : [];
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: MSG.needSelect };
+      const from = response.from ?? divisionOf(response.shape).pieces.map((_, i) => i + 1);
+      const right = picked.length === response.need && picked.every((n) => from.includes(n));
+      if (right) return { verdict: 'correct' };
+      const reason = picked.length !== response.need ? 'count' : 'which';
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === reason));
+    }
+    case 'reassemble': {
+      const places = typeof input === 'string' && input ? input.split(',') : [];
+      const real = divisionOf(response.shape).pieces.length;
+      const placed = places.filter((p) => p !== '-' && p !== '').length;
+      if (placed < real) return { verdict: 'incomplete', feedback: MSG.needReassemble };
+      // the board only accepts pieces that fit their place, so a full board is a correct answer
+      return { verdict: 'correct' };
+    }
+    case 'cut': {
+      const lines = parseLines(typeof input === 'string' ? input : '');
+      if (lines.length === 0) return { verdict: 'incomplete', feedback: MSG.needCut };
+      const division = divisionFromLines(response.shape, lines);
+      if (division.pieces.length !== response.parts) {
+        return wrong(question, findMisconception(question.misconceptions, (a) => a === 'count'));
+      }
+      if (!hasEqualParts(division)) {
+        return wrong(question, findMisconception(question.misconceptions, (a) => a === 'unequal'));
+      }
+      return { verdict: 'correct' };
+    }
   }
 }
 
@@ -207,5 +258,15 @@ export function describeAnswer(response: ResponseSpec): string {
       return `გადაიტანე ${10 - response.a} კუბიკი`;
     case 'story':
       return `${response.operation === 'add' ? '+' : '−'}, პასუხი ${response.answer}`;
+    case 'classify':
+      return 'ყველა ნახატი თავის ჯგუფში';
+    case 'judge':
+      return response.rule === 'equal' ? 'ტოლი ნაწილები' : 'დიახ';
+    case 'select-parts':
+      return `${response.need} ნაწილი`;
+    case 'reassemble':
+      return 'ყველა ნაწილი თავის ადგილზე';
+    case 'cut':
+      return `${response.parts} ტოლი ნაწილი`;
   }
 }

@@ -793,3 +793,102 @@ button.tab-obj:focus-visible { outline: 3px solid rgba(37, 99, 235, .55); outlin
   .nl-marker, .tab-obj, .dbl-item, .sc-card, .jd-steps li { transition: none; }
   .jb-review, .jd-chip, .sw-item, .sd-chip, .sd-eq, .dbl-link { animation: none; }
 }
+
+/* ─────────────────────────── U05: shapes, parts and equal parts ─────────────────────────── */
+
+.sh { display: block; width: 100%; height: auto; margin: 0 auto; touch-action: manipulation; }
+.sh.is-compact { max-width: 150px; }
+.sh-piece { transition: transform .55s cubic-bezier(.3, .8, .3, 1), opacity .3s ease; }
+.sh-piece.is-tappable { cursor: pointer; }
+.sh-piece.is-tappable:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.sh-poly { fill: var(--fill, #cfe0ff); stroke: var(--edge, #1e3a8a); stroke-width: 2.2; stroke-linejoin: round; }
+.sh.is-merged .sh-poly { stroke-width: 0; }
+.sh-outline { fill: none; stroke: var(--edge, #1e3a8a); stroke-width: 2.4; stroke-linejoin: round; }
+.sh-ghost { fill: none; stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 5 4; }
+.sh-cutline { stroke: #1e3a8a; stroke-width: 2.6; stroke-dasharray: var(--len, 100) var(--len, 100); stroke-dashoffset: var(--len, 100); animation: sh-draw .7s ease forwards; }
+@keyframes sh-draw { to { stroke-dashoffset: 0; } }
+.sh-ring { fill: none; stroke: #166534; stroke-width: 3.4; stroke-linejoin: round; }
+.sh-badge circle { fill: #166534; stroke: #fff; stroke-width: 1.6; }
+.sh-badge text { fill: #fff; font-size: 10px; font-weight: 800; }
+.sh-piece.is-hi .sh-poly, .sh-piece.is-sel .sh-poly { stroke: #166534; stroke-width: 3; }
+.sh-piece.is-quiet { opacity: .45; }
+.sh-piece.is-pressed .sh-poly { stroke: #b45309; stroke-width: 3.4; }
+.sh-mix { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.sh-mix .sh { flex: 0 1 46%; min-width: 110px; }
+.sh-stage { max-width: 340px; }
+.sh-stage-a { fill: rgba(37, 99, 235, .16); stroke: #2563eb; stroke-width: 2.4; stroke-linejoin: round; }
+.sh-stage-b { fill: #fde9a8; stroke: #92400e; stroke-width: 2.4; stroke-linejoin: round; }
+.sh-stage-name { font-size: 11px; font-weight: 800; fill: #3b4a63; }
+.sh-stage-a-wrap { transition: transform .6s cubic-bezier(.3, .8, .3, 1); }
+
+.cb2 { display: grid; gap: 12px; }
+.cb2-compare { display: grid; gap: 10px; justify-items: center; }
+.cb2-hint { width: 100%; }
+.xt-sub { margin: 6px 0 0; font-size: 1rem; color: var(--navy); }
+.xt-block { display: grid; gap: 8px; }
+
+/* sorting pictures into groups */
+.sort { display: grid; gap: 12px; }
+.sort-hint { margin: 0; padding: 10px 12px; border-radius: 12px; background: #f5f8ff; color: #3b4a63; line-height: 1.55; min-height: 3.4em; }
+.sort-tray { display: flex; flex-wrap: wrap; gap: 10px; }
+.sort-card { position: relative; display: grid; justify-items: center; gap: 4px; padding: 8px; border: 2px solid #d9e2f0; border-radius: 16px; background: #fff; cursor: pointer; min-height: 64px; min-width: 64px; }
+.sort-card.is-selected { border-color: var(--blue); background: #eff6ff; box-shadow: 0 0 0 3px rgba(37, 99, 235, .25); }
+.sort-card.is-ok { border-color: #166534; }
+.sort-card.is-no { border-color: #b45309; }
+.sort-card:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.sort-no { position: absolute; left: 6px; top: 4px; font-size: .72rem; font-weight: 800; color: #66758d; }
+.sort-mark { font-size: .78rem; font-weight: 800; }
+.sort-card.is-ok .sort-mark { color: #166534; }
+.sort-card.is-no .sort-mark { color: #b45309; }
+.sort-bins { display: grid; gap: 10px; }
+.sort-bins.has-3 { grid-template-columns: repeat(3, 1fr); }
+.sort-bins.has-2 { grid-template-columns: repeat(2, 1fr); }
+.sort-bin { display: grid; gap: 8px; align-content: start; padding: 10px; border: 2px dashed #c3d2ea; border-radius: 16px; background: #fafbfd; }
+.sort-bin-btn { min-height: 48px; border-radius: 12px; border: 2px solid var(--blue); background: #eff6ff; color: var(--blue-dark); font: inherit; font-weight: 800; cursor: pointer; padding: 8px 6px; }
+.sort-bin-btn:disabled { opacity: .5; cursor: default; }
+.sort-cards { display: flex; flex-wrap: wrap; gap: 8px; }
+.sort-cards .sort-card { min-width: 56px; }
+.sort-empty { color: #9fb0cc; font-weight: 700; font-size: .85rem; }
+
+/* tapping pieces */
+.sel { display: grid; gap: 10px; }
+
+/* putting pieces back into an outline */
+.rs { display: grid; gap: 10px; }
+.rs-board { touch-action: none; }
+.rs-slot { fill: rgba(148, 163, 184, .12); stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 5 4; cursor: pointer; }
+.rs-slot:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.rs-slot.is-filled { stroke: #166534; }
+.rs-tray { fill: #f5f8ff; stroke: #d9e2f0; stroke-width: 2; }
+.rs-piece { cursor: pointer; transition: transform .35s ease; }
+.rs-piece.is-dragging { transition: none; cursor: grabbing; }
+.rs-piece.is-selected .sh-poly { stroke: #2563eb; stroke-width: 3.2; }
+.rs-piece:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+
+/* dividing with dots */
+.cut { display: grid; gap: 10px; }
+.cd { cursor: pointer; }
+.cd:focus-visible { outline: 3px solid rgba(37, 99, 235, .5); outline-offset: 2px; }
+.cd-hit { fill: transparent; }
+.cd-dot { fill: #fff; stroke: #1e3a8a; stroke-width: 2.2; }
+.cd.is-first .cd-dot { fill: #2563eb; stroke: #fff; }
+.cut-target { justify-self: center; padding: 4px 12px; border-radius: 999px; background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; font-weight: 800; font-size: .85rem; }
+
+/* yes/no about a divided shape */
+.judge { display: grid; gap: 12px; }
+.judge-choices { grid-template-columns: 1fr 1fr; }
+
+@media (max-width: 520px) {
+  .sort-bins.has-3 { grid-template-columns: 1fr; }
+  .sort-bins.has-2 { grid-template-columns: 1fr; }
+  .sort-card { min-width: 56px; }
+  .sh.is-compact { max-width: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* U05 shapes */
+  .sh-piece, .rs-piece, .sh-stage-a-wrap { transition: none; }
+  .sh-cutline { animation: none; stroke-dashoffset: 0; }
+  /* and the earlier units, repeated so the last block on the page still covers them */
+  .nl-marker, .tab-obj, .dbl-item, .sc-card, .jd-steps li { transition: none; }
+  .jb-review, .jd-chip, .sw-item, .sd-chip, .sd-eq, .dbl-link { animation: none; }
+}

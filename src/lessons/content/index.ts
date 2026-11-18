@@ -19,6 +19,11 @@ import { g1u04l2 } from './g1-u04-l2';
 import { g1u04l3 } from './g1-u04-l3';
 import { g1u04l4 } from './g1-u04-l4';
 import { g1u04l5 } from './g1-u04-l5';
+import { g1u05l1 } from './g1-u05-l1';
+import { g1u05l2 } from './g1-u05-l2';
+import { g1u05l3 } from './g1-u05-l3';
+import { g1u05l4 } from './g1-u05-l4';
+import { g1u05l5 } from './g1-u05-l5';
 import { g6u10l3 } from './g6-u10-l3';
 
 /**
@@ -48,6 +53,11 @@ export const LESSON_CONTENT: Record<string, Lesson> = {
   [g1u04l3.id]: g1u04l3,
   [g1u04l4.id]: g1u04l4,
   [g1u04l5.id]: g1u04l5,
+  [g1u05l1.id]: g1u05l1,
+  [g1u05l2.id]: g1u05l2,
+  [g1u05l3.id]: g1u05l3,
+  [g1u05l4.id]: g1u05l4,
+  [g1u05l5.id]: g1u05l5,
   [g6u10l3.id]: g6u10l3,
 };
 

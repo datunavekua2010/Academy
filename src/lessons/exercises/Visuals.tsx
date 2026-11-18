@@ -7,6 +7,8 @@ import { NumberLine } from './NumberLine';
 import { ObjectField, TenFrame } from './Objects';
 import { JumpLinePicture } from './JumpTools';
 import { StoryVisual } from './StoryTools';
+import { CompareStage, ShapeBoard, ShapePicture, describeShape } from './ShapeBoard';
+import { divisionOf } from './ShapeGeometry';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -130,6 +132,8 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <JumpLinePicture spec={spec} />;
     case 'story':
       return <StoryVisual spec={spec} />;
+    case 'shape':
+      return <ShapePicture item={spec} compact={compact} />;
   }
 }
 
@@ -365,6 +369,58 @@ export function ComposeDemo({ block }: { block: Block<'compose'> }) {
       )}
       <div className="demo-status" role="status" aria-live="polite">
         {frame === 0 ? `ეს არის ${block.whole}.` : frame === 1 ? `ორ ნაწილად გავყავით: ${a} და ${b}.` : `${a} და ${b} ერთად ისევ ${block.whole} არის.`}
+      </div>
+      {block.caption && <figcaption>{block.caption}</figcaption>}
+      <DemoButtons done={done} replay={replay} step={step} />
+    </figure>
+  );
+}
+
+// ─────────────────────────── U05 shape demonstrations ───────────────────────────
+
+type ShapeBlock = Block<'shape-demo'>;
+
+/** One shape story told step by step: whole and parts, comparing parts, dividing, halves, quarters. */
+export function ShapeDemo({ block }: { block: ShapeBlock }) {
+  const { frame, done, replay, step } = useStepper(block.steps.length, 1200);
+  const division = divisionOf(block.shape);
+  const contrast = divisionOf(block.contrast);
+  const hi = (list: number[]): Record<number, 'hi'> => Object.fromEntries(list.map((i) => [i, 'hi' as const]));
+  const pair = division.pieces.length >= 2 ? ([division.pieces[0], division.pieces[1]] as const) : null;
+
+  let picture: React.ReactNode = null;
+  if (block.mode === 'whole-parts') {
+    if (frame === 0) picture = <ShapeBoard spec={block.shape} merged label={describeShape(block.shape)} />;
+    else if (frame === 1) picture = <ShapeBoard spec={block.shape} spread={1} label={describeShape(block.shape)} />;
+    else if (frame === 2) picture = <ShapeBoard spec={block.shape} merged label={describeShape(block.shape)} />;
+    else picture = <ShapeBoard spec={block.contrast} spread={1} label={describeShape(block.contrast)} />;
+  } else if (block.mode === 'compare') {
+    if (frame === 0) picture = <ShapeBoard spec={block.shape} lines={1} label={describeShape(block.shape)} />;
+    else if (frame === 1) picture = <ShapeBoard spec={block.shape} marks={hi([1])} label={describeShape(block.shape)} />;
+    else if (frame === 2) picture = <ShapeBoard spec={block.shape} marks={hi([2])} label={describeShape(block.shape)} />;
+    else if (frame === 3 && pair) picture = <CompareStage a={pair[0]} b={pair[1]} overlaid nameA="ნაწილი 1" nameB="ნაწილი 2" />;
+    else if (contrast.pieces.length >= 2) picture = <CompareStage a={contrast.pieces[0]} b={contrast.pieces[1]} overlaid nameA="ნაწილი 1" nameB="ნაწილი 2" />;
+  } else if (block.mode === 'cut') {
+    if (frame === 0) picture = <ShapeBoard spec={block.shape} merged label={describeShape(block.shape)} />;
+    else if (frame === 1) picture = <ShapeBoard spec={block.shape} lines={1} label={describeShape(block.shape)} />;
+    else if (frame === 2) picture = <ShapeBoard spec={block.shape} lines={1} marks={hi(division.pieces.map((_, i) => i + 1))} label={describeShape(block.shape)} />;
+    else if (frame === 3 && pair) picture = <CompareStage a={pair[0]} b={pair[1]} overlaid nameA="ნაწილი 1" nameB="ნაწილი 2" />;
+    else picture = <ShapeBoard spec={block.contrast} lines={1} label={describeShape(block.contrast)} />;
+  } else {
+    // half / quarter
+    if (frame === 0) picture = <ShapeBoard spec={block.shape} merged label={describeShape(block.shape)} />;
+    else if (frame === 1) picture = <ShapeBoard spec={block.shape} lines={1} label={describeShape(block.shape)} />;
+    else if (frame === 2) picture = <ShapeBoard spec={block.shape} marks={hi([1])} badges label={describeShape(block.shape)} />;
+    else if (frame === 3) picture = <ShapeBoard spec={block.shape} marks={hi([2])} badges label={describeShape(block.shape)} />;
+    else if (frame === 4) picture = <ShapeBoard spec={block.shape} marks={hi(division.pieces.map((_, i) => i + 1))} badges label={describeShape(block.shape)} />;
+    else picture = <ShapeBoard spec={block.contrast} lines={1} badges label={describeShape(block.contrast)} />;
+  }
+
+  return (
+    <figure className="demo">
+      {picture}
+      <div className="demo-status" role="status" aria-live="polite">
+        {block.steps[Math.min(frame, block.steps.length - 1)]}
       </div>
       {block.caption && <figcaption>{block.caption}</figcaption>}
       <DemoButtons done={done} replay={replay} step={step} />

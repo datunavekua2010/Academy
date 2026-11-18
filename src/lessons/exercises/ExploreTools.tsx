@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { numberName } from '../numberNames';
 import type { ExploreTool } from '../types';
+import { CutBoard, SortBoard, parseGroups } from './ShapeAnswers';
+import { ComparableBoard, ShapeBoard, describeShape } from './ShapeBoard';
+import { SIZE, divisionOf, groupOf } from './ShapeGeometry';
+import { DemoButtons, useStepper } from './Visuals';
 import { BondSplit, FramePairs, MissingPart, StoryBond } from './BondTools';
 import { DoublesLab } from './DoublesTools';
 import { JumpExplore } from './JumpTools';
@@ -228,6 +232,170 @@ function SkipLine({ spec }: { spec: ToolOf<'skip-line'> }) {
   );
 }
 
+
+// ─────────────── U05 L1: wholes that fall apart ───────────────
+
+function PartsLab({ spec }: { spec: ToolOf<'parts-lab'> }) {
+  const [which, setWhich] = useState(0);
+  const example = spec.examples[which];
+  const division = divisionOf(example.spec);
+  const [home, setHome] = useState<boolean[]>(() => division.pieces.map(() => true));
+  const [apart, setApart] = useState(false);
+  const pick = (i: number) => {
+    setHome((all) => all.map((h, k) => (k === i ? !h : h)));
+    setApart(false);
+  };
+  const split = () => {
+    setHome(division.pieces.map(() => false));
+    setApart(true);
+  };
+  const gather = () => {
+    setHome(division.pieces.map(() => true));
+    setApart(false);
+  };
+  const [w, h] = SIZE[example.spec.shape];
+  const center: [number, number] = [w / 2, h / 2];
+  const offsets = division.pieces.map((piece, i) => {
+    if (home[i]) return [0, 0] as [number, number];
+    const dir: [number, number] = [piece.cx - center[0], piece.cy - center[1]];
+    const len = Math.hypot(dir[0], dir[1]) || 1;
+    return [(dir[0] / len) * 13, (dir[1] / len) * 13] as [number, number];
+  });
+  const allHome = home.every(Boolean);
+  return (
+    <div className="xt">
+      <div className="xt-modes" role="group" aria-label="ფიგურის არჩევა">
+        {spec.examples.map((ex, i) => (
+          <button key={ex.label} type="button" className={`xt-mode ${i === which ? 'is-on' : ''}`} aria-pressed={i === which} onClick={() => { setWhich(i); setHome(divisionOf(ex.spec).pieces.map(() => true)); setApart(false); }}>
+            {ex.label}
+          </button>
+        ))}
+      </div>
+      <ShapeBoard spec={example.spec} offsets={offsets} onPiece={pick} badges={false} label={describeShape(example.spec)} />
+      <div className="xt-row">
+        <button type="button" className="btn btn-primary xt-big" onClick={split} disabled={apart && !home.some(Boolean)}>
+          დაიყო ნაწილებად
+        </button>
+        <button type="button" className="btn btn-ghost" onClick={gather} disabled={allHome}>
+          შეიკრიბე მთლიანად
+        </button>
+      </div>
+      <p className="xt-note" role="status" aria-live="polite">
+        {allHome
+          ? `ეს არის ერთი მთელი: ${example.label}. დააჭირე ღილაკს და ნახე, როგორ დაიყოფა ნაწილებად.`
+          : `ნაწილები: ${home.filter((h) => !h).length} გარეთაა, ${home.filter(Boolean).length} ადგილზე. შეეხე ნაწილს, რომ უკან გადავიდეს, ან შეიკრიბე ყველაფერი ერთად.`}
+      </p>
+    </div>
+  );
+}
+
+// ─────────────── U05 L2: compare parts and sort them ───────────────
+
+function CompareLab({ spec }: { spec: ToolOf<'compare-lab'> }) {
+  const [which, setWhich] = useState(0);
+  const [groups, setGroups] = useState(() => spec.sort.map(() => ''));
+  const example = spec.examples[which];
+  const right = useMemo(() => spec.sort.map((item) => groupOf('equal', item)), [spec]);
+  const placed = groups.filter(Boolean).length;
+  return (
+    <div className="xt">
+      <div className="xt-modes" role="group" aria-label="ფიგურის არჩევა">
+        {spec.examples.map((ex, i) => (
+          <button key={ex.label} type="button" className={`xt-mode ${i === which ? 'is-on' : ''}`} aria-pressed={i === which} onClick={() => setWhich(i)}>
+            {ex.label}
+          </button>
+        ))}
+      </div>
+      <ComparableBoard spec={example.spec} label={describeShape(example.spec)} resetKey={which} />
+      <h3 className="xt-sub">დაალაგე ნახატები ჯგუფებად</h3>
+      <SortBoard items={spec.sort} rule="equal" groups={parseGroups(groups.join(','), spec.sort.length)} onChange={setGroups} right={(i) => groups[i] === right[i]} label="ნახატების დალაგება ტოლ და არატოლ ნაწილებად" />
+      <p className="xt-note" role="status" aria-live="polite">
+        {placed === spec.sort.length ? 'ყველა ნახატი თავის ჯგუფშია. შეადარე ნაწილები კიდევ ერთხელ და დაიწყე თავიდან, თუ გინდა.' : `ჯგუფებშია ${placed} ნახატი ${spec.sort.length}-დან. შეეხე ნახატს და მერე ჯგუფს.`}
+      </p>
+    </div>
+  );
+}
+
+// ─────────────── U05 L3: divide a shape yourself ───────────────
+
+function CutLab({ spec }: { spec: ToolOf<'cut-lab'> }) {
+  const [which, setWhich] = useState(0);
+  const [values, setValues] = useState<string[]>(() => spec.shapes.map(() => ''));
+  const shape = spec.shapes[which];
+  return (
+    <div className="xt">
+      <div className="xt-modes" role="group" aria-label="ფიგურის არჩევა">
+        {spec.shapes.map((sh, i) => (
+          <button key={sh.label} type="button" className={`xt-mode ${i === which ? 'is-on' : ''}`} aria-pressed={i === which} onClick={() => setWhich(i)}>
+            {sh.label}
+          </button>
+        ))}
+      </div>
+      <CutBoard
+        shape={shape.shape}
+        parts={0}
+        maxCuts={2}
+        skin={shape.skin}
+        compare
+        tell="verdict"
+        value={values[which]}
+        onChange={(v) => setValues((all) => all.map((x, i) => (i === which ? v : x)))}
+        disabled={false}
+        label={shape.label}
+      />
+      <p className="xt-note">შეეხე ორ წერტილს კიდეზე, რომ ხაზი გაივლოს. მერე შეადარე ნაწილები: დაადე ერთი მეორეზე და ნახე, ემთხვევა თუ არა.</p>
+    </div>
+  );
+}
+
+// ─────────────── U05 L4/L5: halves and quarters ───────────────
+
+function FractionLab({ spec }: { spec: ToolOf<'fraction-lab'> }) {
+  const [which, setWhich] = useState(0);
+  const example = spec.examples[which];
+  const division = divisionOf(example.spec);
+  const n = division.pieces.length;
+  const word = spec.parts === 2 ? 'ნახევარი' : 'მეოთხედი';
+  const frames = n + 3;
+  const { frame, done, replay, step } = useStepper(frames, 1100);
+  const marks: Record<number, 'hi'> = {};
+  if (frame >= 2 && frame < frames - 1) marks[frame - 1] = 'hi';
+  if (frame === frames - 1) division.pieces.forEach((_, i) => (marks[i + 1] = 'hi'));
+  const status =
+    frame === 0
+      ? 'ეს არის მთელი.'
+      : frame === 1
+        ? `ფიგურა ${n} ტოლ ნაწილად დავყავით.`
+        : frame === frames - 1
+          ? `ყველა ნაწილი ერთად ისევ მთელს აკეთებს.`
+          : `ეს არის ერთი ${word}.`;
+  return (
+    <div className="xt">
+      <div className="xt-modes" role="group" aria-label="ფიგურის არჩევა">
+        {spec.examples.map((ex, i) => (
+          <button key={ex.label} type="button" className={`xt-mode ${i === which ? 'is-on' : ''}`} aria-pressed={i === which} onClick={() => { setWhich(i); replay(); }}>
+            {ex.label}
+          </button>
+        ))}
+      </div>
+      <figure className="demo">
+        <ShapeBoard spec={example.spec} merged={frame === 0} lines={frame === 1 ? 1 : 0} marks={marks} badges={frame >= 2} label={describeShape(example.spec)} />
+        <div className="demo-status" role="status" aria-live="polite">
+          {status}
+        </div>
+        <DemoButtons done={done} replay={replay} step={step} />
+      </figure>
+      <h3 className="xt-sub">როცა ნაწილები ტოლი არ არის</h3>
+      {spec.unequal.map((ex) => (
+        <div key={ex.label} className="xt-block">
+          <p className="xt-note">{ex.label}. შეადარე ნაწილები: ისინი ზუსტად არ ემთხვევა.</p>
+          <ComparableBoard spec={ex.spec} label={describeShape(ex.spec)} resetKey={ex.label} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function ExploreToolView({ tool }: { tool: ExploreTool }) {
   switch (tool.tool) {
     case 'tile-walk':
@@ -266,5 +434,13 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <DoublesLab spec={tool} />;
     case 'story-workspace':
       return <StoryWorkspace spec={tool} />;
+    case 'parts-lab':
+      return <PartsLab spec={tool} />;
+    case 'compare-lab':
+      return <CompareLab spec={tool} />;
+    case 'cut-lab':
+      return <CutLab spec={tool} />;
+    case 'fraction-lab':
+      return <FractionLab spec={tool} />;
   }
 }
