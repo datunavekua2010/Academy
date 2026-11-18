@@ -14,6 +14,7 @@ import { CompareExplore, CountObjects, NumberBuilder, OrderLine, SplitExplore } 
 import { NumberLine } from './NumberLine';
 import { Quantity, SequenceRow, quantityText } from './Visuals';
 import { ExploreToolViewMeasure } from './MeasureTools';
+import { ExploreToolViewClock, ExploreToolViewShapes2D } from './TimeShapeTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -449,5 +450,13 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
     case 'ruler-lab':
     case 'metre-lab':
       return <ExploreToolViewMeasure tool={tool} />;
+    case 'clock-lab':
+    case 'time-set-lab':
+    case 'time-match-lab':
+    case 'five-minute-lab':
+      return <ExploreToolViewClock tool={tool} />;
+    case 'flat-lab':
+    case 'room-lab':
+      return <ExploreToolViewShapes2D tool={tool} />;
   }
 }

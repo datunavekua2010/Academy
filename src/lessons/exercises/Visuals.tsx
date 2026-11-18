@@ -10,6 +10,8 @@ import { StoryVisual } from './StoryTools';
 import { CompareStage, ShapeBoard, ShapePicture, describeShape } from './ShapeBoard';
 import { divisionOf } from './ShapeGeometry';
 import { ObjectRow } from './LengthBoard';
+import { ClockFace } from './ClockBoard';
+import { Shape2DRow } from './Shape2DBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -137,6 +139,10 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <ShapePicture item={spec} compact={compact} />;
     case 'length':
       return <ObjectRow objects={spec.objects} align={spec.align} showCm={spec.showCm} />;
+    case 'clock':
+      return <ClockFace time={spec.time} showHands={spec.showHands !== false} size={132} label={`საათი`} />;
+    case 'flat':
+      return <Shape2DRow shapes={spec.shapes} compact showSides={spec.showSides} />;
   }
 }
 

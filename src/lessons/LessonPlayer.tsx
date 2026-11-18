@@ -17,6 +17,9 @@ import { StoryDemo } from './exercises/StoryTools';
 import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, QuantitiesBlock, ShapeDemo, VisualView } from './exercises/Visuals';
 import { MeasureDemo } from './exercises/MeasureTools';
 import { ObjectRow } from './exercises/LengthBoard';
+import { ClockDemo, Shape2DDemo } from './exercises/TimeShapeTools';
+import { ClockFace } from './exercises/ClockBoard';
+import { Shape2DRow } from './exercises/Shape2DBoard';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
 import { RichText, plainText } from './RichText';
 import { getLessonContent, showDevLabels } from './content';
@@ -125,6 +128,14 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <MeasureDemo key={i} block={block} />;
           case 'length':
             return <ObjectRow key={i} objects={block.objects} align={block.align} showCm={block.showCm} />;
+          case 'clock':
+            return <ClockFace key={i} time={block.time} showHands={block.showHands !== false} size={140} label="საათი" />;
+          case 'flat':
+            return <Shape2DRow key={i} shapes={block.shapes} showSides={block.showSides} />;
+          case 'clock-demo':
+            return <ClockDemo key={i} block={block} />;
+          case 'shape2d-demo':
+            return <Shape2DDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

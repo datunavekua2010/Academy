@@ -1,6 +1,8 @@
 import { parseNumber, parsePoly, polyEqual } from './algebra';
 import { divisionFromLines, divisionOf, groupOf, hasEqualParts, parseLines, ruleHolds } from './exercises/ShapeGeometry';
 import { aligned, compareGroup, orderOf, px, readingAt, suitableUnit, unitsIn, zeroAligned } from './exercises/MeasureGeometry';
+import { hourHandBetween, normalHour, normalMinute, parseDigital, sameTime, timeOf, timeText } from './exercises/ClockGeometry';
+import { FLAT_NAME, sidesOf, shapeGroup, verticesOf } from './exercises/Shape2DGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -49,6 +51,14 @@ const MSG = {
   needRuler: 'მიიტანე სახაზავი საგანს და ნული დასაწყისთან დააყენე.',
   needCm: 'აირჩიე გაზომვა სანტიმეტრებში.',
   needUnitPick: 'ყველა საგნისთვის აირჩიე სანტიმეტრი ან მეტრი.',
+  needHandPick: 'აირჩიე, რომელი ისარი რომელს აჩვენებს.',
+  needSetClock: 'ისრები ისე დაატრიალე, რომ საათმა საჭირო დრო აჩვენოს.',
+  needTimeChoice: 'აირჩიე დრო, რომელსაც საათი აჩვენებს.',
+  needMatch: 'ყველა საათი შეუსაბამე ციფრულ დროს.',
+  needShapeSort: 'ყველა ფიგურა ჯგუფში უნდა ჩადო.',
+  needTapSides: 'შეეხე ფიგურის ყველა გვერდს და შემდეგ შეამოწმე.',
+  needTapCorners: 'შეეხე ფიგურის ყველა კუთხეს და შემდეგ შეამოწმე.',
+  needFindShapes: 'შეეხე ყველა საგანს, რომელსაც ეს ფიგურა აქვს.',
   needStoryNumber: 'ჩაწერე პასუხი რიცხვით.',
   frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
@@ -266,6 +276,89 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       if (cm === readingAt(px(response.object.cm), px(zero)) && cm === response.answerCm) return { verdict: 'correct' };
       return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === cm));
     }
+    case 'hand-pick': {
+      const [hour = '', minute = ''] = String(input ?? '').split(',');
+      if (!hour || !minute) return { verdict: 'incomplete', feedback: MSG.needHandPick };
+      if (hour === response.hourHand && minute === response.minuteHand) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === `${hour},${minute}` || a === hour || a === minute));
+    }
+    case 'set-clock': {
+      const [hText = '', mText = ''] = String(input ?? '').split(',');
+      if (hText === '' || mText === '') return { verdict: 'incomplete', feedback: MSG.needSetClock };
+      const h = Number(hText);
+      const m = Number(mText);
+      if (!Number.isFinite(h) || !Number.isFinite(m)) return { verdict: 'incomplete', feedback: MSG.needSetClock };
+      const set = timeOf(h, m);
+      const ask = timeOf(response.ask.h, response.ask.m);
+      if (sameTime(set, ask)) return { verdict: 'correct' };
+      // a common slip: the hour set right but the minute hand left at the wrong mark, or the other way round
+      if (normalHour(set.h) === normalHour(ask.h)) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'minute'));
+      if (normalMinute(set.m) === normalMinute(ask.m)) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'hour'));
+      // at half past the hour hand must really be between the numbers
+      if (normalMinute(ask.m) === 30 && Math.abs(hourHandBetween(set) - hourHandBetween(ask)) > 0.01)
+        return wrong(question, findMisconception(question.misconceptions, (a) => a === 'between'));
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === `${normalHour(set.h)},${normalMinute(set.m)}`));
+    }
+    case 'read-clock': {
+      const [hText = '', mText = ''] = String(input ?? '').split(',');
+      if (hText === '' || mText === '') return { verdict: 'incomplete', feedback: MSG.needTimeChoice };
+      const chosen = timeOf(Number(hText), Number(mText));
+      if (!Number.isFinite(Number(hText)) || !Number.isFinite(Number(mText))) return { verdict: 'incomplete', feedback: MSG.needTimeChoice };
+      if (sameTime(chosen, timeOf(response.time.h, response.time.m))) return { verdict: 'correct' };
+      const key = `${normalHour(chosen.h)},${normalMinute(chosen.m)}`;
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === key));
+    }
+    case 'match-time': {
+      const picks = typeof input === 'string' && input ? input.split(',').map((p) => p.trim()) : [];
+      if (picks.length !== response.faces.length || picks.some((p) => p === '')) return { verdict: 'incomplete', feedback: MSG.needMatch };
+      const mapping = picks.map(Number);
+      if (mapping.some((n) => !Number.isInteger(n) || n < 0 || n >= response.displays.length))
+        return { verdict: 'incomplete', feedback: MSG.needMatch };
+      // a display belongs to a face only when it reads the same time as that face, so the display text itself is
+      // parsed and compared — never the index, so a shuffled set of displays cannot be scored by position
+      const right = response.faces.every((time, i) => {
+        const chosen = parseDigital(response.displays[mapping[i]] ?? '');
+        return chosen !== null && sameTime(time, chosen);
+      });
+      if (right) return { verdict: 'correct' };
+      const wrongIndex = response.faces.findIndex((time, i) => {
+        const chosen = parseDigital(response.displays[mapping[i]] ?? '');
+        return chosen === null || !sameTime(time, chosen);
+      });
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex)));
+    }
+    case 'shape-sort': {
+      const groups = typeof input === 'string' && input ? input.split(',').map((g) => g.trim()) : [];
+      if (groups.length !== response.shapes.length || groups.some((g) => !g)) return { verdict: 'incomplete', feedback: MSG.needShapeSort };
+      const right = response.shapes.map((spec) =>
+        response.groupBy === 'kind' ? shapeGroup(spec) : response.groupBy === 'sides' ? String(sidesOf(spec)) : String(verticesOf(spec)),
+      );
+      if (groups.every((g, i) => g === right[i])) return { verdict: 'correct' };
+      const wrongIndex = groups.findIndex((g, i) => g !== right[i]);
+      return wrong(question, findMisconception(question.misconceptions, (a) => String(a) === String(wrongIndex) || a === right[wrongIndex]));
+    }
+    case 'tap-parts': {
+      const tapped = typeof input === 'string' && input ? input.split(',').filter(Boolean).map(Number) : [];
+      const count = response.tap === 'sides' ? sidesOf(response.shape) : verticesOf(response.shape);
+      if (count === 0) {
+        // a circle has no straight sides and no corners: nothing is the right answer, and the lesson says why
+        if (tapped.length === 0) return { verdict: 'incorrect', feedback: question.fallbackFeedback ?? MSG[response.tap === 'sides' ? 'needTapSides' : 'needTapCorners'] };
+        return wrong(question, findMisconception(question.misconceptions, (a) => a === 'circle'));
+      }
+      if (tapped.length < count) return { verdict: 'incomplete', feedback: MSG[response.tap === 'sides' ? 'needTapSides' : 'needTapCorners'] };
+      const unique = [...new Set(tapped)];
+      if (unique.length === count && unique.every((n) => n >= 1 && n <= count) && tapped.length === count) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === unique.length || a === 'repeat'));
+    }
+    case 'find-shapes': {
+      const picked = typeof input === 'string' && input ? input.split(',').filter(Boolean) : [];
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: MSG.needFindShapes };
+      const right = response.items.filter((item) => shapeGroup(item.spec) === response.kind).map((item) => item.id);
+      if (picked.length === right.length && right.every((id) => picked.includes(id))) return { verdict: 'correct' };
+      const wrongId = picked.find((id) => !right.includes(id));
+      const missing = right.find((id) => !picked.includes(id));
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === wrongId || a === missing || a === 'extra' || a === 'missing'));
+    }
     case 'unit-pick': {
       const picks = typeof input === 'string' && input ? input.split(',').map((p) => p.trim()) : [];
       if (picks.length !== response.items.length || picks.some((p) => !p)) return { verdict: 'incomplete', feedback: MSG.needUnitPick };
@@ -337,5 +430,22 @@ export function describeAnswer(response: ResponseSpec): string {
       return `ნული დასაწყისთან, ${response.answerCm} სმ`;
     case 'unit-pick':
       return response.items.map((item) => `${item.label}: ${suitableUnit(item.cm) === 'cm' ? 'სმ' : 'მ'}`).join(', ');
+    case 'hand-pick':
+      return `საათის ისარი — ${response.hourHand === 'short' ? 'მოკლე' : 'გრძელი'}, წუთის ისარი — ${response.minuteHand === 'short' ? 'მოკლე' : 'გრძელი'}`;
+    case 'set-clock':
+      return timeText(response.ask);
+    case 'read-clock':
+      return timeText(response.time);
+    case 'match-time':
+      return response.faces.map((time) => timeText(time)).join(', ');
+    case 'shape-sort':
+      return 'ყველა ფიგურა თავის ჯგუფში';
+    case 'tap-parts': {
+      const count = response.tap === 'sides' ? sidesOf(response.shape) : verticesOf(response.shape);
+      if (count === 0) return `${FLAT_NAME.circle}: ${response.tap === 'sides' ? 'სწორი გვერდი არ აქვს' : 'კუთხე არ აქვს'} (0)`;
+      return `${count} ${response.tap === 'sides' ? 'გვერდი' : 'კუთხე'}`;
+    }
+    case 'find-shapes':
+      return `${FLAT_NAME[response.kind]}: ${response.items.filter((item) => shapeGroup(item.spec) === response.kind).map((item) => item.label).join(', ')}`;
   }
 }

@@ -1,4 +1,6 @@
 import type { MeasureKind } from './exercises/MeasureGeometry';
+import type { ClockTime } from './exercises/ClockGeometry';
+import type { Flat, FlatSpec } from './exercises/Shape2DGeometry';
 
 /**
  * Lesson system model.
@@ -105,6 +107,29 @@ export interface LengthItem {
   label: string;
   cm: number;
   kind?: MeasureKind;
+}
+
+// ───────────────────────────── time (Unit 7) ─────────────────────────────
+
+/** A time on a clock face. Shared with `ClockGeometry`, where every hand position is computed from it. */
+export type ClockTimeSpec = ClockTime;
+
+/** A clock face used in a question, with the hands it shows. */
+export interface ClockSpec {
+  time: ClockTime;
+  /** The number the student should drag a hand to, for the setting questions. */
+  label?: string;
+}
+
+// ───────────────────────────── 2D shapes (Unit 8) ─────────────────────────────
+
+/** One shape in a collection: its kind, and how it happens to be drawn (size and turn never change the kind). */
+export type FlatSpec2D = FlatSpec;
+
+/** A named shape for the sorting and everyday-object questions. */
+export interface FlatItem {
+  label?: string;
+  spec: FlatSpec;
 }
 
 /** How a question is answered, and what the right answer is. */
@@ -237,7 +262,42 @@ export type ResponseSpec =
    * Choose the unit that suits each object: centimetres for short things, metres for things at least a metre long.
    * Stored as the comma-separated choice of each item (`cm`/`m`).
    */
-  | { type: 'unit-pick'; items: LengthItem[] };
+  | { type: 'unit-pick'; items: LengthItem[] }
+  /**
+   * Pick the two hands: the short one shows hours, the longer one minutes. Stored as the chosen kinds in order,
+   * e.g. `"hour,minute"`.
+   */
+  | { type: 'hand-pick'; hourHand: 'short' | 'long'; minuteHand: 'short' | 'long' }
+  /**
+   * Set a clock: drag the hands until the face shows the asked time. Stored as `"<hour>,<minute>"`. Both hands
+   * must be right, and the hour hand must sit where it really is at that minute (between the numbers at half past).
+   */
+  | { type: 'set-clock'; ask: ClockTime; step?: 1 | 5 | 30; toleranceMinutes?: number }
+  /**
+   * Read a clock: choose the time the face shows. Stored as the chosen `"<hour>,<minute>"`.
+   * The right answer comes from the time the face is set to, never from a written label.
+   */
+  | { type: 'read-clock'; time: ClockTime; options: ClockTime[] }
+  /**
+   * Match analog faces to digital displays: one display per face, both showing the same time. Stored as the
+   * comma-separated display index chosen for each face.
+   */
+  | { type: 'match-time'; faces: ClockTime[]; displays: string[] }
+  /**
+   * Sort shapes into groups: by kind (`k`), by number of sides (`s`), or by whether they have four corners (`c`).
+   * Stored as the comma-separated group of each shape.
+   */
+  | { type: 'shape-sort'; groupBy: 'kind' | 'sides' | 'corners'; shapes: FlatSpec[] }
+  /**
+   * Tap the sides (or the corners) of a shape and count them. Stored as the tapped numbers. A side is only
+   * right when every side is tapped exactly once; a circle has none, so its answer is empty.
+   */
+  | { type: 'tap-parts'; shape: FlatSpec; tap: 'sides' | 'corners' }
+  /**
+   * Choose every object in a picture that has the asked shape. Stored as the comma-separated ids chosen.
+   * A picture item is only right when its outline really is that shape.
+   */
+  | { type: 'find-shapes'; kind: Flat; items: Array<{ id: string; label: string; spec: FlatSpec }> };
 
 // ───────────────────────────── shapes (Unit 5) ─────────────────────────────
 
@@ -320,7 +380,11 @@ export type VisualSpec =
   /** A shape or object, whole, divided, or with its pieces apart. */
   | ({ type: 'shape' } & ShapeItem)
   /** One or more objects drawn to scale, one above the other; `align` marks a common starting line. */
-  | { type: 'length'; objects: LengthObject[]; align?: boolean; showCm?: boolean };
+  | { type: 'length'; objects: LengthObject[]; align?: boolean; showCm?: boolean }
+  /** A clock face, with or without its hands, at a given time. */
+  | { type: 'clock'; time: ClockTime; showHands?: boolean; labels?: number[] }
+  /** One or more 2D shapes side by side, drawn from their outlines. */
+  | { type: 'flat'; shapes: FlatSpec[]; showSides?: boolean };
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -464,7 +528,19 @@ export type ExploreTool =
   /** Slide a ruler under objects, line up the zero, and see the reading change. */
   | { tool: 'ruler-lab'; objects: Array<{ label: string; object: LengthObject }> }
   /** A metre strip beside a centimetre scale, and objects to measure in centimetres or metres. */
-  | { tool: 'metre-lab'; items: LengthItem[]; demoCm: number[] };
+  | { tool: 'metre-lab'; items: LengthItem[]; demoCm: number[] }
+  /** Move the hands freely and watch the hour hand creep as the minutes pass. */
+  | { tool: 'clock-lab'; start: ClockTime; times: ClockTime[] }
+  /** Set clocks to asked times and read them back, at the unit's step. */
+  | { tool: 'time-set-lab'; times: ClockTime[]; step: 1 | 5 | 30 }
+  /** Match analog faces to digital displays. */
+  | { tool: 'time-match-lab'; pairs: Array<{ time: ClockTime }> }
+  /** Count round the face by fives and watch the minutes add up. */
+  | { tool: 'five-minute-lab'; start: ClockTime }
+  /** A collection of shapes to identify, count and sort; tap a side or a corner to count it. */
+  | { tool: 'flat-lab'; shapes: FlatSpec[] }
+  /** An illustrated room: tap the objects that have the asked shape. */
+  | { tool: 'room-lab'; target: Flat; items: Array<{ id: string; label: string; spec: FlatSpec }> };
 
 export interface ExploreActivity extends ActivityBase {
   kind: 'explore';
@@ -531,7 +607,20 @@ export type ExplainBlock =
    */
   | { type: 'measure-demo'; mode: 'align' | 'units' | 'ruler' | 'metre'; a: LengthObject; b: LengthObject; steps: string[]; unitCm?: number; caption?: string }
   /** Objects drawn at their real lengths, for a static comparison in an explanation. */
-  | { type: 'length'; objects: LengthObject[]; align?: boolean; showCm?: boolean };
+  | { type: 'length'; objects: LengthObject[]; align?: boolean; showCm?: boolean }
+  /** A clock face shown in an explanation, at a fixed time. */
+  | { type: 'clock'; time: ClockTime; showHands?: boolean }
+  /** Shapes shown side by side in an explanation; `showSides` numbers their sides. */
+  | { type: 'flat'; shapes: FlatSpec[]; showSides?: boolean }
+  /**
+   * A clock story told one step at a time (`steps` are the captions). `hands` (4): the face, the short hand, the
+   * long hand, both together. `oclock` (4): the minute hand at 12, the hour hand on a number, the time read, two
+   * o'clock times. `half` (4): half past, the minute hand at 6, the hour hand between two numbers, the time read.
+   * `five` (5): a full turn is sixty minutes, the five-minute marks, counting round, and the time read.
+   */
+  | { type: 'clock-demo'; mode: 'hands' | 'oclock' | 'half' | 'five'; time: ClockTime; times?: ClockTime[]; steps: string[]; caption?: string }
+  /** A shape story told one step at a time: the outline, the sides, the corners, or the same shape turned. */
+  | { type: 'shape2d-demo'; mode: 'sides' | 'corners' | 'turn'; spec: FlatSpec; contrast?: FlatSpec; steps: string[]; caption?: string };
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';
