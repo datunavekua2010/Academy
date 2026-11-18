@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { numberName } from '../numberNames';
 import type { ExploreTool } from '../types';
+import { BondSplit, FramePairs, MissingPart, StoryBond } from './BondTools';
 import { CompareExplore, CountObjects, NumberBuilder, OrderLine, SplitExplore } from './ExploreToolsU02';
 import { NumberLine } from './NumberLine';
 import { Quantity, SequenceRow, quantityText } from './Visuals';
@@ -245,5 +246,13 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <OrderLine spec={tool} />;
     case 'split':
       return <SplitExplore spec={tool} />;
+    case 'bond-split':
+      return <BondSplit spec={tool} />;
+    case 'frame-pairs':
+      return <FramePairs spec={tool} />;
+    case 'missing-part':
+      return <MissingPart spec={tool} />;
+    case 'story-bond':
+      return <StoryBond spec={tool} />;
   }
 }

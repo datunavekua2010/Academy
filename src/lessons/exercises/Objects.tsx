@@ -154,16 +154,16 @@ export function ObjectField({ count, glyph, layout, seed = 1, counted = [], pick
  * ring counters follow (the other part). Solid versus ring, not colour, tells the
  * two parts apart.
  */
-export function TenFrame({ count, second = 0, label }: { count: number; second?: number; label?: string }) {
+export function TenFrame({ count, second = 0, label, size = 10 }: { count: number; second?: number; label?: string; size?: 5 | 10 }) {
   const total = count + second;
-  const frames = total > 10 ? 2 : 1;
+  const frames = total > size ? Math.ceil(total / size) : 1;
   const cell = (i: number) => (i < count ? 'is-a' : i < total ? 'is-b' : '');
   return (
     <div className="tenf" role="img" aria-label={label ?? (second ? `${count} და ${second}` : `${count}`)}>
       {Array.from({ length: frames }, (_, f) => (
-        <div key={f} className="tenf-frame" aria-hidden="true">
-          {Array.from({ length: 10 }, (_, k) => (
-            <span key={k} className={`tenf-cell ${cell(f * 10 + k)}`} />
+        <div key={f} className={`tenf-frame ${size === 5 ? 'is-five' : ''}`} aria-hidden="true">
+          {Array.from({ length: size }, (_, k) => (
+            <span key={k} className={`tenf-cell ${cell(f * size + k)}`} />
           ))}
         </div>
       ))}
