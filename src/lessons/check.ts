@@ -30,6 +30,12 @@ const MSG = {
   needPlace: 'ჯერ ყველა კუბიკი ყუთებში უნდა მოათავსო.',
   needTwoParts: 'ორი ნაწილისთვის ორივე ყუთში უნდა იყოს კუბიკები. სცადე სხვანაირად გაყოფა.',
   needFill: 'შეეხე ცარიელ ადგილებს და დაამატე კუბიკები.',
+  needStart: 'ჯერ შეეხე რიცხვს ღერძზე: იქიდან დაიწყე.',
+  needJumps: 'გააკეთე ნახტომები ღილაკით და შემდეგ შეამოწმე.',
+  needTakeAway: 'შეეხე საგნებს, რომ გამოიტანო ისინი ჯგუფიდან.',
+  needIntoFrame: 'გადაიტანე კუბიკები ჩარჩოში და შემდეგ შეამოწმე.',
+  needStoryOperation: 'აირჩიე + ან − და ჩაწერე პასუხი.',
+  needStoryNumber: 'ჩაწერე პასუხი რიცხვით.',
   frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
   firstLargest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე დიდი რიცხვი უნდა იდგეს.',
@@ -115,6 +121,41 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       const hit = findMisconception(question.misconceptions, (m) => typeof m === 'number' && m === added);
       return { ...wrong(question, hit), feedback: hit?.feedback ?? question.fallbackFeedback ?? MSG.frameNotFull };
     }
+    case 'jumps': {
+      const [s, c] = (typeof input === 'string' ? input : '').split(',');
+      const start = s === undefined || s === '' ? (response.pickStart ? null : response.from) : Number(s);
+      const count = Number(c ?? 0) || 0;
+      if (start === null || !Number.isFinite(start)) return { verdict: 'incomplete', feedback: MSG.needStart };
+      if (count <= 0) return { verdict: 'incomplete', feedback: MSG.needJumps };
+      const other = response.direction === 'forward' && start === response.count && count === response.from;
+      if ((start === response.from && count === response.count) || (response.swapOk && other)) return { verdict: 'correct' };
+      const reason = other ? 'swapped' : start !== response.from ? 'start' : count < response.count ? 'few' : 'many';
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === reason));
+    }
+    case 'takeaway': {
+      const taken = typeof input === 'string' && input ? new Set(input.split(',').filter(Boolean)).size : 0;
+      if (taken === 0) return { verdict: 'incomplete', feedback: MSG.needTakeAway };
+      if (taken === response.remove) return { verdict: 'correct' };
+      const reason = taken < response.remove ? 'few' : 'many';
+      return wrong(question, findMisconception(question.misconceptions, (a) => a === reason || a === taken));
+    }
+    case 'make-ten': {
+      const inFrame = parseNumber(typeof input === 'string' ? input : '');
+      if (inFrame === null || inFrame <= response.a) return { verdict: 'incomplete', feedback: MSG.needIntoFrame };
+      if (inFrame === 10) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === inFrame);
+      return { ...wrong(question, hit), feedback: hit?.feedback ?? question.fallbackFeedback ?? MSG.frameNotFull };
+    }
+    case 'story': {
+      const text = typeof input === 'string' ? input : '';
+      const op = text.startsWith('+') ? '+' : text.startsWith('-') ? '-' : '';
+      const n = parseNumber(text.slice(text.indexOf(',') + 1));
+      if (!op) return { verdict: 'incomplete', feedback: MSG.needStoryOperation };
+      if (n === null) return { verdict: 'incomplete', feedback: MSG.needStoryNumber };
+      if (op !== (response.operation === 'add' ? '+' : '-')) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'operation'));
+      if (n === response.answer) return { verdict: 'correct' };
+      return wrong(question, findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === n));
+    }
     case 'blanks': {
       const values = Array.isArray(input) ? input : [];
       if (values.length < response.answers.length || values.slice(0, response.answers.length).some((v) => !v || !v.trim())) {
@@ -158,5 +199,13 @@ export function describeAnswer(response: ResponseSpec): string {
       return `ნებისმიერი ორი ნაწილი, რომლებიც ერთად ${response.total} არის`;
     case 'fill':
       return String(response.size - response.given);
+    case 'jumps':
+      return `დაიწყე ${response.from}-დან და გააკეთე ${response.count} ნახტომი`;
+    case 'takeaway':
+      return `გამოიტანე ${response.remove} საგანი`;
+    case 'make-ten':
+      return `გადაიტანე ${10 - response.a} კუბიკი`;
+    case 'story':
+      return `${response.operation === 'add' ? '+' : '−'}, პასუხი ${response.answer}`;
   }
 }

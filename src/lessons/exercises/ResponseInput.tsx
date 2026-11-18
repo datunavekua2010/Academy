@@ -8,6 +8,10 @@ import { FrameBoard, cellsFor } from './FrameBoard';
 import { OrderBoard } from './OrderBoard';
 import { SplitBoard } from './SplitBoard';
 import { VisualBare } from './Visuals';
+import { JumpBoard } from './JumpTools';
+import { MakeTenBoard } from './MakeTenTools';
+import { StoryAnswer } from './StoryTools';
+import { TakeAwayBoard } from './TakeAwayBoard';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -199,6 +203,17 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
         </div>
       );
     }
+    case 'jumps':
+      return <JumpBoard response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'takeaway': {
+      const removed = typeof value === 'string' && value ? value.split(',').filter(Boolean).map(Number) : [];
+      const toggle = (i: number) => onChange((removed.includes(i) ? removed.filter((x) => x !== i) : [...removed, i]).join(','));
+      return <TakeAwayBoard total={response.total} glyph={response.glyph} removed={removed} onToggle={disabled ? undefined : toggle} label={label} />;
+    }
+    case 'make-ten':
+      return <MakeTenBoard response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'story':
+      return <StoryAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} onSubmit={onSubmit} disabled={disabled} label={label} />;
     case 'blanks': {
       const values = Array.isArray(value) ? value : [];
       return (

@@ -5,6 +5,8 @@ import { BondPicture, PartsPicture } from './BondVisuals';
 import { CompareGroups, compareSign, compareWords } from './Compare';
 import { NumberLine } from './NumberLine';
 import { ObjectField, TenFrame } from './Objects';
+import { JumpLinePicture } from './JumpTools';
+import { StoryVisual } from './StoryTools';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -124,6 +126,10 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <BondPicture whole={spec.whole} a={spec.a} b={spec.b} counters={spec.counters} compact={compact} />;
     case 'parts':
       return <PartsPicture a={spec.a} b={spec.b} glyph={spec.glyph} palette={spec.palette} compact={compact} />;
+    case 'jump-line':
+      return <JumpLinePicture spec={spec} />;
+    case 'story':
+      return <StoryVisual spec={spec} />;
   }
 }
 

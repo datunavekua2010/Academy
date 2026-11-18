@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { numberName } from '../numberNames';
 import type { ExploreTool } from '../types';
 import { BondSplit, FramePairs, MissingPart, StoryBond } from './BondTools';
+import { DoublesLab } from './DoublesTools';
+import { JumpExplore } from './JumpTools';
+import { MakeTenExplore } from './MakeTenTools';
+import { StoryWorkspace } from './StoryTools';
 import { CompareExplore, CountObjects, NumberBuilder, OrderLine, SplitExplore } from './ExploreToolsU02';
 import { NumberLine } from './NumberLine';
 import { Quantity, SequenceRow, quantityText } from './Visuals';
@@ -254,5 +258,13 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <MissingPart spec={tool} />;
     case 'story-bond':
       return <StoryBond spec={tool} />;
+    case 'jump-line':
+      return <JumpExplore spec={tool} />;
+    case 'make-ten':
+      return <MakeTenExplore spec={tool} />;
+    case 'doubles-lab':
+      return <DoublesLab spec={tool} />;
+    case 'story-workspace':
+      return <StoryWorkspace spec={tool} />;
   }
 }

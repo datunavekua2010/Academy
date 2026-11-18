@@ -55,7 +55,7 @@ describe('lesson content registry', () => {
   });
 
   it('does not mass-produce lessons: only the demo lessons, all marked placeholder', () => {
-    expect(Object.keys(LESSON_CONTENT).sort()).toEqual(['g1-u01-l1', 'g1-u01-l2', 'g1-u01-l3', 'g1-u01-l4', 'g1-u01-l5', 'g1-u02-l1', 'g1-u02-l2', 'g1-u02-l3', 'g1-u02-l4', 'g1-u02-l5', 'g1-u03-l1', 'g1-u03-l2', 'g1-u03-l3', 'g1-u03-l4', 'g1-u03-l5', 'g6-u10-l3']);
+    expect(Object.keys(LESSON_CONTENT).sort()).toEqual(['g1-u01-l1', 'g1-u01-l2', 'g1-u01-l3', 'g1-u01-l4', 'g1-u01-l5', 'g1-u02-l1', 'g1-u02-l2', 'g1-u02-l3', 'g1-u02-l4', 'g1-u02-l5', 'g1-u03-l1', 'g1-u03-l2', 'g1-u03-l3', 'g1-u03-l4', 'g1-u03-l5', 'g1-u04-l1', 'g1-u04-l2', 'g1-u04-l3', 'g1-u04-l4', 'g1-u04-l5', 'g6-u10-l3']);
     for (const lesson of Object.values(LESSON_CONTENT)) expect(lesson.status).toBe('placeholder');
   });
 });
