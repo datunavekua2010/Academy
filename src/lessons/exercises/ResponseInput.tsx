@@ -2,6 +2,10 @@ import { useId, type KeyboardEvent } from 'react';
 import { parseNumber } from '../algebra';
 import { RichText } from '../RichText';
 import { NumberLine } from './NumberLine';
+import { ObjectField } from './Objects';
+import { OrderBoard } from './OrderBoard';
+import { SplitBoard } from './SplitBoard';
+import { VisualBare } from './Visuals';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -20,6 +24,8 @@ interface Props {
   verdict?: Verdict;
   /** Accessible label for text inputs. */
   label: string;
+  /** How many hints the student has opened (some responses show extra help after a hint). */
+  hintsShown?: number;
 }
 
 function CheckIcon() {
@@ -40,7 +46,7 @@ function CrossIcon() {
 function Choices({ options, value, onChange, disabled, verdict }: { options: ChoiceOption[]; value: string; onChange: (v: string) => void; disabled: boolean; verdict?: Verdict }) {
   const group = useId();
   return (
-    <div className="lp-choices" role="radiogroup" aria-label="პასუხის ვარიანტები">
+    <div className={`lp-choices ${options.some((o) => o.visual) ? 'has-pics' : ''}`} role="radiogroup" aria-label="პასუხის ვარიანტები">
       {options.map((option) => {
         const selected = value === option.id;
         const mark = selected && verdict === 'correct' ? 'correct' : selected && verdict === 'incorrect' ? 'wrong' : '';
@@ -48,6 +54,11 @@ function Choices({ options, value, onChange, disabled, verdict }: { options: Cho
           <label key={option.id} className={`lp-choice ${selected ? 'is-selected' : ''} ${mark ? `is-${mark}` : ''} ${disabled ? 'is-locked' : ''}`}>
             <input type="radio" name={group} value={option.id} checked={selected} disabled={disabled} onChange={() => onChange(option.id)} />
             <span className="lp-choice-dot" aria-hidden="true" />
+            {option.visual && (
+              <span className="lp-choice-pic">
+                <VisualBare spec={option.visual} compact />
+              </span>
+            )}
             <RichText text={option.text} className="lp-choice-text" />
             {mark === 'correct' && (
               <span className="lp-choice-tag">
@@ -66,7 +77,7 @@ function Choices({ options, value, onChange, disabled, verdict }: { options: Cho
   );
 }
 
-export function ResponseInput({ response, value, onChange, onSubmit, disabled, verdict, label }: Props) {
+export function ResponseInput({ response, value, onChange, onSubmit, disabled, verdict, label, hintsShown = 0 }: Props) {
   const onEnter = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -117,6 +128,41 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
           />
         </div>
       );
+    }
+    case 'collect': {
+      const picked = new Set(typeof value === 'string' && value ? value.split(',').filter(Boolean).map(Number) : []);
+      const toggle = (i: number) => {
+        const next = new Set(picked);
+        if (next.has(i)) next.delete(i);
+        else next.add(i);
+        onChange([...next].sort((a, b) => a - b).join(','));
+      };
+      return (
+        <div className="lp-collect">
+          <ObjectField count={response.total} glyph={response.glyph} layout={response.layout} seed={response.seed} picked={picked} onTap={disabled ? undefined : toggle} label={label} />
+          <output className="objs-count" aria-live="polite">
+            არჩეულია: <strong>{picked.size}</strong>
+          </output>
+        </div>
+      );
+    }
+    case 'order': {
+      const parsed = typeof value === 'string' && value ? value.split(',').map(Number) : response.items;
+      const order = parsed.length === response.items.length ? parsed : response.items;
+      return (
+        <OrderBoard
+          base={response.items}
+          order={order}
+          onChange={(next) => onChange(next.join(','))}
+          disabled={disabled}
+          line={response.lineAfterHint && hintsShown > 0 ? { min: response.min ?? 0, max: response.max ?? 20 } : null}
+          ariaLabel={label}
+        />
+      );
+    }
+    case 'split': {
+      const left = typeof value === 'string' && value !== '' ? Number(value) : response.total;
+      return <SplitBoard total={response.total} left={Number.isFinite(left) ? left : response.total} onChange={(n) => onChange(String(n))} disabled={disabled} frame={response.frame} ariaLabel={label} />;
     }
     case 'blanks': {
       const values = Array.isArray(value) ? value : [];

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { numberName } from '../numberNames';
 import type { ExplainBlock, VisualSpec } from '../types';
+import { CompareGroups, compareSign, compareWords } from './Compare';
 import { NumberLine } from './NumberLine';
+import { ObjectField, TenFrame } from './Objects';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -100,27 +102,79 @@ export const quantityText = (n: number): string => {
 
 // ─────────────────────────── question visual ───────────────────────────
 
-export function VisualView({ spec }: { spec: VisualSpec }) {
+/** The picture alone, without the framed box (used inside answer options too). */
+export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compact?: boolean }) {
   switch (spec.type) {
     case 'sequence':
-      return (
-        <div className="lp-visual">
-          <SequenceRow items={spec.items} arrows={spec.arrows} />
-        </div>
-      );
+      return <SequenceRow items={spec.items} arrows={spec.arrows} />;
     case 'quantity':
-      return (
-        <div className="lp-visual">
-          <Quantity tens={spec.tens} ones={spec.ones} />
-        </div>
-      );
+      return <Quantity tens={spec.tens} ones={spec.ones} />;
     case 'line':
-      return (
-        <div className="lp-visual">
-          <NumberLine min={spec.min} max={spec.max} value={spec.marker ?? null} labelled={spec.labelled} hops={spec.hops} ariaLabel={`რიცხვითი ღერძი ${spec.min}-დან ${spec.max}-მდე`} />
-        </div>
-      );
+      return <NumberLine min={spec.min} max={spec.max} value={spec.marker ?? null} labelled={spec.labelled} hops={spec.hops} ariaLabel={`რიცხვითი ღერძი ${spec.min}-დან ${spec.max}-მდე`} />;
+    case 'objects':
+      return <MarkableObjects spec={spec} compact={compact} />;
+    case 'ten-frame':
+      return <TenFrame count={spec.count} label={`ათიანი ჩარჩო: ${spec.count}`} />;
+    case 'compare':
+      return <CompareGroups a={spec.a} b={spec.b} view={spec.view} glyph={spec.glyph} />;
+    case 'part-whole':
+      return <PartWhole whole={spec.whole} part={spec.part} counters={spec.counters} />;
   }
+}
+
+export function VisualView({ spec }: { spec: VisualSpec }) {
+  return (
+    <div className="lp-visual">
+      <VisualBare spec={spec} />
+    </div>
+  );
+}
+
+/** Objects the student may tap to keep track while counting; the number is never shown. */
+function MarkableObjects({ spec, compact }: { spec: Extract<VisualSpec, { type: 'objects' }>; compact: boolean }) {
+  const [counted, setCounted] = useState<number[]>([]);
+  const tap = (i: number) => setCounted((all) => (all.includes(i) ? all : [...all, i]));
+  return (
+    <div className="objs">
+      <ObjectField count={spec.count} glyph={spec.glyph} layout={spec.layout} seed={spec.seed} label="საგნები" compact={compact} counted={spec.markable ? counted : undefined} onTap={spec.markable ? tap : undefined} />
+      {spec.markable && (
+        <div className="objs-bar">
+          <span>
+            მონიშნულია: <strong>{counted.length}</strong>
+          </span>
+          <button type="button" className="btn btn-ghost btn-small" onClick={() => setCounted([])}>
+            ↻ გასუფთავება
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function PartWhole({ whole, part, counters }: { whole: number; part: number; counters?: 'split' | 'plain' }) {
+  return (
+    <div className="pw" role="img" aria-label={`მთელი ${whole}. ერთი ნაწილია ${part}. მეორე ნაწილი უცნობია`}>
+      <div className="pw-whole" aria-hidden="true">
+        <small>მთელი</small>
+        <strong>{whole}</strong>
+      </div>
+      {counters && (
+        <div aria-hidden="true">
+          <TenFrame count={counters === 'split' ? part : whole} second={counters === 'split' ? whole - part : 0} label="" />
+        </div>
+      )}
+      <div className="pw-parts" aria-hidden="true">
+        <div className="pw-part">
+          <small>ერთი ნაწილი</small>
+          <strong>{part}</strong>
+        </div>
+        <div className="pw-part is-unknown">
+          <small>მეორე ნაწილი</small>
+          <strong>?</strong>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─────────────────────────── animated demonstrations ───────────────────────────
@@ -196,8 +250,113 @@ export function QuantitiesBlock({ block }: { block: Block<'quantities'> }) {
           <div className="rep-numeral">{n}</div>
           <div className="rep-name">{numberName(n)}</div>
           <Quantity tens={Math.floor(n / 10)} ones={n % 10} />
+          <figcaption className="rep-split">{quantityText(n)}</figcaption>
         </figure>
       ))}
     </div>
+  );
+}
+
+// ─────────────────────────── U02 demonstrations ───────────────────────────
+
+export function CountDemo({ block }: { block: Block<'count-demo'> }) {
+  const { frame, done, replay, step } = useStepper(block.count + 1, 650);
+  const counted = Array.from({ length: frame }, (_, i) => i);
+  return (
+    <figure className="demo">
+      <ObjectField count={block.count} glyph={block.glyph} layout="rows" counted={counted} label="დასათვლელი საგნები" />
+      <div className="demo-status" role="status" aria-live="polite">
+        {frame === 0 ? 'დავიწყოთ ერთიდან' : done ? `ბოლო რიცხვი ${block.count} გვეუბნება: სულ ${block.count} საგანია` : `ვითვლით: ${frame}`}
+      </div>
+      {block.second && (
+        <div className="demo-second">
+          <span className="demo-badge">იგივე საგნები სხვანაირად</span>
+          <ObjectField count={block.count} glyph={block.glyph} layout={block.second.layout} seed={block.second.seed} label="იგივე საგნები სხვა დალაგებით" />
+          <p className="demo-status">ისევ {block.count} საგანია.</p>
+        </div>
+      )}
+      {block.caption && <figcaption>{block.caption}</figcaption>}
+      <DemoButtons done={done} replay={replay} step={step} />
+    </figure>
+  );
+}
+
+export function CompareBlock({ block }: { block: Block<'compare'> }) {
+  return (
+    <figure className="demo">
+      <CompareGroups a={block.a} b={block.b} view={block.view} glyph={block.glyph} showNumbers />
+      <div className="cmp-words" role="status">
+        {block.symbol && (
+          <span className="cmp-sentence" aria-hidden="true">
+            {block.a} {compareSign(block.a, block.b)} {block.b}
+          </span>
+        )}
+        <span>{compareWords(block.a, block.b)}</span>
+      </div>
+      {block.caption && <figcaption>{block.caption}</figcaption>}
+    </figure>
+  );
+}
+
+export function OrderDemo({ block }: { block: Block<'order-demo'> }) {
+  const { frame, done, replay, step } = useStepper(block.numbers.length, 1000);
+  return (
+    <figure className="demo">
+      <NumberLine min={block.min} max={block.max} value={block.numbers[frame]} labelled={block.numbers} hops={block.numbers.slice(0, frame + 1)} ariaLabel={`რიცხვები ღერძზე: ${block.numbers.join(', ')}`} />
+      <ol className="chain" aria-label={block.numbers.join(', ')}>
+        {block.numbers.map((n, i) => (
+          <li key={n} className="chain-cell">
+            {i > 0 && (
+              <span className={`chain-arrow ${i <= frame ? 'is-on' : ''}`} aria-hidden="true">
+                <b>→</b>
+              </span>
+            )}
+            <span className={`chain-num ${i === frame ? 'is-active' : ''} ${i < frame ? 'is-seen' : ''}`}>{n}</span>
+          </li>
+        ))}
+      </ol>
+      <div className="demo-status" role="status" aria-live="polite">
+        {done ? (block.direction === 'asc' ? 'პატარიდან დიდისკენ: ღერძზე მარჯვნივ მივდივართ.' : 'დიდიდან პატარისკენ: ღერძზე მარცხნივ მივდივართ.') : `ახლა: ${block.numbers[frame]}`}
+      </div>
+      {block.caption && <figcaption>{block.caption}</figcaption>}
+      <DemoButtons done={done} replay={replay} step={step} />
+    </figure>
+  );
+}
+
+const STATIC_COUNTERS = (n: number) =>
+  Array.from({ length: n }, (_, i) => <span key={i} className="spl-counter is-static" aria-hidden="true" />);
+
+export function ComposeDemo({ block }: { block: Block<'compose'> }) {
+  const [a, b] = block.parts;
+  const { frame, done, replay, step } = useStepper(3, 1500);
+  return (
+    <figure className="demo">
+      {frame !== 1 ? (
+        <div className="spl-box is-whole" role="img" aria-label={`ერთად ${block.whole}`}>
+          <span className="spl-label">{frame === 0 ? 'მთელი ჯგუფი' : 'ისევ ერთად'}</span>
+          <div className="spl-counters">{STATIC_COUNTERS(block.whole)}</div>
+          <output className="spl-count">{block.whole}</output>
+        </div>
+      ) : (
+        <div className="spl-boxes" role="img" aria-label={`ორი ნაწილი: ${a} და ${b}`}>
+          <div className="spl-box">
+            <span className="spl-label">ერთი ნაწილი</span>
+            <div className="spl-counters">{STATIC_COUNTERS(a)}</div>
+            <output className="spl-count">{a}</output>
+          </div>
+          <div className="spl-box is-second">
+            <span className="spl-label">მეორე ნაწილი</span>
+            <div className="spl-counters">{STATIC_COUNTERS(b)}</div>
+            <output className="spl-count">{b}</output>
+          </div>
+        </div>
+      )}
+      <div className="demo-status" role="status" aria-live="polite">
+        {frame === 0 ? `ეს არის ${block.whole}.` : frame === 1 ? `ორ ნაწილად გავყავით: ${a} და ${b}.` : `${a} და ${b} ერთად ისევ ${block.whole} არის.`}
+      </div>
+      {block.caption && <figcaption>{block.caption}</figcaption>}
+      <DemoButtons done={done} replay={replay} step={step} />
+    </figure>
   );
 }

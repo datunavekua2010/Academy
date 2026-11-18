@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { numberName } from '../numberNames';
 import type { ExploreTool } from '../types';
+import { CompareExplore, CountObjects, NumberBuilder, OrderLine, SplitExplore } from './ExploreToolsU02';
 import { NumberLine } from './NumberLine';
 import { Quantity, SequenceRow, quantityText } from './Visuals';
 
@@ -234,5 +235,15 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <LineExplorer spec={tool} />;
     case 'skip-line':
       return <SkipLine spec={tool} />;
+    case 'count-objects':
+      return <CountObjects spec={tool} />;
+    case 'number-builder':
+      return <NumberBuilder spec={tool} />;
+    case 'compare':
+      return <CompareExplore spec={tool} />;
+    case 'order-line':
+      return <OrderLine spec={tool} />;
+    case 'split':
+      return <SplitExplore spec={tool} />;
   }
 }

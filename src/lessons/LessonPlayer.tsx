@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Mascot } from '../components/Mascot';
 import { Link } from '../router';
-import { getUnit, nextLessonInUnit } from './catalog';
+import { allUnits, getUnit, nextLessonInUnit } from './catalog';
 import { lessonHref } from './routes';
 import { clearFeedback, initialAttempt, showNextHint, submitAnswer, type AttemptState } from './attempt';
 import { discoveryLine, introLine, reactionLine, tapLine } from './dialogue';
@@ -9,7 +9,7 @@ import { Feedback } from './exercises/Feedback';
 import { ResponseInput } from './exercises/ResponseInput';
 import { ExploreToolView } from './exercises/ExploreTools';
 import { TilesBoard } from './exercises/TilesBoard';
-import { ChainDemo, HopDemo, QuantitiesBlock, VisualView } from './exercises/Visuals';
+import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, QuantitiesBlock, VisualView } from './exercises/Visuals';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
 import { RichText, plainText } from './RichText';
 import { getLessonContent, showDevLabels } from './content';
@@ -94,6 +94,14 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <HopDemo key={i} block={block} />;
           case 'quantities':
             return <QuantitiesBlock key={i} block={block} />;
+          case 'count-demo':
+            return <CountDemo key={i} block={block} />;
+          case 'compare':
+            return <CompareBlock key={i} block={block} />;
+          case 'order-demo':
+            return <OrderDemo key={i} block={block} />;
+          case 'compose':
+            return <ComposeDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>
@@ -117,6 +125,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   const [coach, setCoach] = useState<Coach | null>(null);
   const [waveKey, setWaveKey] = useState(0);
   const [runKey, setRunKey] = useState(0);
+  const [exploreHint, setExploreHint] = useState(0);
   const stepRef = useRef<HTMLHeadingElement>(null);
   const progress = useLessonProgress();
 
@@ -137,6 +146,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
 
   useEffect(() => {
     setCoach(introFor(index));
+    setExploreHint(0);
     stepRef.current?.focus({ preventScroll: true });
     window.scrollTo?.({ top: 0 });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -153,7 +163,18 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
 
   const question = (a: QuestionActivity | TilesActivity): Question => a;
 
+  const exploreHints = activity.kind === 'explore' ? (activity.hints ?? []) : [];
+  const giveExploreHint = () => {
+    if (exploreHints.length === 0) return;
+    setCoach({ kind: 'hint', text: exploreHints[exploreHint % exploreHints.length], label: exploreHints.length > 1 ? `მინიშნება ${(exploreHint % exploreHints.length) + 1} / ${exploreHints.length}` : 'მინიშნება' });
+    setExploreHint((i) => i + 1);
+  };
+
   const askHint = () => {
+    if (exploreHints.length > 0) {
+      giveExploreHint();
+      return;
+    }
     if (!isQuestionLike(activity)) return;
     const hints = question(activity).hints;
     if (state.hintsShown >= hints.length) return;
@@ -162,6 +183,10 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   };
 
   const tapMascot = () => {
+    if (exploreHints.length > 0) {
+      giveExploreHint();
+      return;
+    }
     const hints = isQuestionLike(activity) ? question(activity).hints : [];
     const line = tapLine(activity, hints, state.hintsShown);
     if (line.usedHint && isQuestionLike(activity)) {
@@ -230,6 +255,10 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   // what comes after this lesson (completion screen)
   const nextEntry = nextLessonInUnit(lesson.id);
   const nextPlayable = nextEntry && getLessonContent(nextEntry.id) ? nextEntry : undefined;
+  // after the last lesson of a unit: the first lesson of the next unit (same grade), when it exists
+  const units = allUnits();
+  const nextUnit = nextEntry ? undefined : units[units.findIndex((u) => u.id === entry.unitId) + 1];
+  const nextUnitStart = nextUnit && nextUnit.grade === entry.grade && nextUnit.lessons[0] && getLessonContent(nextUnit.lessons[0].id) ? nextUnit.lessons[0] : undefined;
   const unitLessons = getUnit(entry.unitId)?.lessons ?? [];
   const unitComplete = passed && unitLessons.length > 0 && unitLessons.every((l) => l.id === lesson.id || progress[l.id]?.status === 'completed');
 
@@ -240,6 +269,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
 
   if (!isQuestionLike(activity)) {
     primary = { label: isLast ? 'გაკვეთილის დასრულება' : 'გაგრძელება', onClick: next };
+    showHintButton = exploreHints.length > 0;
   } else if (state.status !== 'answering') {
     primary = { label: isLast ? 'გაკვეთილის დასრულება' : 'გაგრძელება', onClick: next };
   } else if (activity.kind === 'tiles' && !allMoved(activity)) {
@@ -347,6 +377,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
                   disabled={state.status !== 'answering' || state.last?.verdict === 'incorrect'}
                   verdict={state.last?.verdict}
                   label={plainText(activity.kind === 'tiles' ? activity.askPrompt : activity.prompt)}
+                  hintsShown={state.hintsShown}
                 />
                 <Feedback question={activity} state={state} />
               </div>
@@ -414,6 +445,15 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
               </Link>
               <Link to={lessonHref(nextPlayable.id)} className="btn btn-primary lp-primary">
                 გაგრძელება: {nextPlayable.code}
+              </Link>
+            </>
+          ) : passed && nextUnitStart && unitComplete ? (
+            <>
+              <Link to={backTo} className="btn btn-ghost lp-secondary">
+                {entry.unitCode}-ზე დაბრუნება
+              </Link>
+              <Link to={lessonHref(nextUnitStart.id)} className="btn btn-primary lp-primary">
+                შემდეგი თემა: {nextUnitStart.code}
               </Link>
             </>
           ) : passed ? (

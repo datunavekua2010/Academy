@@ -83,7 +83,10 @@ export type Stage = 'challenge' | 'explore' | 'understand' | 'practice' | 'check
 
 export interface ChoiceOption {
   id: string;
+  /** Always read by screen readers; shown beside the picture when there is one. */
   text: string;
+  /** A picture instead of (or beside) the text, e.g. a quantity to match to a numeral. */
+  visual?: VisualSpec;
 }
 
 /** How a question is answered, and what the right answer is. */
@@ -103,7 +106,28 @@ export type ResponseSpec =
    * unlabelled so the student has to count. The marker's own number is only
    * shown when `showValue` is set (it would give the answer away).
    */
-  | { type: 'line'; min: number; max: number; answer: number; labelled?: number[]; start?: number; arrows?: boolean; showValue?: boolean };
+  | { type: 'line'; min: number; max: number; answer: number; labelled?: number[]; start?: number; arrows?: boolean; showValue?: boolean }
+  /**
+   * The student taps objects to pick exactly `answer` of the `total` shown
+   * (count out a number). Stored as the comma-separated indices tapped.
+   */
+  | { type: 'collect'; total: number; answer: number; glyph: Glyph; layout: ObjectLayout; seed?: number }
+  /**
+   * The student arranges number tiles by dragging, or by tap-to-select and
+   * move. `items` is the starting (shuffled) order; the right order is derived
+   * from `direction`. With `lineAfterHint` a number line appears once a hint
+   * has been opened. Stored as the comma-separated current order.
+   */
+  | { type: 'order'; items: number[]; direction: 'asc' | 'desc'; lineAfterHint?: boolean; min?: number; max?: number }
+  /**
+   * Two boxes and `total` counters; every counter starts in the first box and
+   * the student moves them. Correct when the first box holds `answer`.
+   * Stored as the number of counters in the first box.
+   */
+  | { type: 'split'; total: number; answer: number; frame?: boolean };
+
+export type Glyph = 'star' | 'apple' | 'fish' | 'ball';
+export type ObjectLayout = 'rows' | 'scatter';
 
 /** Something drawn next to a question. Purely visual: it is never the answer control. */
 export type VisualSpec =
@@ -111,7 +135,19 @@ export type VisualSpec =
   | { type: 'sequence'; items: Array<number | null>; arrows?: string }
   /** A number as groups of ten and single objects. */
   | { type: 'quantity'; tens: number; ones: number }
-  | { type: 'line'; min: number; max: number; labelled?: number[]; marker?: number; hops?: number[] };
+  | { type: 'line'; min: number; max: number; labelled?: number[]; marker?: number; hops?: number[] }
+  /** A collection of drawn objects. `markable` lets the student tap objects to keep track while counting. */
+  | { type: 'objects'; count: number; glyph: Glyph; layout: ObjectLayout; seed?: number; markable?: boolean }
+  /** Counters on a ten-frame (two frames above ten). */
+  | { type: 'ten-frame'; count: number }
+  /**
+   * Two quantities side by side (`a` is group ა, `b` is group ბ).
+   * `objects`: pictures only. `numbers`: numerals only. `line`: both on a number line.
+   * `pairs`: pictures matched one-to-one with the extras marked.
+   */
+  | { type: 'compare'; a: number; b: number; view: 'objects' | 'numbers' | 'line' | 'pairs'; glyph?: Glyph }
+  /** A whole split into two parts; `part` is shown, the other part is hidden. `split` draws the whole as counters with the shown part marked; `plain` draws the whole only. */
+  | { type: 'part-whole'; whole: number; part: number; counters?: 'split' | 'plain' };
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -188,11 +224,23 @@ export type ExploreTool =
   /** A number line to tap, drag and step along. */
   | { tool: 'number-line'; min: number; max: number; start: number }
   /** A number line where each tap hops by the chosen step. */
-  | { tool: 'skip-line'; min: number; max: number; steps: number[] };
+  | { tool: 'skip-line'; min: number; max: number; steps: number[] }
+  /** Tap objects to count them once each. `counts` are the collections to choose from; `layouts` the arrangements. */
+  | { tool: 'count-objects'; glyph: Glyph; counts: number[]; layouts: Array<{ layout: ObjectLayout; seed?: number }> }
+  /** Numeral, number name and groups, plus a tray to add and remove objects. `names[n]` is the name of n. */
+  | { tool: 'number-builder'; max: number; start: number; names: Record<number, string>; glyph: Glyph }
+  /** Two groups to adjust, pair up, or show on a number line. */
+  | { tool: 'compare'; max: number; start: [number, number]; glyph: Glyph }
+  /** Place number tiles on a number line and read them left to right. */
+  | { tool: 'order-line'; min: number; max: number; tiles: number[] }
+  /** Move counters between two boxes; the total never changes. `targets` are shown one after another. */
+  | { tool: 'split'; targets: number[]; frame?: boolean };
 
 export interface ExploreActivity extends ActivityBase {
   kind: 'explore';
   tool: ExploreTool;
+  /** Optional nudges Axi gives when asked, one at a time. */
+  hints?: string[];
 }
 
 export type ExplainBlock =
@@ -205,7 +253,15 @@ export type ExplainBlock =
   /** A marker hops from `from` to `to` on a number line, one step at a time (with replay). */
   | { type: 'hops'; min: number; max: number; from: number; to: number; step?: number; caption?: string }
   /** Numerals shown as digits, a number name and groups of ten and ones. */
-  | { type: 'quantities'; numbers: number[] };
+  | { type: 'quantities'; numbers: number[] }
+  /** Objects highlighted one at a time while a counter grows; then the same amount arranged differently. */
+  | { type: 'count-demo'; glyph: Glyph; count: number; caption?: string; second?: { layout: ObjectLayout; seed?: number } }
+  /** Two numbers compared; `symbol` adds the sign (< > =) with its words. */
+  | { type: 'compare'; a: number; b: number; view: 'objects' | 'numbers' | 'line' | 'pairs'; glyph?: Glyph; symbol?: boolean; caption?: string }
+  /** A highlight walks along a number line, tile by tile, in the order given. */
+  | { type: 'order-demo'; min: number; max: number; numbers: number[]; direction: 'asc' | 'desc'; caption?: string }
+  /** A whole splits into two parts and the parts come back together. */
+  | { type: 'compose'; whole: number; parts: [number, number]; caption?: string };
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';

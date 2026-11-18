@@ -519,9 +519,10 @@ describe('L5 counting in steps', () => {
     expect(screen.getByRole('heading', { name: 'გაკვეთილი დასრულდა' })).toBeTruthy();
     expect(document.querySelector('.lp-unit-done')?.textContent).toContain('U01 დასრულდა');
     expect(saved()['g1-u01-l5']).toMatchObject({ status: 'completed', checkCorrect: 3 });
-    // last lesson: no "continue" link, only the way back
+    // last lesson of the unit: no "continue to next lesson" link; the next unit (U02) is offered, with the way back to U01
     expect(screen.queryByRole('link', { name: /გაგრძელება:/ })).toBeNull();
-    expect(screen.getByRole('link', { name: 'გაკვეთილების სიაში დაბრუნება' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /შემდეგი თემა: U02\.1/ }).getAttribute('href')).toBe('#/student/lessons/g1-u02-l1');
+    expect(screen.getByRole('link', { name: 'U01-ზე დაბრუნება' }).getAttribute('href')).toBe('#/student/lessons/g1-u01');
   });
 
 });

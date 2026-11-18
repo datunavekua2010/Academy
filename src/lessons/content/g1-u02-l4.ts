@@ -1,0 +1,118 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U02.4 "Ordering Numbers to 20".
+ * Demonstration content only (see g1-u02-l1.ts). The starting order of every
+ * `order` question is shuffled on purpose (a test checks it is never already
+ * correct). In the check there is no number-line help after a hint.
+ */
+export const g1u02l4: Lesson = {
+  id: 'g1-u02-l4',
+  status: 'placeholder',
+  objective: 'ვალაგებ რიცხვებს პატარიდან დიდისკენ და დიდიდან პატარისკენ.',
+  prerequisites: ['რიცხვების შედარება (U02.3)'],
+  minutes: 9,
+  concepts: ['რიცხვების დალაგება', 'პატარიდან დიდისკენ', 'დიდიდან პატარისკენ', 'რიცხვითი ღერძი'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! რიცხვებს სწორ რიგში აწყობ.',
+    retry: 'სცადე ისევ. ჯერ იპოვე ყველაზე პატარა (ან ყველაზე დიდი) რიცხვი.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'დაალაგე რიცხვები პატარიდან დიდისკენ.',
+      mascot: { intro: 'შეგიძლია რიცხვები სწორ რიგში დააწყო?' },
+      response: { type: 'order', items: [7, 3, 9], direction: 'asc' },
+      maxAttempts: 2,
+      revealOnExhaust: false,
+      hints: ['ჯერ იპოვე ყველაზე პატარა რიცხვი.'],
+      explanation: 'ბრავო! 3, 7, 9 — პატარიდან დიდისკენ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'როგორ ვიცით, რომელი მოდის პირველი?',
+      prompt: 'აირჩიე ფილა და შეეხე ღერძზე იმავე რიცხვს. შემდეგ ნახე, როგორ ჩამწკრივდება ფილები.',
+      hints: ['ღერძზე მარცხნივ პატარა რიცხვებია, მარჯვნივ — დიდი.'],
+      tool: { tool: 'order-line', min: 0, max: 20, tiles: [6, 15, 3, 11] },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'პატარა პირველია, დიდი ბოლოში',
+      prompt: 'რიცხვების დალაგება ნიშნავს მათ ზომის მიხედვით ჩაწყობას.',
+      blocks: [
+        { type: 'text', text: 'ღერძზე პატარა რიცხვები უფრო მარცხნივ დგას, დიდი — უფრო მარჯვნივ.' },
+        { type: 'order-demo', min: 0, max: 20, numbers: [2, 6, 11, 17], direction: 'asc', caption: 'პატარიდან დიდისკენ.' },
+        { type: 'order-demo', min: 0, max: 20, numbers: [18, 12, 8, 4], direction: 'desc', caption: 'დიდიდან პატარისკენ.' },
+        { type: 'callout', tone: 'tip', text: 'იპოვე ყველაზე პატარა რიცხვი, მერე დანარჩენებიდან ისევ ყველაზე პატარა.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე რიცხვები პატარიდან დიდისკენ.',
+      response: { type: 'order', items: [12, 5, 9], direction: 'asc', lineAfterHint: true, min: 0, max: 20 },
+      hints: ['ჯერ იპოვე ყველაზე პატარა რიცხვი, მერე დანარჩენები შეადარე.', 'რიცხვითი ღერძი დაგეხმარება: პატარა რიცხვი უფრო მარცხნივ დგას.'],
+      explanation: '5, 9, 12 — ყოველი შემდეგი რიცხვი უფრო დიდია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე მეზობელი რიცხვები.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე ოთხი რიცხვი პატარიდან დიდისკენ.',
+      response: { type: 'order', items: [14, 3, 18, 8], direction: 'asc', lineAfterHint: true, min: 0, max: 20 },
+      hints: ['ჯერ იპოვე ყველაზე პატარა რიცხვი, მერე დანარჩენები შეადარე.', 'რიცხვითი ღერძი დაგეხმარება: პატარა რიცხვი უფრო მარცხნივ დგას.'],
+      explanation: '3, 8, 14, 18 — პატარიდან დიდისკენ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე მეზობელი რიცხვები.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე რიცხვები დიდიდან პატარისკენ.',
+      response: { type: 'order', items: [6, 19, 2, 11], direction: 'desc', lineAfterHint: true, min: 0, max: 20 },
+      hints: ['ახლა ჯერ იპოვე ყველაზე დიდი რიცხვი.', 'რიცხვითი ღერძი დაგეხმარება: დიდი რიცხვი უფრო მარჯვნივ დგას.'],
+      explanation: '19, 11, 6, 2 — დიდიდან პატარისკენ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ახლა პირველ ადგილზე ყველაზე დიდი რიცხვი უნდა იდგეს.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაალაგე რიცხვები პატარიდან დიდისკენ.',
+      response: { type: 'order', items: [15, 4, 10], direction: 'asc' },
+      hints: ['ჯერ იპოვე ყველაზე პატარა რიცხვი.'],
+      explanation: '4, 10, 15 — პატარიდან დიდისკენ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე რიცხვები ერთმანეთს.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაალაგე რიცხვები დიდიდან პატარისკენ.',
+      response: { type: 'order', items: [2, 13, 9], direction: 'desc' },
+      hints: ['ჯერ იპოვე ყველაზე დიდი რიცხვი.'],
+      explanation: '13, 9, 2 — დიდიდან პატარისკენ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე რიცხვები ერთმანეთს.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაალაგე ხუთი რიცხვი პატარიდან დიდისკენ.',
+      response: { type: 'order', items: [17, 4, 12, 0, 9], direction: 'asc' },
+      hints: ['ყოველ ჯერზე იპოვე ყველაზე პატარა რიცხვი იმათგან, რაც დარჩა.'],
+      explanation: '0, 4, 9, 12, 17 — პატარიდან დიდისკენ.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. რიცხვები ერთმანეთს ყურადღებით შეადარე.',
+    },
+  ],
+};
