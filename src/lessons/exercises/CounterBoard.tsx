@@ -32,6 +32,8 @@ export interface BoardGeometry {
   zones: [ZoneRect, ZoneRect, ZoneRect];
   /** Counter diameter. */
   size: number;
+  /** Counters per row inside the two boxes. */
+  boxCols: number;
 }
 
 const HEADER = 9;
@@ -42,8 +44,9 @@ const TOP_PITCH = 9.2;
 const FRAME_PITCH = 10.4;
 const GAP = 3;
 
-export function boardGeometry(total: number, hasTop = true, frame?: 5 | 10): BoardGeometry {
-  const boxRows = Math.max(2, Math.ceil(total / BOX_COLS));
+export function boardGeometry(total: number, hasTop = true, frame?: 5 | 10, single = false): BoardGeometry {
+  const boxCols = single ? 5 : BOX_COLS;
+  const boxRows = Math.max(2, Math.ceil(total / boxCols));
   const topRows = frame ? frame / 5 : Math.max(1, Math.ceil(total / TOP_COLS));
   const topH = HEADER + topRows * (frame ? FRAME_PITCH : TOP_PITCH) + 2;
   const boxH = HEADER + boxRows * BOX_PITCH + 2;
@@ -51,10 +54,11 @@ export function boardGeometry(total: number, hasTop = true, frame?: 5 | 10): Boa
   return {
     height: boxY + boxH,
     size: 8,
+    boxCols,
     zones: [
       { x: 0, y: 0, w: 100, h: hasTop ? topH : 0 },
-      { x: 0, y: boxY, w: 49, h: boxH },
-      { x: 51, y: boxY, w: 49, h: boxH },
+      { x: 0, y: boxY, w: single ? 100 : 49, h: boxH },
+      { x: 51, y: boxY, w: single ? 0 : 49, h: boxH },
     ],
   };
 }
@@ -72,9 +76,10 @@ export function slotCenter(geometry: BoardGeometry, zone: Zone, slot: number, fr
     const row = Math.floor(slot / TOP_COLS);
     return { x: 50 + (col - (TOP_COLS - 1) / 2) * TOP_PITCH, y: z.y + HEADER + (row + 0.5) * TOP_PITCH };
   }
-  const col = slot % BOX_COLS;
-  const row = Math.floor(slot / BOX_COLS);
-  return { x: z.x + z.w / 2 + (col - (BOX_COLS - 1) / 2) * BOX_PITCH, y: z.y + HEADER + (row + 0.5) * BOX_PITCH };
+  const cols = geometry.boxCols;
+  const col = slot % cols;
+  const row = Math.floor(slot / cols);
+  return { x: z.x + z.w / 2 + (col - (cols - 1) / 2) * BOX_PITCH, y: z.y + HEADER + (row + 0.5) * BOX_PITCH };
 }
 
 // ─────────────────────────── identity (pure) ───────────────────────────
@@ -137,6 +142,10 @@ interface Props {
   frame?: 5 | 10;
   /** A place whose counters pulse (to draw attention to them). */
   emphasis?: Zone | null;
+  /** One wide box under the top area instead of two (zone 2 is not drawn). */
+  single?: boolean;
+  /** The most counters the top area (a frame) can hold; it takes no more once full. */
+  capacity0?: number;
   /** Show "total" under the board. */
   showTotal?: boolean;
   ariaLabel: string;
@@ -144,9 +153,9 @@ interface Props {
 
 const DEFAULT_LABELS: [string, string, string] = ['ყველა კუბიკი', 'პირველი ყუთი', 'მეორე ყუთი'];
 
-export function CounterBoard({ counts, onChange, disabled = false, glyph = 'counter', palette = 'plain', labels = DEFAULT_LABELS, dropZones, hideTop = false, frame, emphasis = null, showTotal = true, ariaLabel }: Props) {
+export function CounterBoard({ counts, onChange, disabled = false, glyph = 'counter', palette = 'plain', labels = DEFAULT_LABELS, dropZones, hideTop = false, frame, emphasis = null, single = false, capacity0, showTotal = true, ariaLabel }: Props) {
   const total = counts[0] + counts[1] + counts[2];
-  const geometry = boardGeometry(total, !hideTop, frame);
+  const geometry = boardGeometry(total, !hideTop, frame, single);
   const lists = useRef<Lists>(initialLists(counts));
   const pending = useRef<{ id: number; to: number } | null>(null);
   lists.current = reconcileLists(lists.current, counts, pending.current);
@@ -160,7 +169,7 @@ export function CounterBoard({ counts, onChange, disabled = false, glyph = 'coun
   const selected = pickedId !== null && lists.current.some((l) => l.includes(pickedId)) ? pickedId : null;
 
   const zoneOf = (id: number): Zone => lists.current.findIndex((l) => l.includes(id)) as Zone;
-  const canDrop = (z: Zone) => !disabled && (dropZones ? dropZones.includes(z) : true) && !(hideTop && z === 0);
+  const canDrop = (z: Zone) => !disabled && (dropZones ? dropZones.includes(z) : true) && !(hideTop && z === 0) && !(single && z === 2) && !(z === 0 && capacity0 !== undefined && counts[0] >= capacity0);
 
   const moveTo = (id: number, to: Zone): boolean => {
     const from = zoneOf(id);
@@ -187,6 +196,10 @@ export function CounterBoard({ counts, onChange, disabled = false, glyph = 'coun
     const target = zoneOf(id);
     if (target === zoneOf(selected)) {
       setSelected(id); // another counter of the same place: pick that one instead
+      return;
+    }
+    if (!canDrop(target)) {
+      setSelected(id); // that place is full or closed: pick this counter up instead
       return;
     }
     place(target);
@@ -233,7 +246,7 @@ export function CounterBoard({ counts, onChange, disabled = false, glyph = 'coun
     }
   };
 
-  const zones: Zone[] = hideTop ? [1, 2] : [0, 1, 2];
+  const zones: Zone[] = (hideTop ? [1, 2] : [0, 1, 2]).filter((z) => !(single && z === 2)) as Zone[];
   const pct = (units: number) => `${(units / geometry.height) * 100}%`;
   const selectedZone = selected === null ? null : zoneOf(selected);
 

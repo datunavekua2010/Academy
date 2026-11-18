@@ -1,0 +1,193 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U05.1 "Understanding Wholes and Parts".
+ * Demonstration content only. A whole is one complete object; parts are the pieces that make it up.
+ * The student separates a shape into pieces, puts the pieces back, sorts pictures into "one whole",
+ * "parts of one whole" and "pieces that do not belong together", and reassembles a shape from its parts.
+ */
+export const g1u05l1: Lesson = {
+  id: 'g1-u05-l1',
+  status: 'placeholder',
+  objective: 'ვიცი, რომ მთელი არის ერთი სრული საგანი, ხოლო ნაწილები ის ნაჭრებია, რომლებიც მთელს აკეთებენ.',
+  prerequisites: ['ფიგურების სახელები: წრე, კვადრატი, მართკუთხედი'],
+  minutes: 10,
+  concepts: ['მთელი', 'ნაწილები', 'ნაწილების შეერთება'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! მთელი სრულია, ხოლო ნაწილები ერთად მთელს აკეთებენ.',
+    retry: 'სცადე ისევ. იფიქრე, ერთ საგანს ეკუთვნის თუ არა ნაჭრები.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'აქ სამი სურათია. რომელი აჩვენებს ერთ მთელ ქაღალდს?',
+      mascot: { intro: 'მთელი ნიშნავს, რომ საგანი სრულია და არაფერი აკლია.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'parts', text: 'ქაღალდი ორ ნაჭრად', visual: { type: 'shape', shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'paper', view: 'apart' } },
+          { id: 'whole', text: 'ერთი მთელი ქაღალდი', visual: { type: 'shape', shape: 'rect', cuts: [], skin: 'paper', view: 'whole' } },
+          { id: 'mixed', text: 'ნაჭრები სხვადასხვა საგნისა', visual: { type: 'shape', shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'paper', view: 'mixed', take: [1], mix: { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]], take: [2] } } },
+        ],
+        answer: 'whole',
+      },
+      hints: ['მთელი ნიშნავს სრულ საგანს: მასში ყველა ნაჭერია და არაფერი აკლია.'],
+      explanation: 'მთელი ქაღალდი ერთ სრულ საგანია. ორ ნაჭრად გაყოფილი ქაღალდი ნაწილებია, ხოლო სხვადასხვა საგნის ნაჭრები ერთმანეთს არ ეკუთვნის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. მოძებნე სურათი, სადაც საგანი სრულია და არაფერი აკლია.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'მთელი და ნაწილები',
+      prompt: 'აირჩიე საგანი და დააჭირე ღილაკს: ნახე, როგორ დაიყოფა ის ნაწილებად. მერე შეეხე ნაწილებს და უკან დააბრუნე.',
+      hints: ['ნაწილები რომ შეიკრიბა, ისევ მთელი გამოდის. შეეხე თითოეულ ნაწილს და დააბრუნე ადგილზე.', 'შოკოლადის ფილა ოთხ ნაწილად იყოფა: ყველაფერი ერთად ისევ ფილაა.'],
+      tool: {
+        tool: 'parts-lab',
+        examples: [
+          { label: 'ქაღალდი', spec: { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'paper' } },
+          { label: 'შოკოლადის ფილა', spec: { shape: 'rect', cuts: [[0.5, 0, 0.5, 1], [0, 0.5, 1, 0.5]], skin: 'chocolate' } },
+          { label: 'ნამცხვარი', spec: { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]], skin: 'cookie' } },
+          { label: 'კვადრატი', spec: { shape: 'square', cuts: [[0, 0, 1, 1]] } },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'მთელი და მისი ნაწილები',
+      prompt: 'ვუყუროთ, როგორ იქცევა მთელი ნაწილებად და როგორ იკრიბება ისევ ერთად.',
+      blocks: [
+        {
+          type: 'shape-demo',
+          mode: 'whole-parts',
+          shape: { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'paper' },
+          contrast: { shape: 'rect', cuts: [[0.3, 0, 0.3, 1]], skin: 'paper' },
+          steps: [
+            'ეს არის ერთი მთელი ქაღალდი. ის სრულია.',
+            'ქაღალდი ორ ნაწილად გავყავით. ახლა ორი ნაჭერია.',
+            'ნაჭრები ისევ შევაერთეთ და მთელი ქაღალდი გამოვიდა.',
+            'გაყოფა ყოველთვის ტოლ ნაწილებს არ იძლევა: აქ ერთი ნაჭერი მეორეზე დიდია. მაგრამ ორივე ნაჭერი მაინც ამ ქაღალდს ეკუთვნის.',
+          ],
+          caption: 'მთელი სრულია. ნაწილები ერთად მთელს აკეთებენ.',
+        },
+        { type: 'callout', tone: 'tip', text: 'ნაწილები ყოველთვის ერთ საგანს ეკუთვნის. თუ ნაჭრები სხვადასხვა საგნისაა, ისინი ერთ მთელს ვერ აკეთებენ.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაალაგე სურათები სამ ჯგუფად: ერთი მთელი, ერთი მთელის ნაწილები, და ის, რაც ერთმანეთს არ ერგება.',
+      response: {
+        type: 'classify',
+        rule: 'wholeparts',
+        items: [
+          { shape: 'rect', cuts: [], skin: 'paper', view: 'whole' },
+          { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'paper', view: 'apart' },
+          { shape: 'circle', cuts: [[0.5, 0, 0.5, 1], [0, 0.5, 1, 0.5]], skin: 'cookie', view: 'apart' },
+          { shape: 'square', cuts: [[0.5, 0, 0.5, 1]], view: 'mixed', take: [1], mix: { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]], take: [2] } },
+        ],
+      },
+      hints: ['ჯერ იფიქრე: ნაჭრები ერთ საგანს ეკუთვნის თუ სხვადასხვა საგნისაა?', 'მთელი სურათია ის, სადაც საგანი სრულია და არაფერი აკლია.'],
+      explanation: 'მთელია სრული საგანი. ნაწილებია ის, როცა ერთი საგნის ნაჭრებია ერთად. რაც სხვადასხვა საგნის ნაჭრებია, ერთმანეთს არ ერგება.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე ნაჭრები: ერთ საგანს ეკუთვნის თუ სხვადასხვა საგნისაა?',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'კიდევ ერთხელ დაალაგე სურათები ჯგუფებად.',
+      response: {
+        type: 'classify',
+        rule: 'wholeparts',
+        items: [
+          { shape: 'square', cuts: [[0, 0, 1, 1]], view: 'apart' },
+          { shape: 'circle', cuts: [], skin: 'cookie', view: 'whole' },
+          { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'chocolate', view: 'mixed', take: [2], mix: { shape: 'square', cuts: [[0.5, 0, 0.5, 1]], take: [1] } },
+          { shape: 'rect', cuts: [[0.5, 0, 0.5, 1], [0, 0.5, 1, 0.5]], skin: 'chocolate', view: 'cut' },
+        ],
+      },
+      hints: ['გაყოფილი მაგრამ ერთ საგნის ნაჭრები ნაწილებია, თუნდაც ისინი ჯერ კიდევ ადგილზე იყვნენ.', 'შეხედე: ნაჭრები ერთ საგანს ეკუთვნის თუ არა?'],
+      explanation: 'კვადრატი ორ სამკუთხედადაა გაყოფილი: ეს ნაწილებია. ნამცხვარი მთელია. შოკოლადის ნაჭერი და კვადრატის ნაჭერი სხვადასხვა საგნისაა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. იფიქრე, ნაჭრები ერთ საგანს ეკუთვნის თუ არა.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'კვადრატი ორ სამკუთხედად დაიყო. დაადე ნაწილები თავის ადგილზე და მთელი კვადრატი შეადგინე.',
+      response: { type: 'reassemble', shape: { shape: 'square', cuts: [[0, 0, 1, 1]] } },
+      hints: ['შეეხე ნაწილს და მერე ხაზებით შემოხაზულ ადგილს, სადაც ის ჯდება.', 'ორი სამკუთხედი ერთად კვადრატს აკეთებს: თითოეული თავის ნახევარში ჯდება.'],
+      explanation: 'ორი სამკუთხედი ერთად მთელ კვადრატს აკეთებს. ნაწილები მთელს ეკუთვნის და ისევ მთელს ქმნიან.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. სცადე ნაწილი სხვა ადგილზე: ის ზუსტად უნდა დაჯდეს.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'შოკოლადის ფილა ოთხ ნაწილად დაიყო. დაადე ყველა ნაწილი თავის ადგილზე. ქვემოთ ერთი ზედმეტი ნაჭერიცაა: ის სხვა საგნისაა და არსად ჯდება.',
+      response: {
+        type: 'reassemble',
+        shape: { shape: 'rect', cuts: [[0.5, 0, 0.5, 1], [0, 0.5, 1, 0.5]], skin: 'chocolate' },
+        decoys: [{ spec: { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]] }, piece: 1 }],
+      },
+      hints: ['ზედმეტი ნაჭერი წრის ნაწილია: ის ფილაში არ ჯდება.', 'ყოველი ნაჭერი თავის ადგილზე ზუსტად ჯდება.'],
+      explanation: 'ოთხი ნაჭერი ერთად მთელ ფილას აკეთებს. წრის ნაჭერი სხვა საგნისაა და ფილას არ ეკუთვნის.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ზედმეტი ნაჭერი სხვა საგნისაა: ის არსად ჯდება.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაალაგე სურათები ჯგუფებად: ერთი მთელი, ერთი მთელის ნაწილები, და ის, რაც ერთმანეთს არ ერგება.',
+      response: {
+        type: 'classify',
+        rule: 'wholeparts',
+        items: [
+          { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]], skin: 'cookie', view: 'apart' },
+          { shape: 'square', cuts: [], view: 'whole' },
+          { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'paper', view: 'mixed', take: [1], mix: { shape: 'square', cuts: [[0, 0, 1, 1]], take: [1] } },
+          { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], skin: 'chocolate', view: 'cut' },
+        ],
+      },
+      hints: [],
+      explanation: 'მთელია სრული საგანი, ნაწილებია ერთი საგნის ნაჭრები, ხოლო სხვადასხვა საგნის ნაჭრები ერთმანეთს არ ერგება.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. იფიქრე, ნაჭრები ერთ საგანს ეკუთვნის თუ არა.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ნამცხვარი ორ ნაწილად დაიყო. დაადე ნაწილები თავის ადგილზე და მთელი ნამცხვარი შეადგინე.',
+      response: { type: 'reassemble', shape: { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]], skin: 'cookie' } },
+      hints: [],
+      explanation: 'ორი ნახევარი ერთად მთელ ნამცხვარს აკეთებს.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. თითოეული ნაწილი თავის ადგილზე ზუსტად ჯდება.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'კიდევ ერთხელ დაალაგე სურათები ჯგუფებად.',
+      response: {
+        type: 'classify',
+        rule: 'wholeparts',
+        items: [
+          { shape: 'rect', cuts: [[0.5, 0, 0.5, 1], [0, 0.5, 1, 0.5]], skin: 'paper', view: 'apart' },
+          { shape: 'circle', cuts: [], skin: 'pizza', view: 'whole' },
+          { shape: 'square', cuts: [[0.5, 0, 0.5, 1]], view: 'mixed', take: [2], mix: { shape: 'rect', cuts: [[0.5, 0, 0.5, 1]], take: [1] } },
+          { shape: 'square', cuts: [[0, 0, 1, 1]], view: 'cut' },
+        ],
+      },
+      hints: [],
+      explanation: 'ქაღალდი ოთხ ნაჭრადაა გაყოფილი: ეს ნაწილებია. პიცა მთელია. კვადრატის და მართკუთხედის ნაჭრები სხვადასხვა საგნისაა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე ნაჭრები: ერთ საგანს ეკუთვნის თუ არა?',
+    },
+  ],
+};

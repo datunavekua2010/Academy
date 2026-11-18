@@ -1,0 +1,172 @@
+import type { Lesson } from '../types';
+
+/**
+ * PLACEHOLDER lesson — Grade 1 · U05.3 "Dividing Shapes into Equal Parts".
+ * Demonstration content only. The student divides a shape by tapping two dots on its edge;
+ * a division counts only when the pieces are exactly equal in area (see ShapeGeometry).
+ */
+export const g1u05l3: Lesson = {
+  id: 'g1-u05-l3',
+  status: 'placeholder',
+  objective: 'ვიცი, როგორ დავყო ფიგურა ორ ტოლ ნაწილად და როგორ ვიცნო, როცა გაყოფა არატოლია.',
+  prerequisites: ['ტოლი და არატოლი ნაწილები (U05.2)'],
+  minutes: 10,
+  concepts: ['ფიგურის გაყოფა', 'ტოლი ნაწილები', 'ხაზი ცენტრში'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! ხაზი ცენტრში გაავლე და ნაწილები ტოლია.',
+    retry: 'სცადე ისევ. ხაზი ფიგურის ცენტრში უნდა გადიოდეს.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'წრე უნდა ორ ტოლ ნაწილად დავყოთ. რომელი ხაზი გაგვყოფს მას ტოლ ნაწილებად?',
+      mascot: { intro: 'ტოლი ნაწილები ერთნაირი ზომისაა. ხაზი ცენტრში უნდა გადიოდეს.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'edge', text: 'ხაზი კიდესთან', visual: { type: 'shape', shape: 'circle', cuts: [[0.25, 0, 0.25, 1]] } },
+          { id: 'middle', text: 'ხაზი ცენტრში', visual: { type: 'shape', shape: 'circle', cuts: [[0.5, 0, 0.5, 1]] } },
+          { id: 'low', text: 'ხაზი დაბლა', visual: { type: 'shape', shape: 'circle', cuts: [[0, 0.7, 1, 0.7]] } },
+        ],
+        answer: 'middle',
+      },
+      hints: ['ხაზი წრის ცენტრში უნდა გადიოდეს, რომ ორივე ნაწილი ერთნაირი იყოს.'],
+      explanation: 'ხაზი, რომელიც ცენტრში გადის, წრეს ორ ტოლ ნაწილად ყოფს. კიდესთან გავლებული ხაზი პატარა და დიდ ნაწილს იძლევა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. მოძებნე ხაზი, რომელიც ცენტრში გადის.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'დაყავი ფიგურა',
+      prompt: 'აირჩიე ფიგურა და შეეხე ორ წერტილს კიდეზე, რომ ხაზი გაივლოს. მერე შეადარე ნაწილები: დაადე ერთი მეორეზე.',
+      hints: ['ხაზი ცენტრში რომ გაივლოს, ნაწილები ტოლია.', 'თუ ხაზი ცენტრში არ გადის, ერთი ნაწილი მეორეზე დიდია.'],
+      tool: {
+        tool: 'cut-lab',
+        shapes: [
+          { label: 'წრე', shape: 'circle' },
+          { label: 'კვადრატი', shape: 'square' },
+          { label: 'მართკუთხედი', shape: 'rect' },
+        ],
+      },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'როგორ დავყოთ ფიგურა ტოლ ნაწილებად',
+      prompt: 'ვუყუროთ, როგორ იხსნება წრე ორ ტოლ ნაწილად და როგორ გამოიყურება არატოლი გაყოფა.',
+      blocks: [
+        {
+          type: 'shape-demo',
+          mode: 'cut',
+          shape: { shape: 'circle', cuts: [[0.5, 0, 0.5, 1]] },
+          contrast: { shape: 'circle', cuts: [[0.3, 0, 0.3, 1]] },
+          steps: [
+            'ეს არის მთელი წრე.',
+            'ხაზი ცენტრში გავავლეთ.',
+            'წრე ორ ნაწილად დაიყო.',
+            'ერთი ნაწილი მეორეზე დავდეთ: ისინი ზუსტად ემთხვევა. ეს გაყოფა ტოლია.',
+            'აქ ხაზი ცენტრში არ გადის და ნაწილები არატოლია. მიზანი მხოლოდ ხაზის გავლება არ არის: ნაწილები ერთნაირი ზომისაა საჭირო.',
+          ],
+          caption: 'ფიგურის ტოლ ნაწილებად დასაყოფად დარწმუნდი, რომ ყველა ნაწილი ერთნაირი ზომისაა.',
+        },
+        { type: 'callout', tone: 'tip', text: 'ხაზი შეიძლება ვერტიკალურად, ჰორიზონტალურად ან დიაგონალზე იყოს გავლებული. მთავარია, რომ ის ცენტრში გადიოდეს.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაყავი წრე ორ ტოლ ნაწილად. შეეხე ორ წერტილს კიდეზე და ხაზი გაავლე.',
+      response: { type: 'cut', shape: 'circle', parts: 2, maxCuts: 1, compare: true },
+      hints: ['ხაზი წრის ცენტრში უნდა გადიოდეს.', 'აირჩიე ორი წერტილი, რომლებიც ერთმანეთის პირდაპირაა.'],
+      explanation: 'ხაზი, რომელიც ცენტრში გადის, წრეს ორ ტოლ ნაწილად ყოფს.',
+      misconceptions: [
+        { id: 'count', answers: ['count'], feedback: 'ფიგურა ჯერ არ არის ორ ნაწილად გაყოფილი. შეეხე ორ წერტილს კიდეზე და ხაზი გაავლე.' },
+        { id: 'unequal', answers: ['unequal'], feedback: 'ნაწილები არატოლია: ხაზი ცენტრში არ გადის. გააუქმე ხაზი და სცადე სხვა წერტილები.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ხაზი ცენტრში უნდა გადიოდეს, რომ ნაწილები ტოლი იყოს.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაყავი კვადრატი ორ ტოლ ნაწილად.',
+      response: { type: 'cut', shape: 'square', parts: 2, maxCuts: 1, compare: true },
+      hints: ['ხაზი კვადრატის ცენტრში უნდა გადიოდეს.', 'შეიძლება ვერტიკალურად, ჰორიზონტალურად ან დიაგონალზე გავლება.'],
+      explanation: 'კვადრატის ცენტრში გავლებული ხაზი მას ორ ტოლ ნაწილად ყოფს.',
+      misconceptions: [
+        { id: 'count', answers: ['count'], feedback: 'კვადრატი ჯერ არ არის ორ ნაწილად გაყოფილი. შეეხე ორ წერტილს კიდეზე.' },
+        { id: 'unequal', answers: ['unequal'], feedback: 'ნაწილები არატოლია: ხაზი ცენტრში არ გადის. სცადე სხვა წერტილები.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ხაზი ცენტრში უნდა გადიოდეს.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაყავი მართკუთხედი ორ ტოლ ნაწილად.',
+      response: { type: 'cut', shape: 'rect', parts: 2, maxCuts: 1, compare: true },
+      hints: ['ხაზი მართკუთხედის ცენტრში უნდა გადიოდეს.', 'დიაგონალიც გამოდგება: ის ცენტრში გადის.'],
+      explanation: 'მართკუთხედის ცენტრში გავლებული ხაზი მას ორ ტოლ ნაწილად ყოფს.',
+      misconceptions: [
+        { id: 'count', answers: ['count'], feedback: 'მართკუთხედი ჯერ არ არის ორ ნაწილად გაყოფილი. შეეხე ორ წერტილს კიდეზე.' },
+        { id: 'unequal', answers: ['unequal'], feedback: 'ნაწილები არატოლია: ხაზი ცენტრში არ გადის. სცადე სხვა წერტილები.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ხაზი ცენტრში უნდა გადიოდეს.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ამ მართკუთხედის გაყოფა ტოლია თუ არატოლი? შეადარე ნაწილები და აირჩიე პასუხი.',
+      response: { type: 'judge', rule: 'equal', shape: { shape: 'rect', cuts: [[0.3, 0, 0.3, 1]] }, compare: true },
+      hints: ['შეადარე ნაწილების ზომები: დაადე ერთი მეორეზე.', 'ხაზი ცენტრში არ გადის.'],
+      explanation: 'ხაზი ცენტრში არ გადის: ერთი ნაწილი მეორეზე დიდია, ამიტომ გაყოფა არატოლია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე ნაწილები ზომით.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაყავი წრე ორ ტოლ ნაწილად.',
+      response: { type: 'cut', shape: 'circle', parts: 2, maxCuts: 1, compare: true },
+      hints: [],
+      explanation: 'ხაზი, რომელიც ცენტრში გადის, წრეს ორ ტოლ ნაწილად ყოფს.',
+      misconceptions: [
+        { id: 'count', answers: ['count'], feedback: 'ფიგურა ჯერ არ არის ორ ნაწილად გაყოფილი. შეეხე ორ წერტილს კიდეზე.' },
+        { id: 'unequal', answers: ['unequal'], feedback: 'ნაწილები არატოლია: ხაზი ცენტრში არ გადის.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ხაზი ცენტრში უნდა გადიოდეს.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაყავი კვადრატი ორ ტოლ ნაწილად.',
+      response: { type: 'cut', shape: 'square', parts: 2, maxCuts: 1, compare: true },
+      hints: [],
+      explanation: 'კვადრატის ცენტრში გავლებული ხაზი მას ორ ტოლ ნაწილად ყოფს.',
+      misconceptions: [
+        { id: 'count', answers: ['count'], feedback: 'კვადრატი ჯერ არ არის ორ ნაწილად გაყოფილი. შეეხე ორ წერტილს კიდეზე.' },
+        { id: 'unequal', answers: ['unequal'], feedback: 'ნაწილები არატოლია: ხაზი ცენტრში არ გადის.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ხაზი ცენტრში უნდა გადიოდეს.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ამ წრის გაყოფა ტოლია თუ არატოლი? შეადარე ნაწილები და აირჩიე პასუხი.',
+      response: { type: 'judge', rule: 'equal', shape: { shape: 'circle', cuts: [[0, 0.65, 1, 0.65]] }, compare: true },
+      hints: [],
+      explanation: 'ხაზი ცენტრში არ გადის: ზედა ნაწილი ქვედა ნაწილზე პატარაა, ამიტომ გაყოფა არატოლია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე ნაწილები ზომით.',
+    },
+  ],
+};

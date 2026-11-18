@@ -592,7 +592,7 @@ describe.each(IDS.map((id, i) => [id, i + 1] as const))('%s plays from the chall
     expect(screen.getByRole('link', { name: `U03-ზე დაბრუნება` }).getAttribute('href') ?? '').toBe('#/student/lessons/g1-u03');
     if (n < 5) expect(screen.getByRole('link', { name: new RegExp(`გაგრძელება: U03\\.${n + 1}`) }).getAttribute('href')).toBe(`#/student/lessons/${IDS[n]}`);
     else {
-      expect(screen.queryByRole('link', { name: /გაგრძელება:|შემდეგი თემა/ })).toBeNull(); // U04 has no content yet
+      expect(screen.queryByRole('link', { name: /გაგრძელება:|შემდეგი თემა/ })).toBeNull(); // the link to U04 only appears once the whole of U03 is complete
     }
   });
 });

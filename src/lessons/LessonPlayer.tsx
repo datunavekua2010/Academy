@@ -10,7 +10,11 @@ import { ResponseInput } from './exercises/ResponseInput';
 import { ExploreToolView } from './exercises/ExploreTools';
 import { TilesBoard } from './exercises/TilesBoard';
 import { BondDemo } from './exercises/BondTools';
-import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, QuantitiesBlock, VisualView } from './exercises/Visuals';
+import { DoublesDemo } from './exercises/DoublesTools';
+import { JumpDemo } from './exercises/JumpTools';
+import { TenDemo } from './exercises/MakeTenTools';
+import { StoryDemo } from './exercises/StoryTools';
+import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, QuantitiesBlock, ShapeDemo, VisualView } from './exercises/Visuals';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
 import { RichText, plainText } from './RichText';
 import { getLessonContent, showDevLabels } from './content';
@@ -105,6 +109,16 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <ComposeDemo key={i} block={block} />;
           case 'bond-demo':
             return <BondDemo key={i} block={block} />;
+          case 'jump-demo':
+            return <JumpDemo key={i} block={block} />;
+          case 'ten-demo':
+            return <TenDemo key={i} block={block} />;
+          case 'doubles-demo':
+            return <DoublesDemo key={i} block={block} />;
+          case 'story-demo':
+            return <StoryDemo key={i} block={block} />;
+          case 'shape-demo':
+            return <ShapeDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>
