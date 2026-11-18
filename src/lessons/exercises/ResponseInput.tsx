@@ -3,6 +3,8 @@ import { parseNumber } from '../algebra';
 import { RichText } from '../RichText';
 import { NumberLine } from './NumberLine';
 import { ObjectField } from './Objects';
+import { CounterBoard, type Counts } from './CounterBoard';
+import { FrameBoard, cellsFor } from './FrameBoard';
 import { OrderBoard } from './OrderBoard';
 import { SplitBoard } from './SplitBoard';
 import { VisualBare } from './Visuals';
@@ -163,6 +165,39 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
     case 'split': {
       const left = typeof value === 'string' && value !== '' ? Number(value) : response.total;
       return <SplitBoard total={response.total} left={Number.isFinite(left) ? left : response.total} onChange={(n) => onChange(String(n))} disabled={disabled} frame={response.frame} ariaLabel={label} />;
+    }
+    case 'distribute': {
+      const [a, b] = typeof value === 'string' && value ? value.split(',').map((n) => Math.max(0, Number(n) || 0)) : [0, 0];
+      const counts: Counts = [Math.max(0, response.total - a - b), a, b];
+      return (
+        <CounterBoard
+          counts={counts}
+          onChange={(c) => onChange(`${c[1]},${c[2]}`)}
+          disabled={disabled}
+          glyph={response.glyph}
+          palette={response.palette}
+          labels={['დიდი ჭურჭელი', 'პირველი ყუთი', 'მეორე ყუთი']}
+          ariaLabel={label}
+        />
+      );
+    }
+    case 'fill': {
+      const added = Math.min(response.size - response.given, Math.max(0, Number(typeof value === 'string' ? value : 0) || 0));
+      const cells = cellsFor(response.size, response.given, added);
+      const tap = (i: number) => {
+        if (i < response.given) return;
+        // a tap on an empty space adds a counter; a tap on an added counter takes one back
+        if (i >= response.given + added) onChange(String(Math.min(response.size - response.given, added + 1)));
+        else onChange(String(Math.max(0, added - 1)));
+      };
+      return (
+        <div className="lp-fill">
+          <FrameBoard cells={cells} onCell={disabled ? undefined : tap} label={response.size === 5 ? 'ხუთეულის ჩარჩო' : 'ათიანი ჩარჩო'} />
+          <output className="objs-count" aria-live="polite">
+            პირველი ჯგუფი: <strong>{response.given}</strong> · დაამატე: <strong>{added}</strong>
+          </output>
+        </div>
+      );
     }
     case 'blanks': {
       const values = Array.isArray(value) ? value : [];

@@ -124,9 +124,24 @@ export type ResponseSpec =
    * the student moves them. Correct when the first box holds `answer`.
    * Stored as the number of counters in the first box.
    */
-  | { type: 'split'; total: number; answer: number; frame?: boolean };
+  | { type: 'split'; total: number; answer: number; frame?: boolean }
+  /**
+   * `total` counters start in a container; the student moves them into two boxes
+   * (tap, or drag). Every way of using all the counters is right; with
+   * `allowEmpty: false` each box must hold at least one (two real parts).
+   * Stored as `"a,b"`: the counters in box one and box two.
+   */
+  | { type: 'distribute'; total: number; glyph?: CounterGlyph; allowEmpty?: boolean; palette?: 'plain' | 'redblue' }
+  /**
+   * A five- or ten-frame with `given` counters already placed (the first part).
+   * The student taps empty spaces to add counters of the second part. Correct
+   * when the frame is exactly full. Stored as the number of counters added.
+   */
+  | { type: 'fill'; size: 5 | 10; given: number };
 
 export type Glyph = 'star' | 'apple' | 'fish' | 'ball';
+/** Drawn objects, or plain counters (discs). */
+export type CounterGlyph = Glyph | 'counter';
 export type ObjectLayout = 'rows' | 'scatter';
 
 /** Something drawn next to a question. Purely visual: it is never the answer control. */
@@ -137,9 +152,9 @@ export type VisualSpec =
   | { type: 'quantity'; tens: number; ones: number }
   | { type: 'line'; min: number; max: number; labelled?: number[]; marker?: number; hops?: number[] }
   /** A collection of drawn objects. `markable` lets the student tap objects to keep track while counting. */
-  | { type: 'objects'; count: number; glyph: Glyph; layout: ObjectLayout; seed?: number; markable?: boolean }
-  /** Counters on a ten-frame (two frames above ten). */
-  | { type: 'ten-frame'; count: number }
+  | { type: 'objects'; count: number; glyph: Glyph; layout: ObjectLayout; seed?: number; markable?: boolean; known?: number }
+  /** Counters on a ten-frame (two frames above ten); `size: 5` draws a five-frame. `second` adds ring counters (the other part). */
+  | { type: 'ten-frame'; count: number; second?: number; size?: 5 | 10 }
   /**
    * Two quantities side by side (`a` is group ა, `b` is group ბ).
    * `objects`: pictures only. `numbers`: numerals only. `line`: both on a number line.
@@ -147,7 +162,15 @@ export type VisualSpec =
    */
   | { type: 'compare'; a: number; b: number; view: 'objects' | 'numbers' | 'line' | 'pairs'; glyph?: Glyph }
   /** A whole split into two parts; `part` is shown, the other part is hidden. `split` draws the whole as counters with the shown part marked; `plain` draws the whole only. */
-  | { type: 'part-whole'; whole: number; part: number; counters?: 'split' | 'plain' };
+  | { type: 'part-whole'; whole: number; part: number; counters?: 'split' | 'plain' }
+  /**
+   * A number-bond diagram: the whole on top, two parts underneath. `null` is a hidden
+   * number (drawn as ?). `counters` adds a frame of counters: `split` marks the
+   * first part with solid counters and the rest as rings, `plain` shows the whole only.
+   */
+  | { type: 'bond'; whole: number | null; a: number | null; b: number | null; counters?: 'split' | 'plain' }
+  /** Two groups of counters or objects, each in its own box; the whole is not shown. */
+  | { type: 'parts'; a: number; b: number; glyph?: CounterGlyph; palette?: 'plain' | 'redblue' };
 
 /** Feedback aimed at one specific wrong answer. */
 export interface Misconception {
@@ -170,6 +193,8 @@ export interface Question {
   misconceptions?: Misconception[];
   /** Used when no misconception matches. */
   fallbackFeedback?: string;
+  /** Shown instead of the generic message when the answer is not finished yet (e.g. counters still unplaced). */
+  incompleteFeedback?: string;
   /** Attempts before the question is closed. Defaults by stage (see `attempt.ts`). */
   maxAttempts?: number;
   /**
@@ -234,7 +259,27 @@ export type ExploreTool =
   /** Place number tiles on a number line and read them left to right. */
   | { tool: 'order-line'; min: number; max: number; tiles: number[] }
   /** Move counters between two boxes; the total never changes. `targets` are shown one after another. */
-  | { tool: 'split'; targets: number[]; frame?: boolean };
+  | { tool: 'split'; targets: number[]; frame?: boolean }
+  /**
+   * A number bond over two boxes of counters. The student picks a whole in `wholes` (min, max),
+   * moves counters between the parts, joins them into one group and resets.
+   * `start` is the whole and the counters in part one shown first.
+   */
+  | { tool: 'bond-split'; wholes: [number, number]; start: { whole: number; a: number } }
+  /**
+   * A five- or ten-frame whose counters belong to one of two groups; tapping a counter moves it
+   * to the other group. `start` counters are in the first group. `reveal` adds a control that
+   * shows an untried pair (after the student has found `revealAfter`). `hideRest` lets the student
+   * hide the second group, leaving empty spaces.
+   */
+  | { tool: 'frame-pairs'; size: 5 | 10; start: number; reveal?: boolean; revealAfter?: number; hideRest?: boolean; startHidden?: boolean }
+  /** Find a hidden part by marking the known part and counting what is left. */
+  | { tool: 'missing-part'; glyph: Glyph; examples: Array<{ whole: number; known: number; seed?: number }> }
+  /**
+   * Stories about two groups. `whole`: both groups are given, find the whole.
+   * `part`: the whole and one group are given, find the other group. Objects are moved into two groups.
+   */
+  | { tool: 'story-bond'; glyph: Glyph; stories: Array<{ kind: 'whole' | 'part'; label: string; text: string; a: number; b: number }> };
 
 export interface ExploreActivity extends ActivityBase {
   kind: 'explore';
@@ -261,7 +306,13 @@ export type ExplainBlock =
   /** A highlight walks along a number line, tile by tile, in the order given. */
   | { type: 'order-demo'; min: number; max: number; numbers: number[]; direction: 'asc' | 'desc'; caption?: string }
   /** A whole splits into two parts and the parts come back together. */
-  | { type: 'compose'; whole: number; parts: [number, number]; caption?: string };
+  | { type: 'compose'; whole: number; parts: [number, number]; caption?: string }
+  /**
+   * Counters shown as two parts that join into the whole (`join`), or a whole of which a known part is
+   * set aside, leaving the missing part (`missing`; `parts[0]` is the known part). The number bond appears
+   * on the last step. `frame` joins them inside a five- or ten-frame.
+   */
+  | { type: 'bond-demo'; mode: 'join' | 'missing'; whole: number; parts: [number, number]; frame?: 5 | 10; story?: string; palette?: 'plain' | 'redblue'; caption?: string };
 
 export interface ExplainActivity extends ActivityBase {
   kind: 'explain';

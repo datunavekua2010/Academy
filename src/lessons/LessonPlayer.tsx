@@ -9,6 +9,7 @@ import { Feedback } from './exercises/Feedback';
 import { ResponseInput } from './exercises/ResponseInput';
 import { ExploreToolView } from './exercises/ExploreTools';
 import { TilesBoard } from './exercises/TilesBoard';
+import { BondDemo } from './exercises/BondTools';
 import { ChainDemo, CompareBlock, ComposeDemo, CountDemo, HopDemo, OrderDemo, QuantitiesBlock, VisualView } from './exercises/Visuals';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
 import { RichText, plainText } from './RichText';
@@ -102,6 +103,8 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <OrderDemo key={i} block={block} />;
           case 'compose':
             return <ComposeDemo key={i} block={block} />;
+          case 'bond-demo':
+            return <BondDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>
@@ -458,7 +461,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
             </>
           ) : passed ? (
             <Link to={backTo} className="btn btn-primary lp-primary">
-              გაკვეთილების სიაში დაბრუნება
+              {entry.unitCode}-ზე დაბრუნება
             </Link>
           ) : (
             <>

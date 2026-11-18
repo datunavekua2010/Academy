@@ -27,6 +27,10 @@ const MSG = {
   needObjects: 'შეეხე საგნებს და აირჩიე საჭირო რაოდენობა.',
   needMove: 'გადაანაცვლე ფილები სწორ რიგში და შემდეგ შეამოწმე.',
   needCounters: 'გადაიტანე კუბიკები ყუთებში და შემდეგ შეამოწმე.',
+  needPlace: 'ჯერ ყველა კუბიკი ყუთებში უნდა მოათავსო.',
+  needTwoParts: 'ორი ნაწილისთვის ორივე ყუთში უნდა იყოს კუბიკები. სცადე სხვანაირად გაყოფა.',
+  needFill: 'შეეხე ცარიელ ადგილებს და დაამატე კუბიკები.',
+  frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
   firstLargest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე დიდი რიცხვი უნდა იდგეს.',
   closeOrder: 'დასაწყისი სწორია. შეადარე დანარჩენი რიცხვები ერთმანეთს.',
@@ -97,6 +101,20 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       if (left === response.answer) return { verdict: 'correct' };
       return wrong(question, findMisconception(question.misconceptions, (a) => typeof a === 'number' && a === left));
     }
+    case 'distribute': {
+      const [a, b] = typeof input === 'string' && input ? input.split(',').map(Number) : [0, 0];
+      const placed = (Number.isFinite(a) ? a : 0) + (Number.isFinite(b) ? b : 0);
+      if (placed < response.total) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needPlace };
+      if (response.allowEmpty === false && (a === 0 || b === 0)) return wrong(question, undefined, { feedback: MSG.needTwoParts });
+      return { verdict: 'correct' };
+    }
+    case 'fill': {
+      const added = parseNumber(typeof input === 'string' ? input : '');
+      if (added === null || added === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFill };
+      if (response.given + added === response.size) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (m) => typeof m === 'number' && m === added);
+      return { ...wrong(question, hit), feedback: hit?.feedback ?? question.fallbackFeedback ?? MSG.frameNotFull };
+    }
     case 'blanks': {
       const values = Array.isArray(input) ? input : [];
       if (values.length < response.answers.length || values.slice(0, response.answers.length).some((v) => !v || !v.trim())) {
@@ -136,5 +154,9 @@ export function describeAnswer(response: ResponseSpec): string {
       return correctOrder(response).join(', ');
     case 'split':
       return `${response.answer} და ${response.total - response.answer}`;
+    case 'distribute':
+      return `ნებისმიერი ორი ნაწილი, რომლებიც ერთად ${response.total} არის`;
+    case 'fill':
+      return String(response.size - response.given);
   }
 }

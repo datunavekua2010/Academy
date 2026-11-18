@@ -969,7 +969,9 @@ const demo = () => document.querySelectorAll('.demo')[0] as HTMLElement;
     expect(screen.getByRole('heading', { name: 'გაკვეთილი დასრულდა' })).toBeTruthy();
     expect(document.querySelector('.lp-unit-done')?.textContent).toContain('U02 დასრულდა');
     expect(saved()['g1-u02-l5']).toMatchObject({ status: 'completed', checkCorrect: 3, checkTotal: 3 });
-    expect(screen.queryByRole('link', { name: /გაგრძელება:|შემდეგი თემა/ })).toBeNull(); // U03 has no content yet
-    expect(screen.getByRole('link', { name: 'გაკვეთილების სიაში დაბრუნება' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /გაგრძელება:/ })).toBeNull(); // last lesson of the unit
+    // the next unit (U03) is offered, with the way back to U02
+    expect(screen.getByRole('link', { name: /შემდეგი თემა: U03\.1/ }).getAttribute('href')).toBe('#/student/lessons/g1-u03-l1');
+    expect(screen.getByRole('link', { name: 'U02-ზე დაბრუნება' }).getAttribute('href')).toBe('#/student/lessons/g1-u02');
   });
 });

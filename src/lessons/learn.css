@@ -584,3 +584,101 @@ button.obj:focus-visible { outline: 3px solid rgba(37, 99, 235, .55); outline-of
   .obj.is-counted, .obj.is-picked, .ord-tile.is-result { animation: none; }
   button.obj, .spl-counter, .ord-tile { transition: none; }
 }
+
+/* ───────────────────────────── Grade 1 · Number bonds ─────────────────────────────
+   Counter board (.cb), number bond (.nb), frame board (.frameb), two-group picture (.parts).
+   Group one is a solid counter, group two a ring counter, so the groups never depend on colour. */
+
+/* number bond */
+.nb { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto; }
+.nb.is-compact { max-width: 120px; }
+.nb-link { stroke: var(--navy); stroke-width: 3; stroke-linecap: round; }
+.nb-node circle { fill: #fff; stroke: var(--navy); stroke-width: 4; transition: fill .3s ease, stroke-width .3s ease; }
+.nb-node.is-whole circle { stroke: var(--teal); fill: #f0fdfa; }
+.nb-node.is-a circle { fill: #eff6ff; stroke: var(--blue); }
+.nb-node.is-b circle { fill: #fffdf5; stroke: #b45309; }
+.nb-node.is-hidden circle { stroke-dasharray: 7 6; fill: #fffbeb; stroke: #b45309; }
+.nb-node.is-hi circle { stroke-width: 7; }
+.nb-node.is-hi { animation: nb-glow 1.2s ease-in-out 2; transform-box: fill-box; transform-origin: center; }
+.nb-num { font-size: 30px; font-weight: 800; fill: var(--navy); animation: lp-pop .3s ease both; transform-box: fill-box; transform-origin: center; }
+.nb-node.is-whole .nb-num { font-size: 34px; }
+.nb-cap { font-size: 11px; font-weight: 800; fill: #52617b; }
+@keyframes nb-glow { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+
+/* counter board */
+.cb-wrap { display: grid; gap: 6px; }
+.cb { position: relative; width: 100%; max-width: 440px; margin: 0 auto; user-select: none; -webkit-user-select: none; }
+.cb-zone { position: absolute; padding: 0; margin: 0; font: inherit; border: 3px solid var(--navy); border-radius: 14px; background: #fff; cursor: pointer; text-align: left; transition: background-color .2s ease, box-shadow .2s ease; }
+.cb-zone.is-zone-0 { border-color: var(--teal); background: #f7fffd; }
+.cb-zone.is-zone-2 { border-style: dashed; border-color: #b45309; background: #fffdf5; }
+.cb-zone:disabled { cursor: default; opacity: 1; }
+.cb-zone.is-target { box-shadow: 0 0 0 4px rgba(37, 99, 235, .35); background: #f3f8ff; }
+.cb-zone.is-emph { box-shadow: 0 0 0 4px rgba(245, 158, 11, .5); }
+.cb-zone:focus-visible { outline: 3px solid rgba(37, 99, 235, .55); outline-offset: 2px; }
+.cb-zone-label { position: absolute; left: 10px; top: 6px; font-size: .78rem; font-weight: 800; color: #52617b; }
+.cb-zone-count { position: absolute; right: 10px; top: 2px; font-size: 1.3rem; font-weight: 800; color: var(--navy); }
+.cb-cell { position: absolute; aspect-ratio: 1; transform: translate(-50%, -50%); border: 2px dashed #c3cfe3; border-radius: 8px; pointer-events: none; }
+.cb-counter { position: absolute; aspect-ratio: 1; padding: 0; border: 0; background: transparent; transform: translate(-50%, -50%); cursor: grab; touch-action: none; z-index: 2; border-radius: 50%; transition: left .45s cubic-bezier(.3, .8, .3, 1), top .45s cubic-bezier(.3, .8, .3, 1), box-shadow .15s ease; }
+.cb-counter:disabled { cursor: default; opacity: 1; }
+.cb-counter.is-lifted { z-index: 6; transition: none; cursor: grabbing; filter: drop-shadow(0 8px 10px rgba(23, 43, 77, .35)); }
+.cb-counter.is-selected { box-shadow: 0 0 0 4px rgba(37, 99, 235, .55); }
+.cb-counter:focus-visible { outline: 3px solid rgba(37, 99, 235, .55); outline-offset: 2px; }
+.cb-counter.is-emph { animation: nb-bounce .8s ease-in-out 2; }
+.cb-counter .obj-svg { width: 100%; height: 100%; margin: 0; }
+.cb-up { position: absolute; left: 50%; bottom: -15px; transform: translateX(-50%); font-size: .7rem; color: var(--blue); line-height: 1; }
+.cb-disc { display: block; width: 100%; height: 100%; box-sizing: border-box; border-radius: 50%; border: 3px solid var(--navy); background: var(--blue); }
+.cb-counter.is-z0 .cb-disc { background: #94a3b8; border-color: #475569; }
+.cb-counter.is-z2 .cb-disc, .cb-disc.is-b { background: #fffbeb; border: 3px solid #b45309; position: relative; }
+.cb-counter.is-z2 .cb-disc::after, .cb-disc.is-b::after { content: ''; position: absolute; inset: 28%; border-radius: 50%; background: #b45309; }
+.cb-disc.is-a { background: var(--blue); }
+.cb.is-redblue .cb-counter.is-z1 .cb-disc, .parts.is-redblue .cb-disc.is-a { background: #ef4444; border-color: #991b1b; }
+.cb.is-redblue .cb-counter.is-z2 .cb-disc, .parts.is-redblue .cb-disc.is-b { background: #dbeafe; border-color: #1d4ed8; }
+.cb.is-redblue .cb-counter.is-z2 .cb-disc::after, .parts.is-redblue .cb-disc.is-b::after { background: #1d4ed8; }
+.cb-total { text-align: center; font-weight: 800; color: var(--navy); }
+@keyframes nb-bounce { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, -62%); } }
+
+/* five- and ten-frame board */
+.frameb { display: grid; justify-items: center; }
+.frameb-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 52px)); gap: 4px; padding: 6px; border: 3px solid var(--navy); border-radius: 12px; background: #fff; width: fit-content; max-width: 100%; }
+.frameb-cell { aspect-ratio: 1; width: 100%; border: 2px solid #c3cfe3; border-radius: 8px; background: #fff; padding: 0; display: grid; place-items: center; }
+button.frameb-cell { cursor: pointer; min-height: 40px; }
+button.frameb-cell:disabled { cursor: default; opacity: 1; }
+button.frameb-cell:focus-visible { outline: 3px solid rgba(37, 99, 235, .55); outline-offset: 2px; }
+.frameb-cell.is-hidden-b { border-style: dashed; border-color: #b45309; background: #fffdf5; }
+.frameb-dot { display: block; width: 74%; height: 74%; border-radius: 50%; box-sizing: border-box; animation: lp-pop .32s ease both; animation-delay: calc(var(--i, 0) * 30ms); }
+.frameb-cell.is-a .frameb-dot { background: var(--blue); border: 3px solid var(--navy); }
+.frameb-cell.is-b .frameb-dot { background: #fffbeb; border: 3px solid #b45309; position: relative; }
+.frameb-cell.is-b .frameb-dot::after { content: ''; position: absolute; inset: 26%; border-radius: 50%; background: #b45309; }
+.lp-fill { display: grid; gap: 10px; justify-items: center; }
+.tenf-frame.is-five { grid-template-columns: repeat(5, 30px); }
+
+/* two groups, and a bond with counters */
+.parts { display: flex; align-items: stretch; justify-content: center; gap: 8px; flex-wrap: nowrap; max-width: 100%; }
+.parts-box { flex: 1 1 0; min-width: 0; max-width: 200px; min-height: 76px; padding: 8px; border: 3px solid var(--navy); border-radius: 14px; background: #fff; display: flex; align-items: center; justify-content: center; }
+.parts-box.is-b { border-style: dashed; border-color: #b45309; background: #fffdf5; }
+.parts-plus { align-self: center; font-size: 1.4rem; font-weight: 800; color: #52617b; }
+.parts-pile { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+.parts-pile .cb-disc { width: 26px; height: 26px; }
+.parts-glyph { width: 28px; height: 28px; display: block; }
+.parts.is-compact .parts-box { min-height: 44px; padding: 4px; border-width: 2px; }
+.parts.is-compact .parts-pile { gap: 3px; }
+.parts.is-compact .parts-pile .cb-disc { width: 14px; height: 14px; border-width: 2px; }
+.parts.is-compact .parts-glyph { width: 16px; height: 16px; }
+.parts.is-compact .parts-plus { display: none; }
+.bondpic { display: grid; gap: 8px; justify-items: center; }
+.bondpic.is-compact .bondpic-frame { display: none; }
+.lp-choice-pic .nb { max-width: 100px; }
+.story { margin: 0; padding: 10px 12px; border-radius: 12px; background: #fffbeb; border: 1px solid #fcd34d; color: #3b4a63; line-height: 1.55; font-weight: 700; }
+.demo-bond { animation: lp-pop .35s ease both; }
+.xt-mode.xt-num { min-width: 44px; padding: 8px 10px; }
+
+@media (max-width: 520px) {
+  .cb-zone-label { font-size: .7rem; left: 6px; }
+  .cb-zone-count { font-size: 1.1rem; right: 6px; }
+  .frameb-grid { grid-template-columns: repeat(5, minmax(0, 46px)); }
+  .parts-pile .cb-disc { width: 22px; height: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cb-counter, .cb-zone, .nb-node circle { transition: none; }
+  .cb-counter.is-emph, .nb-node.is-hi, .nb-num, .frameb-dot, .demo-bond { animation: none; }
+}

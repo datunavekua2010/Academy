@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { numberName } from '../numberNames';
 import type { ExplainBlock, VisualSpec } from '../types';
+import { BondPicture, PartsPicture } from './BondVisuals';
 import { CompareGroups, compareSign, compareWords } from './Compare';
 import { NumberLine } from './NumberLine';
 import { ObjectField, TenFrame } from './Objects';
@@ -114,11 +115,15 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
     case 'objects':
       return <MarkableObjects spec={spec} compact={compact} />;
     case 'ten-frame':
-      return <TenFrame count={spec.count} label={`ათიანი ჩარჩო: ${spec.count}`} />;
+      return <TenFrame count={spec.count} second={spec.second} size={spec.size} label={`${spec.size === 5 ? 'ხუთეულის' : 'ათიანი'} ჩარჩო: ${spec.count}${spec.second ? ` და ${spec.second}` : ''}`} />;
     case 'compare':
       return <CompareGroups a={spec.a} b={spec.b} view={spec.view} glyph={spec.glyph} />;
     case 'part-whole':
       return <PartWhole whole={spec.whole} part={spec.part} counters={spec.counters} />;
+    case 'bond':
+      return <BondPicture whole={spec.whole} a={spec.a} b={spec.b} counters={spec.counters} compact={compact} />;
+    case 'parts':
+      return <PartsPicture a={spec.a} b={spec.b} glyph={spec.glyph} palette={spec.palette} compact={compact} />;
   }
 }
 
@@ -136,7 +141,7 @@ function MarkableObjects({ spec, compact }: { spec: Extract<VisualSpec, { type: 
   const tap = (i: number) => setCounted((all) => (all.includes(i) ? all : [...all, i]));
   return (
     <div className="objs">
-      <ObjectField count={spec.count} glyph={spec.glyph} layout={spec.layout} seed={spec.seed} label="საგნები" compact={compact} counted={spec.markable ? counted : undefined} onTap={spec.markable ? tap : undefined} />
+      <ObjectField count={spec.count} glyph={spec.glyph} layout={spec.layout} seed={spec.seed} label="საგნები" compact={compact} counted={spec.markable ? counted : undefined} picked={spec.known ? new Set(Array.from({ length: spec.known }, (_, i) => i)) : undefined} onTap={spec.markable ? tap : undefined} />
       {spec.markable && (
         <div className="objs-bar">
           <span>
@@ -179,7 +184,7 @@ export function PartWhole({ whole, part, counters }: { whole: number; part: numb
 
 // ─────────────────────────── animated demonstrations ───────────────────────────
 
-function DemoButtons({ done, replay, step }: { done: boolean; replay: () => void; step: () => void }) {
+export function DemoButtons({ done, replay, step }: { done: boolean; replay: () => void; step: () => void }) {
   return (
     <div className="demo-buttons">
       <button type="button" className="btn btn-ghost btn-small" onClick={replay}>
