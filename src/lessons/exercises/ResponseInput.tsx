@@ -18,6 +18,7 @@ import { AlignCompareBoard, LengthSortBoard, MeasureUnitsBoard, RulerReadBoard, 
 import { FindShapesAnswer, HandPickAnswer, MatchTimeAnswer, ReadClockAnswer, SetClockAnswer, ShapeSortAnswer, TapPartsAnswer } from './TimeShapeAnswers';
 import { BalancePansAnswer, BalancePuzzleAnswer, CluePickAnswer, EqualGroupsAnswer, SentenceBuildAnswer, SentencePickAnswer } from './BalanceAnswers';
 import { ChartBuildAnswer, ChartReadAnswer, SortGridAnswer, SortGroupsAnswer, VennSortAnswer } from './SortAnswers';
+import { DigitTapAnswer, ExpandedBuildAnswer, PlaceBuildAnswer, PlaceMissingAnswer } from './PlaceValueAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -409,6 +410,14 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
       return <ChartBuildAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'clue-pick':
       return <CluePickAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'place-build':
+      return <PlaceBuildAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'expanded-build':
+      return <ExpandedBuildAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'digit-tap':
+      return <DigitTapAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'place-missing':
+      return <PlaceMissingAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'cut':
       return (
         <CutBoard

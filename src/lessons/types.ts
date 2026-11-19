@@ -1,6 +1,7 @@
 import type { MeasureKind } from './exercises/MeasureGeometry';
 import type { ClockTime } from './exercises/ClockGeometry';
 import type { Flat, FlatSpec } from './exercises/Shape2DGeometry';
+import type { Place } from './exercises/PlaceValueGeometry';
 
 /**
  * Lesson system model.
@@ -352,7 +353,29 @@ export type ResponseSpec =
    * Pick every object that satisfies all the clues. Correct when the picked set is exactly the objects that do.
    * Stored as the comma-separated ids.
    */
-  | { type: 'clue-pick'; clues: PuzzleClue2[]; objects: SortObjSpec[] };
+  | { type: 'clue-pick'; clues: PuzzleClue2[]; objects: SortObjSpec[] }
+  /**
+   * Build a number from place-value blocks. Correct when the blocks are worth `target`; unless `allowRegroup` is set,
+   * the blocks must also be in standard form (no place holding ten or more), which is what "build 245" means.
+   * Stored as `"h,t,o"`, the number of blocks in each place.
+   */
+  | { type: 'place-build'; target: number; max?: number; allowRegroup?: boolean }
+  /**
+   * Split a number into its three place-value cards and put them in order, highest place first. Correct when each card
+   * is exactly that place's value — 300, 40, 5 for 345 — including a zero card for an empty place.
+   * Stored as the comma-separated card values in order.
+   */
+  | { type: 'expanded-build'; value: number; cards: number[] }
+  /**
+   * Tap the digit that sits in a named place. Correct when the tapped digit really is in that place, computed from the
+   * number. Stored as the place of the tapped digit (`hundreds`/`tens`/`ones`).
+   */
+  | { type: 'digit-tap'; value: number; target: Place }
+  /**
+   * One place is hidden and the student types its value: `345` with the tens hidden is 40, not 4. Correct from the
+   * number itself. Stored as the typed value.
+   */
+  | { type: 'place-missing'; value: number; missing: Place };
 
 // ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
 
@@ -492,7 +515,13 @@ export type VisualSpec =
   /** Objects sorted into named groups, already arranged — for "what is the rule?" questions. */
   | { type: 'sorted-groups'; attr: SortAttr; groups: Array<{ value: string; objects: SortObjSpec[] }> }
   /** Two overlapping circles with objects already placed, for reading a diagram. */
-  | { type: 'venn'; leftLabel: string; rightLabel: string; regions: Array<{ region: 'both' | 'left' | 'right' | 'none'; objects: SortObjSpec[] }> };
+  | { type: 'venn'; leftLabel: string; rightLabel: string; regions: Array<{ region: 'both' | 'left' | 'right' | 'none'; objects: SortObjSpec[] }> }
+  /** Place-value blocks (hundreds flats, tens rods, ones cubes), drawn from what they are worth. */
+  | { type: 'place-blocks'; hundreds: number; tens: number; ones: number }
+  /** A three-digit number with one place covered by a card, so the student reads what is still shown. */
+  | { type: 'place-cards'; value: number; hide?: Place }
+  /** A number sentence in expanded form, e.g. `300 + 40 + 5 = 345`. */
+  | { type: 'expanded'; value: number; hide?: Place };
 
 
 /** Feedback aimed at one specific wrong answer. */
@@ -666,7 +695,15 @@ export type ExploreTool =
   /** Two overlapping circles to sort into; the student can switch which pair of groups the circles mean. */
   | { tool: 'venn-lab'; objects: SortObjSpec[]; pairs: Array<{ leftAttr: SortAttr; leftValue: string; rightAttr: SortAttr; rightValue: string }> }
   /** Build a picture chart symbol by symbol and read the counts back. */
-  | { tool: 'chart-lab'; glyph: ChartSpecData['glyph']; labels: string[]; target?: number[] };
+  | { tool: 'chart-lab'; glyph: ChartSpecData['glyph']; labels: string[]; target?: number[] }
+  /** Put hundreds flats, tens rods and ones cubes on the mat and read the value back, with an exchange control. */
+  | { tool: 'place-lab'; start?: { hundreds: number; tens: number; ones: number }; max?: number; allowRegroup?: boolean }
+  /** Tap a digit of a three-digit number to light up its place and show what it is worth. */
+  | { tool: 'digit-lab'; numbers: number[] }
+  /** Split a number into its three place-value cards, or put the cards back together. */
+  | { tool: 'expanded-lab'; numbers: number[] }
+  /** Hide one place of a number, read the two that are shown, and work out the hidden value. */
+  | { tool: 'missing-place-lab'; numbers: number[]; places: Place[] };
 
 
 export interface ExploreActivity extends ActivityBase {
@@ -768,7 +805,20 @@ export type ExplainBlock =
   | { type: 'sentence'; left: TermSpec; right: number }
   | { type: 'chart'; glyph: ChartSpecData['glyph']; rows: Array<{ label: string; count: number }> }
   | { type: 'sorted-groups'; attr: SortAttr; groups: Array<{ value: string; objects: SortObjSpec[] }> }
-  | { type: 'venn'; leftLabel: string; rightLabel: string; regions: Array<{ region: 'both' | 'left' | 'right' | 'none'; objects: SortObjSpec[] }> };
+  | { type: 'venn'; leftLabel: string; rightLabel: string; regions: Array<{ region: 'both' | 'left' | 'right' | 'none'; objects: SortObjSpec[] }> }
+  /** A static picture of blocks: a value shown as hundreds flats, tens rods and ones cubes. */
+  | { type: 'place-blocks'; hundreds: number; tens: number; ones: number; caption?: string }
+  /** A number's three place cells, with one place optionally covered. */
+  | { type: 'place-cards'; value: number; hide?: Place; caption?: string }
+  /** Just the expanded form of a number, e.g. `300 + 40 + 5 = 345`, with one place optionally hidden. */
+  | { type: 'expanded'; value: number; hide?: Place; caption?: string }
+  /**
+   * A place-value story told one step at a time (`steps` are the captions). `regroup` (4): ten ones, the exchange, one
+   * ten, the value unchanged. `expand` (4): the blocks, the digits, the expanded form, the standard number.
+   * `digit` (4): the number, the digit tapped, its place, what that digit is worth. `build` (4): the target, the
+   * hundreds, the tens and ones, the number made.
+   */
+  | { type: 'place-demo'; mode: 'regroup' | 'expand' | 'digit' | 'build'; value: number; place?: Place; steps: string[]; caption?: string };
 
 
 export interface ExplainActivity extends ActivityBase {

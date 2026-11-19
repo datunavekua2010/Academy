@@ -50,6 +50,11 @@ import { g1u10l3 } from './g1-u10-l3';
 import { g1u10l4 } from './g1-u10-l4';
 import { g1u10l5 } from './g1-u10-l5';
 import { g6u10l3 } from './g6-u10-l3';
+import { g2u01l1 } from './g2-u01-l1';
+import { g2u01l2 } from './g2-u01-l2';
+import { g2u01l3 } from './g2-u01-l3';
+import { g2u01l4 } from './g2-u01-l4';
+import { g2u01l5 } from './g2-u01-l5';
 
 /**
  * Lesson content registry: catalog lesson id → content.
@@ -109,6 +114,11 @@ export const LESSON_CONTENT: Record<string, Lesson> = {
   [g1u10l4.id]: g1u10l4,
   [g1u10l5.id]: g1u10l5,
   [g6u10l3.id]: g6u10l3,
+  [g2u01l1.id]: g2u01l1,
+  [g2u01l2.id]: g2u01l2,
+  [g2u01l3.id]: g2u01l3,
+  [g2u01l4.id]: g2u01l4,
+  [g2u01l5.id]: g2u01l5,
 };
 
 export const getLessonContent = (lessonId: string): Lesson | undefined => LESSON_CONTENT[lessonId];

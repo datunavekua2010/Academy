@@ -15,6 +15,7 @@ import { Shape2DRow } from './Shape2DBoard';
 import { BalanceScale, GroupsBoard, SentenceLine } from './BalanceBoard';
 import { PictureChart, SortChip, VennBoard } from './SortBoard';
 import { valueLabel } from './SortBoard';
+import { ExpandedLine, PlaceBlocks, PlaceCards } from './PlaceValueBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -169,6 +170,12 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
           ))}
         </div>
       );
+    case 'place-blocks':
+      return <PlaceBlocks counts={{ hundreds: spec.hundreds, tens: spec.tens, ones: spec.ones }} size={46} label="ადგილობრივი ღირებულების ბლოკები" />;
+    case 'place-cards':
+      return <PlaceCards value={spec.value} hide={spec.hide} label="რიცხვის ციფრები" />;
+    case 'expanded':
+      return <ExpandedLine value={spec.value} hide={spec.hide} label={spec.hide ? `გაშლილი სახე, ${spec.hide} დაფარულია` : undefined} />;
     case 'venn':
       return (
         <VennBoard
