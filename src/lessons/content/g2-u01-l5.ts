@@ -1,0 +1,148 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U01.5 "Building and Decomposing Three-Digit Numbers".
+ *
+ * Building and breaking apart are the same skill in two directions: three part-values make one number, and one number
+ * makes three part-values. Regrouping (ten ones as one ten, ten tens as one hundred) is how a set of blocks with too
+ * many in a place becomes a standard number — the value never changes, only the grouping.
+ */
+export const g2u01l5: Lesson = {
+  id: 'g2-u01-l5',
+  status: 'placeholder',
+  objective: 'ვაწყობ და ვშლი სამნიშნა რიცხვებს ასეულებად, ათეულებად და ერთეულებად; ვაერთიანებ 10 ერთეულს 1 ათეულად და 10 ათეულს — 1 ასეულად.',
+  prerequisites: ['ციფრის ღირებულება (U01.4)'],
+  minutes: 10,
+  concepts: ['რიცხვის აწყობა', 'რიცხვის დაშლა', 'გაერთიანება', 'უცნობი ნაწილის პოვნა'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! აწყობაც და დაშლაც ერთი და იგივე ცოდნაა — და გაერთიანება მნიშვნელობას არ ცვლის.',
+    retry: 'სცადე ისევ. ჯერ ადგილები დაალაგე, მერე ნახე, სად არის 10-ზე მეტი.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რა რიცხვი გამოვა 5 ასეულის, 3 ათეულისა და 8 ერთეულისგან?',
+      visual: { type: 'place-blocks', hundreds: 5, tens: 3, ones: 8 },
+      mascot: { intro: 'ნაწილებიდან მთლიანის აწყობა დღევანდელი ამოცანაა.' },
+      response: { type: 'numeric', answer: 538 },
+      hints: ['დაწერე ციფრები ადგილების მიხედვით: ასეულები, ათეულები, ერთეულები.'],
+      explanation: '5 × 100 + 3 × 10 + 8 = 500 + 30 + 8 = 538.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ადგილები მარცხნიდან მარჯვნივ იწერება.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'გადაჯგუფება დაფაზე',
+      prompt: 'დაამატე 10-ზე მეტი ბლოკი ერთ ადგილზე და ნახე, რა ხდება. შემდეგ გამოიყენე ⇄, რომ 10 ერთეული ერთ ათეულად იქცეს.',
+      hints: ['10 ერთეული = 1 ათეული. დააკვირდი: სულ იგივე რჩება.'],
+      tool: { tool: 'place-lab', start: { hundreds: 0, tens: 2, ones: 14 }, max: 20 },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'აწყობა, დაშლა და გაერთიანება',
+      prompt: 'ვნახოთ, როგორ იქცევა ჭარბი ბლოკები სტანდარტულ რიცხვად.',
+      blocks: [
+        { type: 'place-blocks', hundreds: 1, tens: 2, ones: 14, caption: '1 ასეული, 2 ათეული და 14 ერთეული. ერთეულები მეტია ცხრაზე — ჯერ გაერთიანება სჭირდება.' },
+        { type: 'place-demo', mode: 'regroup', value: 134, steps: ['ვთვლით ერთეულებს: 14.', 'ათი ერთეული ჯგუფდება.', '10 ერთეული = 1 ათეული.', 'სულ 134: მნიშვნელობა არ შეიცვალა, მხოლოდ ჯგუფები.'], caption: 'გაერთიანება ჯგუფს ცვლის, მნიშვნელობას — არა.' },
+        { type: 'text', text: 'ასე ხდება აწყობაც: 1 ასეული + 2 ათეული + 14 ერთეული = 100 + 20 + 14 = 134. და 134 = 1 ასეული + 3 ათეული + 4 ერთეული.' },
+        { type: 'callout', tone: 'tip', text: 'როცა ერთ ადგილზე 10 ან მეტია, გადააჯგუფე: 10 ერთეული = 1 ათეული, 10 ათეული = 1 ასეული.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ააწყვე რიცხვი 684 ბლოკებით.',
+      response: { type: 'place-build', target: 684 },
+      hints: ['6 ასეული, 8 ათეული, 4 ერთეული.'],
+      explanation: '684 = 6 ასეული + 8 ათეული + 4 ერთეული.',
+      fallbackFeedback: 'ჯერ არ არის 684. შეამოწმე სამივე ადგილი.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი ათეული და ერთეული გამოვა 527-ის დაშლისას?',
+      visual: { type: 'place-cards', value: 527 },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'right', text: '2 ათეული და 7 ერთეული' },
+          { id: 'swapped', text: '7 ათეული და 2 ერთეული' },
+          { id: 'hundreds', text: '52 ათეული და 7 ერთეული' },
+        ],
+        answer: 'right',
+      },
+      hints: ['527 = 500 + 20 + 7.'],
+      explanation: '527 = 5 ასეული + 2 ათეული + 7 ერთეული. ათეულები 2-ია, ერთეულები — 7.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ადგილები მარცხნიდან: ასეულები, ათეულები, ერთეულები.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: '1 ასეული, 1 ათეული და 12 ერთეული რა რიცხვია?',
+      visual: { type: 'place-blocks', hundreds: 1, tens: 1, ones: 12 },
+      response: { type: 'numeric', answer: 122 },
+      hints: ['12 ერთეული = 1 ათეული და 2 ერთეული.'],
+      explanation: '100 + 10 + 12 = 122. გაერთიანების შემდეგ: 1 ასეული, 2 ათეული, 2 ერთეული.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეკრიბე ყველა ბლოკის მნიშვნელობა.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რიცხვში 468 დაფარულია ერთეულების ადგილი. რა ღირს ის?',
+      visual: { type: 'place-cards', value: 468, hide: 'ones' },
+      response: { type: 'place-missing', value: 468, missing: 'ones' },
+      hints: ['468 = 400 + 60 + ?.'],
+      explanation: '400 + 60 = 460, და 468-მდე დარჩენილია 8. ერთეულების ადგილზე 8 ღირს 8.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გამოაკელი ნაჩვენები ნაწილები მთლიანს.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რა რიცხვია 2 ასეული, 0 ათეული და 9 ერთეული?',
+      response: { type: 'numeric', answer: 209 },
+      hints: [],
+      explanation: '200 + 0 + 9 = 209.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ნული ათეულების ადგილზე დგას.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ააწყვე რიცხვი 760 ბლოკებით.',
+      response: { type: 'place-build', target: 760 },
+      hints: [],
+      explanation: '760 = 7 ასეული + 6 ათეული + 0 ერთეული.',
+      fallbackFeedback: 'ჯერ არ არის 760. ერთეულების ადგილი ცარიელი უნდა იყოს.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: '10 ათეული რომელია?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'hundred', text: '1 ასეული' },
+          { id: 'ten', text: '1 ათეული' },
+          { id: 'oneHundredOnes', text: '100 ასეული' },
+        ],
+        answer: 'hundred',
+      },
+      hints: [],
+      explanation: '10 ათეული = 100 = 1 ასეული. სწორედ ამიტომ იცვლება ათი ჩხირი ერთ ბრტყელ ფილად.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 10 × 10 = 100, და 100 ერთი ასეულია.',
+    },
+  ],
+};

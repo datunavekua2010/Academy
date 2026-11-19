@@ -1,0 +1,155 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U01.3 "Writing Numbers in Expanded Form".
+ *
+ * Expanded form is the same number written as a sum of what each place is worth: 345 = 300 + 40 + 5. A zero place is
+ * written as 0, not left out silently — that is what keeps 405 = 400 + 0 + 5 honest, and the shorter form 400 + 5 beside
+ * it shows what the zero was doing.
+ */
+export const g2u01l3: Lesson = {
+  id: 'g2-u01-l3',
+  status: 'placeholder',
+  objective: 'ვწერ სამნიშნა რიცხვს გაშლილი სახით და ვკითხულობ გაშლილ ჩანაწერს, ნულის როლის ჩათვლით.',
+  prerequisites: ['ბლოკებით წარმოდგენა (U01.2)'],
+  minutes: 10,
+  concepts: ['გაშლილი ფორმა', 'ადგილის ღირებულების ჯამი', 'ნულის როლი', 'სტანდარტული ჩანაწერი'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'მშვენიერია! გაშლილი ფორმა რიცხვის დაშლაა — და ჯამი ყოველთვის თავდაპირველ რიცხვს ბრუნდება.',
+    retry: 'სცადე ისევ. თითოეული ადგილი თავისი ღირებულებით უნდა ჩაიწეროს: 300, 40, 5.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რომელი ჩანაწერია 345-ის გაშლილი სახე?',
+      visual: { type: 'place-blocks', hundreds: 3, tens: 4, ones: 5 },
+      mascot: { intro: 'გაშლილი ფორმა ნიშნავს: ვწერთ თითოეულ ადგილს ცალ-ცალკე და ვკრებთ.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'right', text: '300 + 40 + 5' },
+          { id: 'face', text: '3 + 4 + 5' },
+          { id: 'wrong', text: '30 + 40 + 5' },
+        ],
+        answer: 'right',
+      },
+      hints: ['3 ასეულების ადგილზე 300-ს ნიშნავს.'],
+      explanation: '345 = 300 + 40 + 5. ციფრები კი არ იკრიბება — მათი ღირებულებები.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ასეულები 300-ს იძლევა, არა 3-ს.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'ბარათებით დაშლა',
+      prompt: 'აირჩიე რიცხვი და დაალაგე ბარათები ისე, რომ ჯამი იმავე რიცხვი იყოს. სცადე ის რიცხვიც, რომელსაც ნული აქვს.',
+      hints: ['ბარათი 300 ასეულების ადგილზე მიდის.', 'ნულის ადგილი ცარიელი არ რჩება — იქ 0 ბარათი დევს.'],
+      tool: { tool: 'expanded-lab', numbers: [345, 407, 260] },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'რატომ იწერება ნული',
+      prompt: 'ვნახოთ, როგორ იშლება რიცხვი და რას აკეთებს ნული გაშლილ ჩანაწერში.',
+      blocks: [
+        { type: 'place-blocks', hundreds: 4, tens: 0, ones: 5, caption: '4 ასეული, 0 ათეული, 5 ერთეული — ეს არის 405.' },
+        { type: 'expanded', value: 405 },
+        { type: 'text', text: '405 = 400 + 0 + 5. ნული ნიშნავს, რომ ათეულების ადგილზე არაფერია — მაგრამ ადგილი მაინც არსებობს და მასზე 0 უნდა დაიწეროს.' },
+        { type: 'place-demo', mode: 'expand', value: 405, steps: ['აი ბლოკები: 4 ასეული და 5 ერთეული.', 'ციფრებით: 4, 0, 5.', 'გაშლილი სახე: 400 + 0 + 5.', 'სტანდარტული ჩანაწერი: 405. ნულის წაშლა რიცხვს შეცვლიდა.'], caption: 'გაშლილი ფორმა ჯამია; ჯამი ყოველთვის თავდაპირველ რიცხვს უდრის.' },
+        { type: 'callout', tone: 'warning', text: 'ფრთხილად: 405-ის გაშლილი სახე არ არის 4 + 5. ასეულები 400-ია, ერთეულები — 5.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'დაშალე 472 გაშლილ სახემდე.',
+      response: { type: 'expanded-build', value: 472, cards: [400, 40, 7, 4, 70, 2] },
+      hints: ['4 ასეული = 400, 7 ათეული = 70, 2 ერთეული = 2.'],
+      explanation: '472 = 400 + 70 + 2.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ბარათი ადგილის ღირებულებას უნდა უდრიდეს.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რა რიცხვია 200 + 60 + 3?',
+      response: { type: 'numeric', answer: 263 },
+      hints: ['შეკრიბე: 200 + 60 = 260, და კიდევ 3.'],
+      explanation: '200 + 60 + 3 = 263.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეკრიბე სამივე ნაწილი.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელია 508-ის გაშლილი სახე?',
+      visual: { type: 'place-blocks', hundreds: 5, tens: 0, ones: 8 },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'right', text: '500 + 0 + 8' },
+          { id: 'skip', text: '500 + 8, ნულის გარეშე' },
+          { id: 'face', text: '5 + 0 + 8' },
+        ],
+        answer: 'right',
+      },
+      hints: ['ათეულების ადგილი ცარიელია, მაგრამ ის მაინც უნდა ჩაიწეროს — 0-ით.'],
+      explanation: '508 = 500 + 0 + 8. ორივე ჩანაწერი ერთსა და იმავე რიცხვს ნიშნავს, მაგრამ გაშლილი სახე ყველა ადგილს აჩვენებს: 500 + 0 + 8.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაშლილი სახე ციფრებს კი არ კრებს, ადგილების ღირებულებებს.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი რიცხვია 900 + 0 + 4?',
+      response: { type: 'numeric', answer: 904 },
+      hints: ['900, შემდეგ ათეულები — 0, შემდეგ 4.'],
+      explanation: '900 + 0 + 4 = 904.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ნული ათეულების ადგილზე დგას.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'დაშალე 306 გაშლილ სახემდე.',
+      response: { type: 'expanded-build', value: 306, cards: [300, 0, 6, 30, 3, 60] },
+      hints: [],
+      explanation: '306 = 300 + 0 + 6. ათეულების ადგილი ნულოვანია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ათეულების ადგილზე 0 უნდა იდგეს.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი რიცხვია 700 + 20 + 0?',
+      response: { type: 'numeric', answer: 720 },
+      hints: [],
+      explanation: '700 + 20 + 0 = 720.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ერთეულების ადგილზე 0-ია, ამიტომ რიცხვი 720-ია.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რას ნიშნავს გაშლილ ჩანაწერში 0?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'empty', text: 'იმ ადგილზე არაფერია — მაგრამ ადგილი მაინც იკავებს' },
+          { id: 'ignore', text: 'რომ ნაწილი საერთოდ არ არსებობს და ჩანაწერიდან უნდა წაიშალოს' },
+          { id: 'one', text: 'რომ იმ ადგილზე 1 დგას' },
+        ],
+        answer: 'empty',
+      },
+      hints: [],
+      explanation: 'ნული აჩვენებს, რომ ამ ადგილზე არაფერია — და სწორედ ამიტომ ინარჩუნებს ის სხვა ციფრებს თავის ადგილზე.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გაიხსენი: 405 = 400 + 0 + 5.',
+    },
+  ],
+};

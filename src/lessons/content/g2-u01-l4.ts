@@ -1,0 +1,167 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U01.4 "Identifying the Value of Each Digit".
+ *
+ * A digit is the mark; its place is what makes it worth something. 7 in the tens place is 70, and the same 7 in the
+ * hundreds place is 700 — ten times more. The questions here ask for the *place* and for the *value*, and the checks
+ * tell them apart, because telling them apart is the whole skill.
+ */
+export const g2u01l4: Lesson = {
+  id: 'g2-u01-l4',
+  status: 'placeholder',
+  objective: 'ვპოულობ ციფრის ადგილს სამნიშნა რიცხვში და ვადგენ მის ღირებულებას; ვარჩევ ციფრს მისი ადგილის ღირებულებისგან.',
+  prerequisites: ['გაშლილი ფორმა (U01.3)'],
+  minutes: 10,
+  concepts: ['ციფრის ადგილი', 'ციფრის ღირებულება', 'ციფრი ≠ ღირებულება', 'იგივე ციფრი სხვადასხვა ადგილზე'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! ციფრი ნიშანია, ადგილი კი მისი ღირებულება. ეს განსხვავება ახლა გასაგებია.',
+    retry: 'სცადე ისევ. ჯერ იპოვე ადგილი, მერე გაამრავლე: ციფრი × ადგილის ღირებულება.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რას ნიშნავს ციფრი 7 რიცხვში 372?',
+      visual: { type: 'place-cards', value: 372 },
+      mascot: { intro: 'ერთი კითხვა: ციფრი თუ მისი ღირებულება — ეს ხშირად ერთმანეთში ირევა.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'seventy', text: '70 — ის ათეულების ადგილზეა' },
+          { id: 'seven', text: '7 — ციფრი ყოველთვის საკუთარ თავს ნიშნავს' },
+          { id: 'sevenHundred', text: '700 — რადგან ის შუაში დგას' },
+        ],
+        answer: 'seventy',
+      },
+      hints: ['შუა ადგილი ათეულების ადგილია.'],
+      explanation: '7 ათეულების ადგილზე დგას, ამიტომ ის 70-ს ნიშნავს: 372 = 300 + 70 + 2.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ადგილი განსაზღვრავს, რამდენი ღირს ციფრი.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'შეეხე ციფრს',
+      prompt: 'აირჩიე რიცხვი და შეეხე მის ციფრებს. ნახე, რომელ ადგილზე დგას თითოეული და რა ღირს იქ.',
+      hints: ['ციფრი 4 ათეულებზე 40-ს ნიშნავს, ხოლო ასეულებზე — 400-ს.'],
+      tool: { tool: 'digit-lab', numbers: [372, 447, 704] },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'ციფრი და მისი ღირებულება',
+      prompt: 'ვნახოთ, რას ცვლის ადგილი და როგორ იპოვება ციფრის ღირებულება.',
+      blocks: [
+        { type: 'place-cards', value: 447 },
+        {
+          type: 'place-demo',
+          mode: 'digit',
+          value: 447,
+          place: 'tens',
+          steps: ['აი რიცხვი 447.', 'მოვძებნოთ ციფრი შუაში: 4.', 'ის ათეულების ადგილზეა.', 'ამიტომ ეს 4 ღირს 40 (4 × 10). მეორე 4 კი — 400.'],
+          caption: 'იგივე ციფრი, სხვადასხვა ადგილი: 400 და 40. ასჯერ განსხვავება.',
+        },
+        { type: 'text', text: '447-ში ორი 4-ია, მაგრამ ისინი ერთი და იგივე არ არის: ერთი 400-ია, მეორე — 40. ციფრის ღირებულება = ციფრი × ადგილის ღირებულება.' },
+        { type: 'callout', tone: 'warning', text: 'ფრთხილად: კითხვა „რა ციფრია?“ და კითხვა „რა ღირს?“ სხვადასხვა პასუხს იძლევა. ჯერ წაიკითხე, რომელი გკითხეს.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'შეეხე იმ ციფრს, რომელიც ათეულების ადგილზე დგას რიცხვში 582.',
+      visual: { type: 'place-cards', value: 582 },
+      response: { type: 'digit-tap', value: 582, target: 'tens' },
+      hints: ['ადგილები მარცხნიდან: ასეულები, ათეულები, ერთეულები.'],
+      explanation: '582-ში ათეულების ადგილზე 8 დგას: 8 × 10 = 80.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შუა ადგილი ათეულების ადგილია.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რა ღირს ციფრი 3 რიცხვში 634?',
+      visual: { type: 'place-cards', value: 634 },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'thirty', text: '30' },
+          { id: 'three', text: '3' },
+          { id: 'threeHundred', text: '300' },
+        ],
+        answer: 'thirty',
+      },
+      hints: ['3 ათეულების ადგილზე დგას.'],
+      explanation: '634-ში 3 ათეულების ადგილზეა, ამიტომ 3 × 10 = 30.',
+      misconceptions: [
+        { id: 'face', answers: ['three'], feedback: '3 არის ციფრის სახე, არა მისი ღირებულება. ის ათეულების ადგილზე დგას, ამიტომ ღირს 30.' },
+        { id: 'hundreds', answers: ['threeHundred'], feedback: '300 იქნებოდა, ასეულების ადგილზე რომ დგომოდა. 634-ში ის შუაშია — ათეულების ადგილზე.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ციფრი მის ადგილზე უნდა გაამრავლო.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელ რიცხვში ღირს ციფრი 5 ხუთასს?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'hundreds', text: '507', visual: { type: 'place-cards', value: 507 } },
+          { id: 'tens', text: '750', visual: { type: 'place-cards', value: 750 } },
+          { id: 'ones', text: '275', visual: { type: 'place-cards', value: 275 } },
+        ],
+        answer: 'hundreds',
+      },
+      hints: ['500-ს მხოლოდ ასეულების ადგილი იძლევა.'],
+      explanation: '507-ში 5 ასეულების ადგილზეა: 5 × 100 = 500. 750-ში 5 ათეულებია (50), 275-ში — ერთეულები (5).',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. მოძებნე, სად დგას 5 ყველაზე მარცხენა ადგილზე.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რიცხვში 918 დაფარულია ათეულების ადგილი. რა ღირს ის?',
+      visual: { type: 'place-cards', value: 918, hide: 'tens' },
+      response: { type: 'place-missing', value: 918, missing: 'tens' },
+      hints: ['რომელი ციფრი დგას შუაში და რა ღირს ათეულების ადგილზე?'],
+      explanation: '918-ში ათეულების ადგილზე 1 დგას, ამიტომ ის ღირს 10.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ათეულების ადგილი ყოველთვის ათეულებად ითვლება.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'შეეხე იმ ციფრს, რომელიც ასეულების ადგილზე დგას რიცხვში 429.',
+      response: { type: 'digit-tap', value: 429, target: 'hundreds' },
+      hints: [],
+      explanation: '429-ში ასეულების ადგილზე 4 დგას: 4 × 100 = 400.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ასეულები ყველაზე მარცხნივაა.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რა ღირს ციფრი 6 რიცხვში 607?',
+      response: { type: 'numeric', answer: 600 },
+      hints: [],
+      explanation: '607-ში 6 ასეულების ადგილზეა, ამიტომ 6 × 100 = 600.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ასეულების ადგილი ასეულებად ითვლება.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რიცხვში 835 დაფარულია ასეულების ადგილი. რა ღირს ის?',
+      response: { type: 'place-missing', value: 835, missing: 'hundreds' },
+      hints: [],
+      explanation: '835-ში ასეულების ადგილზე 8 დგას: 8 × 100 = 800.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაფარული ადგილის ღირებულება ციფრის სახე არ არის.',
+    },
+  ],
+};

@@ -20,6 +20,8 @@ import { ObjectRow } from './exercises/LengthBoard';
 import { ClockDemo, Shape2DDemo } from './exercises/TimeShapeTools';
 import { BalanceDemo } from './exercises/BalanceTools';
 import { ChartDemo, SortDemo } from './exercises/SortTools';
+import { ExpandedDemo, PlaceDemo } from './exercises/PlaceValueTools';
+import { ExpandedLine, PlaceCards } from './exercises/PlaceValueBoard';
 import { ClockFace } from './exercises/ClockBoard';
 import { Shape2DRow } from './exercises/Shape2DBoard';
 import { markCompleted, markStarted, useLessonProgress } from './progress';
@@ -144,6 +146,14 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <SortDemo key={i} block={block} />;
           case 'chart-demo':
             return <ChartDemo key={i} block={block} />;
+          case 'place-demo':
+            return <PlaceDemo key={i} block={block} />;
+          case 'place-blocks':
+            return <ExpandedDemo key={i} block={block} />;
+          case 'place-cards':
+            return <PlaceCards key={i} value={block.value} hide={block.hide} label="რიცხვის ციფრები" />;
+          case 'expanded':
+            return <ExpandedLine key={i} value={block.value} hide={block.hide} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

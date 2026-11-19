@@ -17,6 +17,7 @@ import { ExploreToolViewMeasure } from './MeasureTools';
 import { ExploreToolViewClock, ExploreToolViewShapes2D } from './TimeShapeTools';
 import { ExploreToolViewBalance } from './BalanceTools';
 import { ExploreToolViewSort } from './SortTools';
+import { DigitLab, ExpandedLab, MissingPlaceLab, PlaceLab } from './PlaceValueTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -470,5 +471,13 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
     case 'venn-lab':
     case 'chart-lab':
       return <ExploreToolViewSort tool={tool} />;
+    case 'place-lab':
+      return <PlaceLab tool={tool} />;
+    case 'digit-lab':
+      return <DigitLab tool={tool} />;
+    case 'expanded-lab':
+      return <ExpandedLab tool={tool} />;
+    case 'missing-place-lab':
+      return <MissingPlaceLab tool={tool} />;
   }
 }

@@ -1,0 +1,175 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U01.1 "Understanding Hundreds, Tens, and Ones".
+ *
+ * A three-digit number is three digits, and where a digit stands is what it is worth. Ten ones make one ten, ten tens
+ * make one hundred; the same digit in a different place is a different amount. Every question here is answered from the
+ * number and the blocks' value, never from how a picture looks.
+ */
+export const g2u01l1: Lesson = {
+  id: 'g2-u01-l1',
+  status: 'placeholder',
+  objective: 'ვხსნი სამნიშნა რიცხვის აგებულებას: ასეულები, ათეულები და ერთეულები, და ვხვდები, რომ 10 ერთეული 1 ათეულია, 10 ათეული — 1 ასეული.',
+  prerequisites: ['ორნიშნა რიცხვები 100-მდე (G1 U01)'],
+  minutes: 10,
+  concepts: ['ასეულები, ათეულები, ერთეულები', 'ადგილის მნიშვნელობა', '10 ერთეული = 1 ათეული', '10 ათეული = 1 ასეული'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! სამნიშნა რიცხვი სამი ადგილისგან შედგება, და თითოეული ადგილი თავის რაოდენობას ამბობს.',
+    retry: 'სცადე ისევ. დათვალე ბლოკები ადგილების მიხედვით: ჯერ ასეულები, მერე ათეულები, ბოლოს ერთეულები.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რამდენი ასეულია რიცხვში 245?',
+      visual: { type: 'place-blocks', hundreds: 2, tens: 4, ones: 5 },
+      mascot: { intro: 'დღეს სამნიშნა რიცხვებს ვიკვლევთ. თუ არ იცი, არაუშავს: სცადე.' },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'two', text: '2 ასეული' },
+          { id: 'four', text: '4 ასეული' },
+          { id: 'five', text: '5 ასეული' },
+        ],
+        answer: 'two',
+      },
+      hints: ['ყველაზე მარცხენა ციფრი ასეულების ადგილზე დგას.'],
+      explanation: '245-ში 2 ასეულია, 4 ათეული და 5 ერთეული: 200 + 40 + 5.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეხედე ბლოკებს: ბრტყელი ფილები ასეულებია.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'ბლოკების დაფა',
+      prompt: 'დაამატე ასეულები, ათეულები და ერთეულები და ნახე, რა რიცხვი გამოდის. სცადე 10 ერთეულის შეცვლა ერთ ათეულად.',
+      hints: ['10 ერთეული ერთ ჩხირს (1 ათეულს) უდრის.', '10 ათეული ერთ ბრტყელ ფილას (1 ასეულს) უდრის.'],
+      tool: { tool: 'place-lab', start: { hundreds: 1, tens: 2, ones: 5 }, max: 12 },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'სამი ადგილი, სამი მნიშვნელობა',
+      prompt: 'ვნახოთ, როგორ იქცევა ჯგუფი 10-ის შეკრებისას და რას ნიშნავს ადგილი.',
+      blocks: [
+        { type: 'place-blocks', hundreds: 3, tens: 4, ones: 5, caption: '3 ასეული, 4 ათეული და 5 ერთეული — ეს არის 345.' },
+        {
+          type: 'place-demo',
+          mode: 'regroup',
+          value: 10,
+          steps: [
+            'ვთვლით ერთეულებს: 1, 2, 3 … 10.',
+            'ათი ერთეული ჯგუფდება.',
+            '10 ერთეული = 1 ათეული — ჩნდება ერთი ჩხირი.',
+            'მნიშვნელობა არ შეიცვალა: ათივე კუბიკი იგივე ათია.',
+          ],
+          caption: '10 ერთეული ყოველთვის 1 ათეულია, 10 ათეული — 1 ასეული.',
+        },
+        { type: 'text', text: 'ადგილი განსაზღვრავს ღირებულებას. 345-ში ციფრი 4 ათეულების ადგილზე დგას, ამიტომ ის 40-ს ნიშნავს, და არა 4-ს.' },
+        { type: 'place-demo', mode: 'digit', value: 345, place: 'hundreds', steps: ['აი რიცხვი 345.', 'შევეხეთ პირველ ციფრს: 3.', 'ის ასეულების ადგილზეა.', 'ამიტომ 3 = 300.'], caption: 'ციფრი ადგილზე დგას; ადგილი ამბობს, რამდენია.' },
+        { type: 'callout', tone: 'tip', text: 'სამნიშნა რიცხვს ყოველთვის მარცხნიდან მარჯვნივ კითხულობენ: ასეულები, ათეულები, ერთეულები.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი ათეულია 372-ში?',
+      visual: { type: 'place-cards', value: 372 },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'seven', text: '7 ათეული' },
+          { id: 'three', text: '3 ათეული' },
+          { id: 'two', text: '2 ათეული' },
+        ],
+        answer: 'seven',
+      },
+      hints: ['შუა ციფრი ათეულების ადგილზეა.'],
+      explanation: '372 = 3 ასეული + 7 ათეული + 2 ერთეული. ათეული 7-ია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ადგილები მარცხნიდან: ასეულები, ათეულები, ერთეულები.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ააწყვე რიცხვი 235 ბლოკებით.',
+      response: { type: 'place-build', target: 235 },
+      hints: ['2 ბრტყელი ფილა, 3 ჩხირი და 5 კუბიკი.'],
+      explanation: '235 = 2 ასეული + 3 ათეული + 5 ერთეული.',
+      fallbackFeedback: 'ჯერ არ არის 235. შეამოწმე, რამდენ ბლოკს ადებ თითოეულ ადგილზე.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენს ნიშნავს 10 ერთეული?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'ten', text: '1 ათეულს' },
+          { id: 'hundred', text: '1 ასეულს' },
+          { id: 'nothing', text: 'არაფერს — ისინი უბრალოდ 10 კუბიკია' },
+        ],
+        answer: 'ten',
+      },
+      hints: ['შეადარე: რამდენ კუბიკს შეიცავს ერთი ჩხირი?'],
+      explanation: '10 ერთეული = 1 ათეული. სწორედ ამიტომ ჯგუფდება კუბიკები ჩხირებად.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დათვალე ათი კუბიკი და ნახე, რისი ტოლია.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელ რიცხვს აქვს 6 ასეული, 0 ათეული და 4 ერთეული?',
+      visual: { type: 'place-blocks', hundreds: 6, tens: 0, ones: 4 },
+      response: { type: 'numeric', answer: 604 },
+      hints: ['ნული ნიშნავს, რომ ათეულების ადგილი ცარიელია — მაგრამ ადგილი მაინც არის.'],
+      explanation: '6 ასეული + 0 ათეული + 4 ერთეული = 604. ნული ადგილს იჭერს.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ასეულების შემდეგ ათეულების ადგილი მოდის — იქ 0-ია.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი ასეული, ათეული და ერთეულია 481-ში?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'right', text: '4 ასეული, 8 ათეული, 1 ერთეული' },
+          { id: 'swapped', text: '8 ასეული, 4 ათეული, 1 ერთეული' },
+          { id: 'face', text: '481 ასეული' },
+        ],
+        answer: 'right',
+      },
+      hints: [],
+      explanation: '481 = 4 ასეული + 8 ათეული + 1 ერთეული.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. თითოეული ციფრი თავის ადგილზე უნდა წაიკითხო.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ააწყვე რიცხვი 350 ბლოკებით.',
+      response: { type: 'place-build', target: 350 },
+      hints: [],
+      explanation: '350 = 3 ასეული + 5 ათეული + 0 ერთეული. ერთეულების ადგილი ცარიელია.',
+      fallbackFeedback: 'ჯერ არ არის 350. დაითვალე ბლოკების მნიშვნელობა.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი ათეულია ერთ ასეულში?',
+      response: { type: 'numeric', answer: 10 },
+      hints: [],
+      explanation: '1 ასეული = 10 ათეული = 100. ეს იგივე წესია, რაც 10 ერთეული = 1 ათეული.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 100 რამდენი 10-ისგან შედგება?',
+    },
+  ],
+};

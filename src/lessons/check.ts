@@ -6,6 +6,7 @@ import { FLAT_NAME, sidesOf, shapeGroup, verticesOf } from './exercises/Shape2DG
 import { isBalanced, panTotal, sentenceHolds, type TermSpec } from './exercises/BalanceGeometry';
 import { cellKey, chartCount, vennRegion, type SortObj } from './exercises/SortGeometry';
 import { VENN_REGION_NAME } from './exercises/SortGeometry';
+import { PLACE_NAME, PLACES, digitsOf, isStandard, partsOf, valueAt, valueOfBlocks, type Place } from './exercises/PlaceValueGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -73,6 +74,14 @@ const MSG = {
   needChartRead: 'აირჩიე ერთი კატეგორია.',
   needChartBuild: 'დაამატე სიმბოლოები, სანამ ყველა რიგი შეივსება.',
   needClue: 'აირჩიე ყველა საგანი, რომელიც ყველა პირობას აკმაყოფილებს.',
+  needBlocks: 'დააწყვე ბლოკები დაფაზე და შემდეგ შეამოწმე.',
+  needCards: 'სამივე ადგილი უნდა შეავსო ბარათებით.',
+  needDigit: 'შეეხე ერთ ციფრს და შემდეგ შეამოწმე.',
+  needPlaceValue: 'ჩაწერე დაფარული ადგილის მნიშვნელობა.',
+  blocksNotStandard: 'ბლოკების მნიშვნელობა სწორია, მაგრამ ჯერ დაუჯგუფებელია: 10 ერთეული უნდა გახდეს 1 ათეული, 10 ათეული — 1 ასეული.',
+  cardsWrongPlace: 'ბარათი არასწორ ადგილზეა: ადგილი განსაზღვრავს, რამდენი ღირს ციფრი.',
+  digitNotPlace: 'ეს ციფრი სხვა ადგილზე დგას. ადგილები მარცხნიდან მარჯვნივაა: ასეულები, ათეულები, ერთეულები.',
+  placeFaceValue: 'ეს ციფრის სახეა, არა მისი ღირებულება ამ ადგილზე.',
   needStoryNumber: 'ჩაწერე პასუხი რიცხვით.',
   frameNotFull: 'ჩარჩოში ჯერ კიდევ არის ცარიელი ადგილი.',
   firstSmallest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე პატარა რიცხვი უნდა იდგეს.',
@@ -514,6 +523,59 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       const missing = right.find((id) => !picked.includes(id));
       return wrong(question, findMisconception(question.misconceptions, (a) => a === extra || a === missing || a === 'extra' || a === 'missing'));
     }
+    case 'place-build': {
+      const [h = '', t = '', o = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (h === '' || t === '' || o === '') return { verdict: 'incomplete', feedback: MSG.needBlocks };
+      const counts = { hundreds: Number(h), tens: Number(t), ones: Number(o) };
+      if (!Object.values(counts).every((n) => Number.isInteger(n) && n >= 0)) return { verdict: 'incomplete', feedback: MSG.needBlocks };
+      const worth = valueOfBlocks(counts);
+      if (worth === 0) return { verdict: 'incomplete', feedback: MSG.needBlocks };
+      // the blocks are judged by what they are worth — but a built number is normally in standard form, where no place
+      // holds ten or more. Only a question that is explicitly about loose blocks accepts an ungrouped set.
+      const standard = isStandard(counts);
+      if (response.allowRegroup !== true && !standard) return { verdict: 'incorrect', feedback: MSG.blocksNotStandard, misconceptionId: 'not-standard' };
+      if (worth === response.target) return { verdict: 'correct' };
+      const target = digitsOf(response.target);
+      const swapped = PLACES.find((p) => counts[p] === target[p] && counts[p] !== 0);
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === worth || a === 'worth' || (a === 'swapped' && swapped !== undefined));
+      if (hit) return wrong(question, hit);
+      return wrong(question, { id: 'worth', answers: [], feedback: `ბლოკები ${worth}-ს იძლევა, საჭიროა ${response.target}. შეამოწმე ასეულები, ათეულები და ერთეულები.` });
+    }
+    case 'expanded-build': {
+      const cards = (typeof input === 'string' ? input : '').split(',');
+      if (cards.length < 3 || cards.slice(0, 3).some((c) => c === '' || c === undefined)) return { verdict: 'incomplete', feedback: MSG.needCards };
+      const values = cards.slice(0, 3).map(Number);
+      if (!values.every((n) => Number.isFinite(n))) return { verdict: 'incomplete', feedback: MSG.needCards };
+      const right = partsOf(response.value).map((p) => p.value);
+      if (values.every((v, i) => v === right[i])) return { verdict: 'correct' };
+      // a card placed by its face value instead of its place is the interesting mistake here
+      const face = digitsOf(response.value);
+      const faceWrong = values.some((v, i) => v === face[PLACES[i]] && v !== right[i]);
+      const hit = findMisconception(question.misconceptions, (a) => a === 'face' || a === 'place');
+      if (hit) return wrong(question, hit);
+      return wrong(question, faceWrong ? { id: 'face-value', answers: [], feedback: MSG.cardsWrongPlace } : undefined);
+    }
+    case 'digit-tap': {
+      const tapped = typeof input === 'string' && (PLACES as string[]).includes(input) ? (input as Place) : null;
+      if (!tapped) return { verdict: 'incomplete', feedback: MSG.needDigit };
+      if (tapped === response.target) return { verdict: 'correct' };
+      // tapping the digit whose face value equals the target digit is the classic "digit, not place" slip
+      const faceMatch = digitsOf(response.value)[tapped] === digitsOf(response.value)[response.target];
+      const hit = findMisconception(question.misconceptions, (a) => a === tapped || (a === 'face' && faceMatch));
+      if (hit) return wrong(question, hit);
+      return wrong(question, faceMatch ? { id: 'face-value', answers: [], feedback: MSG.digitNotPlace } : undefined);
+    }
+    case 'place-missing': {
+      const text = typeof input === 'string' ? input.trim() : '';
+      if (!text) return { verdict: 'incomplete', feedback: MSG.needPlaceValue };
+      const n = Number(text.replace(',', '.'));
+      if (!Number.isFinite(n)) return { verdict: 'incomplete', feedback: MSG.needPlaceValue };
+      const answer = valueAt(response.value, response.missing);
+      if (n === answer) return { verdict: 'correct' };
+      const faceValue = digitsOf(response.value)[response.missing];
+      if (n === faceValue) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'face') ?? { id: 'face-value', answers: [], feedback: MSG.placeFaceValue });
+      return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === n));
+    }
   }
 }
 
@@ -633,5 +695,13 @@ export function describeAnswer(response: ResponseSpec): string {
       return response.labels.map((l, i) => `${l}: ${response.target[i]}`).join(', ');
     case 'clue-pick':
       return (response.objects as SortObj[]).filter((o) => response.clues.every((c) => (o[c.attr] === c.value) !== Boolean(c.negate))).map((o) => o.label ?? o.id).join(', ');
+    case 'place-build':
+      return `${digitsOf(response.target).hundreds} ასეული, ${digitsOf(response.target).tens} ათეული, ${digitsOf(response.target).ones} ერთეული = ${response.target}`;
+    case 'expanded-build':
+      return partsOf(response.value).map((p) => p.value).join(' + ');
+    case 'digit-tap':
+      return `${PLACE_NAME[response.target]}: ციფრი ${digitsOf(response.value)[response.target]} (ღირს ${valueAt(response.value, response.target)})`;
+    case 'place-missing':
+      return `${PLACE_NAME[response.missing]}: ${valueAt(response.value, response.missing)}`;
   }
 }
