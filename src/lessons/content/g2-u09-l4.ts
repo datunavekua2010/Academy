@@ -1,0 +1,148 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U09.4 "Finding Different Ways to Make the Same Amount".
+ *
+ * Every way to pay 45 თეთრი is `waysToMake(45)`, computed by exhaustive search, so the count on screen cannot be wishful.
+ * The fewest pieces are `fewestPieces(45)` — greedy, and correct because Georgian denominations are canonical.
+ */
+export const g2u09l4: Lesson = {
+  id: 'g2-u09-l4',
+  status: 'placeholder',
+  objective: 'ვპოულობ ერთი და იმავე თანხის სხვადასხვა გზას და ვარჩევ ყველაზე ცოტა ნაჭრიან გზას.',
+  prerequisites: ['შერეული ფულის თვლა (U09.3)'],
+  minutes: 14,
+  concepts: ['სხვადასხვა კომბინაცია', 'ერთი თანხა — ბევრი გზა', 'ყველაზე ცოტა ნაჭერი', 'ყველაზე მეტი ნაჭერი'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! ერთ თანხას ბევრი გზით აწყობ.',
+    retry: 'სცადე ისევ. ერთი და იმავე თანხა სხვადასხვა ფულით შეიძლება.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'შეადგინე 10 თეთრი ორი მონეტით.',
+      mascot: { intro: 'დღეს ერთ თანხას სხვადასხვა გზით ვაწყობთ.' },
+      response: { type: 'money-build', target: 10, tray: [10, 5, 2, 1] },
+      hints: ['ორი მონეტა გჭირდება, რომლებიც ერთად 10-ს იძლევა.', '5 + 5 = 10.'],
+      explanation: '10 თეთრი ორი მონეტით: 5 + 5. ერთი 10-თეთრიანითაც შეიძლება — ეს სხვა გზაა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ორი მონეტის ჯამი უნდა იყოს 10.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'იპოვე ყველა გზა',
+      prompt: 'აირჩიე თანხა და ნახე, რამდენი გზით შეიძლება მისი შედგენა.',
+      hints: ['ჯერ ყველაზე დიდი მონეტა სცადე, მერე უფრო პატარა.', 'ერთი და იმავე თანხა ბევრ გზას იძლევა.'],
+      tool: { tool: 'way-lab', amounts: [10, 15, 20, 25] },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'ერთი თანხა — ბევრი გზა',
+      prompt: 'ვნახოთ, რატომ არის ერთი და იმავე თანხა სხვადასხვა ფულით შესაძლებელი.',
+      blocks: [
+        { type: 'money-demo', mode: 'make', pieces: [10, 5, 5], target: 10, steps: ['გვჭირდება 10 თეთრი.', 'ერთი გზა: ერთი 10-თეთრიანი.', 'მეორე გზა: 5 + 5.', 'ორივე გზა ერთსა და იმავე 10 თეთრს იძლევა.'] },
+        { type: 'text', text: 'ერთი და იმავე თანხა სხვადასხვა მონეტით შეიძლება. ეს გზები განსხვავდება ნაჭრების რაოდენობითაც: ზოგი გზა ორ ნაჭერს იყენებს, ზოგი — ხუთს.' },
+        { type: 'equation', lines: ['10 = 10', '10 = 5 + 5', '10 = 5 + 2 + 2 + 1'], caption: 'სამი სხვადასხვა გზა — ერთი და იმავე თანხა.' },
+        { type: 'callout', tone: 'tip', text: 'ყველაზე ცოტა ნაჭერი ყოველთვის ყველაზე დიდი მონეტებიდან გამოდის.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'შეადგინე 25 თეთრი ისე, რომ ყველაზე ცოტა ნაჭერი იყოს.',
+      response: { type: 'money-build', target: 25, tray: [20, 10, 5, 2, 1], fewest: true },
+      hints: ['ყველაზე დიდი მონეტა აიღე, რომელიც 25-ში ეტევა.', '20 + 5 = 25.'],
+      explanation: '25 თეთრი ყველაზე ცოტა ნაჭრით: 20 + 5 — ორი მონეტა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. სცადე ყველაზე დიდი მონეტა ჯერ.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: '45 თეთრი შეიძლება 20 + 20 + 5-ით. კიდევ რომელი გზაა სწორი?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'ok', text: '20 + 10 + 10 + 5' },
+          { id: 'over', text: '20 + 20 + 10' },
+          { id: 'under', text: '20 + 10 + 5' },
+        ],
+        answer: 'ok',
+      },
+      hints: ['დათვალე თითოეული ჯამი.', '20 + 10 + 10 + 5 = 45.'],
+      explanation: '20 + 10 + 10 + 5 = 45 — ესეც 45 თეთრია, სხვა ნაჭრებით.',
+      misconceptions: [
+        { id: 'tooMuch', answers: ['over'], feedback: '20 + 20 + 10 = 50, ეს 5-ით მეტია 45-ზე.' },
+        { id: 'tooLittle', answers: ['under'], feedback: '20 + 10 + 5 = 35, ეს 10-ით ნაკლებია 45-ზე.' },
+      ],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ჯამი ზუსტად 45 უნდა იყოს.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი ნაჭერია საჭირო 50 თეთრისთვის ყველაზე ცოტა რაოდენობით?',
+      response: { type: 'numeric', answer: 1, unit: 'ნაჭერი' },
+      hints: ['არის 50-თეთრიანი მონეტა.', 'თუ მონეტა ზუსტად 50-ია, ერთი საკმარისია.'],
+      explanation: '50-თეთრიანი მონეტა არსებობს, ამიტომ 50 თეთრისთვის ერთი ნაჭერი საკმარისია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. არის 50-თეთრიანი მონეტა.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'შეადგინე 30 თეთრი სამი მონეტით.',
+      response: { type: 'money-build', target: 30, tray: [10, 5, 2, 1] },
+      hints: ['სამი 10-თეთრიანი 30-ია.', '10 + 10 + 10.'],
+      explanation: '30 თეთრი სამი მონეტით: 10 + 10 + 10. 20 + 5 + 5-იც სამი ნაჭერია — ესეც სწორი გზაა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. სამი მონეტის ჯამი უნდა იყოს 30.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი გზა იძლევა ზუსტად 20 თეთრს?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'ok', text: '10 + 5 + 5' },
+          { id: 'over', text: '10 + 10 + 5' },
+          { id: 'under', text: '10 + 5' },
+        ],
+        answer: 'ok',
+      },
+      hints: [],
+      explanation: '10 + 5 + 5 = 20. სხვები 25 და 15-ს იძლევიან.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ჯამი ზუსტად 20 უნდა იყოს.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'შეადგინე 12 თეთრი.',
+      response: { type: 'money-build', target: 12, tray: [10, 5, 2, 1] },
+      hints: [],
+      explanation: '12 თეთრი: 10 + 2 ან 5 + 5 + 2 — ორივე სწორია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ჯამი ზუსტად 12 უნდა იყოს.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი ნაჭერია 45 თეთრისთვის ყველაზე ცოტა რაოდენობით?',
+      response: { type: 'numeric', answer: 3, unit: 'ნაჭერი' },
+      hints: [],
+      explanation: '45 თეთრი ყველაზე ცოტა ნაჭრით: 20 + 20 + 5 — სამი მონეტა.',
+      misconceptions: [{ id: 'countsFive', answers: [5], feedback: '20 + 20 + 5 = 45 სამი მონეტით; ხუთი ნაჭერი მეტია.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაიწყე ყველაზე დიდი მონეტებით.',
+    },
+  ],
+};

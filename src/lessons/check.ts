@@ -1,7 +1,7 @@
 import { parseNumber, parsePoly, polyEqual } from './algebra';
 import { divisionFromLines, divisionOf, groupOf, hasEqualParts, parseLines, ruleHolds } from './exercises/ShapeGeometry';
 import { aligned, compareGroup, orderOf, px, readingAt, suitableUnit, unitsIn, zeroAligned } from './exercises/MeasureGeometry';
-import { hourHandBetween, normalHour, normalMinute, parseDigital, sameTime, timeOf, timeText } from './exercises/ClockGeometry';
+import { hourHandBetween, minutesBetween, normalHour, normalMinute, parseDigital, sameTime, timeOf, timeText } from './exercises/ClockGeometry';
 import { FLAT_NAME, sidesOf, shapeGroup, verticesOf } from './exercises/Shape2DGeometry';
 import { isBalanced, panTotal, sentenceHolds, type TermSpec } from './exercises/BalanceGeometry';
 import { cellKey, chartCount, vennRegion, type SortObj } from './exercises/SortGeometry';
@@ -13,6 +13,9 @@ import { allEqual, arrayTotal, arraysFor, groupsText, multiplyText, repeatedText
 import { cellsFor, factText, productOf, repeatText } from './exercises/TimesGeometry';
 import { allSame, fairShare, groupInto, isFairShare, quotientOf, totalOfCounts } from './exercises/ShareGeometry';
 import { fractionOf, fractionText, hasEqualPieces, piecesOf } from './exercises/FractionGeometry';
+import { addDays, dateFullText, dateText, daysBetween, monthLength, weekdayName, weekdayOf, weeksTextOf } from './exercises/CalendarGeometry';
+import { changeFrom, fewestPieces, moneyText, pieceText, totalOf as moneyTotal } from './exercises/MoneyGeometry';
+import { cellKey as symCellKey, isReflectionOf, isSymmetricAbout, lineName, missingForSymmetry, reflectCells, sameCells, tidy } from './exercises/SymmetryGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -126,9 +129,31 @@ const MSG = {
   divisionOff: 'გაყოფა და გამრავლება ერთსა და იმავე რიცხვებს ეხება.',
   partsUnequal: 'ნაწილები ტოლი ზომისა არ არის — ეს ტოლი ნაწილები არ არის.',
   fractionOff: 'მნიშვნელი ამბობს, რამდენ ტოლ ნაწილად არის დაყოფილი მთელი, მრიცხველი — რამდენია აღებული.',
+  needDate: 'ჩაწერე თარიღი: წელი, თვე და დღე.',
+  needWeekday: 'აირჩიე კვირის დღე.',
+  needDays: 'ჩაწერე დღეების რაოდენობა.',
+  needElapsed: 'ჩაწერე გასული საათები და წუთები.',
+  needMoney: 'ჩაწერე თანხა თეთრებში.',
+  needMoneyPair: 'ჯერ მიუთითე, საკმარისია თუ არა ფული, და შემდეგ ჩაწერე ხურდა.',
+  needMoneyBuild: 'აიღე ფული, სანამ თანხა ზუსტად არ შეივსება.',
+  needCells: 'მონიშნე უჯრები.',
+  dateOff: 'ეს თარიღი კალენდარზე არ არსებობს: თვეში მეტი დღე არ არის.',
+  moneyOff: 'თანხა ფულის ნაჭრების ჯამია: დათვალე თითოეული ერთხელ.',
+  symmetryOff: 'სარკის ხაზი მაშინაა სწორი, როცა თითოეულ უჯრას მეორე მხარეს ზუსტი წყვილი აქვს.',
   wrongRule: 'ეს რიცხვები ასე არ იცვლება: შეადარე ორი მეზობელი რიცხვი.',
   notSimplified: 'მნიშვნელობა სწორია, მაგრამ გამოსახულება ჯერ არ არის გამარტივებული. ჩაწერე ყველაზე მარტივი სახით.',
 };
+
+/** Reads a typed cell list (`"0,0;1,2"`) back into cells, dropping anything that is not a whole pair. */
+function parseCells(text: string): Array<{ x: number; y: number }> {
+  return text
+    .split(';')
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .map((chunk) => chunk.split(',').map((n) => Number(n.trim())))
+    .filter((pair) => pair.length === 2 && pair.every((n) => Number.isInteger(n)))
+    .map(([x, y]) => ({ x, y }));
+}
 
 export function evaluateAnswer(question: Question, input: AnswerInput): Evaluation {
   return evaluateResponse(question, question.response, input);
@@ -1010,6 +1035,161 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       if (hit) return wrong(question, hit);
       return wrong(question, undefined, { feedback: question.fallbackFeedback ?? `${MSG.fractionOff} ეს ფიგურა: ${fractionText(actual)} — მთელი დაყოფილია ${actual.denominator} ტოლ ნაწილად, აღებულია ${actual.numerator}.` });
     }
+    case 'date-step': {
+      const parts = (typeof input === 'string' ? input : '').split(',');
+      const [yText = '', mText = '', dText = ''] = parts;
+      if (yText.trim() === '' || mText.trim() === '' || dText.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needDate };
+      const y = parseNumber(yText);
+      const m = parseNumber(mText);
+      const d = parseNumber(dText);
+      if (y === null || m === null || d === null) return { verdict: 'incomplete', feedback: MSG.needDate };
+      if (!Number.isInteger(m) || m < 1 || m > 12 || !Number.isInteger(d) || d < 1 || d > monthLength(m, y)) {
+        return wrong(question, undefined, { feedback: MSG.dateOff });
+      }
+      const typed = { year: y, month: m, day: d };
+      const expected = addDays(response.from, response.count);
+      if (typed.year === expected.year && typed.month === expected.month && typed.day === expected.day) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => String(v) === `${y},${m},${d}`);
+      if (hit) return wrong(question, hit);
+      const detail = `${dateFullText(response.from)}-დან ${response.count >= 0 ? `+${response.count}` : `−${Math.abs(response.count)}`} დღე არის ${dateFullText(expected)} (${weekdayName(weekdayOf(expected))}).`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'weekday-of': {
+      const value = typeof input === 'string' ? input : '';
+      if (!value.trim()) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needWeekday };
+      const chosen = Number(value);
+      if (!Number.isInteger(chosen) || chosen < 0 || chosen > 6) return { verdict: 'incomplete', feedback: MSG.needWeekday };
+      const actual = weekdayOf(response.date);
+      if (chosen === actual) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === chosen);
+      if (hit) return wrong(question, hit);
+      const detail = `${dateFullText(response.date)} — ${weekdayName(actual)}.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'days-between': {
+      const value = parseNumber(typeof input === 'string' ? input : '');
+      if (value === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needDays };
+      const actual = daysBetween(response.from, response.to);
+      if (value === actual) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === value);
+      if (hit) return wrong(question, hit);
+      const detail = `${dateText(response.from)}-დან ${dateText(response.to)}-მდე ${weeksTextOf(actual)}.`;
+      const off = Math.abs(actual - value) === 1 ? ' დღე ერთით ჩამოგრჩა ან გადაგაცილდა.' : '';
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}${off}` : `${detail}${off}` });
+    }
+    case 'elapsed': {
+      const [hText = '', mText = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (hText.trim() === '' || mText.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needElapsed };
+      const h = parseNumber(hText);
+      const m = parseNumber(mText);
+      if (h === null || m === null) return { verdict: 'incomplete', feedback: MSG.needElapsed };
+      const actual = minutesBetween(response.from, response.to);
+      const said = h * 60 + m;
+      if (said === actual) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => String(v) === `${h},${m}`);
+      if (hit) return wrong(question, hit);
+      const detail = `საათებით და წუთებით: ${Math.floor(actual / 60)} სთ ${actual % 60} წთ (სულ ${actual} წუთი).`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'money-total': {
+      const value = parseNumber(typeof input === 'string' ? input : '');
+      if (value === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needMoney };
+      const actual = moneyTotal(response.pieces);
+      if (value === actual) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === value);
+      if (hit) return wrong(question, hit);
+      const detail = `${response.pieces.join(' + ')} = ${moneyText(actual)}.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'money-compare': {
+      const [enoughText = '', changeText_ = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (enoughText.trim() === '' || changeText_.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needMoneyPair };
+      const enough = enoughText.trim() === '1' || enoughText.trim() === 'true' ? true : enoughText.trim() === '0' || enoughText.trim() === 'false' ? false : null;
+      const change = parseNumber(changeText_);
+      if (enough === null || change === null) return { verdict: 'incomplete', feedback: MSG.needMoneyPair };
+      const expectedEnough = response.money >= response.cost;
+      const expectedChange = expectedEnough ? changeFrom(response.money, response.cost) : 0;
+      if (enough === expectedEnough && change === expectedChange) return { verdict: 'correct' };
+      if (enough !== expectedEnough) {
+        const detail = expectedEnough
+          ? `${moneyText(response.money)} ≥ ${moneyText(response.cost)} — ფული საკმარისია, ხურდა ${moneyText(expectedChange)}.`
+          : `${moneyText(response.money)} < ${moneyText(response.cost)} — ${moneyText(response.cost - response.money)} აკლია, ხურდა არ რჩება.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      const detail = `${response.money} − ${response.cost} = ${expectedChange} თეთრი.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'money-build': {
+      const picked = typeof input === 'string' && input ? input.split(',').filter(Boolean).map(Number) : [];
+      const valid = picked.filter((n) => response.tray.includes(n));
+      const sum = moneyTotal(valid);
+      if (valid.length === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needMoneyBuild };
+      if (sum === response.target && (!response.fewest || valid.length === fewestPieces(response.target).length)) return { verdict: 'correct' };
+      if (sum !== response.target) {
+        const hit = findMisconception(question.misconceptions, (v) => Number(v) === sum);
+        if (hit) return wrong(question, hit);
+        const detail = sum < response.target ? `კიდევ ${moneyText(response.target - sum)} გჭირდება.` : `${moneyText(sum - response.target)} ზედმეტია.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      const fewest = fewestPieces(response.target);
+      const detail = `ესეც ${moneyText(response.target)}-ს იძლევა, მაგრამ ყველაზე ცოტა ნაჭრით შეიძლება ასე: ${fewest.map(pieceText).join(' + ') || '0'}.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'reflect': {
+      const expected = reflectCells(response.picture.cells, response.line);
+      const typed = parseCells(typeof input === 'string' ? input : '');
+      if (typed.length === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needCells };
+      if (sameCells(typed, expected)) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => String(v) === typed.map(symCellKey).join(';'));
+      if (hit) return wrong(question, hit);
+      const detail = `სარკის ხაზი ${lineName(response.line)}ა: თითოეული უჯრა გადის ხაზის მეორე მხარეს იმავე მანძილზე.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'symmetry-fill': {
+      const typed = parseCells(typeof input === 'string' ? input : '');
+      if (typed.length === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needCells };
+      const completed = tidy([...response.picture.cells, ...typed]);
+      if (isSymmetricAbout(completed, response.line) && sameCells(completed, [...response.picture.cells, ...missingForSymmetry(response.picture.cells, response.line)])) {
+        return { verdict: 'correct' };
+      }
+      if (!isSymmetricAbout(completed, response.line)) {
+        const missing = missingForSymmetry(completed, response.line).length;
+        const detail = `ჯერ არ არის სარკული: ${missing} უჯრას ჯერ არ აქვს წყვილი მეორე მხარეს.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      const extra = typed.filter((c) => !response.picture.cells.some((g) => g.x === c.x && g.y === c.y) && !missingForSymmetry(response.picture.cells, response.line).some((g) => g.x === c.x && g.y === c.y));
+      const detail = extra.length > 0 ? `ფიგურა სარკულია, მაგრამ ${extra.length} უჯრა ზედმეტია — დაკვირვე, რომელ ნახევარს ასახავ.` : 'ეს უჯრები უკვე შევსებულია.';
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'symmetry-line': {
+      const chosen = typeof input === 'string' && input ? input.split(',').filter(Boolean) : [];
+      const key = (l: { axis: string; at: number }) => `${l.axis}:${l.at}`;
+      const right = response.candidates.filter((line) => isSymmetricAbout(response.picture.cells, line)).map(key);
+      if (chosen.length === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needCells };
+      if (response.ask === 'count') {
+        const n = parseNumber(chosen[0]);
+        if (n === null) return { verdict: 'incomplete', feedback: MSG.needCells };
+        if (n === right.length) return { verdict: 'correct' };
+        const detail = right.length === 0 ? 'ამ ფიგურას სარკის ხაზი არ აქვს.' : `სარკის ხაზი ${right.length} აქვს: ${response.candidates.filter((l) => right.includes(key(l))).map(lineName).join(', ')}.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      if (right.length === chosen.length && right.every((k) => chosen.includes(k))) return { verdict: 'correct' };
+      const detail = right.length === 0 ? 'არც ერთი შემოთავაზებული ხაზი არ არის სარკის ხაზი — თითოეულ უჯრას წყვილი არ აქვს.' : `სწორია ${right.length} ხაზი.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'flip-pick': {
+      const value = typeof input === 'string' ? input : '';
+      if (!value.trim()) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needChoice };
+      const actual = response.options.find((o) => isReflectionOf(response.source, o.cells, response.line));
+      if (actual && actual.id === value) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => v === value);
+      if (hit) return wrong(question, hit);
+      const chosenOption = response.options.find((o) => o.id === value);
+      const detail = chosenOption && sameCells(chosenOption.cells, response.source)
+        ? 'ეს იგივე ფიგურაა, მხოლოდ გადაადგილებული — გადატანა არ ცვლის ორიენტაციას, არეკვლა კი ცვლის.'
+        : 'აირჩიე ის ფიგურა, რომლის თითოეული უჯრაც წყაროს უჯრის არეკვლაა.';
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
     case 'group-story': {
       const [g = '', e = '', t = ''] = (typeof input === 'string' ? input : '').split(',');
       if (g.trim() === '' || e.trim() === '' || t.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needStoryGroups };
@@ -1224,6 +1404,42 @@ export function describeAnswer(response: ResponseSpec): string {
     case 'fraction-name': {
       const f = fractionOf(response.shape, response.take);
       return f ? `${fractionText(f)}` : 'ტოლი ნაწილები არ არის';
+    }
+    case 'date-step': {
+      const date = addDays(response.from, response.count);
+      return `${dateFullText(date)} (${weekdayName(weekdayOf(date))})`;
+    }
+    case 'weekday-of':
+      return weekdayName(weekdayOf(response.date));
+    case 'days-between':
+      return weeksTextOf(daysBetween(response.from, response.to));
+    case 'elapsed': {
+      const total = minutesBetween(response.from, response.to);
+      return `${Math.floor(total / 60)} სთ ${total % 60} წთ`;
+    }
+    case 'money-total':
+      return moneyText(moneyTotal(response.pieces));
+    case 'money-compare': {
+      const enough = response.money >= response.cost;
+      return enough ? `საკმარისია, ხურდა ${moneyText(changeFrom(response.money, response.cost))}` : `არა, ${moneyText(response.cost - response.money)} აკლია`;
+    }
+    case 'money-build':
+      return `${moneyText(response.target)}: ${fewestPieces(response.target).map(pieceText).join(' + ')}`;
+    case 'reflect':
+      return reflectCells(response.picture.cells, response.line)
+        .map((c) => `(${c.x},${c.y})`)
+        .join(' ');
+    case 'symmetry-fill':
+      return missingForSymmetry(response.picture.cells, response.line)
+        .map((c) => `(${c.x},${c.y})`)
+        .join(' ');
+    case 'symmetry-line': {
+      const right = response.candidates.filter((line) => isSymmetricAbout(response.picture.cells, line));
+      return response.ask === 'count' ? String(right.length) : right.map(lineName).join(', ') || 'არც ერთი';
+    }
+    case 'flip-pick': {
+      const actual = response.options.find((o) => isReflectionOf(response.source, o.cells, response.line));
+      return actual?.id ?? '';
     }
   }
 }

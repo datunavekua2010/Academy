@@ -1,0 +1,165 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U08.1 "Naming and Ordering the Days of the Week".
+ *
+ * The week is a cycle of seven, and every weekday in this lesson is computed from a real date — so "the day before
+ * Monday" is კვირა because the calendar wraps, not because a sentence says so.
+ */
+export const g2u08l1: Lesson = {
+  id: 'g2-u08-l1',
+  status: 'placeholder',
+  objective: 'ვასახელებ და ვალაგებ კვირის დღეებს, ვიცი გუშინ, დღეს და ხვალ, და ვარჩევ სამუშაო დღეებს შაბათ-კვირისგან.',
+  prerequisites: ['დღის რიგითობა (G1 U08)'],
+  minutes: 12,
+  concepts: ['კვირის დღეები', 'კვირის ციკლი', 'გუშინ და ხვალ', 'სამუშაო დღე და შაბათ-კვირა'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! კვირის შვიდი დღე ახლა ზეპირად იცი.',
+    retry: 'სცადე ისევ. გაიხსენე: ორშაბათით იწყება და კვირით მთავრდება.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'ორშაბათიდან ორი დღის შემდეგ რომელი დღე მოდის?',
+      mascot: { intro: 'დღეს კვირის დღეებს ვისწავლით. სცადე.' },
+      response: {
+        type: 'weekday-of',
+        date: { year: 2025, month: 3, day: 5 },
+      },
+      hints: ['ორშაბათი — პირველი დღეა. დათვალე ორი ნაბიჯი.'],
+      explanation: 'ორშაბათის შემდეგ მოდის სამშაბათი, მერე ოთხშაბათი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დაიწყე ორშაბათიდან და გადადი ორი დღით წინ.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'გაატარე კვირა',
+      prompt: 'გადადი დღიდან დღეზე და წაიკითხე კვირის დღე. შეხედე, რა ხდება კვირის შემდეგ.',
+      hints: ['ყოველ ნაბიჯზე შემდეგი დღე მოდის.', 'კვირის შემდეგ ისევ ორშაბათია — კვირა ციკლია.'],
+      tool: { tool: 'calendar-lab', year: 2025, month: 3, day: 3 },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'კვირა — შვიდი დღის ციკლი',
+      prompt: 'ვნახოთ, როგორ მიდის ერთი დღე მეორეში.',
+      blocks: [
+        { type: 'calendar-demo', mode: 'week', year: 2025, month: 3, day: 3, steps: ['ორშაბათი — კვირის პირველი დღე.', 'სამშაბათი მოდის ორშაბათის შემდეგ.', 'ოთხშაბათი — შუა დღე.', 'ხუთშაბათი.', 'პარასკევი — ბოლო სამუშაო დღე.', 'შაბათი და კვირა — შაბათ-კვირა.'] },
+        { type: 'text', text: 'კვირაში შვიდი დღეა და ისინი ყოველთვის ერთი და იმავე რიგით მოდიან: ორშაბათი, სამშაბათი, ოთხშაბათი, ხუთშაბათი, პარასკევი, შაბათი, კვირა.' },
+        { type: 'equation', lines: ['ორშაბათი → სამშაბათი → ოთხშაბათი', 'ხუთშაბათი → პარასკევი → შაბათი → კვირა'], caption: 'შვიდი დღე, ყოველთვის ამ რიგით.' },
+        { type: 'callout', tone: 'tip', text: 'კვირის შემდეგ ისევ ორშაბათი მოდის — კვირა ბრუნავს წრეზე.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: '2025 წლის 1 მარტი რომელ დღეს მოდის?',
+      visual: { type: 'calendar', year: 2025, month: 3, highlight: [1] },
+      response: { type: 'weekday-of', date: { year: 2025, month: 3, day: 1 } },
+      hints: ['ნახე, რომელ სვეტში დგას 1 მარტი კალენდარზე.', 'სვეტის სათაური კვირის დღეს გეუბნება.'],
+      explanation: '1 მარტი 2025 წელს შაბათია. კალენდარზე ის შაბათის სვეტში დგას.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. იპოვე 1 მარტი და შეხედე სვეტის სათაურს.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'კვირის რომელი დღეებია სამუშაო დღეები?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'weekdays', text: 'ორშაბათი, სამშაბათი, ოთხშაბათი, ხუთშაბათი, პარასკევი' },
+          { id: 'weekend', text: 'შაბათი და კვირა' },
+          { id: 'all', text: 'ყველა შვიდი დღე' },
+        ],
+        answer: 'weekdays',
+      },
+      hints: ['სამუშაო დღეები სკოლის კვირას არის.', 'შაბათი და კვირა დასვენების დღეებია.'],
+      explanation: 'ორშაბათიდან პარასკევამდე სამუშაო დღეებია, შაბათი და კვირა — დასვენების.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დასვენების დღეები კვირის ბოლოსაა.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'ოთხშაბათამდე ერთი დღით ადრე რომელი დღეა?',
+      response: { type: 'weekday-of', date: { year: 2025, month: 3, day: 4 } },
+      hints: ['გადადი ერთი ნაბიჯით უკან.', 'ოთხშაბათის წინ სამშაბათია.'],
+      explanation: 'ოთხშაბათამდე ერთი დღით ადრე სამშაბათია — 4 მარტი სამშაბათია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. დათვალე უკან, არა წინ.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'თუ დღეს ხუთშაბათია, ხვალ რომელი დღე იქნება?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'fri', text: 'პარასკევი' },
+          { id: 'wed', text: 'ოთხშაბათი' },
+          { id: 'sat', text: 'შაბათი' },
+        ],
+        answer: 'fri',
+      },
+      hints: ['ხვალ — ერთი ნაბიჯი წინ.', 'ხუთშაბათის შემდეგ პარასკევი მოდის.'],
+      explanation: 'ხვალ ყოველთვის ერთი დღით წინ არის: ხუთშაბათის ხვალ პარასკევია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ხვალ ერთი დღით წინ არის, გუშინ — ერთით უკან.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: '2025 წლის 5 მარტი რომელ დღეს მოდის?',
+      visual: { type: 'calendar', year: 2025, month: 3, highlight: [5] },
+      response: { type: 'weekday-of', date: { year: 2025, month: 3, day: 5 } },
+      hints: [],
+      explanation: '5 მარტი 2025 წელს ოთხშაბათია — კალენდარზე ის ოთხშაბათის სვეტშია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. იპოვე დღე კალენდარზე და წაიკითხე სვეტი.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'კვირის შემდეგ რომელი დღე მოდის?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'mon', text: 'ორშაბათი' },
+          { id: 'sat', text: 'შაბათი' },
+          { id: 'none', text: 'კვირა ბოლო დღეა და მეტი დღე არ არის' },
+        ],
+        answer: 'mon',
+      },
+      hints: [],
+      explanation: 'კვირა ბოლო დღეა, მაგრამ კვირა ციკლია — მის შემდეგ ისევ ორშაბათი მოდის.',
+      misconceptions: [{ id: 'endsAtSunday', answers: ['none'], feedback: 'კვირა ბოლო დღეა, მაგრამ შემდეგ კვირა ისევ იწყება — ორშაბათით.' }],
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. კვირა ბრუნავს წრეზე.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'თუ დღეს კვირაა, გუშინ რომელი დღე იყო?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'sat', text: 'შაბათი' },
+          { id: 'mon', text: 'ორშაბათი' },
+          { id: 'fri', text: 'პარასკევი' },
+        ],
+        answer: 'sat',
+      },
+      hints: [],
+      explanation: 'გუშინ ერთი დღით უკან არის: კვირის გუშინ შაბათია.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. გუშინ ერთი დღით უკან არის.',
+    },
+  ],
+};
