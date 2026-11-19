@@ -19,6 +19,9 @@ import { ExpandedLine, PlaceBlocks, PlaceCards } from './PlaceValueBoard';
 import { GroupCount, SkipLine } from './PatternBoard';
 import { AnswerColumns, StoryPicture } from './AddSubBoard';
 import { ArrayBoard, EqualGroups as GroupsPicture, RepeatedLine, UnevenGroups } from './GroupsBoard';
+import { TableRow, TimesGrid } from './TimesBoard';
+import { ShareBoard } from './ShareBoard';
+import { FractionPicture } from './FractionBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -195,6 +198,14 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <ArrayBoard spec={{ rows: spec.rows, cols: spec.cols }} />;
     case 'repeated':
       return <RepeatedLine groups={spec.groups} each={spec.each} />;
+    case 'table-row':
+      return <TableRow table={spec.table} upTo={spec.upTo} filled={spec.filled} caption={spec.caption} />;
+    case 'times-grid':
+      return <TimesGrid tables={spec.tables} factors={spec.factors} highlight={spec.highlight} />;
+    case 'shape-parts':
+      return <FractionPicture spec={spec.shape} take={spec.take} caption={spec.caption} />;
+    case 'share':
+      return <ShareBoard total={spec.total} people={spec.people} glyph={spec.glyph} caption={spec.caption} />;
     case 'venn':
       return (
         <VennBoard

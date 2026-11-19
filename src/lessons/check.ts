@@ -10,6 +10,9 @@ import { PLACE_NAME, PLACES, digitsOf, isStandard, partsOf, valueAt, valueOfBloc
 import { holeValues, landings, ruleText, sequenceOf, stepOf, stepWords, termAt } from './exercises/PatternGeometry';
 import { carriedTen, columnDifference, columnSum, digits2, needsBorrow, needsCarry, sumTens } from './exercises/AddSubGeometry';
 import { allEqual, arrayTotal, arraysFor, groupsText, multiplyText, repeatedText, totalOf, unevenGroups } from './exercises/GroupsGeometry';
+import { cellsFor, factText, productOf, repeatText } from './exercises/TimesGeometry';
+import { allSame, fairShare, groupInto, isFairShare, quotientOf, totalOfCounts } from './exercises/ShareGeometry';
+import { fractionOf, fractionText, hasEqualPieces, piecesOf } from './exercises/FractionGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -108,6 +111,21 @@ const MSG = {
   arrayOff: 'რიგებისა და სვეტების ნამრავლი სულს უნდა უდრიდეს.',
   needStoryGroups: 'ჩაწერე ჯგუფები, თითოეულში საგნები და სულ რაოდენობა.',
   groupsUneven: 'ჯგუფები ჯერ არ არის ტოლი: თითოეულში ერთი და იგივე რაოდენობა უნდა იყოს.',
+  needFactors: 'ჩაწერე ორივე თანამამრავლი — ნამრავლი თვითონ გამოითვლება.',
+  needTable: 'შეავსე ცხრილი თანმიმდევრულად, 1 × ცხრილიდან დაწყებული.',
+  needShare: 'ჩაწერე, რამდენს მიიღებს თითოეული და რამდენი დარჩება.',
+  needGroups: 'ჩაწერე სრული ჯგუფების რაოდენობა და ნაშთი.',
+  needDivision: 'ჩაწერე საერთო რაოდენობა და ჯგუფების რაოდენობა.',
+  needFamily: 'ჩაწერე გამოტოვებული რიცხვი.',
+  needParts: 'აირჩიე: ტოლი თუ არატოლი ნაწილები.',
+  needPick: 'მონიშნე საჭირო რაოდენობის ნაწილი.',
+  needFraction: 'ჩაწერე მრიცხველი და მნიშვნელი.',
+  shareOff: 'დარიგებული რაოდენობა სულს უნდა უდრიდეს.',
+  shareUneven: 'ჯერ არ არის თანაბარი: ყველა ბავშვს ერთი და იგივე რაოდენობა უნდა ჰქონდეს.',
+  groupsOff: 'სრული ჯგუფები და ნაშთი ერთად სულ რაოდენობას უნდა უდრიდეს.',
+  divisionOff: 'გაყოფა და გამრავლება ერთსა და იმავე რიცხვებს ეხება.',
+  partsUnequal: 'ნაწილები ტოლი ზომისა არ არის — ეს ტოლი ნაწილები არ არის.',
+  fractionOff: 'მნიშვნელი ამბობს, რამდენ ტოლ ნაწილად არის დაყოფილი მთელი, მრიცხველი — რამდენია აღებული.',
   wrongRule: 'ეს რიცხვები ასე არ იცვლება: შეადარე ორი მეზობელი რიცხვი.',
   notSimplified: 'მნიშვნელობა სწორია, მაგრამ გამოსახულება ჯერ არ არის გამარტივებული. ჩაწერე ყველაზე მარტივი სახით.',
 };
@@ -802,6 +820,196 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
         feedback: `${rows} × ${cols} = ${rows * cols}, არა ${response.total}. ${response.total === 0 ? '' : `სცადე: ${useful[0]?.split(',').join(' × ')}.`}`,
       });
     }
+    case 'times-fact': {
+      const [a = '', b = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (a.trim() === '' || b.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFactors };
+      const one = Number(a);
+      const two = Number(b);
+      if (!Number.isInteger(one) || !Number.isInteger(two) || one < 0 || two < 0) return { verdict: 'incomplete', feedback: MSG.needFactors };
+      // a true sentence is right however it is written: 3 × 4 and 4 × 3 are the same product
+      if (productOf(one, two) === productOf(response.table, response.factor)) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => String(v) === `${one},${two}` || Number(v) === productOf(one, two));
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, {
+        feedback: `${question.fallbackFeedback ? `${question.fallbackFeedback} ` : ''}${one} × ${two} = ${productOf(one, two)}, მაგრამ ${response.factor} ჯგუფი თითოეულში ${response.table} არის ${productOf(response.table, response.factor)}. ${repeatText(response.table, response.factor)}.`,
+      });
+    }
+    case 'times-missing': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFamily };
+      const answer = response.missing === 'factor' ? response.factor : response.missing === 'product' ? productOf(response.table, response.factor) : response.factor;
+      if (n === answer) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+      if (hit) return wrong(question, hit);
+      if (response.missing === 'product') {
+        const detail = `${factText(response.table, response.factor)}: ${repeatText(response.table, response.factor)}.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      return wrong(question, undefined, {
+        feedback: question.fallbackFeedback ?? `${productOf(response.table, response.factor)} საგანი ${response.table}-ად: ${productOf(response.table, response.factor)} ÷ ${response.table} = ${response.factor}.`,
+      });
+    }
+    case 'table-build': {
+      const written = (typeof input === 'string' && input !== '' ? input.split(',') : []).map((v) => v.trim());
+      if (written.length === 0 || written[0] === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needTable };
+      const right = Array.from({ length: response.upTo }, (_, i) => productOf(response.table, i + 1));
+      // the row is filled from the start, so only the first n cells can be judged
+      const done = written.filter((v) => v !== '');
+      const wrongAt = done.findIndex((v, i) => Number(v) !== right[i]);
+      if (wrongAt !== -1) {
+        const hit = findMisconception(question.misconceptions, (v) => Number(v) === Number(done[wrongAt]));
+        if (hit) return wrong(question, hit);
+        const detail = `${wrongAt + 1} × ${response.table} = ${right[wrongAt]}, არა ${done[wrongAt]}. ${wrongAt === 0 ? `ცხრილი იწყება ${response.table}-ით.` : `წინა ნამრავლს ${response.table} ემატება.`}`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      if (done.length < response.upTo) return { verdict: 'incomplete', feedback: `${MSG.needTable} შევსებულია ${done.length} / ${response.upTo}.` };
+      return { verdict: 'correct' };
+    }
+    case 'table-grid': {
+      if (response.ask === 'read-product') {
+        const n = parseNumber(typeof input === 'string' ? input : '');
+        if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFactors };
+        const target = typeof response.target === 'object' ? productOf(response.target.table, response.target.factor) : response.target;
+        if (n === target) return { verdict: 'correct' };
+        const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+        if (hit) return wrong(question, hit);
+        const cell = typeof response.target === 'object' ? response.target : { table: response.tables[0], factor: response.factors[0] };
+        const detail = `უჯრა იკითხება: ${cell.table} × ${cell.factor} = ${target}.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      const target = typeof response.target === 'object' ? productOf(response.target.table, response.target.factor) : response.target;
+      const wanted = cellsFor(target, response.tables, response.factors);
+      // each cell key is written as `"table,factor"`, so the list is read in pairs
+      const parts = (typeof input === 'string' && input ? input.split(',') : []).map((v) => v.trim()).filter((v) => v !== '');
+      const keys: string[] = [];
+      for (let i = 0; i + 1 < parts.length; i += 2) keys.push(`${parts[i]},${parts[i + 1]}`);
+      const picked = keys;
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFactors };
+      const extra = picked.filter((k) => !wanted.includes(k));
+      if (extra.length === 0 && picked.length === wanted.length) return { verdict: 'correct' };
+      if (extra.length > 0) {
+        const [table, factor] = extra[0].split(',').map(Number);
+        const detail = `${table} × ${factor} = ${productOf(table, factor)}, არა ${target}. მოძებნე უჯრები, სადაც ნამრავლი ${target}-ია.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      return { verdict: 'incomplete', feedback: `${MSG.needPick} სულ საჭიროა ${wanted.length}, მონიშნულია ${picked.length}.` };
+    }
+    case 'share-fair': {
+      const [shareText_, leftText = '0'] = (typeof input === 'string' ? input : '').split(',');
+      if (shareText_ === undefined || shareText_.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needShare };
+      const each = parseNumber(shareText_);
+      const left = parseNumber(leftText === '' ? '0' : leftText);
+      if (each === null || left === null) return { verdict: 'incomplete', feedback: MSG.needShare };
+      const expected = fairShare(response.total, response.people);
+      if (each === expected.share && left === expected.leftover) return { verdict: 'correct' };
+      if (left !== expected.leftover) {
+        // what the written share really deals out, so the leftover is named rather than only judged
+        const used = response.people * each;
+        const detail = `${response.people} × ${each} = ${used}. ${used === response.total ? 'ყველა საგანი დარიგდა, ნაშთი 0-ია.' : used < response.total ? `კიდევ ${response.total - used} საგანი რჩება.` : `${used - response.total} ზედმეტია.`}`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === each);
+      if (hit) return wrong(question, hit);
+      // the leftover was right, so the share itself is the slip: name the real share
+      const detail = `${response.people} × ${each} = ${response.people * each}, არა ${response.total}. თანაბარი წილი ${expected.share}-ია.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'share-groups': {
+      const counts = (typeof input === 'string' && input ? input.split(',') : []).map((v) => Number(v));
+      if (counts.length < response.groups || counts.some((n) => !Number.isInteger(n) || n < 0)) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needGroups };
+      if (counts.every((n) => n === 0)) return { verdict: 'incomplete', feedback: MSG.needGroups };
+      if (isFairShare(counts, response.total)) return { verdict: 'correct' };
+      if (!allSame(counts)) {
+        const odd = counts.flatMap((n, i) => (n === counts[0] ? [] : [i]));
+        return wrong(question, undefined, { feedback: `${question.fallbackFeedback ?? MSG.shareUneven} ${odd.map((i) => `${i + 1}-ე ჯგუფში ${counts[i]}`).join(', ')}.` });
+      }
+      // equal but not all used, or too many used
+      const used = totalOfCounts(counts);
+      const detail = used < response.total ? MSG.shareOff + ` კიდევ ${response.total - used} საგანი რჩება.` : `${used - response.total} ზედმეტია: სულ ${response.total} საგანია.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+    case 'group-into': {
+      const [gText = '', lText = '0'] = (typeof input === 'string' ? input : '').split(',');
+      if (gText.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needGroups };
+      const groups = parseNumber(gText);
+      const left = parseNumber(lText === '' ? '0' : lText);
+      if (groups === null || left === null) return { verdict: 'incomplete', feedback: MSG.needGroups };
+      const expected = groupInto(response.total, response.size);
+      if (groups === expected.groups && left === expected.leftover) return { verdict: 'correct' };
+      if (groups * response.size + left !== response.total) {
+        const expectedGrouping = groupInto(response.total, response.size);
+        const detail = `${response.size} × ${groups} + ${left} = ${response.size * groups + left}, არა ${response.total}. ${expectedGrouping.groups} სრული ჯგუფი და ${expectedGrouping.leftover} ნაშთი გამოდის.`;
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+      }
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === groups);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ?? MSG.groupsOff });
+    }
+    case 'division-sentence': {
+      const [tText = '', bText = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (tText.trim() === '' || bText.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needDivision };
+      const total = parseNumber(tText);
+      const by = parseNumber(bText);
+      if (total === null || by === null) return { verdict: 'incomplete', feedback: MSG.needDivision };
+      if (total === response.total && by === response.by) return { verdict: 'correct' };
+      if (by !== response.by) {
+        const hit = findMisconception(question.misconceptions, (v) => Number(v) === by || String(v) === `${total},${by}`);
+        if (hit) return wrong(question, hit);
+        return wrong(question, undefined, { feedback: question.fallbackFeedback ?? `${response.family === 'group' ? 'ვაჯგუფებთ' : 'ვანაწილებთ'}: გამყოფი ${response.by}-ია. ${response.total} ÷ ${response.by} = ${quotientOf(response.total, response.by) ?? '?'}.` });
+      }
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ?? `სულ ${response.total} საგანია: ${response.total} ÷ ${response.by} = ${quotientOf(response.total, response.by) ?? '?'}.` });
+    }
+    case 'fact-family': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFamily };
+      const answer = response.missing === 'a' ? response.a : response.missing === 'b' ? response.b : productOf(response.a, response.b);
+      if (n === answer) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, {
+        feedback: question.fallbackFeedback ?? `${response.a} × ${response.b} = ${productOf(response.a, response.b)}, ${productOf(response.a, response.b)} ÷ ${response.a} = ${response.b}, ${productOf(response.a, response.b)} ÷ ${response.b} = ${response.a}.`,
+      });
+    }
+    case 'parts-judge': {
+      const value = typeof input === 'string' ? input : '';
+      if (value !== '0' && value !== '1') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needParts };
+      const equal = hasEqualPieces(response.shape);
+      if ((value === '1') === equal) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => String(v) === value);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ?? (equal ? 'ნაწილები ტოლია: ერთი და იმავე ზომისაა.' : MSG.partsUnequal) });
+    }
+    case 'fraction-pick': {
+      const picked = typeof input === 'string' && input ? input.split(',').map(Number).filter((n) => Number.isInteger(n)) : [];
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needPick };
+      const pieces = piecesOf(response.shape);
+      const pickedValid = picked.filter((n) => pieces.includes(n));
+      if (pickedValid.length === response.need && picked.length === response.need) return { verdict: 'correct' };
+      if (picked.length !== response.need) {
+        const hit = findMisconception(question.misconceptions, (v) => v === 'count');
+        return wrong(question, hit, { feedback: hit?.feedback ?? `${MSG.needPick} საჭიროა ${response.need}, მონიშნულია ${picked.length}.` });
+      }
+      const hit = findMisconception(question.misconceptions, (v) => v === 'which');
+      return wrong(question, hit, { feedback: hit?.feedback ?? MSG.needPick });
+    }
+    case 'fraction-name': {
+      const [nText = '', dText = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (nText.trim() === '' || dText.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needFraction };
+      const num = parseNumber(nText);
+      const den = parseNumber(dText);
+      if (num === null || den === null) return { verdict: 'incomplete', feedback: MSG.needFraction };
+      const actual = fractionOf(response.shape, response.take);
+      if (actual === null) return wrong(question, undefined, { feedback: MSG.partsUnequal });
+      if (num === actual.numerator && den === actual.denominator) return { verdict: 'correct' };
+      // the pair written the other way round is a real slip, and worth naming
+      if (num === actual.denominator && den === actual.numerator) {
+        const hit = findMisconception(question.misconceptions, (v) => v === 'swapped');
+        return wrong(question, hit, { feedback: hit?.feedback ?? 'მრიცხველი და მნიშვნელი ადგილებში შეიცვალა: ზემოთ აღებული ნაწილებია, ქვემოთ — სულ.' });
+      }
+      const hit = findMisconception(question.misconceptions, (v) => String(v) === `${num},${den}`);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ?? `${MSG.fractionOff} ეს ფიგურა: ${fractionText(actual)} — მთელი დაყოფილია ${actual.denominator} ტოლ ნაწილად, აღებულია ${actual.numerator}.` });
+    }
     case 'group-story': {
       const [g = '', e = '', t = ''] = (typeof input === 'string' ? input : '').split(',');
       if (g.trim() === '' || e.trim() === '' || t.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needStoryGroups };
@@ -977,5 +1185,45 @@ export function describeAnswer(response: ResponseSpec): string {
       return arraysFor(response.total).map((a) => `${a.rows} × ${a.cols}`).join(' ან ');
     case 'group-story':
       return `${multiplyText(response.groups, response.each)} ${response.unit}`;
+    case 'times-fact':
+      return `${response.factor} × ${response.table} = ${productOf(response.table, response.factor)}`;
+    case 'times-missing':
+      return response.missing === 'product'
+        ? `${response.factor} × ${response.table} = ${productOf(response.table, response.factor)}`
+        : `${productOf(response.table, response.factor)} ÷ ${response.table} = ${response.factor}`;
+    case 'table-build':
+      return Array.from({ length: response.upTo }, (_, i) => `${i + 1} × ${response.table} = ${productOf(response.table, i + 1)}`).join(', ');
+    case 'table-grid':
+      return response.ask === 'read-product'
+        ? `${factText(typeof response.target === 'object' ? response.target.table : response.tables[0], typeof response.target === 'object' ? response.target.factor : response.factors[0])}`
+        : cellsFor(typeof response.target === 'object' ? productOf(response.target.table, response.target.factor) : response.target, response.tables, response.factors)
+            .map((k) => k.split(',').reverse().join(' × '))
+            .join(', ');
+    case 'share-fair': {
+      const s = fairShare(response.total, response.people);
+      return `თითოეულს ${s.share}, ნაშთი ${s.leftover}`;
+    }
+    case 'share-groups':
+      return `თითოეულ ჯგუფში ${fairShare(response.total, response.groups).share}`;
+    case 'group-into': {
+      const g = groupInto(response.total, response.size);
+      return `${g.groups} სრული ჯგუფი, ნაშთი ${g.leftover}`;
+    }
+    case 'division-sentence':
+      return `${response.total} ÷ ${response.by} = ${quotientOf(response.total, response.by) ?? '?'}`;
+    case 'fact-family':
+      return response.missing === 'a'
+        ? `${response.a}`
+        : response.missing === 'b'
+          ? `${response.b}`
+          : `${productOf(response.a, response.b)}`;
+    case 'parts-judge':
+      return hasEqualPieces(response.shape) ? 'ტოლი ნაწილები' : 'არატოლი ნაწილები';
+    case 'fraction-pick':
+      return `${response.need} ნაწილი`;
+    case 'fraction-name': {
+      const f = fractionOf(response.shape, response.take);
+      return f ? `${fractionText(f)}` : 'ტოლი ნაწილები არ არის';
+    }
   }
 }

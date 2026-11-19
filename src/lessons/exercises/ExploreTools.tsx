@@ -21,6 +21,9 @@ import { DigitLab, ExpandedLab, MissingPlaceLab, PlaceLab } from './PlaceValueTo
 import { HundredLab, PatternLab, SkipLab, TenGroupsLab } from './PatternTools';
 import { AddLab, ColumnsLab, StoryLab, SubtractLab } from './AddSubTools';
 import { ArrayLab, EqualGroupsLab, GroupStoryLab, MultiplyLab, RepeatLab } from './GroupsTools';
+import { CountByFiveLab, DoubleDoubleLab, PairsLab, TimesGridLab, TimesTableLab } from './TimesTools';
+import { DivisionLab, FamilyLab, GroupIntoLab, ShareGroupsLab, ShareLab } from './ShareTools';
+import { EqualPartsLab, HalvesLab, NumeratorLab, QuartersLab, ThirdsLab } from './FractionTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -508,5 +511,35 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <ArrayLab tool={tool} />;
     case 'group-story-lab':
       return <GroupStoryLab tool={tool} />;
+    case 'pairs-lab':
+      return <PairsLab tool={tool} />;
+    case 'times-table-lab':
+      return <TimesTableLab tool={tool} />;
+    case 'double-double-lab':
+      return <DoubleDoubleLab tool={tool} />;
+    case 'count-by-five-lab':
+      return <CountByFiveLab tool={tool} />;
+    case 'times-grid-lab':
+      return <TimesGridLab tool={tool} />;
+    case 'share-lab':
+      return <ShareLab tool={tool} />;
+    case 'share-groups-lab':
+      return <ShareGroupsLab tool={tool} />;
+    case 'division-lab':
+      return <DivisionLab tool={tool} />;
+    case 'group-into-lab':
+      return <GroupIntoLab tool={tool} />;
+    case 'family-lab':
+      return <FamilyLab tool={tool} />;
+    case 'equal-parts-lab':
+      return <EqualPartsLab tool={tool} />;
+    case 'halves-lab':
+      return <HalvesLab tool={tool} />;
+    case 'quarters-lab':
+      return <QuartersLab tool={tool} />;
+    case 'thirds-lab':
+      return <ThirdsLab tool={tool} />;
+    case 'fraction-lab2':
+      return <NumeratorLab tool={tool} />;
   }
 }

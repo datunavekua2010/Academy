@@ -409,7 +409,49 @@ export type ResponseSpec =
   /** Build any true array for a total. Stored as `"rows,cols"`; every factor pair is right. */
   | { type: 'array-build'; total: number }
   /** A groups story answered as `groups × each = total`. Stored as `"groups,each,total"`. */
-  | { type: 'group-story'; groups: number; each: number; text: string; unit: string; what: string };
+  | { type: 'group-story'; groups: number; each: number; text: string; unit: string; what: string }
+  /**
+   * A times-table fact: the student writes the two factors and the product is computed from them, so a right
+   * sentence is right however it is ordered (`3 × 4` and `4 × 3` both hold). Stored as `"table,factor"`.
+   */
+  | { type: 'times-fact'; table: number; factor: number; max?: number }
+  /** A missing number in a multiplication sentence. Stored as the number written. */
+  | { type: 'times-missing'; table: number; factor: number; missing: 'factor' | 'product'; max?: number }
+  /**
+   * The student fills a table row fact by fact, in order. Stored as the comma-separated products written so far
+   * (starting from `1 × table`).
+   */
+  | { type: 'table-build'; table: number; upTo: number }
+  /**
+   * A grid of products: `tables` down the side, `factors` across. Either the student taps the cells that make
+   * `target`, or reads the product at a named cell. Stored as cell keys (`"table,factor"`) or the product.
+   */
+  | { type: 'table-grid'; tables: number[]; factors: number[]; ask: 'find-target' | 'read-product'; target: number | { table: number; factor: number } }
+  /**
+   * Share `total` objects fairly among `people` characters: every one must hold the same number and nothing may be
+   * left over, so the share is `total / people`. Stored as `"share,leftover"`.
+   */
+  | { type: 'share-fair'; total: number; people: number; glyph?: Glyph }
+  /**
+   * Put `total` objects into `groups` containers; right when every container holds the same number and nothing is
+   * left. Stored as the counts of the containers (`"3,3,3"`), so fairness is decided by the numbers.
+   */
+  | { type: 'share-groups'; total: number; groups: number; glyph?: Glyph }
+  /** Make as many complete groups of `size` as possible and count them. Stored as `"groups,leftover"`. */
+  | { type: 'group-into'; total: number; size: number; glyph?: Glyph }
+  /**
+   * A division sentence `total ÷ by = share`: the student writes the dividend and the divisor, and the quotient is
+   * computed from them. Stored as `"total,by"`.
+   */
+  | { type: 'division-sentence'; total: number; by: number; family?: 'share' | 'group' }
+  /** One of the four facts of a family, `a × b = p` ⇄ `p ÷ a = b`. Stored as the missing number. */
+  | { type: 'fact-family'; a: number; b: number; missing: 'a' | 'b' | 'product' }
+  /** Equal or unequal parts, decided by the areas the cuts really make. Stored as `"1"` (equal) or `"0"`. */
+  | { type: 'parts-judge'; shape: ShapeSpec }
+  /** Pick `need` of the equal parts of a whole, so the fraction shown is `need / parts`. Stored as piece numbers. */
+  | { type: 'fraction-pick'; shape: ShapeSpec; need: number; noun?: string }
+  /** Read the denominator (equal parts) and the numerator (parts taken) off a divided shape. Stored as `"num,den"`. */
+  | { type: 'fraction-name'; shape: ShapeSpec; take: number[] };
 
 // ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
 
@@ -571,7 +613,15 @@ export type VisualSpec =
   /** A rectangular array of counters. */
   | { type: 'array'; rows: number; cols: number }
   /** Repeated addition and the matching multiplication, written out. */
-  | { type: 'repeated'; groups: number; each: number };
+  | { type: 'repeated'; groups: number; each: number }
+  /** A row of the times table filled up to `upTo` facts, with its skip-count underneath. */
+  | { type: 'table-row'; table: number; upTo: number; filled?: number; caption?: string }
+  /** A grid of products — the times-table square, or part of it — with some cells highlighted. */
+  | { type: 'times-grid'; tables: number[]; factors: number[]; highlight?: Array<{ table: number; factor: number }>; caption?: string }
+  /** A divided shape with some parts taken, for a fractions picture. */
+  | { type: 'shape-parts'; shape: ShapeSpec; take?: number[]; caption?: string }
+  /** A quantity shared among characters: what each receives, and what is left. */
+  | { type: 'share'; total: number; people: number; glyph?: Glyph; caption?: string };
 
 
 /** Feedback aimed at one specific wrong answer. */
@@ -782,7 +832,37 @@ export type ExploreTool =
   /** Arrange counters into rows and columns, then turn the array. */
   | { tool: 'array-lab'; start: { rows: number; cols: number }; max: number }
   /** Illustrated group/array problems: choose a model and calculate the total. */
-  | { tool: 'group-story-lab'; stories: Array<{ text: string; groups: number; each: number; unit: string }> };
+  | { tool: 'group-story-lab'; stories: Array<{ text: string; groups: number; each: number; unit: string }> }
+  /** Build pairs of objects; the total and the skip-count grow with each pair. */
+  | { tool: 'pairs-lab'; maxGroups: number }
+  /** A times table built fact by fact, by adding groups or by jumping the skip-count. */
+  | { tool: 'times-table-lab'; table: number; upTo: number }
+  /** Double a group and double it again, so ×4 is two doublings. */
+  | { tool: 'double-double-lab'; start: number; upTo: number }
+  /** Arrange objects in groups of five and count on in fives. */
+  | { tool: 'count-by-five-lab'; upTo: number }
+  /** The times-table grid: highlight related facts and work through the challenges. */
+  | { tool: 'times-grid-lab'; tables: number[]; factors: number[] }
+  /** Give objects to characters one at a time and see when everyone has the same. */
+  | { tool: 'share-lab'; total: number; people: number; glyph?: Glyph }
+  /** Drop objects into containers and watch them become equal. */
+  | { tool: 'share-groups-lab'; total: number; groups: number; glyph?: Glyph }
+  /** Read a share as a division sentence, and watch the numbers fill it in. */
+  | { tool: 'division-lab'; total: number; people: number; glyph?: Glyph }
+  /** Fill containers of a fixed capacity and count the complete ones, with the leftovers. */
+  | { tool: 'group-into-lab'; total: number; size: number; glyph?: Glyph }
+  /** Build equal groups, then turn the same model round into a division fact. */
+  | { tool: 'family-lab'; a: number; b: number }
+  /** Divide a whole into equal parts and pick them out one by one. */
+  | { tool: 'equal-parts-lab'; parts: number; shapes: ShapeKind[] }
+  /** Split shapes into two equal parts, in more than one orientation. */
+  | { tool: 'halves-lab'; shapes: ShapeKind[] }
+  /** Divide a whole into four equal parts, in more than one way. */
+  | { tool: 'quarters-lab'; shapes: ShapeKind[] }
+  /** Divide a whole into three equal parts, and compare equal with unequal thirds. */
+  | { tool: 'thirds-lab'; shapes: ShapeKind[] }
+  /** Pick parts of a divided shape and watch the numerator and denominator change. */
+  | { tool: 'fraction-lab2'; shapes: Array<{ shape: ShapeKind; parts: number }> };
 
 
 export interface ExploreActivity extends ActivityBase {
@@ -938,7 +1018,25 @@ export type ExplainBlock =
   /** A rectangular array as a static picture. */
   | { type: 'array'; rows: number; cols: number; caption?: string }
   /** Repeated addition and the matching multiplication, written out. */
-  | { type: 'repeated'; groups: number; each: number; caption?: string };
+  | { type: 'repeated'; groups: number; each: number; caption?: string }  
+  /** The table walked one fact at a time, the products appearing as the skip-count advances. */
+  | { type: 'table-demo'; table: number; upTo: number; steps: string[]; caption?: string }
+  /** Doubling twice: a group, its double, and its double again — which is the four times table. */
+  | { type: 'double-demo'; each: number; factor: number; steps: string[]; caption?: string }
+  /** A skip-count by a table, one landing at a time, with the running rule. */
+  | { type: 'count-by-demo'; table: number; count: number; steps: string[]; caption?: string }
+  /** A fair share, or a grouping, walked one object at a time. */
+  | { type: 'share-demo'; mode: 'share' | 'group'; total: number; people: number; steps: string[]; caption?: string }
+  /** A whole cut into equal parts in front of the student, with the fraction written underneath. */
+  | { type: 'fraction-demo'; shape: ShapeKind; parts: number; take: number; steps: string[]; caption?: string }
+  /** A share written out as equal groups, for a static picture in an explanation. */
+  | { type: 'share'; total: number; people: number; glyph?: Glyph; caption?: string }
+  /** A row of the times table, for a static picture in an explanation. */
+  | { type: 'table-row'; table: number; upTo: number; filled?: number; caption?: string }
+  /** A grid of products with some cells highlighted, for a static picture in an explanation. */
+  | { type: 'times-grid'; tables: number[]; factors: number[]; highlight?: Array<{ table: number; factor: number }>; caption?: string }
+  /** A divided shape with some parts picked, for a static picture in an explanation. */
+  | { type: 'shape-parts'; shape: ShapeSpec; take?: number[]; caption?: string };
 
 
 export interface ExplainActivity extends ActivityBase {
