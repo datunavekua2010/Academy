@@ -375,7 +375,41 @@ export type ResponseSpec =
    * One place is hidden and the student types its value: `345` with the tens hidden is 40, not 4. Correct from the
    * number itself. Stored as the typed value.
    */
-  | { type: 'place-missing'; value: number; missing: Place };
+  | { type: 'place-missing'; value: number; missing: Place }
+  /**
+   * Skip-count on a number line: the character hops one landing at a time from `start`, `count` landings in all. Stored
+   * as the number of hops taken (a wrong answer is a different count, not a different rule).
+   */
+  | { type: 'skip-line'; start: number; step: number; count: number; walker?: 'rabbit' | 'frog' | 'kangaroo' }
+  /**
+   * A sequence with blank positions. `start`/`step`/`count` define every number, so the answer is computed, never read
+   * off a picture. Stored as the typed numbers of the blanks, in position order, comma-separated.
+   */
+  | { type: 'sequence-fill'; start: number; step: number; count: number; holes: number[]; arrows?: string }
+  /** Which rule does this sequence follow? Options are candidate steps. Stored as the chosen step. */
+  | { type: 'sequence-rule'; start: number; step: number; count: number; options: number[] }
+  /**
+   * Two two-digit numbers in columns; the student writes the result digit by digit. Stored as `"tens,ones"`, so a
+   * transposed answer is a different answer. A carry / a broken ten is required exactly when the numbers need one.
+   */
+  | { type: 'column-sum'; a: number; b: number; op: 'add' | 'subtract' }
+  /** The same sum, answered in the order it is taught: the ones first, then the tens (with any carried ten). Stored `"ones,tens"`. */
+  | { type: 'sum-steps'; a: number; b: number }
+  /** A subtraction with the ten broken open by hand before the answer can be typed. Stored as the answer number. */
+  | { type: 'difference-steps'; a: number; b: number }
+  /** A story problem: pick the operation and type the answer. Stored as `"add,42"` or `"subtract,17"`. */
+  | { type: 'story-problem'; kind: 'join' | 'separate' | 'compare'; a: number; b: number; story: string; unit: string }
+  /**
+   * Make every group hold the same number of objects. `each` is the starting count of a real group (the rest may differ).
+   * Stored as the counts of the groups, comma-separated — equality is decided by those numbers.
+   */
+  | { type: 'make-equal'; groups: number; each: number; start?: number[] }
+  /** Read an array: its rows, what is in each row, and the total. Stored as `"rows,cols"` (the total is computed). */
+  | { type: 'array-read'; rows: number; cols: number }
+  /** Build any true array for a total. Stored as `"rows,cols"`; every factor pair is right. */
+  | { type: 'array-build'; total: number }
+  /** A groups story answered as `groups × each = total`. Stored as `"groups,each,total"`. */
+  | { type: 'group-story'; groups: number; each: number; text: string; unit: string; what: string };
 
 // ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
 
@@ -521,7 +555,23 @@ export type VisualSpec =
   /** A three-digit number with one place covered by a card, so the student reads what is still shown. */
   | { type: 'place-cards'; value: number; hide?: Place }
   /** A number sentence in expanded form, e.g. `300 + 40 + 5 = 345`. */
-  | { type: 'expanded'; value: number; hide?: Place };
+  | { type: 'expanded'; value: number; hide?: Place }
+  /** The landings of a skip-count on a number line, with the character's stops named. */
+  | { type: 'skip-line'; start: number; step: number; count: number; hideLandings?: boolean; walker?: 'rabbit' | 'frog' | 'kangaroo' }
+  /** The same skip-count counted in groups of objects, with the running total beside each group. */
+  | { type: 'group-count'; size: number; groups: number; noun?: string }
+  /** Two two-digit numbers written in columns, with the answer shown (and the carry / broken ten named). */
+  | { type: 'columns'; a: number; b: number; op: 'add' | 'subtract' }
+  /** A story problem's numbers drawn as tens rods and ones cubes. */
+  | { type: 'story-model'; kind: 'join' | 'separate' | 'compare'; a: number; b: number; unit: string }
+  /** Equal groups of counters, each labelled with its count. */
+  | { type: 'groups-equal'; groups: number; each: number }
+  /** Groups that are deliberately not equal, for "which are equal?" questions. */
+  | { type: 'groups-uneven'; sizes: number[] }
+  /** A rectangular array of counters. */
+  | { type: 'array'; rows: number; cols: number }
+  /** Repeated addition and the matching multiplication, written out. */
+  | { type: 'repeated'; groups: number; each: number };
 
 
 /** Feedback aimed at one specific wrong answer. */
@@ -703,7 +753,36 @@ export type ExploreTool =
   /** Split a number into its three place-value cards, or put the cards back together. */
   | { tool: 'expanded-lab'; numbers: number[] }
   /** Hide one place of a number, read the two that are shown, and work out the hidden value. */
-  | { tool: 'missing-place-lab'; numbers: number[]; places: Place[] };
+  | { tool: 'missing-place-lab'; numbers: number[]; places: Place[] }
+  /**
+   * A character hops along a number line by the chosen step; each landing is highlighted and the running rule is shown.
+   * `start` is where the character stands first, `steps` the steps to offer, `landings` how many hops to allow.
+   */
+  | { tool: 'skip-lab'; start: number; steps: number[]; landings: number; walker?: 'rabbit' | 'frog' | 'kangaroo' }
+  /** Add or remove groups of ten and watch the number (and its tens/hundreds digits) change. */
+  | { tool: 'ten-groups-lab'; start: number; groups: number; step: 10 }
+  /** Put hundreds blocks down and jump along a line by one hundred at a time. */
+  | { tool: 'hundred-lab'; start: number; groups: number }
+  /** A sequence with blanks to fill; the rule can be asked for first, then used. */
+  | { tool: 'pattern-lab'; patterns: Array<{ start: number; step: number; count: number; holes: number[] }> }
+  /** Put both numbers on one mat and watch the sum, with the exchange offered exactly when ten ones appear. */
+  | { tool: 'add-lab'; examples: Array<{ a: number; b: number }> }
+  /** Take the second number off the mat; a ten has to be broken when the ones are too small. */
+  | { tool: 'subtract-lab'; examples: Array<{ a: number; b: number }> }
+  /** Build a two-digit sum or difference in columns and see when a carry or a broken ten is needed. */
+  | { tool: 'columns-lab'; examples: Array<{ a: number; b: number; op: 'add' | 'subtract' }> }
+  /** Read a story, act it out, choose the operation and check the answer. */
+  | { tool: 'story-lab'; stories: Array<{ kind: 'join' | 'separate' | 'compare'; text: string; a: number; b: number; unit: string }> }
+  /** Move counters between groups until they are all equal; `each` is the count a real group should hold. */
+  | { tool: 'groups-equal-lab'; each: number; sizes?: number[] }
+  /** Add one group at a time and watch the repeated addition grow. */
+  | { tool: 'repeat-lab'; each: number; maxGroups: number }
+  /** Change the groups and what is in each; picture, repeated addition and multiplication update together. */
+  | { tool: 'multiply-lab'; start: { groups: number; each: number }; maxGroups: number; maxEach: number }
+  /** Arrange counters into rows and columns, then turn the array. */
+  | { tool: 'array-lab'; start: { rows: number; cols: number }; max: number }
+  /** Illustrated group/array problems: choose a model and calculate the total. */
+  | { tool: 'group-story-lab'; stories: Array<{ text: string; groups: number; each: number; unit: string }> };
 
 
 export interface ExploreActivity extends ActivityBase {
@@ -818,7 +897,48 @@ export type ExplainBlock =
    * `digit` (4): the number, the digit tapped, its place, what that digit is worth. `build` (4): the target, the
    * hundreds, the tens and ones, the number made.
    */
-  | { type: 'place-demo'; mode: 'regroup' | 'expand' | 'digit' | 'build'; value: number; place?: Place; steps: string[]; caption?: string };
+  | { type: 'place-demo'; mode: 'regroup' | 'expand' | 'digit' | 'build'; value: number; place?: Place; steps: string[]; caption?: string }
+  /** A sequence with blank places, for a static picture in an explanation. */
+  | { type: 'sequence'; items: Array<number | null>; arrows?: string; caption?: string }
+  /** The landings of a skip-count on a number line, for a static picture in an explanation. */
+  | { type: 'skip-line'; start: number; step: number; count: number; hideLandings?: boolean; walker?: 'rabbit' | 'frog' | 'kangaroo'; caption?: string }
+  /** Groups counted by a step, with the running total beside each group. */
+  | { type: 'group-count'; size: number; groups: number; noun?: string; caption?: string }
+  /**
+   * A skip-count story told one step at a time (`steps` are the captions). `forward` (4): the start, the first hop, the
+   * rule, the pattern. `backward` (4): the start, the first hop back, the rule, the same numbers in reverse.
+   */
+  | { type: 'skip-demo'; mode: 'forward' | 'backward'; start: number; step: number; count: number; walker?: 'rabbit' | 'frog' | 'kangaroo'; steps: string[]; caption?: string }
+  /** Two two-digit numbers in columns, answered or not, with the carry or broken ten named. */
+  | { type: 'columns'; a: number; b: number; op: 'add' | 'subtract'; showAnswer?: boolean; caption?: string }
+  /** A story problem's numbers drawn as blocks, for a static picture. */
+  | { type: 'story-model'; kind: 'join' | 'separate' | 'compare'; a: number; b: number; unit: string; caption?: string }
+  /**
+   * A two-digit sum told one step at a time. `carry` (4): the ones, ten or more, the carried ten, the sum. `plain` (4):
+   * the ones, less than ten, the tens, the sum.
+   */
+  | { type: 'sum-demo'; mode: 'carry' | 'plain'; a: number; b: number; steps: string[]; caption?: string }
+  /**
+   * A two-digit difference told one step at a time. `borrow` (5): the ones that are too small, the ten broken, the ones
+   * subtracted, the tens subtracted, the answer checked by adding. `plain` (4): the ones, the tens, the answer, the check.
+   */
+  | { type: 'difference-demo'; mode: 'borrow' | 'plain'; a: number; b: number; steps: string[]; caption?: string }
+  /** A story problem acted out one frame at a time, ending on the number sentence. */
+  | { type: 'story-demo2'; kind: 'join' | 'separate' | 'compare'; a: number; b: number; text: string; unit: string; steps: string[]; caption?: string }
+  /** Groups appearing one at a time with the repeated addition growing beside them. */
+  | { type: 'groups-demo'; groups: number; each: number; equal?: boolean; steps: string[]; caption?: string }
+  /** An array read by rows, then by columns, then turned: the total never changes. */
+  | { type: 'array-demo'; rows: number; cols: number; steps: string[]; caption?: string }
+  /** The picture, the repeated addition, the multiplication and the total, one at a time. */
+  | { type: 'four-ways'; groups: number; each: number; caption?: string }
+  /** Equal groups as a static picture in an explanation. */
+  | { type: 'groups-equal'; groups: number; each: number; caption?: string }
+  /** Groups that are not all equal, for an explanation about what "equal" excludes. */
+  | { type: 'groups-uneven'; sizes: number[]; caption?: string }
+  /** A rectangular array as a static picture. */
+  | { type: 'array'; rows: number; cols: number; caption?: string }
+  /** Repeated addition and the matching multiplication, written out. */
+  | { type: 'repeated'; groups: number; each: number; caption?: string };
 
 
 export interface ExplainActivity extends ActivityBase {

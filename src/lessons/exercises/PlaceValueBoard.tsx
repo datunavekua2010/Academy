@@ -292,7 +292,7 @@ export function BuildMat({
                 </button>
               )}
               {allowRegroup && place !== 'ones' && (
-                <button type="button" className="btn btn-ghost btn-small" disabled={disabled || counts[place] < 1} aria-label={`1 ${PLACE_NAME[place]} დაშალე 10 ${PLACE_PLURAL[place === 'tens' ? 'ones' : 'tens']}-ად`} onClick={() => doBreak(place)}>
+                <button type="button" className="btn btn-ghost btn-small" disabled={disabled || counts[place] < 1} aria-label={`1 ${PLACE_NAME[place]} დაშალე 10 ${PLACE_NAME[place === 'tens' ? 'ones' : 'tens'].replace(/ი$/, '')}ად`} onClick={() => doBreak(place)}>
                   ⇄ 1 → 10
                 </button>
               )}

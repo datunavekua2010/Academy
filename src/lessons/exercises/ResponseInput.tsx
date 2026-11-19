@@ -19,6 +19,9 @@ import { FindShapesAnswer, HandPickAnswer, MatchTimeAnswer, ReadClockAnswer, Set
 import { BalancePansAnswer, BalancePuzzleAnswer, CluePickAnswer, EqualGroupsAnswer, SentenceBuildAnswer, SentencePickAnswer } from './BalanceAnswers';
 import { ChartBuildAnswer, ChartReadAnswer, SortGridAnswer, SortGroupsAnswer, VennSortAnswer } from './SortAnswers';
 import { DigitTapAnswer, ExpandedBuildAnswer, PlaceBuildAnswer, PlaceMissingAnswer } from './PlaceValueAnswers';
+import { SequenceFillAnswer, SequenceRuleAnswer, SkipLineAnswer } from './PatternAnswers';
+import { ColumnSumAnswer, DifferenceStepsAnswer, StoryProblemAnswer, SumStepsAnswer } from './AddSubAnswers';
+import { ArrayBuildAnswerControl, ArrayReadAnswerControl, GroupStoryAnswerControl, MakeEqualAnswerControl } from './GroupsAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -418,6 +421,28 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
       return <DigitTapAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'place-missing':
       return <PlaceMissingAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'skip-line':
+      return <SkipLineAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'sequence-fill':
+      return <SequenceFillAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'sequence-rule':
+      return <SequenceRuleAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'column-sum':
+      return <ColumnSumAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'sum-steps':
+      return <SumStepsAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'difference-steps':
+      return <DifferenceStepsAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'story-problem':
+      return <StoryProblemAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'make-equal':
+      return <MakeEqualAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'array-read':
+      return <ArrayReadAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'array-build':
+      return <ArrayBuildAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'group-story':
+      return <GroupStoryAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'cut':
       return (
         <CutBoard
