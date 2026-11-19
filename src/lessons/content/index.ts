@@ -14,6 +14,21 @@ import { g2u04l2 } from './g2-u04-l2';
 import { g2u04l3 } from './g2-u04-l3';
 import { g2u04l4 } from './g2-u04-l4';
 import { g2u04l5 } from './g2-u04-l5';
+import { g2u05l1 } from './g2-u05-l1';
+import { g2u05l2 } from './g2-u05-l2';
+import { g2u05l3 } from './g2-u05-l3';
+import { g2u05l4 } from './g2-u05-l4';
+import { g2u05l5 } from './g2-u05-l5';
+import { g2u06l1 } from './g2-u06-l1';
+import { g2u06l2 } from './g2-u06-l2';
+import { g2u06l3 } from './g2-u06-l3';
+import { g2u06l4 } from './g2-u06-l4';
+import { g2u06l5 } from './g2-u06-l5';
+import { g2u07l1 } from './g2-u07-l1';
+import { g2u07l2 } from './g2-u07-l2';
+import { g2u07l3 } from './g2-u07-l3';
+import { g2u07l4 } from './g2-u07-l4';
+import { g2u07l5 } from './g2-u07-l5';
 import { g1u01l1 } from './g1-u01-l1';
 import { g1u01l2 } from './g1-u01-l2';
 import { g1u01l3 } from './g1-u01-l3';
@@ -149,6 +164,21 @@ export const LESSON_CONTENT: Record<string, Lesson> = {
   [g2u04l3.id]: g2u04l3,
   [g2u04l4.id]: g2u04l4,
   [g2u04l5.id]: g2u04l5,
+  [g2u05l1.id]: g2u05l1,
+  [g2u05l2.id]: g2u05l2,
+  [g2u05l3.id]: g2u05l3,
+  [g2u05l4.id]: g2u05l4,
+  [g2u05l5.id]: g2u05l5,
+  [g2u06l1.id]: g2u06l1,
+  [g2u06l2.id]: g2u06l2,
+  [g2u06l3.id]: g2u06l3,
+  [g2u06l4.id]: g2u06l4,
+  [g2u06l5.id]: g2u06l5,
+  [g2u07l1.id]: g2u07l1,
+  [g2u07l2.id]: g2u07l2,
+  [g2u07l3.id]: g2u07l3,
+  [g2u07l4.id]: g2u07l4,
+  [g2u07l5.id]: g2u07l5,
 };
 
 export const getLessonContent = (lessonId: string): Lesson | undefined => LESSON_CONTENT[lessonId];

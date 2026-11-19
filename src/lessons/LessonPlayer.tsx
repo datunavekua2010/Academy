@@ -27,6 +27,10 @@ import { AnswerColumns, StoryPicture } from './exercises/AddSubBoard';
 import { DifferenceDemo, SumDemo, SumStoryDemo } from './exercises/AddSubTools';
 import { ArrayBoard, EqualGroups, RepeatedLine, UnevenGroups } from './exercises/GroupsBoard';
 import { ArrayDemo, FourWaysDemo, GroupsDemo } from './exercises/GroupsTools';
+import { CountByDemo, DoubleDemo, TableDemo } from './exercises/TimesTools';
+import { ShareDemo } from './exercises/ShareTools';
+import { FractionDemo } from './exercises/FractionTools';
+import { TimesGroups } from './exercises/TimesBoard';
 import { ExpandedLine, PlaceCards } from './exercises/PlaceValueBoard';
 import { ClockFace } from './exercises/ClockBoard';
 import { Shape2DRow } from './exercises/Shape2DBoard';
@@ -192,6 +196,25 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <ArrayDemo key={i} block={block} />;
           case 'four-ways':
             return <FourWaysDemo key={i} block={block} />;
+          case 'table-demo':
+            return <TableDemo key={i} block={block} />;
+          case 'double-demo':
+            return <DoubleDemo key={i} block={block} />;
+          case 'count-by-demo':
+            return <CountByDemo key={i} block={block} />;
+          case 'share-demo':
+            return <ShareDemo key={i} block={block} />;
+          case 'fraction-demo':
+            return <FractionDemo key={i} block={block} />;
+          case 'share': {
+            const per = Math.floor(block.total / block.people);
+            const left = block.total % block.people;
+            return (
+              <div className="demo demo-share-static" key={i}>
+                <TimesGroups key={0} table={per} factor={block.people} glyph={block.glyph ?? 'apple'} caption={left === 0 ? `${block.total} ÷ ${block.people} = ${per}` : `${block.total} ÷ ${block.people} = ${per}, ნაშთი ${left}`} />
+              </div>
+            );
+          }
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

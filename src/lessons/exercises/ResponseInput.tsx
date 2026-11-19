@@ -22,6 +22,9 @@ import { DigitTapAnswer, ExpandedBuildAnswer, PlaceBuildAnswer, PlaceMissingAnsw
 import { SequenceFillAnswer, SequenceRuleAnswer, SkipLineAnswer } from './PatternAnswers';
 import { ColumnSumAnswer, DifferenceStepsAnswer, StoryProblemAnswer, SumStepsAnswer } from './AddSubAnswers';
 import { ArrayBuildAnswerControl, ArrayReadAnswerControl, GroupStoryAnswerControl, MakeEqualAnswerControl } from './GroupsAnswers';
+import { TableBuildAnswerControl, TableGridAnswerControl, TimesFactAnswerControl, TimesMissingAnswerControl } from './TimesAnswers';
+import { DivisionSentenceAnswerControl, FactFamilyAnswerControl, GroupIntoAnswerControl, ShareFairAnswerControl, ShareGroupsAnswerControl } from './ShareAnswers';
+import { FractionNameAnswerControl, FractionPickAnswerControl, PartsJudgeAnswerControl } from './FractionAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -443,6 +446,30 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
       return <ArrayBuildAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
     case 'group-story':
       return <GroupStoryAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'times-fact':
+      return <TimesFactAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'times-missing':
+      return <TimesMissingAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'table-build':
+      return <TableBuildAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'table-grid':
+      return <TableGridAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'share-fair':
+      return <ShareFairAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'share-groups':
+      return <ShareGroupsAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'group-into':
+      return <GroupIntoAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'division-sentence':
+      return <DivisionSentenceAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'fact-family':
+      return <FactFamilyAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'parts-judge':
+      return <PartsJudgeAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'fraction-pick':
+      return <FractionPickAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'fraction-name':
+      return <FractionNameAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
     case 'cut':
       return (
         <CutBoard
