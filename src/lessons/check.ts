@@ -7,6 +7,7 @@ import { isBalanced, panTotal, sentenceHolds, type TermSpec } from './exercises/
 import { cellKey, chartCount, vennRegion, type SortObj } from './exercises/SortGeometry';
 import { VENN_REGION_NAME } from './exercises/SortGeometry';
 import { PLACE_NAME, PLACES, digitsOf, isStandard, partsOf, valueAt, valueOfBlocks, type Place } from './exercises/PlaceValueGeometry';
+import { holeValues, landings, ruleText, sequenceOf, stepOf, stepWords, termAt } from './exercises/PatternGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -88,6 +89,10 @@ const MSG = {
   firstLargest: 'ჯერ არ არის სწორი. პირველ ადგილზე ყველაზე დიდი რიცხვი უნდა იდგეს.',
   closeOrder: 'დასაწყისი სწორია. შეადარე დანარჩენი რიცხვები ერთმანეთს.',
   needMarker: 'გადაიტანე მარკერი რიცხვით ღერძზე და შემდეგ შეამოწმე.',
+  needSkip: 'გადადგი ნაბიჯები რიცხვით ღერძზე და შემდეგ შეამოწმე.',
+  needHoleValues: 'შეავსე ყველა გამოტოვებული რიცხვი.',
+  needRule: 'აირჩიე წესი: რამდენით იცვლება რიცხვები?',
+  wrongRule: 'ეს რიცხვები ასე არ იცვლება: შეადარე ორი მეზობელი რიცხვი.',
   notSimplified: 'მნიშვნელობა სწორია, მაგრამ გამოსახულება ჯერ არ არის გამარტივებული. ჩაწერე ყველაზე მარტივი სახით.',
 };
 
@@ -576,6 +581,66 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
       if (n === faceValue) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'face') ?? { id: 'face-value', answers: [], feedback: MSG.placeFaceValue });
       return wrong(question, findMisconception(question.misconceptions, (a) => Number(a) === n));
     }
+    case 'skip-line': {
+      const text = typeof input === 'string' ? input.trim() : '';
+      if (!text) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needSkip };
+      const hops = Number(text);
+      if (!Number.isInteger(hops) || hops < 0) return { verdict: 'incomplete', feedback: MSG.needSkip };
+      const wanted = response.count - 1;
+      if (hops === wanted) return { verdict: 'correct' };
+      // the character stopped on a real landing, but not the last one: the count is short, not the rule
+      const landed = termAt(response.start, response.step, hops);
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === hops);
+      if (hit) return wrong(question, hit);
+      // the character stands on a real landing, just not the last one: the count is short, not the rule
+      const left = wanted - hops;
+      // the count is the point of this question, so say how many jumps are missing rather than a generic line
+      return {
+        verdict: 'incorrect',
+        misconceptionId: 'short',
+        feedback:
+          left > 0
+            ? `ჩერდები ${landed}-ზე. ${ruleText(response.step)} — კიდევ ${left} ნახტომია საჭირო.`
+            : `გადახვედი ${landed}-ზე: საჭირო იყო ${termAt(response.start, response.step, wanted)}.`,
+      };
+    }
+    case 'sequence-fill': {
+      const raw = (typeof input === 'string' ? input : '').split(',');
+      const holes = [...response.holes].sort((a, b) => a - b);
+      if (raw.length < holes.length || raw.slice(0, holes.length).some((v) => v.trim() === '')) return { verdict: 'incomplete', feedback: MSG.needHoleValues };
+      const typed = raw.slice(0, holes.length).map((v) => Number(v.trim()));
+      if (typed.some((n) => !Number.isFinite(n))) return { verdict: 'incomplete', feedback: MSG.needHoleValues };
+      const numbers = sequenceOf(response.start, response.step, response.count);
+      const wanted = holeValues(numbers, holes);
+      if (typed.every((n, i) => n === wanted[i])) return { verdict: 'correct' };
+      // a blank filled with its neighbour's number is the classic slip: the sequence would no longer move by the step
+      const neighbour = holes.some((pos, i) => {
+        const pair = [numbers[pos - 1], numbers[pos + 1]];
+        return pair.includes(typed[i]) && typed[i] !== wanted[i];
+      });
+      const joined = typed.join(',');
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === joined);
+      if (hit) return wrong(question, hit);
+      if (neighbour) return wrong(question, { id: 'copied', answers: [], feedback: `გამოტოვებული ადგილი მეზობლის ტოლი არ არის: ${ruleText(response.step)}.` });
+      return wrong(question, undefined);
+    }
+    case 'sequence-rule': {
+      const text = typeof input === 'string' ? input.trim() : '';
+      if (!text) return { verdict: 'incomplete', feedback: MSG.needRule };
+      const chosen = Number(text);
+      if (!Number.isFinite(chosen)) return { verdict: 'incomplete', feedback: MSG.needRule };
+      const numbers = sequenceOf(response.start, response.step, response.count);
+      if (chosen === response.step) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === chosen);
+      if (hit) return wrong(question, hit);
+      // the student may have read the rule of one pair only: say what the numbers really do
+      const real = stepOf(numbers);
+      return {
+        verdict: 'incorrect',
+        misconceptionId: 'rule',
+        feedback: question.fallbackFeedback ?? `${MSG.wrongRule} ${real === null ? '' : ruleText(real) + '.'}`.trim(),
+      };
+    }
   }
 }
 
@@ -703,5 +768,13 @@ export function describeAnswer(response: ResponseSpec): string {
       return `${PLACE_NAME[response.target]}: ციფრი ${digitsOf(response.value)[response.target]} (ღირს ${valueAt(response.value, response.target)})`;
     case 'place-missing':
       return `${PLACE_NAME[response.missing]}: ${valueAt(response.value, response.missing)}`;
+    case 'skip-line':
+      return `${landings(response.start, response.step, termAt(response.start, response.step, response.count - 1)).join(' → ')}`;
+    case 'sequence-fill': {
+      const numbers = sequenceOf(response.start, response.step, response.count);
+      return holeValues(numbers, [...response.holes].sort((a, b) => a - b)).join(', ');
+    }
+    case 'sequence-rule':
+      return `${stepWords(response.step)} (${response.step > 0 ? '+' : '−'}${Math.abs(response.step)})`;
   }
 }

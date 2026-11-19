@@ -16,6 +16,7 @@ import { BalanceScale, GroupsBoard, SentenceLine } from './BalanceBoard';
 import { PictureChart, SortChip, VennBoard } from './SortBoard';
 import { valueLabel } from './SortBoard';
 import { ExpandedLine, PlaceBlocks, PlaceCards } from './PlaceValueBoard';
+import { GroupCount, SkipLine } from './PatternBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -176,6 +177,10 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <PlaceCards value={spec.value} hide={spec.hide} label="რიცხვის ციფრები" />;
     case 'expanded':
       return <ExpandedLine value={spec.value} hide={spec.hide} label={spec.hide ? `გაშლილი სახე, ${spec.hide} დაფარულია` : undefined} />;
+    case 'skip-line':
+      return <SkipLine spec={{ start: spec.start, step: spec.step, count: spec.count, hideLandings: spec.hideLandings, walker: spec.walker }} />;
+    case 'group-count':
+      return <GroupCount size={spec.size} groups={spec.groups} noun={spec.noun} />;
     case 'venn':
       return (
         <VennBoard

@@ -375,7 +375,19 @@ export type ResponseSpec =
    * One place is hidden and the student types its value: `345` with the tens hidden is 40, not 4. Correct from the
    * number itself. Stored as the typed value.
    */
-  | { type: 'place-missing'; value: number; missing: Place };
+  | { type: 'place-missing'; value: number; missing: Place }
+  /**
+   * Skip-count on a number line: the character hops one landing at a time from `start`, `count` landings in all. Stored
+   * as the number of hops taken (a wrong answer is a different count, not a different rule).
+   */
+  | { type: 'skip-line'; start: number; step: number; count: number; walker?: 'rabbit' | 'frog' | 'kangaroo' }
+  /**
+   * A sequence with blank positions. `start`/`step`/`count` define every number, so the answer is computed, never read
+   * off a picture. Stored as the typed numbers of the blanks, in position order, comma-separated.
+   */
+  | { type: 'sequence-fill'; start: number; step: number; count: number; holes: number[]; arrows?: string }
+  /** Which rule does this sequence follow? Options are candidate steps. Stored as the chosen step. */
+  | { type: 'sequence-rule'; start: number; step: number; count: number; options: number[] };
 
 // ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
 
@@ -521,7 +533,11 @@ export type VisualSpec =
   /** A three-digit number with one place covered by a card, so the student reads what is still shown. */
   | { type: 'place-cards'; value: number; hide?: Place }
   /** A number sentence in expanded form, e.g. `300 + 40 + 5 = 345`. */
-  | { type: 'expanded'; value: number; hide?: Place };
+  | { type: 'expanded'; value: number; hide?: Place }
+  /** The landings of a skip-count on a number line, with the character's stops named. */
+  | { type: 'skip-line'; start: number; step: number; count: number; hideLandings?: boolean; walker?: 'rabbit' | 'frog' | 'kangaroo' }
+  /** The same skip-count counted in groups of objects, with the running total beside each group. */
+  | { type: 'group-count'; size: number; groups: number; noun?: string };
 
 
 /** Feedback aimed at one specific wrong answer. */
@@ -703,7 +719,18 @@ export type ExploreTool =
   /** Split a number into its three place-value cards, or put the cards back together. */
   | { tool: 'expanded-lab'; numbers: number[] }
   /** Hide one place of a number, read the two that are shown, and work out the hidden value. */
-  | { tool: 'missing-place-lab'; numbers: number[]; places: Place[] };
+  | { tool: 'missing-place-lab'; numbers: number[]; places: Place[] }
+  /**
+   * A character hops along a number line by the chosen step; each landing is highlighted and the running rule is shown.
+   * `start` is where the character stands first, `steps` the steps to offer, `landings` how many hops to allow.
+   */
+  | { tool: 'skip-lab'; start: number; steps: number[]; landings: number; walker?: 'rabbit' | 'frog' | 'kangaroo' }
+  /** Add or remove groups of ten and watch the number (and its tens/hundreds digits) change. */
+  | { tool: 'ten-groups-lab'; start: number; groups: number; step: 10 }
+  /** Put hundreds blocks down and jump along a line by one hundred at a time. */
+  | { tool: 'hundred-lab'; start: number; groups: number }
+  /** A sequence with blanks to fill; the rule can be asked for first, then used. */
+  | { tool: 'pattern-lab'; patterns: Array<{ start: number; step: number; count: number; holes: number[] }> };
 
 
 export interface ExploreActivity extends ActivityBase {
@@ -818,7 +845,18 @@ export type ExplainBlock =
    * `digit` (4): the number, the digit tapped, its place, what that digit is worth. `build` (4): the target, the
    * hundreds, the tens and ones, the number made.
    */
-  | { type: 'place-demo'; mode: 'regroup' | 'expand' | 'digit' | 'build'; value: number; place?: Place; steps: string[]; caption?: string };
+  | { type: 'place-demo'; mode: 'regroup' | 'expand' | 'digit' | 'build'; value: number; place?: Place; steps: string[]; caption?: string }
+  /** A sequence with blank places, for a static picture in an explanation. */
+  | { type: 'sequence'; items: Array<number | null>; arrows?: string; caption?: string }
+  /** The landings of a skip-count on a number line, for a static picture in an explanation. */
+  | { type: 'skip-line'; start: number; step: number; count: number; hideLandings?: boolean; walker?: 'rabbit' | 'frog' | 'kangaroo'; caption?: string }
+  /** Groups counted by a step, with the running total beside each group. */
+  | { type: 'group-count'; size: number; groups: number; noun?: string; caption?: string }
+  /**
+   * A skip-count story told one step at a time (`steps` are the captions). `forward` (4): the start, the first hop, the
+   * rule, the pattern. `backward` (4): the start, the first hop back, the rule, the same numbers in reverse.
+   */
+  | { type: 'skip-demo'; mode: 'forward' | 'backward'; start: number; step: number; count: number; walker?: 'rabbit' | 'frog' | 'kangaroo'; steps: string[]; caption?: string };
 
 
 export interface ExplainActivity extends ActivityBase {

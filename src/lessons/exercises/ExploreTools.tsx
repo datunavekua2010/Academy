@@ -18,6 +18,7 @@ import { ExploreToolViewClock, ExploreToolViewShapes2D } from './TimeShapeTools'
 import { ExploreToolViewBalance } from './BalanceTools';
 import { ExploreToolViewSort } from './SortTools';
 import { DigitLab, ExpandedLab, MissingPlaceLab, PlaceLab } from './PlaceValueTools';
+import { HundredLab, PatternLab, SkipLab, TenGroupsLab } from './PatternTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -479,5 +480,13 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <ExpandedLab tool={tool} />;
     case 'missing-place-lab':
       return <MissingPlaceLab tool={tool} />;
+    case 'skip-lab':
+      return <SkipLab tool={tool} />;
+    case 'ten-groups-lab':
+      return <TenGroupsLab tool={tool} />;
+    case 'hundred-lab':
+      return <HundredLab tool={tool} />;
+    case 'pattern-lab':
+      return <PatternLab tool={tool} />;
   }
 }

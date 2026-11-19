@@ -21,6 +21,8 @@ import { ClockDemo, Shape2DDemo } from './exercises/TimeShapeTools';
 import { BalanceDemo } from './exercises/BalanceTools';
 import { ChartDemo, SortDemo } from './exercises/SortTools';
 import { ExpandedDemo, PlaceDemo } from './exercises/PlaceValueTools';
+import { GroupCount, SequencePicture, SkipLine } from './exercises/PatternBoard';
+import { SkipDemo } from './exercises/PatternTools';
 import { ExpandedLine, PlaceCards } from './exercises/PlaceValueBoard';
 import { ClockFace } from './exercises/ClockBoard';
 import { Shape2DRow } from './exercises/Shape2DBoard';
@@ -154,6 +156,14 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <PlaceCards key={i} value={block.value} hide={block.hide} label="რიცხვის ციფრები" />;
           case 'expanded':
             return <ExpandedLine key={i} value={block.value} hide={block.hide} />;
+          case 'sequence':
+            return <SequencePicture key={i} items={block.items} arrows={block.arrows} caption={block.caption} />;
+          case 'skip-line':
+            return <SkipLine key={i} spec={{ start: block.start, step: block.step, count: block.count, hideLandings: block.hideLandings, walker: block.walker }} />;
+          case 'group-count':
+            return <GroupCount key={i} size={block.size} groups={block.groups} noun={block.noun} />;
+          case 'skip-demo':
+            return <SkipDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

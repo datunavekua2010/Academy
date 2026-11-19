@@ -19,6 +19,7 @@ import { FindShapesAnswer, HandPickAnswer, MatchTimeAnswer, ReadClockAnswer, Set
 import { BalancePansAnswer, BalancePuzzleAnswer, CluePickAnswer, EqualGroupsAnswer, SentenceBuildAnswer, SentencePickAnswer } from './BalanceAnswers';
 import { ChartBuildAnswer, ChartReadAnswer, SortGridAnswer, SortGroupsAnswer, VennSortAnswer } from './SortAnswers';
 import { DigitTapAnswer, ExpandedBuildAnswer, PlaceBuildAnswer, PlaceMissingAnswer } from './PlaceValueAnswers';
+import { SequenceFillAnswer, SequenceRuleAnswer, SkipLineAnswer } from './PatternAnswers';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -418,6 +419,12 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
       return <DigitTapAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'place-missing':
       return <PlaceMissingAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'skip-line':
+      return <SkipLineAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'sequence-fill':
+      return <SequenceFillAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'sequence-rule':
+      return <SequenceRuleAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
     case 'cut':
       return (
         <CutBoard

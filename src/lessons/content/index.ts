@@ -1,4 +1,9 @@
 import type { Lesson } from '../types';
+import { g2u02l1 } from './g2-u02-l1';
+import { g2u02l2 } from './g2-u02-l2';
+import { g2u02l3 } from './g2-u02-l3';
+import { g2u02l4 } from './g2-u02-l4';
+import { g2u02l5 } from './g2-u02-l5';
 import { g1u01l1 } from './g1-u01-l1';
 import { g1u01l2 } from './g1-u01-l2';
 import { g1u01l3 } from './g1-u01-l3';
@@ -119,6 +124,11 @@ export const LESSON_CONTENT: Record<string, Lesson> = {
   [g2u01l3.id]: g2u01l3,
   [g2u01l4.id]: g2u01l4,
   [g2u01l5.id]: g2u01l5,
+  [g2u02l1.id]: g2u02l1,
+  [g2u02l2.id]: g2u02l2,
+  [g2u02l3.id]: g2u02l3,
+  [g2u02l4.id]: g2u02l4,
+  [g2u02l5.id]: g2u02l5,
 };
 
 export const getLessonContent = (lessonId: string): Lesson | undefined => LESSON_CONTENT[lessonId];
