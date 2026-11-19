@@ -29,6 +29,9 @@ import { DateStepAnswer, DaysBetweenAnswer, WeekdayAnswer } from './CalendarAnsw
 import { MoneyCompareAnswer, MoneyTotalAnswer } from './MoneyAnswers';
 import { MoneyBuildAnswer } from './MoneyBoard';
 import { FlipPickAnswer } from './SymmetryAnswers';
+import { SentenceFillAnswer, SentenceCheckAnswer, SymbolSolveAnswer, ChainFillAnswer, PuzzleNumberAnswer } from './PuzzleAnswers';
+import { SentenceBoard, ChainBoard } from './PuzzleBoard';
+import { GridAnswer } from './GridAnswers';
 import { GridBoard, SymmetryFillAnswer, SymmetryLineAnswer } from './SymmetryBoard';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
@@ -580,6 +583,27 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
           label={label}
         />
       );
+    case 'sentence-fill':
+      return <SentenceFillAnswer sentence={response.sentence} blanks={response.blanks} value={Array.isArray(value) ? value.join(',') : value} onChange={(v) => onChange(v.split(','))} disabled={disabled} label={label} />;
+    case 'sentence-check':
+      return <><SentenceBoard sentence={response.sentence} /><SentenceCheckAnswer options={response.options} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} /></>;
+    case 'symbol-solve':
+      return <SymbolSolveAnswer sentences={response.sentences} symbol={response.symbol} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'chain-solve':
+      return <><ChainBoard start={response.start} steps={response.steps} hide={[response.ask === 'end' ? response.steps.length : response.ask]} /><PuzzleNumberAnswer value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} /></>;
+    case 'chain-fill':
+      return <ChainFillAnswer start={response.start} steps={response.steps} asks={response.asks} value={Array.isArray(value) ? value.join(',') : value} onChange={(v) => onChange(v.split(','))} disabled={disabled} label={label} />;
+    case 'family-pick':
+      return <Choices options={response.options} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} />;
+    case 'pattern-next':
+    case 'pattern-fix':
+    case 'pattern-fill':
+    case 'grid-route':
+    case 'grid-end':
+    case 'grid-fill':
+    case 'clue-select':
+    case 'clue-pick2':
+      return <GridAnswer response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
     case 'flip-pick':
       return (
         <FlipPickAnswer

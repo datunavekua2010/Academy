@@ -1932,7 +1932,50 @@ button.grd-cell { cursor: pointer; }
 .lab-calendar, .lab-elapsed, .lab-money, .lab-way, .lab-change { display: grid; gap: 10px; }
 .demo-symmetry { display: grid; gap: 8px; justify-items: start; margin: 0; }
 
+/* Missing-number and grid puzzle controls */
+.pz-line, .pzf-row, .pzch-row, .pzs-row, .xt-row { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.pz, .fam, .chn, .gp-rowfig, .gp-gridfig { margin: .5rem 0; }
+.pz-line { font-size: 1.35rem; font-weight: 700; }
+.pz-box, .pz-num, .chn-cell { display: inline-grid; place-items: center; min-width: 2.5rem; min-height: 2.5rem; border: 2px solid #a8bbd7; border-radius: .5rem; padding: .2rem; }
+.pz-box, .chn-cell.is-hidden { border-style: dashed; background: #eff6ff; }
+.pzf-slot, .pzch-slot, .pzs-slot { display: inline-flex; align-items: center; gap: .35rem; }
+.pzf-slot input, .pzch-slot input, .pzs-slot input, .pzn-slot input { width: 5rem; min-height: 2.75rem; border: 2px solid #93b4f0; border-radius: .5rem; font: inherit; text-align: center; }
+.pzs-list, .pzs-cards, .gp-row, .chn-row, .tk-row, .pzc-list { display: flex; flex-wrap: wrap; gap: .6rem; padding: 0; list-style: none; }
+.chn-item, .gp-slot { display: grid; justify-items: center; gap: .25rem; }
+.gp-item { display: inline-flex; gap: .25rem; align-items: center; font-size: 1.15rem; }
+.gp-grid { border-collapse: collapse; }
+.gp-grid td { border: 1px solid #94a3b8; min-width: 2.75rem; height: 2.75rem; text-align: center; }
+.gp-grid button { min-width: 2.75rem; min-height: 2.75rem; }
+.gp-grid button[aria-pressed=true] { background: #bfdbfe; }
+.gp-slot select, .gp-gridfig select { min-height: 2.75rem; max-width: 100%; }
+.fam-tri { display: grid; grid-template-columns: repeat(2, 3rem); gap: .5rem; text-align: center; }
+.fam-top { grid-column: span 2; }
+.tk-item.is-out { opacity: .25; }
+.pzs-mark.is-ok { color: #166534; }.pzs-mark.is-no { color: #b91c1c; }
+
+/* Grade 3 number-line and place-value activities. */
+.round-lab, .round-demo, .three-lab, .three-demo { display: grid; gap: .75rem; }
+.three-table { border-collapse: collapse; width: 100%; max-width: 30rem; text-align: center; }
+.three-table th, .three-table td { border: 1px solid #a8bbd7; padding: .5rem; width: 33%; }
+.three-block { display: inline-block; color: #2563eb; padding: 1px; animation: three-appear .3s ease-out; }
+@keyframes three-appear { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+.three-block.tens { color: #b45309; }.three-block.hundreds { color: #15803d; }
+
+/* Part-whole bar models. */
+.bar-lab, .bar-demo, .bar-model { display: grid; gap: .7rem; }
+.bar-model { max-width: 40rem; text-align: center; }
+.bar-segments { display: flex; width: 100%; }
+.bar-segments > div { min-width: 0; border: 2px solid #60a5fa; padding: .6rem .2rem; background: #eff6ff; overflow-wrap: anywhere; }
+.bar-segments > div + div { background: #fef3c7; border-left: 0; }
+.bar-model select { max-width: 100%; }
+.bar-cards { display: flex; gap: .5rem; }
+.bar-card { border: 1px solid #94a3b8; border-radius: .5rem; padding: .4rem .7rem; background: white; cursor: grab; }
+
 @media (max-width: 560px) {
+  .bar-segments > div { padding: .35rem .1rem; font-size: .85rem; }
+  .three-table th, .three-table td { padding: .25rem; }
+  .gp-row, .chn-row { gap: .35rem; }
+  .pzf-slot input, .pzch-slot input { max-width: 4rem; }
   .trow-cell { min-width: 52px; }
   .tgrid-cell { min-width: 32px; min-height: 30px; font-size: .84rem; }
   .tfa-slot input, .tgr-slot input, .tm-slot input { width: 100%; }
@@ -1960,5 +2003,5 @@ button.grd-cell { cursor: pointer; }
   .ac-cell, .ssb-step, .abk-rod, .abk-cube, .stb-model .abk, .demo-bars li, .aca-slot input,
   .gbox, .gbox-dots i, .arr-dot, .rep-term, .eq-badge,
   .trow-cell, .tgrid-cell, .tba-cell, .dd-stage, .cb-landings li, .shbox, .tgrp-dot, .shbox-dot,
-  .cal-grid td, .cal-day, .grd-cell, .grd-line, .mnyb-purse, .shp-cell { transition: none; animation: none; }
+  .cal-grid td, .cal-day, .grd-cell, .grd-line, .mnyb-purse, .shp-cell, .three-block { transition: none; animation: none; }
 }

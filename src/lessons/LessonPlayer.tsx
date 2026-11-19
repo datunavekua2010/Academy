@@ -33,6 +33,10 @@ import { FractionDemo } from './exercises/FractionTools';
 import { CalendarDemo, ElapsedDemo } from './exercises/CalendarTools';
 import { MoneyDemo } from './exercises/MoneyTools';
 import { SymmetryDemo } from './exercises/SymmetryTools';
+import { SentenceDemo, InverseDemo, ChainDemo as PuzzleChainDemo } from './exercises/PuzzleTools';
+import { RoundingDemo } from './exercises/RoundingTools';
+import { ThreeDigitDemo } from './exercises/ThreeDigitTools';
+import { BarModelDemo } from './exercises/BarModelTools';
 import { TimesGroups } from './exercises/TimesBoard';
 import { ExpandedLine, PlaceCards } from './exercises/PlaceValueBoard';
 import { ClockFace } from './exercises/ClockBoard';
@@ -215,6 +219,12 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <ElapsedDemo key={i} block={block} />;
           case 'money-demo':
             return <MoneyDemo key={i} block={block} />;
+          case 'sentence-demo': return <SentenceDemo key={i} block={block} />;
+          case 'inverse-demo': return <InverseDemo key={i} block={block} />;
+          case 'chain-demo': return <PuzzleChainDemo key={i} block={block} />;
+          case 'rounding-demo': return <RoundingDemo key={i} block={block} />;
+          case 'three-digit-demo': return <ThreeDigitDemo key={i} block={block} />;
+          case 'bar-model-demo': return <BarModelDemo key={i} block={block} />;
           case 'symmetry-demo':
             return <SymmetryDemo key={i} block={block} />;
           case 'share': {
