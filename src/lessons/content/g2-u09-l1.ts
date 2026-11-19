@@ -1,0 +1,170 @@
+import type { Lesson } from '../types';
+
+/**
+ * GRADE 2 · U09.1 "Recognizing Coins and Banknotes".
+ *
+ * A coin's name is its value: 50 თეთრი is 50 თეთრი. Nothing here treats a bigger coin as "more coins", and a 1 ლარი
+ * note is worth a hundred თეთრი because `TETRI_PER_LARI` says so.
+ */
+export const g2u09l1: Lesson = {
+  id: 'g2-u09-l1',
+  status: 'placeholder',
+  objective: 'ვცნობ ქართულ მონეტებსა და კუპიურებს, ვკითხულობ მათ ღირებულებას და ვიცი, რომ 1 ლარი 100 თეთრია.',
+  prerequisites: ['ასეულამდე რიცხვები (G2 U01)'],
+  minutes: 12,
+  concepts: ['მონეტა და კუპიურა', 'თეთრი და ლარი', 'ღირებულება', 'ერთი ლარი = 100 თეთრი'],
+  completion: { minCheckCorrect: 2 },
+  mascot: {
+    complete: 'შესანიშნავია! ფულს ახლა თვითონ იცნობ.',
+    retry: 'სცადე ისევ. ფულის ღირებულება მასზეა დაწერილი.',
+  },
+  activities: [
+    {
+      id: 'challenge',
+      kind: 'question',
+      stage: 'challenge',
+      prompt: 'რომელი ფული ღირს ყველაზე მეტს?',
+      mascot: { intro: 'დღეს ქართულ ფულს ვისწავლით.' },
+      visual: { type: 'money', pieces: [50, 20, 5] },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'fifty', text: '50 თეთრი', visual: { type: 'money', pieces: [50] } },
+          { id: 'twenty', text: '20 თეთრი', visual: { type: 'money', pieces: [20] } },
+          { id: 'five', text: '5 თეთრი', visual: { type: 'money', pieces: [5] } },
+        ],
+        answer: 'fifty',
+      },
+      hints: ['შეადარე რიცხვები ფულზე.', '50 მეტია 20-ზე და 5-ზე.'],
+      explanation: '50 თეთრიანი მონეტა ყველაზე მეტს ღირს: 50 > 20 > 5.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე ფულზე დაწერილი რიცხვები.',
+      revealOnExhaust: false,
+    },
+    {
+      id: 'explore',
+      kind: 'explore',
+      stage: 'explore',
+      title: 'ააწყვე პარკუჭი',
+      prompt: 'დააჭირე მონეტებსა და კუპიურებს და ნახე, როგორ იზრდება თანხა.',
+      hints: ['თითოეული ნაჭერი თავის ღირებულებას ამატებს.', '1 ლარი 100 თეთრია.'],
+      tool: { tool: 'money-lab', tray: [1, 2, 5, 10, 20, 50, 100], target: 100 },
+    },
+    {
+      id: 'understand',
+      kind: 'explain',
+      stage: 'understand',
+      title: 'ფულის ღირებულება მასზეა დაწერილი',
+      prompt: 'ვნახოთ, როგორ იკითხება ქართული ფული.',
+      blocks: [
+        { type: 'money-demo', mode: 'total', pieces: [50, 20, 10], steps: ['თითოეულ ფულზე მისი ღირებულებაა დაწერილი.', '50 თეთრი — ყველაზე დიდი მონეტა.', '20 თეთრი.', '10 თეთრი. სულ 80 თეთრი.'] },
+        { type: 'text', text: 'საქართველოში ფული ლარი და თეთრია. ერთი ლარი ას თეთრს უდრის. მონეტებია: 1, 2, 5, 10, 20 და 50 თეთრი; კუპიურები — 1, 2, 5, 10, 20 და 50 ლარი.' },
+        { type: 'equation', lines: ['100 თეთრი = 1 ლარი', '50 თეთრი = ნახევარი ლარი'], caption: 'ლარი და თეთრი ერთი და იმავე ფულის ორი სახეა.' },
+        { type: 'callout', tone: 'tip', text: 'მონეტის ზომა არ ნიშნავს ღირებულებას — წაიკითხე, რა რიცხვია მასზე.' },
+      ],
+    },
+    {
+      id: 'practice-1',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რამდენი თეთრია ერთ ლარში?',
+      response: { type: 'numeric', answer: 100, unit: 'თეთრი' },
+      hints: ['ასი თეთრი ერთი ლარია.', '100 თეთრი = 1 ლარი.'],
+      explanation: 'ერთი ლარი ას თეთრს უდრის: 100 თეთრი = 1 ლარი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ლარი ას თეთრია.',
+    },
+    {
+      id: 'practice-2',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რა ღირს ეს მონეტა?',
+      visual: { type: 'money', pieces: [20] },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'twenty', text: '20 თეთრი' },
+          { id: 'two', text: '2 თეთრი' },
+          { id: 'twelve', text: '12 თეთრი' },
+        ],
+        answer: 'twenty',
+      },
+      hints: ['წაიკითხე რიცხვი მონეტაზე.', '2 და 0 — ეს ოცია.'],
+      explanation: 'მონეტაზე 20 წერია, ამიტომ ის 20 თეთრს ღირს.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. წაიკითხე ციფრები მონეტაზე.',
+    },
+    {
+      id: 'practice-3',
+      kind: 'question',
+      stage: 'practice',
+      prompt: 'რომელი ფულია კუპიურა და არა მონეტა?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'note', text: '5 ლარი', visual: { type: 'money', pieces: [500] } },
+          { id: 'coin20', text: '20 თეთრი', visual: { type: 'money', pieces: [20] } },
+          { id: 'coin50', text: '50 თეთრი', visual: { type: 'money', pieces: [50] } },
+        ],
+        answer: 'note',
+      },
+      hints: ['კუპიურა ლარებშია.', 'მონეტები თეთრებშია.'],
+      explanation: '5 ლარი კუპიურაა. მონეტები თეთრებშია: 1, 2, 5, 10, 20 და 50.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. კუპიურა ლარებში იწერება.',
+    },
+    {
+      id: 'practice-4',
+      kind: 'question',
+      stage: 'practice',
+      prompt: '50 თეთრი რამდენია ლარში?',
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'half', text: 'ნახევარი ლარი' },
+          { id: 'one', text: 'ერთი ლარი' },
+          { id: 'two', text: 'ორი ლარი' },
+        ],
+        answer: 'half',
+      },
+      hints: ['100 თეთრი ერთი ლარია.', '50 არის 100-ის ნახევარი.'],
+      explanation: '50 თეთრი ნახევარი ლარია, რადგან 50 არის 100-ის ნახევარი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. 50 არის 100-ის ნახევარი.',
+    },
+    {
+      id: 'check-1',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რამდენი თეთრია 2 ლარში?',
+      response: { type: 'numeric', answer: 200, unit: 'თეთრი' },
+      hints: [],
+      explanation: '2 ლარი 200 თეთრია: 100 + 100 = 200.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. ერთი ლარი 100 თეთრია.',
+    },
+    {
+      id: 'check-2',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'რომელი ფული ღირს ყველაზე ნაკლებს?',
+      visual: { type: 'money', pieces: [50, 10, 2] },
+      response: {
+        type: 'choice',
+        options: [
+          { id: 'one', text: '1 თეთრი', visual: { type: 'money', pieces: [1] } },
+          { id: 'ten', text: '10 თეთრი', visual: { type: 'money', pieces: [10] } },
+          { id: 'fifty', text: '50 თეთრი', visual: { type: 'money', pieces: [50] } },
+        ],
+        answer: 'one',
+      },
+      hints: [],
+      explanation: '1 თეთრი ყველაზე პატარა ღირებულებაა.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეადარე რიცხვები.',
+    },
+    {
+      id: 'check-3',
+      kind: 'question',
+      stage: 'check',
+      prompt: 'ორი 20-თეთრიანი მონეტა რამდენია?',
+      response: { type: 'numeric', answer: 40, unit: 'თეთრი' },
+      hints: [],
+      explanation: '20 + 20 = 40 თეთრი.',
+      fallbackFeedback: 'ჯერ არ არის ზუსტი. შეკრიბე ორივე მონეტა.',
+    },
+  ],
+};

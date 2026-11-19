@@ -25,6 +25,11 @@ import { ArrayBuildAnswerControl, ArrayReadAnswerControl, GroupStoryAnswerContro
 import { TableBuildAnswerControl, TableGridAnswerControl, TimesFactAnswerControl, TimesMissingAnswerControl } from './TimesAnswers';
 import { DivisionSentenceAnswerControl, FactFamilyAnswerControl, GroupIntoAnswerControl, ShareFairAnswerControl, ShareGroupsAnswerControl } from './ShareAnswers';
 import { FractionNameAnswerControl, FractionPickAnswerControl, PartsJudgeAnswerControl } from './FractionAnswers';
+import { DateStepAnswer, DaysBetweenAnswer, WeekdayAnswer } from './CalendarAnswers';
+import { MoneyCompareAnswer, MoneyTotalAnswer } from './MoneyAnswers';
+import { MoneyBuildAnswer } from './MoneyBoard';
+import { FlipPickAnswer } from './SymmetryAnswers';
+import { GridBoard, SymmetryFillAnswer, SymmetryLineAnswer } from './SymmetryBoard';
 import type { AnswerInput, ChoiceOption, ResponseSpec, Verdict } from '../types';
 
 /**
@@ -470,6 +475,124 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
       return <FractionPickAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
     case 'fraction-name':
       return <FractionNameAnswerControl response={response} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} verdict={verdict} label={label} />;
+    case 'date-step':
+      return <DateStepAnswer value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'weekday-of':
+      return <WeekdayAnswer value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'days-between':
+      return <DaysBetweenAnswer from={response.from} to={response.to} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'elapsed': {
+      const raw = typeof value === 'string' ? value : '';
+      const [h = '', m = ''] = raw.split(',');
+      const put = (which: 0 | 1, text: string) => {
+        const parts = [h, m];
+        parts[which] = text;
+        onChange(parts.join(','));
+      };
+      return (
+        <div className="elb-answer">
+          <div className="tfa-inputs">
+            <label className="tfa-slot">
+              <span>საათი</span>
+              <input inputMode="numeric" value={h} disabled={disabled} onChange={(e) => put(0, e.target.value)} aria-label="საათი" />
+            </label>
+            <span className="tfa-sign">სთ</span>
+            <label className="tfa-slot">
+              <span>წუთი</span>
+              <input inputMode="numeric" value={m} disabled={disabled} onChange={(e) => put(1, e.target.value)} aria-label="წუთი" />
+            </label>
+            <span className="tfa-sign">წთ</span>
+          </div>
+          <p className="tfa-note">{label}</p>
+        </div>
+      );
+    }
+    case 'money-total':
+      return <MoneyTotalAnswer pieces={response.pieces} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'money-compare':
+      return <MoneyCompareAnswer money={response.money} cost={response.cost} value={typeof value === 'string' ? value : ''} onChange={onChange} disabled={disabled} label={label} />;
+    case 'money-build':
+      return (
+        <MoneyBuildAnswer
+          tray={response.tray}
+          target={response.target}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          verdict={verdict}
+          showFewestHint={Boolean(response.fewest)}
+          label={label}
+        />
+      );
+    case 'reflect':
+      return (
+        <div className="grd-answer">
+          <GridBoard picture={response.picture} line={response.line} ghost label={label} />
+          <p className="grd-note">ჩაწერე არეკვლილი უჯრები: (სვეტი,მწკრივი) — მაგალითად (2,0);(2,1).</p>
+          <input
+            className="grd-input"
+            value={typeof value === 'string' ? value : ''}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.value)}
+            aria-label={label}
+            placeholder="(x,y);(x,y)"
+          />
+        </div>
+      );
+    case 'symmetry-fill':
+      return (
+        <SymmetryFillAnswer
+          picture={response.picture}
+          line={response.line}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          verdict={verdict}
+          label={label}
+        />
+      );
+    case 'symmetry-line':
+      // a count question wants a number, not a set of lines: showing line buttons could never produce that answer
+      return response.ask === 'count' ? (
+        <div className="lp-field">
+          <input
+            className="lp-input"
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            aria-label={label}
+            placeholder="რამდენი ხაზი?"
+            value={typeof value === 'string' ? value : ''}
+            disabled={disabled}
+            onChange={(e) => onChange(e.target.value)}
+            onKeyDown={onEnter}
+          />
+          <span className="lp-unit">ხაზი</span>
+        </div>
+      ) : (
+        <SymmetryLineAnswer
+          picture={response.picture}
+          candidates={response.candidates}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          verdict={verdict}
+          label={label}
+        />
+      );
+    case 'flip-pick':
+      return (
+        <FlipPickAnswer
+          source={response.source}
+          line={response.line}
+          options={response.options}
+          value={typeof value === 'string' ? value : ''}
+          onChange={onChange}
+          disabled={disabled}
+          label={label}
+          render={(cells) => <GridBoard picture={{ width: response.width, height: response.height, cells }} label="ვარიანტი" cellPx={20} />}
+        />
+      );
     case 'cut':
       return (
         <CutBoard

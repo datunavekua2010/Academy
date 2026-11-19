@@ -1,5 +1,8 @@
 import type { MeasureKind } from './exercises/MeasureGeometry';
+import type { CalDate } from './exercises/CalendarGeometry';
 import type { ClockTime } from './exercises/ClockGeometry';
+import type { Cell, MirrorLine, GridPicture } from './exercises/SymmetryGeometry';
+export type { Cell, MirrorLine, GridPicture } from './exercises/SymmetryGeometry';
 import type { Flat, FlatSpec } from './exercises/Shape2DGeometry';
 import type { Place } from './exercises/PlaceValueGeometry';
 
@@ -451,7 +454,54 @@ export type ResponseSpec =
   /** Pick `need` of the equal parts of a whole, so the fraction shown is `need / parts`. Stored as piece numbers. */
   | { type: 'fraction-pick'; shape: ShapeSpec; need: number; noun?: string }
   /** Read the denominator (equal parts) and the numerator (parts taken) off a divided shape. Stored as `"num,den"`. */
-  | { type: 'fraction-name'; shape: ShapeSpec; take: number[] };
+  | { type: 'fraction-name'; shape: ShapeSpec; take: number[] }
+  /**
+   * A date is `count` days after (or before) `from`. The weekday is derived from the date, never stored. Stored as the
+   * three typed numbers `"year,month,day"`, so a date that does not exist is a different answer from a real one.
+   */
+  | { type: 'date-step'; from: CalDate; count: number }
+  /** Which weekday a date falls on, computed from the date. Stored as the weekday number (0 = ორშაბათი). */
+  | { type: 'weekday-of'; date: CalDate }
+  /**
+   * Days from `from` to `to`, counted the way a calendar counts them. Stored as the number of days; whole weeks are
+   * reported beside it so "one week and three days" is visible.
+   */
+  | { type: 'days-between'; from: CalDate; to: CalDate }
+  /**
+   * The elapsed time between two clock times, in whole minutes (this unit only asks about whole hours and half hours).
+   * Stored as `"hours,minutes"`, so 1 სთ 30 წთ and 90 წთ are different answers to the same question.
+   */
+  | { type: 'elapsed'; from: ClockTime; to: ClockTime }
+  /**
+   * The total of a collection of money. The pieces are the collection, and the answer is their sum — there is no second
+   * copy of the amount anywhere. Stored as the number of თეთრი.
+   */
+  | { type: 'money-total'; pieces: number[]; showRunning?: boolean }
+  /** Money in a purse is compared with what a thing costs. Stored as `"enough,change"`, like `"1,180"`. */
+  | { type: 'money-compare'; money: number; cost: number; ask?: 'enough' | 'change' }
+  /**
+   * Make a `target` amount from the pieces in a tray: the student taps pieces into the purse and the total is added up
+   * as they go. Stored as the comma-separated values taken (not their positions), so two ways of making the same
+   * amount are told apart by the pieces, not by the order they were tapped in.
+   */
+  | { type: 'money-build'; target: number; tray: number[]; fewest?: boolean }
+  /** A picture (cells) is reflected across a mirror line. Stored as the comma-separated cells `"x,y"`. */
+  | { type: 'reflect'; picture: GridPicture; line: MirrorLine }
+  /**
+   * Complete a picture so it is symmetric about `line`; the cells already given cannot be removed. Stored as the
+   * comma-separated cells the student filled in.
+   */
+  | { type: 'symmetry-fill'; picture: GridPicture; line: MirrorLine }
+  /**
+   * Choose the mirror line(s) of a picture by dragging a line across it. Stored as the line keys chosen
+   * (`"vertical:4"`), so a line that only looks right is a different answer from one that really is.
+   */
+  | { type: 'symmetry-line'; picture: GridPicture; candidates: MirrorLine[]; ask: 'pick' | 'count' }
+  /**
+   * Which of several pictures is the real reflection of `source` across `line`? Orientation is what separates a flip
+   * from a slide. Stored as the chosen option id.
+   */
+  | { type: 'flip-pick'; source: Cell[]; line: MirrorLine; options: Array<{ id: string; cells: Cell[] }>; width: number; height: number }
 
 // ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
 
@@ -621,7 +671,19 @@ export type VisualSpec =
   /** A divided shape with some parts taken, for a fractions picture. */
   | { type: 'shape-parts'; shape: ShapeSpec; take?: number[]; caption?: string }
   /** A quantity shared among characters: what each receives, and what is left. */
-  | { type: 'share'; total: number; people: number; glyph?: Glyph; caption?: string };
+  | { type: 'share'; total: number; people: number; glyph?: Glyph; caption?: string }
+  /** A month laid out as weeks, Monday first; `highlight` names the days to mark and `markWeekday` a whole column. */
+  | { type: 'calendar'; year: number; month: number; highlight?: number[]; markWeekday?: number; markToday?: number; caption?: string }
+  /** A couple of dates to compare, with the days between them shown when the answer is allowed to be visible. */
+  | { type: 'date-span'; from: CalDate; to: CalDate; showDays?: boolean; caption?: string }
+  /** A purse: the pieces of money it holds, drawn as coins and notes. The total is shown only when asked for. */
+  | { type: 'money'; pieces: number[]; showTotal?: boolean; running?: boolean; caption?: string }
+  /** A price tag beside the money available, for a shopping question. */
+  | { type: 'price'; cost: number; money: number; caption?: string }
+  /** A picture on a grid, optionally with a mirror line drawn through it and the mirror image shown as an outline. */
+  | { type: 'grid-picture'; picture: GridPicture; line?: MirrorLine; ghost?: boolean; filled?: boolean; caption?: string }
+  /** A row of repeating shapes with the next places left blank. */
+  | { type: 'shape-pattern'; block: string[]; length: number; shown?: number; caption?: string };
 
 
 /** Feedback aimed at one specific wrong answer. */
@@ -821,6 +883,24 @@ export type ExploreTool =
   | { tool: 'subtract-lab'; examples: Array<{ a: number; b: number }> }
   /** Build a two-digit sum or difference in columns and see when a carry or a broken ten is needed. */
   | { tool: 'columns-lab'; examples: Array<{ a: number; b: number; op: 'add' | 'subtract' }> }
+  /** Walk a month day by day and read each date with its weekday. */
+  | { tool: 'calendar-lab'; year: number; month: number; day: number }
+  /** Two clock times to move apart and together, with the time between them named. */
+  | { tool: 'elapsed-lab'; from: ClockTime; to: ClockTime }
+  /** Build a purse from the tray and watch the total grow. `target` marks a goal to reach exactly. */
+  | { tool: 'money-lab'; tray: number[]; target?: number }
+  /** Make one amount in every way, fewest pieces first. */
+  | { tool: 'way-lab'; amounts: number[] }
+  /** A purse and a price tag: move money into the tray and watch the change. */
+  | { tool: 'change-lab'; pairs: Array<{ paid: number; cost: number }> }
+  /** A mirror line to slide across a picture, with the reflection shown as it moves. */
+  | { tool: 'mirror-lab'; pictures: GridPicture[] }
+  /** Complete a picture across its mirror line, cell by cell. */
+  | { tool: 'symmetry-lab'; pictures: GridPicture[]; line: MirrorLine }
+  /** Flip a shape across a vertical or horizontal mirror and compare it with a slide. */
+  | { tool: 'flip-lab'; cells: Cell[]; width: number; height: number }
+  /** A repeating row of shapes to extend, and the block to find inside it. */
+  | { tool: 'pattern-shapes-lab'; block: string[]; length: number }
   /** Read a story, act it out, choose the operation and check the answer. */
   | { tool: 'story-lab'; stories: Array<{ kind: 'join' | 'separate' | 'compare'; text: string; a: number; b: number; unit: string }> }
   /** Move counters between groups until they are all equal; `each` is the count a real group should hold. */
@@ -1036,7 +1116,27 @@ export type ExplainBlock =
   /** A grid of products with some cells highlighted, for a static picture in an explanation. */
   | { type: 'times-grid'; tables: number[]; factors: number[]; highlight?: Array<{ table: number; factor: number }>; caption?: string }
   /** A divided shape with some parts picked, for a static picture in an explanation. */
-  | { type: 'shape-parts'; shape: ShapeSpec; take?: number[]; caption?: string };
+  | { type: 'shape-parts'; shape: ShapeSpec; take?: number[]; caption?: string }
+  /** A month laid out for an explanation: the same grid the lessons use, with days marked. */
+  | { type: 'calendar'; year: number; month: number; highlight?: number[]; markWeekday?: number; markToday?: number; caption?: string }
+  /** Two dates and the days between them, for an explanation. */
+  | { type: 'date-span'; from: CalDate; to: CalDate; showDays?: boolean; caption?: string }
+  /** A purse drawn for an explanation. */
+  | { type: 'money'; pieces: number[]; showTotal?: boolean; running?: boolean; caption?: string }
+  /** A price tag beside the money, for an explanation. */
+  | { type: 'price'; cost: number; money: number; caption?: string }
+  /** A picture on a grid, with a mirror line and an optional outline of the reflection. */
+  | { type: 'grid-picture'; picture: GridPicture; line?: MirrorLine; ghost?: boolean; filled?: boolean; caption?: string }
+  /** A row of repeating shapes, for an explanation. */
+  | { type: 'shape-pattern'; block: string[]; length: number; shown?: number; caption?: string }
+  /** A month to walk, told one step at a time (`steps` are the captions). */
+  | { type: 'calendar-demo'; mode: 'week' | 'month' | 'count'; year: number; month: number; day: number; steps: string[]; caption?: string }
+  /** Two clock times with the time between them counted hour by hour and minute by minute. */
+  | { type: 'elapsed-demo'; from: ClockTime; to: ClockTime; steps: string[]; caption?: string }
+  /** A purse arranged for counting, added up piece by piece. */
+  | { type: 'money-demo'; mode: 'total' | 'make' | 'change'; pieces: number[]; target?: number; paid?: number; cost?: number; steps: string[]; caption?: string }
+  /** A picture folded along its mirror line, reflected, and put back. */
+  | { type: 'symmetry-demo'; mode: 'fold' | 'flip' | 'pattern'; picture: GridPicture; line?: MirrorLine; block?: string[]; length?: number; steps: string[]; caption?: string };
 
 
 export interface ExplainActivity extends ActivityBase {

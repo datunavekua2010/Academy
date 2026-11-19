@@ -22,6 +22,10 @@ import { ArrayBoard, EqualGroups as GroupsPicture, RepeatedLine, UnevenGroups } 
 import { TableRow, TimesGrid } from './TimesBoard';
 import { ShareBoard } from './ShareBoard';
 import { FractionPicture } from './FractionBoard';
+import { CalendarBoard, DateSpanPicture } from './CalendarBoard';
+import { MoneyPurse, PricePicture } from './MoneyBoard';
+import { PictureBoard } from './SymmetryBoard';
+import { itemAt } from './SymmetryGeometry';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -206,6 +210,18 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <FractionPicture spec={spec.shape} take={spec.take} caption={spec.caption} />;
     case 'share':
       return <ShareBoard total={spec.total} people={spec.people} glyph={spec.glyph} caption={spec.caption} />;
+    case 'calendar':
+      return <CalendarBoard year={spec.year} month={spec.month} highlight={spec.highlight} markWeekday={spec.markWeekday} markToday={spec.markToday} caption={spec.caption} />;
+    case 'date-span':
+      return <DateSpanPicture from={spec.from} to={spec.to} showDays={spec.showDays} caption={spec.caption} />;
+    case 'money':
+      return <MoneyPurse pieces={spec.pieces} showTotal={spec.showTotal} running={spec.running} caption={spec.caption} />;
+    case 'price':
+      return <PricePicture cost={spec.cost} money={spec.money} caption={spec.caption} />;
+    case 'grid-picture':
+      return <PictureBoard picture={spec.picture} line={spec.line} ghost={spec.ghost} caption={spec.caption} />;
+    case 'shape-pattern':
+      return <ShapePatternRow block={spec.block} length={spec.length} shown={spec.shown} caption={spec.caption} />;
     case 'venn':
       return (
         <VennBoard
@@ -219,6 +235,26 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
         />
       );
   }
+}
+
+/** A repeating row of shapes, for the pattern lesson's pictures. */
+const SHAPE_GLYPH: Record<string, string> = { circle: '●', square: '■', triangle: '▲', rectangle: '▬', star: '★', heart: '♥' };
+
+export function ShapePatternRow({ block, length, shown, caption }: { block: string[]; length: number; shown?: number; caption?: string }) {
+  const items = Array.from({ length }, (_, i) => itemAt(block, i));
+  const visible = shown ?? length;
+  return (
+    <figure className="shp">
+      <ul className="shp-row" aria-label={`მეორადი ფიგურები: ${items.map((i) => SHAPE_GLYPH[i] ?? i).join(', ')}`}>
+        {items.map((item, i) => (
+          <li key={i} className={`shp-cell ${i >= visible ? 'is-blank' : ''}`} aria-hidden={i >= visible ? true : undefined}>
+            <span aria-hidden="true">{i >= visible ? '?' : (SHAPE_GLYPH[item] ?? item)}</span>
+          </li>
+        ))}
+      </ul>
+      {caption && <figcaption className="shp-cap">{caption}</figcaption>}
+    </figure>
+  );
 }
 
 /** The characters used for a group of objects, so a picture is never only a colour. */

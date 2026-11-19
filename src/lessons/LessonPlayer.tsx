@@ -30,6 +30,9 @@ import { ArrayDemo, FourWaysDemo, GroupsDemo } from './exercises/GroupsTools';
 import { CountByDemo, DoubleDemo, TableDemo } from './exercises/TimesTools';
 import { ShareDemo } from './exercises/ShareTools';
 import { FractionDemo } from './exercises/FractionTools';
+import { CalendarDemo, ElapsedDemo } from './exercises/CalendarTools';
+import { MoneyDemo } from './exercises/MoneyTools';
+import { SymmetryDemo } from './exercises/SymmetryTools';
 import { TimesGroups } from './exercises/TimesBoard';
 import { ExpandedLine, PlaceCards } from './exercises/PlaceValueBoard';
 import { ClockFace } from './exercises/ClockBoard';
@@ -206,6 +209,14 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <ShareDemo key={i} block={block} />;
           case 'fraction-demo':
             return <FractionDemo key={i} block={block} />;
+          case 'calendar-demo':
+            return <CalendarDemo key={i} block={block} />;
+          case 'elapsed-demo':
+            return <ElapsedDemo key={i} block={block} />;
+          case 'money-demo':
+            return <MoneyDemo key={i} block={block} />;
+          case 'symmetry-demo':
+            return <SymmetryDemo key={i} block={block} />;
           case 'share': {
             const per = Math.floor(block.total / block.people);
             const left = block.total % block.people;

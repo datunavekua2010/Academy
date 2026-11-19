@@ -24,6 +24,9 @@ import { ArrayLab, EqualGroupsLab, GroupStoryLab, MultiplyLab, RepeatLab } from 
 import { CountByFiveLab, DoubleDoubleLab, PairsLab, TimesGridLab, TimesTableLab } from './TimesTools';
 import { DivisionLab, FamilyLab, GroupIntoLab, ShareGroupsLab, ShareLab } from './ShareTools';
 import { EqualPartsLab, HalvesLab, NumeratorLab, QuartersLab, ThirdsLab } from './FractionTools';
+import { CalendarLab, ElapsedLab } from './CalendarTools';
+import { ChangeLab, MoneyLab, WayLab } from './MoneyTools';
+import { FlipLab, MirrorLab, ShapePatternLab, SymmetryLab } from './SymmetryTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -541,5 +544,23 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <ThirdsLab tool={tool} />;
     case 'fraction-lab2':
       return <NumeratorLab tool={tool} />;
+    case 'calendar-lab':
+      return <CalendarLab tool={tool} />;
+    case 'elapsed-lab':
+      return <ElapsedLab tool={tool} />;
+    case 'money-lab':
+      return <MoneyLab tool={tool} />;
+    case 'way-lab':
+      return <WayLab tool={tool} />;
+    case 'change-lab':
+      return <ChangeLab tool={tool} />;
+    case 'mirror-lab':
+      return <MirrorLab tool={tool} />;
+    case 'symmetry-lab':
+      return <SymmetryLab tool={tool} />;
+    case 'flip-lab':
+      return <FlipLab tool={tool} />;
+    case 'pattern-shapes-lab':
+      return <ShapePatternLab tool={tool} />;
   }
 }
