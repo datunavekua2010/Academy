@@ -19,6 +19,8 @@ import { ExploreToolViewBalance } from './BalanceTools';
 import { ExploreToolViewSort } from './SortTools';
 import { DigitLab, ExpandedLab, MissingPlaceLab, PlaceLab } from './PlaceValueTools';
 import { HundredLab, PatternLab, SkipLab, TenGroupsLab } from './PatternTools';
+import { AddLab, ColumnsLab, StoryLab, SubtractLab } from './AddSubTools';
+import { ArrayLab, EqualGroupsLab, GroupStoryLab, MultiplyLab, RepeatLab } from './GroupsTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -488,5 +490,23 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <HundredLab tool={tool} />;
     case 'pattern-lab':
       return <PatternLab tool={tool} />;
+    case 'add-lab':
+      return <AddLab tool={tool} />;
+    case 'subtract-lab':
+      return <SubtractLab tool={tool} />;
+    case 'columns-lab':
+      return <ColumnsLab tool={tool} />;
+    case 'story-lab':
+      return <StoryLab tool={tool} />;
+    case 'groups-equal-lab':
+      return <EqualGroupsLab tool={tool} />;
+    case 'repeat-lab':
+      return <RepeatLab tool={tool} />;
+    case 'multiply-lab':
+      return <MultiplyLab tool={tool} />;
+    case 'array-lab':
+      return <ArrayLab tool={tool} />;
+    case 'group-story-lab':
+      return <GroupStoryLab tool={tool} />;
   }
 }

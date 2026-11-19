@@ -23,6 +23,10 @@ import { ChartDemo, SortDemo } from './exercises/SortTools';
 import { ExpandedDemo, PlaceDemo } from './exercises/PlaceValueTools';
 import { GroupCount, SequencePicture, SkipLine } from './exercises/PatternBoard';
 import { SkipDemo } from './exercises/PatternTools';
+import { AnswerColumns, StoryPicture } from './exercises/AddSubBoard';
+import { DifferenceDemo, SumDemo, SumStoryDemo } from './exercises/AddSubTools';
+import { ArrayBoard, EqualGroups, RepeatedLine, UnevenGroups } from './exercises/GroupsBoard';
+import { ArrayDemo, FourWaysDemo, GroupsDemo } from './exercises/GroupsTools';
 import { ExpandedLine, PlaceCards } from './exercises/PlaceValueBoard';
 import { ClockFace } from './exercises/ClockBoard';
 import { Shape2DRow } from './exercises/Shape2DBoard';
@@ -164,6 +168,30 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
             return <GroupCount key={i} size={block.size} groups={block.groups} noun={block.noun} />;
           case 'skip-demo':
             return <SkipDemo key={i} block={block} />;
+          case 'columns':
+            return <AnswerColumns key={i} a={block.a} b={block.b} op={block.op} />;
+          case 'story-model':
+            return <StoryPicture key={i} a={block.a} b={block.b} kind={block.kind} unit={block.unit} />;
+          case 'sum-demo':
+            return <SumDemo key={i} block={block} />;
+          case 'difference-demo':
+            return <DifferenceDemo key={i} block={block} />;
+          case 'story-demo2':
+            return <SumStoryDemo key={i} block={block} />;
+          case 'groups-equal':
+            return <EqualGroups key={i} groups={block.groups} each={block.each} />;
+          case 'groups-uneven':
+            return <UnevenGroups key={i} sizes={block.sizes} />;
+          case 'array':
+            return <ArrayBoard key={i} spec={{ rows: block.rows, cols: block.cols }} />;
+          case 'repeated':
+            return <RepeatedLine key={i} groups={block.groups} each={block.each} />;
+          case 'groups-demo':
+            return <GroupsDemo key={i} block={block} />;
+          case 'array-demo':
+            return <ArrayDemo key={i} block={block} />;
+          case 'four-ways':
+            return <FourWaysDemo key={i} block={block} />;
           case 'callout':
             return (
               <p className={`lp-callout is-${block.tone}`} key={i}>

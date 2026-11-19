@@ -8,6 +8,8 @@ import { cellKey, chartCount, vennRegion, type SortObj } from './exercises/SortG
 import { VENN_REGION_NAME } from './exercises/SortGeometry';
 import { PLACE_NAME, PLACES, digitsOf, isStandard, partsOf, valueAt, valueOfBlocks, type Place } from './exercises/PlaceValueGeometry';
 import { holeValues, landings, ruleText, sequenceOf, stepOf, stepWords, termAt } from './exercises/PatternGeometry';
+import { carriedTen, columnDifference, columnSum, digits2, needsBorrow, needsCarry, sumTens } from './exercises/AddSubGeometry';
+import { allEqual, arrayTotal, arraysFor, groupsText, multiplyText, repeatedText, totalOf, unevenGroups } from './exercises/GroupsGeometry';
 import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
 
 /**
@@ -91,7 +93,21 @@ const MSG = {
   needMarker: 'გადაიტანე მარკერი რიცხვით ღერძზე და შემდეგ შეამოწმე.',
   needSkip: 'გადადგი ნაბიჯები რიცხვით ღერძზე და შემდეგ შეამოწმე.',
   needHoleValues: 'შეავსე ყველა გამოტოვებული რიცხვი.',
-  needRule: 'აირჩიე წესი: რამდენით იცვლება რიცხვები?',
+  needRule: 'აირჩიე წესი: რამენით იცვლება რიცხვები?',
+  needColumnAnswer: 'ჩაწერე პასუხი ორივე სვეტში: ათეულებიც და ერთეულებიც.',
+  needSumSteps: 'ჩაწერე ორივე ციფრი: ერთეულების ჯამი და ათეულების ჯამი.',
+  needBorrowFirst: 'ჯერ გახსენი ერთი ათეული 10 ერთეულად, მერე ჩაწერე სხვაობა.',
+  needStoryOp: 'ჯერ აირჩიე მოქმედება: შეკრება თუ გამოკლება, და ჩაწერე პასუხი.',
+  transposed: 'ციფრები ადგილებში შეიცვალა: ათეულები და ერთეულები ერთმანეთში აირია.',
+  noCarry: 'ერთეულების ჯამი 10-ზე ნაკლებია — გადატანა არ არის საჭირო.',
+  needCarry: 'ერთეულების ჯამი 10-ს ან მეტს იძლევა — ერთი ათეული უნდა გადავიდეს ათეულებში.',
+  noBorrow: 'ერთეულების ციფრი საკმარისია — ათეულის დაშლა არ არის საჭირო.',
+  wrongOperation: 'მოქმედება არასწორია: შეხედე, რაოდენობა იზრდება თუ მცირდება.',
+  needEqual: 'დაამატე ან წაიღე საგნები, სანამ ყველა ჯგუფში ერთი და იგივე რაოდენობა იქნება.',
+  needArray: 'ჩაწერე რიგების რაოდენობა და თითო რიგში საგნების რაოდენობა.',
+  arrayOff: 'რიგებისა და სვეტების ნამრავლი სულს უნდა უდრიდეს.',
+  needStoryGroups: 'ჩაწერე ჯგუფები, თითოეულში საგნები და სულ რაოდენობა.',
+  groupsUneven: 'ჯგუფები ჯერ არ არის ტოლი: თითოეულში ერთი და იგივე რაოდენობა უნდა იყოს.',
   wrongRule: 'ეს რიცხვები ასე არ იცვლება: შეადარე ორი მეზობელი რიცხვი.',
   notSimplified: 'მნიშვნელობა სწორია, მაგრამ გამოსახულება ჯერ არ არის გამარტივებული. ჩაწერე ყველაზე მარტივი სახით.',
 };
@@ -641,6 +657,175 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
         feedback: question.fallbackFeedback ?? `${MSG.wrongRule} ${real === null ? '' : ruleText(real) + '.'}`.trim(),
       };
     }
+    case 'column-sum': {
+      const [t = '', o = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (t.trim() === '' || o.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needColumnAnswer };
+      const tensDigit = Number(t);
+      const onesDigit = Number(o);
+      if (!Number.isInteger(tensDigit) || !Number.isInteger(onesDigit)) return { verdict: 'incomplete', feedback: MSG.needColumnAnswer };
+      const written = tensDigit * 10 + onesDigit;
+      const answer = response.op === 'add' ? columnSum(response.a, response.b) : columnDifference(response.a, response.b);
+      if (written === answer) return { verdict: 'correct' };
+      // the digits are right but in the wrong columns — a different number, and a very common slip
+      const flipped = onesDigit * 10 + tensDigit;
+      if (flipped === answer) return wrong(question, findMisconception(question.misconceptions, (a) => a === 'flipped') ?? { id: 'transposed', answers: [], feedback: MSG.transposed });
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === written);
+      if (hit) return wrong(question, hit);
+      // a correct ones digit with the tens off points at the carry (or its absence)
+      if (response.op === 'add' && onesDigit === columnSum(response.a, response.b) % 10 && tensDigit !== sumTens(response.a, response.b)) {
+        return wrong(question, {
+          id: needsCarry(response.a, response.b) ? 'forgot-carry' : 'carried-anyway',
+          answers: [],
+          feedback: needsCarry(response.a, response.b) ? MSG.needCarry : MSG.noCarry,
+        });
+      }
+      if (response.op === 'subtract' && onesDigit !== columnDifference(response.a, response.b) % 10) {
+        return wrong(question, {
+          id: needsBorrow(response.a, response.b) ? 'no-borrow' : 'borrowed-anyway',
+          answers: [],
+          feedback: needsBorrow(response.a, response.b)
+            ? `ერთეულები: ${digits2(response.a).ones} − ${digits2(response.b).ones} უარყოფითია. 1 ათეული უნდა გაიხსნას 10 ერთეულად.`
+            : MSG.noBorrow,
+        });
+      }
+      return wrong(question, undefined);
+    }
+    case 'sum-steps': {
+      const [o = '', t = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (o.trim() === '' || t.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needSumSteps };
+      const onesDigit = Number(o);
+      const tensDigit = Number(t);
+      if (!Number.isInteger(onesDigit) || !Number.isInteger(tensDigit)) return { verdict: 'incomplete', feedback: MSG.needSumSteps };
+      const rightOnes = columnSum(response.a, response.b) % 10;
+      const rightTens = sumTens(response.a, response.b);
+      if (onesDigit === rightOnes && tensDigit === rightTens) return { verdict: 'correct' };
+      if (onesDigit === digits2(response.a).ones + digits2(response.b).ones) {
+        // the whole ones total was written in the ones place instead of carrying the ten
+        return wrong(question, { id: 'no-carry', answers: [], feedback: MSG.needCarry });
+      }
+      if (tensDigit === digits2(response.a).tens + digits2(response.b).tens && carriedTen(response.a, response.b) === 1) {
+        return wrong(question, { id: 'forgot-carry', answers: [], feedback: MSG.needCarry });
+      }
+      if (tensDigit === digits2(response.a).tens + digits2(response.b).tens + 1 && carriedTen(response.a, response.b) === 0) {
+        return wrong(question, { id: 'carried-anyway', answers: [], feedback: MSG.noCarry });
+      }
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === `${onesDigit},${tensDigit}`);
+      return wrong(question, hit);
+    }
+    case 'difference-steps': {
+      const text = typeof input === 'string' ? input.trim() : '';
+      if (!text) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needBorrowFirst };
+      const n = Number(text);
+      if (!Number.isFinite(n)) return { verdict: 'incomplete', feedback: MSG.needNumber };
+      const answer = columnDifference(response.a, response.b);
+      if (n === answer) return { verdict: 'correct' };
+      // adding instead of subtracting: a + b, or the ones subtracted the other way round
+      if (n === response.a + response.b) return wrong(question, { id: 'added', answers: [], feedback: 'ეს შეკრებაა. ამოცანა გამოკლებაა: უნდა აიღო რაოდენობა.' });
+      if (needsBorrow(response.a, response.b) && n === digits2(response.a).tens * 10 + (digits2(response.b).ones - digits2(response.a).ones)) {
+        return wrong(question, { id: 'subtracted-back', answers: [], feedback: `ერთეულებში უფრო დიდს პატარა არ აკლდება. გახსენი ათეული: ${digits2(response.a).ones} + 10 − ${digits2(response.b).ones}.` });
+      }
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === n);
+      return wrong(question, hit, {
+        feedback:
+          hit?.feedback ??
+          question.fallbackFeedback ??
+          (needsBorrow(response.a, response.b)
+            ? `ჯერ ათეული გახსენი: ${digits2(response.a).ones} + 10 − ${digits2(response.b).ones} = ${digits2(response.a).ones + 10 - digits2(response.b).ones}, შემდეგ ათეულები: ${digits2(response.a).tens - 1} − ${digits2(response.b).tens}.`
+            : `ერთეულები: ${digits2(response.a).ones} − ${digits2(response.b).ones}; ათეულები: ${digits2(response.a).tens} − ${digits2(response.b).tens}.`),
+      });
+    }
+    case 'story-problem': {
+      const [op = '', answerText = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (!op || answerText.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needStoryOp };
+      const wanted = response.kind === 'separate' ? 'subtract' : 'add';
+      if (op !== wanted) {
+        const hit = findMisconception(question.misconceptions, (a) => a === 'operation' || a === op);
+        return wrong(question, hit ?? { id: 'operation', answers: [], feedback: MSG.wrongOperation });
+      }
+      const n = Number(answerText);
+      if (!Number.isFinite(n)) return { verdict: 'incomplete', feedback: MSG.needStoryNumber };
+      const answer = wanted === 'subtract' ? response.a - response.b : response.a + response.b;
+      if (n === answer) return { verdict: 'correct' };
+      // the operation was right but the numbers were combined the other way round
+      if (n === (wanted === 'subtract' ? response.a + response.b : Math.abs(response.a - response.b))) {
+        return wrong(question, { id: 'flipped-op', answers: [], feedback: `მოქმედება სწორია, მაგრამ რიცხვები გადაურიე. აქ სწორია ${response.a} ${wanted === 'subtract' ? '−' : '+'} ${response.b}.` });
+      }
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === n);
+      return wrong(question, hit);
+    }
+    case 'make-equal': {
+      const text = typeof input === 'string' ? input.trim() : '';
+      const sizes = text === '' ? [] : text.split(',').map((n) => Number(n));
+      if (sizes.length < response.groups || sizes.some((n) => !Number.isInteger(n) || n < 0)) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needEqual };
+      if (sizes.every((n) => n === 0)) return { verdict: 'incomplete', feedback: MSG.needEqual };
+      if (allEqual(sizes)) return { verdict: 'correct' };
+      const odd = unevenGroups(sizes);
+      return {
+        verdict: 'incorrect',
+        misconceptionId: 'uneven',
+        // name the groups that differ, so the student can fix the one that is off rather than re-read the whole board
+        feedback: `${question.fallbackFeedback ?? MSG.groupsUneven} ${odd.map((i) => `${i + 1}-ე ჯგუფში ${sizes[i]}`).join(', ')}.`,
+      };
+    }
+    case 'array-read': {
+      const [r = '', c = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (r.trim() === '' || c.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needArray };
+      const rows = Number(r);
+      const cols = Number(c);
+      if (!Number.isInteger(rows) || !Number.isInteger(cols)) return { verdict: 'incomplete', feedback: MSG.needArray };
+      if (rows === response.rows && cols === response.cols) return { verdict: 'correct' };
+      // rows and columns swapped: the same total, so this is a reading slip, not a counting one
+      if (rows === response.cols && cols === response.rows) {
+        return wrong(question, findMisconception(question.misconceptions, (a) => a === 'swapped') ?? { id: 'swapped-axes', answers: [], feedback: 'რიგები და სვეტები ადგილებში შეიცვალა. სულ იგივეა, მაგრამ აქ რიგები ' + response.rows + '-ია, სვეტები — ' + response.cols + '.' });
+      }
+      const hit = findMisconception(question.misconceptions, (a) => a === `${rows},${cols}`);
+      if (hit) return wrong(question, hit);
+      if (rows * cols !== arrayTotal({ rows: response.rows, cols: response.cols })) {
+        return wrong(question, { id: 'array-off', answers: [], feedback: `${MSG.arrayOff} ${rows} × ${cols} = ${rows * cols}, მაგრამ მართკუთხედში ${arrayTotal({ rows: response.rows, cols: response.cols })} საგანია.` });
+      }
+      return wrong(question, undefined);
+    }
+    case 'array-build': {
+      const [r = '', c = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (r.trim() === '' || c.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needArray };
+      const rows = Number(r);
+      const cols = Number(c);
+      if (!Number.isInteger(rows) || !Number.isInteger(cols) || rows < 1 || cols < 1) return { verdict: 'incomplete', feedback: MSG.needArray };
+      if (rows * cols === response.total) return { verdict: 'correct' };
+      // any true factor pair is right; a pair that does not make the total is not
+      const useful = arraysFor(response.total).map((a) => `${a.rows},${a.cols}`);
+      const hit = findMisconception(question.misconceptions, (a) => a === `${rows},${cols}`);
+      if (hit) return wrong(question, hit);
+      return wrong(question, {
+        id: 'array-total',
+        answers: [],
+        feedback: `${rows} × ${cols} = ${rows * cols}, არა ${response.total}. ${response.total === 0 ? '' : `სცადე: ${useful[0]?.split(',').join(' × ')}.`}`,
+      });
+    }
+    case 'group-story': {
+      const [g = '', e = '', t = ''] = (typeof input === 'string' ? input : '').split(',');
+      if (g.trim() === '' || e.trim() === '' || t.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needStoryGroups };
+      const groups = Number(g);
+      const each = Number(e);
+      const total = Number(t);
+      if (![groups, each, total].every((n) => Number.isInteger(n) && n >= 0)) return { verdict: 'incomplete', feedback: MSG.needStoryGroups };
+      if (groups * each !== total) {
+        // the multiplication must be a true sentence before the total can be judged
+        return wrong(question, {
+          id: 'product-off',
+          answers: [],
+          feedback: `${groups} × ${each} = ${groups * each}, არა ${total}. ${groupsText(response.groups, response.each)} — ეს არის ${multiplyText(response.groups, response.each)}.`,
+        });
+      }
+      if (total === totalOf(response.groups, response.each)) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => Number(a) === total);
+      return wrong(question, hit, {
+        feedback:
+          hit?.feedback ??
+          question.fallbackFeedback ??
+          `${groupsText(response.groups, response.each)} — სულ ${totalOf(response.groups, response.each)}: ${repeatedText(response.groups, response.each)}.`,
+      });
+    }
   }
 }
 
@@ -776,5 +961,21 @@ export function describeAnswer(response: ResponseSpec): string {
     }
     case 'sequence-rule':
       return `${stepWords(response.step)} (${response.step > 0 ? '+' : '−'}${Math.abs(response.step)})`;
+    case 'column-sum':
+      return `${response.a} ${response.op === 'add' ? '+' : '−'} ${response.b} = ${response.op === 'add' ? columnSum(response.a, response.b) : columnDifference(response.a, response.b)}`;
+    case 'sum-steps':
+      return `${response.a} + ${response.b} = ${columnSum(response.a, response.b)} (ერთეულები ${columnSum(response.a, response.b) % 10}, ათეულები ${sumTens(response.a, response.b)})`;
+    case 'difference-steps':
+      return `${response.a} − ${response.b} = ${columnDifference(response.a, response.b)}`;
+    case 'story-problem':
+      return `${response.kind === 'separate' ? '−' : '+'} · ${response.a} ${response.kind === 'separate' ? '−' : '+'} ${response.b} = ${response.kind === 'separate' ? response.a - response.b : response.a + response.b} ${response.unit}`;
+    case 'make-equal':
+      return `ყველა ჯგუფში ${response.each} საგანი (${response.groups} ჯგუფი, სულ ${totalOf(response.groups, response.each)})`;
+    case 'array-read':
+      return `${response.rows} რიგი × ${response.cols} = ${response.rows * response.cols}`;
+    case 'array-build':
+      return arraysFor(response.total).map((a) => `${a.rows} × ${a.cols}`).join(' ან ');
+    case 'group-story':
+      return `${multiplyText(response.groups, response.each)} ${response.unit}`;
   }
 }

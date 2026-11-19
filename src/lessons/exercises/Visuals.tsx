@@ -17,6 +17,8 @@ import { PictureChart, SortChip, VennBoard } from './SortBoard';
 import { valueLabel } from './SortBoard';
 import { ExpandedLine, PlaceBlocks, PlaceCards } from './PlaceValueBoard';
 import { GroupCount, SkipLine } from './PatternBoard';
+import { AnswerColumns, StoryPicture } from './AddSubBoard';
+import { ArrayBoard, EqualGroups as GroupsPicture, RepeatedLine, UnevenGroups } from './GroupsBoard';
 
 /**
  * Small, reusable pictures for the lessons: a number sequence with a hidden
@@ -181,6 +183,18 @@ export function VisualBare({ spec, compact = false }: { spec: VisualSpec; compac
       return <SkipLine spec={{ start: spec.start, step: spec.step, count: spec.count, hideLandings: spec.hideLandings, walker: spec.walker }} />;
     case 'group-count':
       return <GroupCount size={spec.size} groups={spec.groups} noun={spec.noun} />;
+    case 'columns':
+      return <AnswerColumns a={spec.a} b={spec.b} op={spec.op} />;
+    case 'story-model':
+      return <StoryPicture a={spec.a} b={spec.b} kind={spec.kind} unit={spec.unit} />;
+    case 'groups-equal':
+      return <GroupsPicture groups={spec.groups} each={spec.each} />;
+    case 'groups-uneven':
+      return <UnevenGroups sizes={spec.sizes} />;
+    case 'array':
+      return <ArrayBoard spec={{ rows: spec.rows, cols: spec.cols }} />;
+    case 'repeated':
+      return <RepeatedLine groups={spec.groups} each={spec.each} />;
     case 'venn':
       return (
         <VennBoard

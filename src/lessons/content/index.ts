@@ -4,6 +4,16 @@ import { g2u02l2 } from './g2-u02-l2';
 import { g2u02l3 } from './g2-u02-l3';
 import { g2u02l4 } from './g2-u02-l4';
 import { g2u02l5 } from './g2-u02-l5';
+import { g2u03l1 } from './g2-u03-l1';
+import { g2u03l2 } from './g2-u03-l2';
+import { g2u03l3 } from './g2-u03-l3';
+import { g2u03l4 } from './g2-u03-l4';
+import { g2u03l5 } from './g2-u03-l5';
+import { g2u04l1 } from './g2-u04-l1';
+import { g2u04l2 } from './g2-u04-l2';
+import { g2u04l3 } from './g2-u04-l3';
+import { g2u04l4 } from './g2-u04-l4';
+import { g2u04l5 } from './g2-u04-l5';
 import { g1u01l1 } from './g1-u01-l1';
 import { g1u01l2 } from './g1-u01-l2';
 import { g1u01l3 } from './g1-u01-l3';
@@ -129,6 +139,16 @@ export const LESSON_CONTENT: Record<string, Lesson> = {
   [g2u02l3.id]: g2u02l3,
   [g2u02l4.id]: g2u02l4,
   [g2u02l5.id]: g2u02l5,
+  [g2u03l1.id]: g2u03l1,
+  [g2u03l2.id]: g2u03l2,
+  [g2u03l3.id]: g2u03l3,
+  [g2u03l4.id]: g2u03l4,
+  [g2u03l5.id]: g2u03l5,
+  [g2u04l1.id]: g2u04l1,
+  [g2u04l2.id]: g2u04l2,
+  [g2u04l3.id]: g2u04l3,
+  [g2u04l4.id]: g2u04l4,
+  [g2u04l5.id]: g2u04l5,
 };
 
 export const getLessonContent = (lessonId: string): Lesson | undefined => LESSON_CONTENT[lessonId];
