@@ -1528,3 +1528,9 @@
 
 /* A short line under a picture that can also be tapped to answer. */
 .pic-pick-hint { margin: 8px 0 0; font-size: .9rem; font-weight: 700; color: #4a5a7d; }
+
+/* Account sign-in fields; scoped to the existing student sign-in card. */
+.academy-signin-form { display: grid; gap: 14px; margin: 18px 0; }
+.academy-signin-form label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; text-align: left; }
+.academy-signin-form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+.academy-signin-form input:focus-visible { outline: 3px solid #86a7fa; outline-offset: 2px; }
