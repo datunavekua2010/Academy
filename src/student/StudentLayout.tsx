@@ -22,7 +22,7 @@ const BrandMark = () => (
   </span>
 );
 
-export function StudentLayout({ children }: { children: ReactNode }) {
+export function StudentLayout({ children, activeSection }: { children: ReactNode; activeSection?: string }) {
   const { student, signOut } = useStudentSession();
 
   // The landing page can leave `overflow: hidden` behind when navigating
@@ -107,7 +107,7 @@ export function StudentLayout({ children }: { children: ReactNode }) {
           */}
           <nav className="student-footer-nav" aria-label="სწრაფი ნავიგაცია">
             {STUDENT_NAV.map((item) => (
-              <Link key={item.key} to={item.to}>
+              <Link key={item.key} to={item.to} aria-current={item.key === activeSection ? 'page' : undefined}>
                 {item.label}
               </Link>
             ))}

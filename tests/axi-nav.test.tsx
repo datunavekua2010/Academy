@@ -80,7 +80,7 @@ describe('Axi student navigation', () => {
 
 describe('unified homework + practice', () => {
   it('shows teacher-assigned subtopics on the homework page with no separate workflow', () => {
-    window.location.hash = '#/student/homework';
+    window.location.hash = '#/student/homework/grade/5';
     render(<StudentApp />);
 
     // The homework page is the same system, filtered to assigned subtopics.
