@@ -30,6 +30,10 @@ describe('homework grade selection', () => {
     await screen.findByRole('heading', { name: 'Choose your grade' });
     const cards = document.querySelectorAll('.grade-choice');
     expect(cards).toHaveLength(7);
+    cards.forEach((card, index) => {
+      expect(card.querySelector('.grade-choice-bottom')?.textContent).toContain(`კლასი ${index + 1}`);
+      expect(card.getAttribute('aria-label')).toContain(`კლასი ${index + 1}`);
+    });
     expect(cards[4].textContent).toContain('YOUR GRADE');
     expect(cards[4].getAttribute('aria-pressed')).toBe('true');
     for (const card of cards) {
@@ -64,14 +68,14 @@ describe('homework grade selection', () => {
     const next = screen.getByRole('button', { name: 'Next grades' }) as HTMLButtonElement;
     fireEvent.click(previous);
     expect(previous.disabled).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: /Grade 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: /კლასი 1/ }));
     while (!next.disabled) fireEvent.click(next);
     expect(next.disabled).toBe(true);
     expect(document.querySelectorAll('.grade-choice')[0].getAttribute('aria-pressed')).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: /Grade 7/ }));
+    fireEvent.click(screen.getByRole('button', { name: /კლასი 7/ }));
     width = 900;
     act(() => window.dispatchEvent(new Event('resize')));
-    expect(screen.getByRole('button', { name: /Grade 7/ }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: /კლასი 7/ }).getAttribute('aria-pressed')).toBe('true');
     expect(next.disabled).toBe(true);
   });
 

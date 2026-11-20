@@ -4,7 +4,7 @@ import type { GradeId } from '../practice/types';
 import { Link, useHashRoute } from '../router';
 import { Dashboard } from './Dashboard';
 import { Homework } from './pages/Homework';
-import { GradeSelection } from './pages/GradeSelection';
+import { GradeSelection, parseStudentGrade } from './pages/GradeSelection';
 import { Lessons } from './pages/Lessons';
 import { Practice } from './pages/Practice';
 import { Profile } from './pages/Profile';
@@ -24,9 +24,9 @@ const TITLES: Record<string, string> = {
 
 /** The student area is only rendered for an authenticated (demo) session. */
 function RequireStudent({ children }: { children: ReactNode }) {
-  const { student } = useStudentSession();
+  const { student, mode } = useStudentSession();
   if (!student) return <StudentSignIn />;
-  return <>{children}</>;
+  return <PracticeProvider key={`${mode}:${student.id}`} studentId={student.id} mode={mode === 'connected' ? 'connected' : 'demo'} initialGrade={parseStudentGrade(student.grade) ?? 5}>{children}</PracticeProvider>;
 }
 
 function NotFound() {
@@ -105,9 +105,7 @@ function StudentRoutes() {
 export function StudentApp() {
   return (
     <StudentSessionProvider>
-      <PracticeProvider>
-        <StudentRoutes />
-      </PracticeProvider>
+      <StudentRoutes />
     </StudentSessionProvider>
   );
 }

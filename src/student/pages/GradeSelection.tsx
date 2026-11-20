@@ -125,10 +125,10 @@ export function GradeSelection() {
                 const actual = studentGrade === grade.id;
                 const hidden = desktop && (index < position || index >= position + visible);
                 return (
-                  <button key={grade.id} type="button" className={`grade-choice${selected ? ' is-selected' : ''}${actual ? ' is-actual' : ''}`} aria-label={`Grade ${grade.id}${actual ? ', your grade' : ''}`} aria-pressed={selected} aria-hidden={hidden || undefined} tabIndex={hidden ? -1 : undefined} onClick={() => setSelectedGrade(grade.id)}>
+                  <button key={grade.id} type="button" className={`grade-choice${selected ? ' is-selected' : ''}${actual ? ' is-actual' : ''}`} lang="ka" aria-label={`კლასი ${grade.id}${actual ? ', შენი კლასი' : ''}`} aria-pressed={selected} aria-hidden={hidden || undefined} tabIndex={hidden ? -1 : undefined} onClick={() => setSelectedGrade(grade.id)}>
                     <span className="grade-choice-top"><span className="grade-choice-number">0{grade.id}</span>{actual && <span className="grade-actual"><span aria-hidden="true">✓</span> YOUR GRADE</span>}</span>
                     <Illustration grade={grade} />
-                    <span className="grade-choice-bottom"><span>Grade {grade.id}</span><span className="grade-choice-check" aria-hidden="true">{selected ? '✓' : '↗'}</span></span>
+                    <span className="grade-choice-bottom"><span>კლასი {grade.id}</span><span className="grade-choice-check" aria-hidden="true">{selected ? '✓' : '↗'}</span></span>
                     <span className="grade-choice-sub">Mathematics</span>
                   </button>
                 );

@@ -8,15 +8,18 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:supabase-policy": "node scripts/test-supabase-policy.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.2",
     "clsx": "2.1.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "tailwind-merge": "3.4.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.17",
     "@tailwindcss/vite": "4.1.17",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",

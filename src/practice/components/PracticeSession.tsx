@@ -6,6 +6,7 @@ import { MAX_SCORE } from '../scoring';
 import type { Submission } from '../session';
 import { bandForLevel, levelForScore, usesLevelBands } from '../levels';
 import { ScoreMeter } from './ScoreMeter';
+import { Encouragement } from './Encouragement';
 import { PictureView, pictureTargets } from '../pictures/PictureView';
 import type { PickProps } from '../pictures/PictureView';
 import { describedPictures, pictorialize } from '../pictures/parse';
@@ -321,6 +322,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             🎉
           </div>
           <h2>{MAX_SCORE} ქულა! სესია დასრულებულია.</h2>
+          {feedback && <Encouragement correct={feedback.result.correct} />}
           <p>
             {session.correct} სწორი და {session.incorrect} არასწორი პასუხი. შედეგი შენს
             პროგრესში შენახულია.
@@ -569,6 +571,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                     {feedback.result.previousScore} → {feedback.result.score}
                   </span>
                 </div>
+                <Encouragement correct={feedback.result.correct} />
                 <p>{question.explanation}</p>
               </div>
             )}

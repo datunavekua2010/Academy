@@ -6,8 +6,8 @@ import { useStudentSession } from './session';
 import { Link } from '../router';
 
 export function Dashboard() {
-  const { student } = useStudentSession();
-  const { assignments, progressFor, overall, grade } = usePractice();
+  const { student, mode } = useStudentSession();
+  const { assignments, progressFor, overall } = usePractice();
   const firstName = student?.firstName ?? 'მოსწავლე';
 
   const nextUp = assignments
@@ -35,7 +35,7 @@ export function Dashboard() {
       <div className="dashboard-today" aria-label="დღევანდელი მიმოხილვა">
         <span className="today-pill">
           <span className="today-dot" aria-hidden="true" />
-          კლასი: <strong>{grade}</strong>
+          კლასი: <strong>{student?.grade || 'არ არის მითითებული'}</strong>
         </span>
         <span className="today-pill">
           <span className="today-dot" aria-hidden="true" style={{ background: 'var(--yellow)' }} />
@@ -66,7 +66,7 @@ export function Dashboard() {
       )}
 
       <p className="demo-note dashboard-note">
-        დემო მოსწავლის გარემო — შედეგები ინახება ამ მოწყობილობაზე.
+        {mode === 'demo' ? 'დემო მოსწავლის გარემო — შედეგები ინახება ამ მოწყობილობაზე.' : 'ვარჯიშის შედეგები ანგარიშზე ინახება; გაკვეთილების პროგრესი ამ მოწყობილობაზე რჩება.'}
       </p>
     </div>
   );

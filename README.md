@@ -116,3 +116,7 @@ To check the configuration locally without deploying:
 npm run build
 npx wrangler dev     # serves dist/ exactly as production will
 ```
+
+## Supabase (optional, review before rollout)
+
+See [Supabase setup and security notes](docs/supabase.md) for build-time configuration, the review-only migration and seed, account provisioning, tests, and current limitations. The current deployment remains a demo unless both Supabase browser variables are configured; no migration is applied automatically.

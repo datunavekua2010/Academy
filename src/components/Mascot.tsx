@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type Ref } from 'react';
-import { FoxArt } from './FoxArt';
+import raccoonArt from '../assets/raccoon-mascot.png';
 
 type Mode = 'idle' | 'thinking' | 'waving';
 
@@ -30,11 +30,8 @@ interface MascotProps {
 }
 
 /**
- * Axi — the curious red fox.
- *
- * Eyes follow the cursor, click to make Axi think, waves hello on load.
- * The animation contract (eye tracking, blink, wave, bounce, thinking) is
- * independent of the anatomy, so the fox keeps every owl behaviour.
+ * Axi — the curious raccoon. Click to make Axi think, or use the
+ * mascot as a navigation trigger. The whole illustration can wave and bounce.
  */
 export function Mascot({
   scale = 1,
@@ -49,31 +46,13 @@ export function Mascot({
   ariaControls,
   showThoughtBubble = true,
 }: MascotProps) {
-  const root = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<Mode>('idle');
   const [idx, setIdx] = useState(-1);
-  const [look, setLook] = useState({ x: 0, y: 0 });
   const [bouncing, setBouncing] = useState(false);
   const timer = useRef<number>(0);
   const bounceTimer = useRef<number>(0);
 
   const text = idx < 0 ? (initialThought ?? thoughts[0]) : thoughts[idx];
-
-  // eyes follow pointer
-  useEffect(() => {
-    const onMove = (e: PointerEvent) => {
-      const el = root.current;
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const dx = e.clientX - (r.left + r.width / 2);
-      const dy = e.clientY - (r.top + r.height * 0.35);
-      const d = Math.hypot(dx, dy) || 1;
-      const k = Math.min(1, d / 160);
-      setLook({ x: (dx / d) * 7 * k, y: (dy / d) * 5 * k });
-    };
-    window.addEventListener('pointermove', onMove);
-    return () => window.removeEventListener('pointermove', onMove);
-  }, []);
 
   // friendly wave on load
   useEffect(() => {
@@ -114,12 +93,8 @@ export function Mascot({
     onClick();
   };
 
-  const pupil = mode === 'thinking' ? { x: 7, y: -5 } : look;
-  const pupilStyle = { transform: `translate(${pupil.x}px, ${pupil.y}px)` };
-
   return (
     <div
-      ref={root}
       className={`mascot-root ${className}`}
       /* The `scale` prop seeds --mascot-propscale, which CSS consumes as the
          fallback for --mascot-scale. Seeding --mascot-scale directly would not
@@ -142,8 +117,7 @@ export function Mascot({
           role="img"
           aria-label="Axi — მეგობრული ენოტი"
         >
-          {/* Inlined so the eyes, tail and spark stay individually animatable. */}
-          <FoxArt pupilStyle={pupilStyle} />
+          <img className="mascot-art" src={raccoonArt} alt="" draggable={false} />
         </div>
       </div>
 

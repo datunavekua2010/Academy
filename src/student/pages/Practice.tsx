@@ -8,6 +8,7 @@ import { dueLabel, romanGrade } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
 import { topicSubtopics } from '../../practice/types';
 import { PageIntro } from './PageIntro';
+import { useStudentSession } from '../session';
 
 /**
  * The unified practice system.
@@ -18,6 +19,7 @@ import { PageIntro } from './PageIntro';
  * same question bank.
  */
 export function Practice() {
+  const { mode } = useStudentSession();
   const {
     grade,
     setGrade,
@@ -190,9 +192,8 @@ export function Practice() {
       <ScoringRules />
 
       <p className="demo-note">
-        დემო მონაცემები: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
-        {attempts.length} შენახული სესია. რეალური სასწავლო გეგმა ჩაანაცვლებს ამ თემებს — სისტემა
-        იგივე დარჩება.
+        {mode === 'demo' ? 'დემო მონაცემები' : 'ანგარიშის მონაცემები'}: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
+        {attempts.length} შენახული სესია. {mode === 'demo' ? 'რეალური სასწავლო გეგმა ჩაანაცვლებს ამ თემებს — სისტემა იგივე დარჩება.' : 'ვარჯიშის შედეგები მოწმდება ბრაუზერში.'}
       </p>
     </div>
   );

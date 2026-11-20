@@ -2,6 +2,8 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useMemo,
   useState,
   type ReactNode,
@@ -28,6 +30,8 @@ import type { Assignment, Attempt, GradeStats, SubtopicProgress } from './store'
 import type { GradeId, SubtopicRef } from './types';
 import { levelForScore, usesLevelBands } from './levels';
 import { topicSubtopics } from './types';
+import { supabaseConfiguration } from '../lib/supabase';
+import { loadStudentPractice, saveStudentAttempt, type PendingAttempt } from './supabaseStore';
 
 interface PracticeContextValue {
   attempts: Attempt[];
@@ -96,30 +100,78 @@ const OPENING_BATCH = 8;
  */
 const REFILL_BATCH = 4;
 
-export function PracticeProvider({ children }: { children: ReactNode }) {
-  const [attempts, setAttempts] = useState<Attempt[]>(() => loadAttempts());
+export function PracticeProvider({ children, studentId, mode, initialGrade }: { children: ReactNode; studentId: string; mode: 'demo' | 'connected'; initialGrade: GradeId }) {
+  const live = mode === 'connected';
+  const client = live ? supabaseConfiguration.client : null;
+  const [attempts, setAttempts] = useState<Attempt[]>(() => live ? [] : loadAttempts());
+  const [remoteAssignments, setRemoteAssignments] = useState<Assignment[]>([]);
+  const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(live ? 'loading' : 'ready');
+  const [reload, setReload] = useState(0);
+  const [syncError, setSyncError] = useState(false);
+  const pending = useRef<PendingAttempt[]>([]);
+  const syncing = useRef(false);
   const [session, setSession] = useState<SessionState | null>(() => {
-    const draft = loadDraft();
+    const draft = live ? null : loadDraft();
     if (!draft) return null;
     // A draft holds generated question ids ("templateId~seed"); the generator
     // reproduces each one exactly, so a reload never loses the session.
     return hydrateDraft(draft, (id) => regenerateFromId(id));
   });
-  const [grade, setGrade] = useState<GradeId>(5);
+  const [grade, setGrade] = useState<GradeId>(initialGrade);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
 
-  const assignments = useMemo(() => demoAssignments(grade), [grade]);
+  const assignments = useMemo(() => live ? remoteAssignments.filter((item) => item.ref.grade === grade) : demoAssignments(grade), [grade, live, remoteAssignments]);
+
+  useEffect(() => {
+    if (!live || !client) return;
+    let active = true;
+    setLoadState('loading');
+    loadStudentPractice(client, studentId).then((data) => {
+      if (!active) return;
+      setAttempts(data.attempts);
+      setRemoteAssignments(data.assignments);
+      setLoadState('ready');
+    }).catch(() => { if (active) setLoadState('error'); });
+    return () => { active = false; };
+  }, [client, live, studentId, reload]);
+
+  const syncPending = useCallback(async () => {
+    if (!client || syncing.current) return;
+    syncing.current = true;
+    try {
+      while (pending.current.length) {
+        await saveStudentAttempt(client, studentId, pending.current[0]);
+        pending.current.shift();
+      }
+      setSyncError(false);
+    } catch { setSyncError(true); }
+    finally { syncing.current = false; }
+  }, [client, studentId]);
+  useEffect(() => {
+    if (!live) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      if (pending.current.length) { event.preventDefault(); event.returnValue = ''; }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [live]);
+  const persistDraft = useCallback((draft: SessionState | null) => { if (!live) saveDraft(draft); }, [live]);
 
   const templateCountFor = useCallback((ref: SubtopicRef) => templateCount(ref), []);
   const isPlayable = useCallback((ref: SubtopicRef) => hasTemplates(ref), []);
 
   const persistAttempt = useCallback((state: SessionState, startedAt: string) => {
+    const attempt = newAttempt(state, startedAt);
     setAttempts((current) => {
-      const updated = recordAttempt(current, newAttempt(state, startedAt));
-      saveAttempts(updated);
+      const updated = recordAttempt(current, attempt);
+      if (!live) saveAttempts(updated);
       return updated;
     });
-  }, []);
+    if (live) {
+      pending.current.push({ attempt, assignmentId: activeAssignmentId });
+      void syncPending();
+    }
+  }, [live, activeAssignmentId, syncPending]);
 
   const startPractice = useCallback((ref: SubtopicRef, assignment: Assignment | null = null) => {
 
@@ -138,8 +190,8 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     setSession(nextSession);
     setGrade(ref.grade);
     setActiveAssignmentId(assignment?.id ?? null);
-    saveDraft(nextSession);
-  }, []);
+    persistDraft(nextSession);
+  }, [persistDraft]);
 
   const answer = useCallback(
     (choice: string): Submission | null => {
@@ -148,13 +200,13 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
       if (!submission) return null;
 
       setSession(submission.state);
-      saveDraft(submission.state);
+      persistDraft(submission.state);
       if (submission.state.completed) {
         persistAttempt(submission.state, session.startedAt);
       }
       return submission;
     },
-    [session, persistAttempt],
+    [session, persistAttempt, persistDraft],
   );
 
   const next = useCallback(() => {
@@ -195,23 +247,23 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
         : [];
     const updated = advance(session, refill);
     setSession(updated);
-    saveDraft(updated);
-  }, [session]);
+    persistDraft(updated);
+  }, [session, persistDraft]);
 
   const stop = useCallback(() => {
     if (!session) return;
     const ended = endSession(session);
-    saveDraft(null);
+    persistDraft(null);
     persistAttempt(ended, session.startedAt);
     setSession(null);
     setActiveAssignmentId(null);
-  }, [session, persistAttempt]);
+  }, [session, persistAttempt, persistDraft]);
 
   const clearSession = useCallback(() => {
-    saveDraft(null);
+    persistDraft(null);
     setSession(null);
     setActiveAssignmentId(null);
-  }, []);
+  }, [persistDraft]);
 
   const value = useMemo<PracticeContextValue>(() => {
     const activeAssignment =
@@ -240,7 +292,12 @@ export function PracticeProvider({ children }: { children: ReactNode }) {
     };
   }, [attempts, assignments, grade, session, activeAssignmentId, startPractice, answer, next, stop, clearSession, templateCountFor, isPlayable]);
 
-  return <PracticeContext.Provider value={value}>{children}</PracticeContext.Provider>;
+  if (loadState === 'loading') return <div className="student-container" role="status">მონაცემები იტვირთება…</div>;
+  if (loadState === 'error') return <div className="student-container" role="alert"><p>მონაცემები ვერ ჩაიტვირთა. სცადე ხელახლა ან დაუკავშირდი აკადემიას.</p><button type="button" className="btn btn-primary" onClick={() => setReload((v) => v + 1)}>ხელახლა ცდა</button></div>;
+  return <PracticeContext.Provider value={value}>
+    {syncError && <div className="student-container" role="alert"><p>შედეგი ვერ შეინახა. არ დახურო გვერდი და სცადე ხელახლა.</p><button type="button" className="btn btn-primary" onClick={() => void syncPending()}>ხელახლა შენახვა</button></div>}
+    {children}
+  </PracticeContext.Provider>;
 }
 
 export function usePractice(): PracticeContextValue {

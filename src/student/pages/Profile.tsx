@@ -9,7 +9,7 @@ const PREFERENCES = [
 ];
 
 export function Profile() {
-  const { student } = useStudentSession();
+  const { student, mode } = useStudentSession();
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     reminders: true,
     parent: true,
@@ -23,7 +23,7 @@ export function Profile() {
       <PageIntro
         eyebrow="ჩემი პროფილი"
         title="პირადი ინფორმაცია"
-        description="აქ ნახავს შენს მონაცემებს და შეგიძლია მართო შეტყობინებები. დემო რეჟიმში ცვლილებები არ ინახება."
+        description="აქ ნახავ შენს მონაცემებს. შეტყობინებების პარამეტრები ამჟამად დემოა და არ ინახება."
       />
 
       <div className="profile-head">
@@ -37,7 +37,7 @@ export function Profile() {
           </p>
           <div className="meta-row">
             <span className="meta-chip tone-teal">აქტიური მოსწავლე</span>
-            <span className="meta-chip">დემო ანგარიში</span>
+            {mode === 'demo' && <span className="meta-chip">დემო ანგარიში</span>}
           </div>
         </div>
       </div>
@@ -93,8 +93,7 @@ export function Profile() {
       </div>
 
       <p className="demo-note">
-        დემო ანგარიში — რეალურ სისტემაში მონაცემები უნდა მოვიდეს აკადემიის
-        მონაცემთა ბაზიდან და დაცული იყოს მშობლის თანხმობით.
+        {mode === 'demo' ? 'დემო ანგარიში — რეალურ სისტემაში მონაცემები უნდა მოვიდეს აკადემიის მონაცემთა ბაზიდან და დაცული იყოს მშობლის თანხმობით.' : 'შეტყობინებების პარამეტრები დემოა და არ ინახება.'}
       </p>
     </div>
   );

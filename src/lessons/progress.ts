@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react';
  */
 
 export const LEARN_STORAGE_KEY = 'axiom-academy.learn.v1';
+let storageKey = LEARN_STORAGE_KEY;
 
 export interface LessonProgress {
   status: 'started' | 'completed';
@@ -27,7 +28,7 @@ function storage(): Storage | null {
 
 function read(): ProgressMap {
   try {
-    const raw = storage()?.getItem(LEARN_STORAGE_KEY);
+    const raw = storage()?.getItem(storageKey);
     if (!raw) return {};
     const parsed: unknown = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
@@ -45,6 +46,15 @@ function read(): ProgressMap {
 let cache: ProgressMap | null = null;
 const listeners = new Set<() => void>();
 
+/** Keep lesson progress separate from the demo and other accounts on this browser. */
+export function setLessonProgressOwner(studentId: string | null): void {
+  const next = studentId ? `${LEARN_STORAGE_KEY}:${studentId}` : LEARN_STORAGE_KEY;
+  if (next === storageKey) return;
+  storageKey = next;
+  cache = null;
+  listeners.forEach((listener) => listener());
+}
+
 function snapshot(): ProgressMap {
   if (cache === null) cache = read();
   return cache;
@@ -53,7 +63,7 @@ function snapshot(): ProgressMap {
 function write(next: ProgressMap): void {
   cache = next;
   try {
-    storage()?.setItem(LEARN_STORAGE_KEY, JSON.stringify(next));
+    storage()?.setItem(storageKey, JSON.stringify(next));
   } catch {
     /* ignore: progress stays in memory for this visit */
   }

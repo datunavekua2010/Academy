@@ -1352,6 +1352,29 @@
 }
 .feedback-score { font-size: .76rem; font-weight: 700; opacity: .85; }
 .answer-feedback p { margin: 7px 0 0; font-size: .86rem; font-weight: 500; line-height: 1.55; }
+.answer-encouragement {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  text-align: left;
+}
+.answer-encouragement img {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+}
+.answer-feedback .answer-encouragement p,
+.session-complete .answer-encouragement p {
+  margin: 0;
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .session-actions { margin-top: 16px; }
 .session-actions .btn { width: 100%; }
 .session-footer-actions {
@@ -1528,3 +1551,9 @@
 
 /* A short line under a picture that can also be tapped to answer. */
 .pic-pick-hint { margin: 8px 0 0; font-size: .9rem; font-weight: 700; color: #4a5a7d; }
+
+/* Account sign-in fields; scoped to the existing student sign-in card. */
+.academy-signin-form { display: grid; gap: 14px; margin: 18px 0; }
+.academy-signin-form label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; text-align: left; }
+.academy-signin-form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+.academy-signin-form input:focus-visible { outline: 3px solid #86a7fa; outline-offset: 2px; }
