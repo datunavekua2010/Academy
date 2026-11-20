@@ -1,8 +1,10 @@
-import { useEffect, type ReactNode } from 'react';
-import { PracticeProvider } from '../practice/PracticeProvider';
+import { useEffect, useLayoutEffect, type ReactNode } from 'react';
+import { PracticeProvider, usePractice } from '../practice/PracticeProvider';
+import type { GradeId } from '../practice/types';
 import { Link, useHashRoute } from '../router';
 import { Dashboard } from './Dashboard';
 import { Homework } from './pages/Homework';
+import { GradeSelection } from './pages/GradeSelection';
 import { Lessons } from './pages/Lessons';
 import { Practice } from './pages/Practice';
 import { Profile } from './pages/Profile';
@@ -44,6 +46,14 @@ function NotFound() {
   );
 }
 
+/** The URL is the source of truth for a homework grade, including on reload/back. */
+function GradeHomework({ grade }: { grade: GradeId }) {
+  const { grade: currentGrade, setGrade } = usePractice();
+  useLayoutEffect(() => { setGrade(grade); }, [grade, setGrade]);
+  if (currentGrade !== grade) return null;
+  return <Homework />;
+}
+
 function StudentRoutes() {
   const path = useHashRoute();
   const segment = path.replace(/^\/student\/?/, '').replace(/\/+$/, '');
@@ -53,7 +63,7 @@ function StudentRoutes() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    document.title = `${(head === 'lessons' || !rest ? TITLES[head] : undefined) ?? 'გვერდი ვერ მოიძებნა'} — Axiom Academy`;
+    document.title = `${(head === 'lessons' || head === 'homework' || !rest ? TITLES[head] : undefined) ?? 'გვერდი ვერ მოიძებნა'} — Axiom Academy`;
     // Move screen-reader / keyboard focus to the new page content.
     document.getElementById('student-main')?.focus({ preventScroll: true });
   }, [path, head, rest]);
@@ -66,9 +76,11 @@ function StudentRoutes() {
     case 'lessons':
       page = <Lessons sub={rest} />;
       break;
-    case 'homework':
-      page = <Homework />;
+    case 'homework': {
+      const match = rest.match(/^grade\/([1-7])$/);
+      page = !rest ? <GradeSelection /> : match ? <GradeHomework grade={Number(match[1]) as GradeId} /> : <NotFound />;
       break;
+    }
     case 'practice':
       page = <Practice />;
       break;
@@ -81,10 +93,10 @@ function StudentRoutes() {
     default:
       page = <NotFound />;
   }
-  if (head !== 'lessons' && rest) page = <NotFound />;
+  if (head !== 'lessons' && head !== 'homework' && rest) page = <NotFound />;
 
   return (
-    <StudentLayout>
+    <StudentLayout activeSection={head === 'homework' ? head : undefined}>
       <RequireStudent>{page}</RequireStudent>
     </StudentLayout>
   );

@@ -16,11 +16,12 @@ import { Link } from '../../router';
  * as the practice page.
  */
 export function Homework() {
-  const { assignments, attempts, startPractice, progressFor, session, stop, clearSession } =
+  const { grade: selectedGrade, assignments, attempts, startPractice, progressFor, session, stop, clearSession } =
     usePractice();
 
   const byGrade = new Map<GradeId, typeof assignments>();
   for (const assignment of assignments) {
+    if (assignment.ref.grade !== selectedGrade) continue;
     const list = byGrade.get(assignment.ref.grade) ?? [];
     list.push(assignment);
     byGrade.set(assignment.ref.grade, list);
@@ -64,12 +65,16 @@ export function Homework() {
         description="ეს არის იგივე ვარჯიშის სისტემა — მხოლოდ იმ ქვეთემებით, რომლებიც აკადემიამ საშინაო დავალებად მოგანიჭა. იმუშავე პირდაპირ აქ, ფურცლების ატვირთვა არ სჭირდება."
       />
 
+      <p><Link to="/student/homework" className="text-link">← Choose another grade</Link> · {getGrade(selectedGrade).label}</p>
+      {all.length === 0 && <p>No homework is currently available for this grade. You can explore the curriculum in practice.</p>}
       <div className="task-summary" role="status">
         <strong>
           {completed}/{all.length}
         </strong>
         <span>
-          {openCount === 0
+          {all.length === 0
+            ? 'ამ კლასისთვის დავალება არ არის.'
+            : openCount === 0
             ? 'ყველა დავალება დასრულებულია — გილოცავ!'
             : `დარჩა ${openCount} დავალება. თითოეული სესია 100 ქულამდე მიდის.`}
         </span>
