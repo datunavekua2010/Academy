@@ -27,6 +27,11 @@ import { EqualPartsLab, HalvesLab, NumeratorLab, QuartersLab, ThirdsLab } from '
 import { CalendarLab, ElapsedLab } from './CalendarTools';
 import { ChangeLab, MoneyLab, WayLab } from './MoneyTools';
 import { FlipLab, MirrorLab, ShapePatternLab, SymmetryLab } from './SymmetryTools';
+import { SentenceBoxLab, TakeawayLab, FactFamilyLab, SymbolLab, ChainLab } from './PuzzleTools';
+import { RoundingLab } from './RoundingTools';
+import { ThreeDigitLab } from './ThreeDigitTools';
+import { MissionLab } from './MissionTools';
+import { BarModelLab } from './BarModelTools';
 
 /**
  * Free-exploration tools. Nothing here is graded and nothing is "submitted":
@@ -562,5 +567,14 @@ export function ExploreToolView({ tool }: { tool: ExploreTool }) {
       return <FlipLab tool={tool} />;
     case 'pattern-shapes-lab':
       return <ShapePatternLab tool={tool} />;
+    case 'sentence-box-lab': return <SentenceBoxLab tool={tool} />;
+    case 'takeaway-lab': return <TakeawayLab tool={tool} />;
+    case 'fact-family-lab': return <FactFamilyLab tool={tool} />;
+    case 'symbol-lab': return <SymbolLab tool={tool} />;
+    case 'chain-lab': return <ChainLab tool={tool} />;
+    case 'rounding-lab': return <RoundingLab tool={tool} />;
+    case 'three-digit-lab': return <ThreeDigitLab tool={tool} />;
+    case 'mission-lab': return <MissionLab tool={tool} />;
+    case 'bar-model-lab': return <BarModelLab tool={tool} />;
   }
 }

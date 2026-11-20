@@ -16,7 +16,24 @@ import { fractionOf, fractionText, hasEqualPieces, piecesOf } from './exercises/
 import { addDays, dateFullText, dateText, daysBetween, monthLength, weekdayName, weekdayOf, weeksTextOf } from './exercises/CalendarGeometry';
 import { changeFrom, fewestPieces, moneyText, pieceText, totalOf as moneyTotal } from './exercises/MoneyGeometry';
 import { cellKey as symCellKey, isReflectionOf, isSymmetricAbout, lineName, missingForSymmetry, reflectCells, sameCells, tidy } from './exercises/SymmetryGeometry';
-import type { AnswerInput, Evaluation, Misconception, Question, ResponseSpec } from './types';
+import { filledText, runSteps, sentenceText, solve, solvePuzzle } from './exercises/PuzzleGeometry';
+import {
+  cellKey as gridCellKey,
+  clueText as gridClueText,
+  firstFailed,
+  forcedCell,
+  holes as gridHoles,
+  gridText,
+  holes,
+  itemAt as patternItemAt,
+  itemText,
+  latinHolds,
+  mistakeAt,
+  put as gridPut,
+  survivors as survivingCandidates,
+  walk as gridWalk,
+} from './exercises/GridGeometry';
+import type { AnswerInput, Evaluation, GridBoard, GridItem, Misconception, PuzzleTerm, Question, ResponseSpec } from './types';
 
 /**
  * Answer checking. Pure functions only — no React, no DOM — so every rule can
@@ -158,6 +175,26 @@ function parseCells(text: string): Array<{ x: number; y: number }> {
 export function evaluateAnswer(question: Question, input: AnswerInput): Evaluation {
   return evaluateResponse(question, question.response, input);
 }
+
+/** The explanation for a wrong answer: the question's own words, then the detail this checker worked out. */
+const withDetail = (question: Question, detail: string): string =>
+  !detail ? (question.fallbackFeedback ?? '') : question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail;
+
+/** The symbol standing in a place — a sentence being solved always has one to get. */
+const termSym = (term: PuzzleTerm): string => {
+  if (typeof term === 'number') throw new RangeError('this place holds a number, not a symbol');
+  return term.sym;
+};
+
+/** A grid route is stored as `"1,1,1,2"`; this turns it back into the cells it names. */
+function pairsOf(flat: readonly string[]): string[] {
+  const out: string[] = [];
+  for (let i = 0; i + 1 < flat.length; i += 2) out.push(`${flat[i]},${flat[i + 1]}`);
+  return out;
+}
+
+/** Two pattern items are the same when their shape and colour both match. */
+const sameGridItem = (a: GridItem | undefined, b: GridItem): boolean => Boolean(a) && a!.shape === b.shape && (a!.colour ?? '') === (b.colour ?? '');
 
 export function evaluateResponse(question: Question, response: ResponseSpec, input: AnswerInput): Evaluation {
   switch (response.type) {
@@ -1190,6 +1227,186 @@ export function evaluateResponse(question: Question, response: ResponseSpec, inp
         : 'აირჩიე ის ფიგურა, რომლის თითოეული უჯრაც წყაროს უჯრის არეკვლაა.';
       return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
     }
+    // ─────────────────────────── U11: missing numbers & puzzles ───────────────────────────
+    case 'sentence-fill': {
+      const typed = (Array.isArray(input) ? input : [input]).map((v) => parseNumber(typeof v === 'string' ? v : ''));
+      if (typed.length < response.blanks.length || typed.slice(0, response.blanks.length).some((n) => n === null)) {
+        return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needNumber };
+      }
+      const values = solve(response.sentence).values;
+      const want = response.blanks.map((place) => values[termSym(response.sentence[place])]);
+      if (want.every((n, i) => typed[i] === n)) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === typed.join(','));
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'ჩასვი შენი რიცხვი წინადადებაში და შეამოწმე ტოლობა.') });
+    }
+    case 'sentence-check': {
+      const value = typeof input === 'string' ? input : '';
+      if (!value) return { verdict: 'incomplete', feedback: MSG.needChoice };
+      if (value === response.answer) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => a === value);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'შეადარე მოქმედებები და რიცხვები.') });
+    }
+    case 'symbol-solve': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needNumber };
+      const { values } = solvePuzzle(response.sentences);
+      if (n === values[response.symbol]) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'ერთი და იგივე სიმბოლო ყველგან ერთი რიცხვია.') });
+    }
+    case 'chain-solve': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needNumber };
+      const all = runSteps(response.start, response.steps);
+      if (typeof response.ask === 'number' && (response.ask < 1 || response.ask > all.length)) {
+        throw new RangeError(`this question asks about step ${String(response.ask)}, but the chain has ${all.length} steps`);
+      }
+      const want = response.ask === 'end' ? all[all.length - 1] : all[response.ask - 1];
+      if (n === want) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'შეამოწმე მოქმედებები თანმიმდევრობით.') });
+    }
+    case 'chain-fill': {
+      const typed = (Array.isArray(input) ? input : [input]).map((v) => parseNumber(typeof v === 'string' ? v : ''));
+      if (typed.length < response.asks.length || typed.slice(0, response.asks.length).some((n) => n === null)) {
+        return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needNumber };
+      }
+      const all = runSteps(response.start, response.steps);
+      const want = response.asks.map((at) => all[at - 1]);
+      if (want.every((n, i) => typed[i] === n)) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === typed.join(','));
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'შეამოწმე მოქმედებები თანმიმდევრობით.') });
+    }
+    case 'family-pick': {
+      const value = typeof input === 'string' ? input : '';
+      if (!value) return { verdict: 'incomplete', feedback: MSG.needChoice };
+      if (value === response.answer) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => a === value);
+      if (hit) return wrong(question, hit);
+      const c = response.a + response.b;
+      const detail = `${response.a} + ${response.b} = ${c}, ${c} − ${response.a} = ${response.b}, ${c} − ${response.b} = ${response.a}.`;
+      return wrong(question, undefined, { feedback: question.fallbackFeedback ? `${question.fallbackFeedback} ${detail}` : detail });
+    }
+
+    // ─────────────────────────── U12: patterns, grids & logic ───────────────────────────
+    case 'pattern-next': {
+      const value = typeof input === 'string' ? input : '';
+      if (!value) return { verdict: 'incomplete', feedback: MSG.needChoice };
+      const want = response.options.findIndex((item) => sameGridItem(item, patternItemAt(response.pattern, response.shown)));
+      if (Number(value) === want) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === value);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'დააკვირდი, როგორ მეორდება ან იცვლება წესი.') });
+    }
+    case 'pattern-fix': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needNumber };
+      const at = mistakeAt(response.pattern, response.items);
+      if (at === -1) throw new RangeError('a "find the mistake" question needs a mistake in its row');
+      if (n === at + 1) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'შეადარე თითოეული ადგილი წესს.') });
+    }
+    case 'pattern-fill': {
+      const typed = (typeof input === 'string' ? input : '').split(',').filter((v) => v !== '');
+      if (typed.length < response.holes.length) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needChoice };
+      const want = response.holes.map((h) => patternItemAt(response.pattern, h));
+      if (typed.length === want.length && typed.every((v, i) => sameGridItem(response.options[Number(v)], want[i]))) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (a) => String(a) === typed.join(','));
+      if (hit) return wrong(question, hit);
+      return wrong(question, undefined, { feedback: withDetail(question, 'გამოიყენე წესი თითოეულ ცარიელ ადგილზე.') });
+    }
+    case 'grid-route': {
+      const picked = (typeof input === 'string' ? input : '').split(',').filter(Boolean);
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: MSG.needCells };
+      const { cells, ok } = gridWalk(response.start, response.moves, response.rows, response.cols);
+      if (!ok) throw new RangeError('route walks outside the grid');
+      const keys = cells.map(gridCellKey);
+      const got = pairsOf(picked);
+      if (got.length === keys.length && keys.every((k, i) => got[i] === k)) return { verdict: 'correct' };
+      const missing = keys.find((k) => !got.includes(k));
+      const detail = missing
+        ? `გზა გადის ${keys.length} უჯრაზე; ვერ მოინიშნა ${missing}.`
+        : 'ნაბიჯები ზედიზედ უნდა მიჰყვებოდეს ერთმანეთს — ყოველი შემდეგი უჯრა წინაზე ერთი ნაბიჯით შორსაა.';
+      return wrong(question, undefined, { feedback: withDetail(question, detail) });
+    }
+    case 'grid-end': {
+      const value = (typeof input === 'string' ? input : '').replace(/\s/g, '');
+      if (!value) return { verdict: 'incomplete', feedback: MSG.needCells };
+      const reachable = gridWalk(response.start, response.moves, response.rows, response.cols);
+      // an instruction that leaves the grid is a broken question, not a wrong answer
+      if (!reachable.ok) throw new RangeError(`these instructions walk off a ${response.rows}×${response.cols} grid`);
+      const want = gridCellKey(reachable.cells[reachable.cells.length - 1]);
+      if (value === want) return { verdict: 'correct' };
+      return wrong(question, undefined, { feedback: withDetail(question, 'მიჰყევი მითითებებს სათითაოდ.') });
+    }
+    case 'grid-fill': {
+      const typed = (typeof input === 'string' ? input : '').split(';').filter(Boolean);
+      if (typed.length === 0) return { verdict: 'incomplete', feedback: MSG.needCells };
+      let grid = response.grid;
+      const validHoles = new Set(gridHoles(response.grid).map(gridCellKey));
+      const seen = new Set<string>();
+      try {
+        for (const chunk of typed) {
+          const [key, index] = chunk.split('=');
+          const [row, col] = key.split(',').map(Number);
+          if (!validHoles.has(key) || seen.has(key)) return { verdict: 'incomplete', feedback: MSG.needCells };
+          seen.add(key);
+          const item = response.options[Number(index)];
+          if (!item) return { verdict: 'incomplete', feedback: MSG.needChoice };
+          grid = gridPut(grid, { row, col }, item);
+        }
+      } catch {
+        return { verdict: 'incomplete', feedback: MSG.needCells };
+      }
+      if (seen.size !== validHoles.size) return { verdict: 'incomplete', feedback: MSG.needCells };
+      const check = latinHolds(grid, response.items);
+      if (check.ok) return { verdict: 'correct' };
+      const where = check.row !== null ? `${check.row}-ე რიგში` : `${check.col}-ე სვეტში`;
+      const detail = `${where} ყოველი ფიგურა ზუსტად ერთხელ უნდა იყოს.`;
+      return wrong(question, undefined, { feedback: withDetail(question, detail) });
+    }
+    case 'clue-select': {
+      const picked = (typeof input === 'string' ? input : '').split(',').filter(Boolean);
+      if (picked.length === 0) return { verdict: 'incomplete', feedback: MSG.needClue };
+      const right = survivingCandidates(response.candidates, response.clues).map((c) => c.id);
+      if (picked.length === right.length && right.every((id) => picked.includes(id))) return { verdict: 'correct' };
+      const extra = picked.find((id) => !right.includes(id));
+      const gone = right.find((id) => !picked.includes(id));
+      const hit = findMisconception(question.misconceptions, (a) => a === extra || a === gone || a === 'extra' || a === 'missing');
+      if (hit) return wrong(question, hit);
+      let detail = '';
+      if (extra) {
+        const extraCandidate = response.candidates.find((c) => c.id === extra);
+        const failed = extraCandidate ? firstFailed(extraCandidate, response.clues) : null;
+        const name = response.candidates.find((c) => c.id === extra)?.label ?? extra;
+        detail = failed ? `${name} პირობას არ აკმაყოფილებს: ${gridClueText(failed, failed.attr, failed.value)}.` : `${name} ყველა პირობას არ აკმაყოფილებს.`;
+      } else if (gone) {
+        const name = response.candidates.find((c) => c.id === gone)?.label ?? gone;
+        detail = `${name} ყველა პირობას აკმაყოფილებს — ისიც უნდა აირჩიო.`;
+      }
+      return wrong(question, undefined, { feedback: withDetail(question, detail) });
+    }
+    case 'clue-pick2': {
+      const n = parseNumber(typeof input === 'string' ? input : '');
+      if (n === null) return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needChoice };
+      const candidate = response.candidates.find((c) => c.id === response.candidate);
+      if (!candidate) throw new RangeError(`clue-pick2 asks about a candidate that is not in the list: ${response.candidate}`);
+      const which = response.clues.findIndex((clue) => (candidate.traits[clue.attr] === clue.value) === Boolean(clue.negate));
+      if (which === -1) throw new RangeError(`every clue is satisfied by ${response.candidate}, so no clue rules it out`);
+      if (n === which) return { verdict: 'correct' };
+      const hit = findMisconception(question.misconceptions, (v) => Number(v) === n);
+      if (hit) return wrong(question, hit);
+      const clue = response.clues[which];
+      const detail = `${candidate.label}: ${gridClueText(clue, clue.attr, clue.value)} — ეს პირობა არ სრულდება.`;
+      return wrong(question, undefined, { feedback: withDetail(question, detail) });
+    }
     case 'group-story': {
       const [g = '', e = '', t = ''] = (typeof input === 'string' ? input : '').split(',');
       if (g.trim() === '' || e.trim() === '' || t.trim() === '') return { verdict: 'incomplete', feedback: question.incompleteFeedback ?? MSG.needStoryGroups };
@@ -1441,5 +1658,61 @@ export function describeAnswer(response: ResponseSpec): string {
       const actual = response.options.find((o) => isReflectionOf(response.source, o.cells, response.line));
       return actual?.id ?? '';
     }
+    case 'sentence-fill': {
+      const values = solve(response.sentence).values;
+      return filledText(response.sentence, values);
+    }
+    case 'sentence-check':
+      return sentenceText(response.options.find((o) => o.id === response.answer)!.sentence);
+    case 'symbol-solve':
+      return `${response.symbol} = ${solvePuzzle(response.sentences).values[response.symbol]}`;
+    case 'chain-solve': {
+      const all = runSteps(response.start, response.steps);
+      return String(response.ask === 'end' ? all[all.length - 1] : all[response.ask - 1]);
+    }
+    case 'chain-fill': {
+      const all = runSteps(response.start, response.steps);
+      return response.asks.map((at) => all[at - 1]).join(', ');
+    }
+    case 'family-pick':
+      return response.options.find((o) => o.id === response.answer)?.text ?? response.answer;
+    case 'pattern-next':
+      return itemText(patternItemAt(response.pattern, response.shown));
+    case 'pattern-fix':
+      return `${mistakeAt(response.pattern, response.items) + 1}`;
+    case 'pattern-fill':
+      return response.holes.map((h) => itemText(patternItemAt(response.pattern, h))).join(', ');
+    case 'grid-route':
+      return gridWalk(response.start, response.moves, response.rows, response.cols).cells.map(gridCellKey).join(' → ');
+    case 'grid-end': {
+      const got = gridWalk(response.start, response.moves, response.rows, response.cols);
+      return gridCellKey(got.cells[got.cells.length - 1]);
+    }
+    case 'grid-fill': {
+      const solved = solveGrid(response.grid, response.items);
+      return gridText(solved).join(' / ');
+    }
+    case 'clue-select':
+      return survivingCandidates(response.candidates, response.clues).map((c) => c.label).join(', ');
+    case 'clue-pick2': {
+      const candidate = response.candidates.find((c) => c.id === response.candidate)!;
+      const clue = firstFailed(candidate, response.clues)!;
+      return gridClueText(clue, clue.attr, clue.value);
+    }
   }
+}
+
+/**
+ * Fill a rule grid the only way it can be filled: repeatedly place the item that is forced in some row and column. Throws
+ * when nothing is forced, because a grid with two possible answers is a content bug, not a puzzle.
+ */
+export function solveGrid(grid: GridBoard, items: readonly GridItem[]): GridBoard {
+  let out = grid;
+  for (let guard = 0; guard < grid.rows * grid.cols + 1; guard += 1) {
+    if (holes(out).length === 0) return out;
+    const forced = forcedCell(out, items);
+    if (!forced) throw new RangeError('this grid cannot be solved by elimination — no cell is forced');
+    out = gridPut(out, forced.cell, forced.item);
+  }
+  throw new RangeError('this grid cannot be solved');
 }

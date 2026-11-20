@@ -1,3 +1,18 @@
+import { g3u03l1 } from './g3-u03-l1';
+import { g3u03l2 } from './g3-u03-l2';
+import { g3u03l3 } from './g3-u03-l3';
+import { g3u03l4 } from './g3-u03-l4';
+import { g3u03l5 } from './g3-u03-l5';
+import { g3u02l1 } from './g3-u02-l1';
+import { g3u02l2 } from './g3-u02-l2';
+import { g3u02l3 } from './g3-u02-l3';
+import { g3u02l4 } from './g3-u02-l4';
+import { g3u02l5 } from './g3-u02-l5';
+import { g3u01l1 } from './g3-u01-l1';
+import { g3u01l2 } from './g3-u01-l2';
+import { g3u01l3 } from './g3-u01-l3';
+import { g3u01l4 } from './g3-u01-l4';
+import { g3u01l5 } from './g3-u01-l5';
 import type { Lesson } from '../types';
 import { g2u02l1 } from './g2-u02-l1';
 import { g2u02l2 } from './g2-u02-l2';
@@ -108,6 +123,21 @@ import { g2u01l5 } from './g2-u01-l5';
  * lesson, create its file next to `g6-u10-l3.ts` and register it below.
  */
 export const LESSON_CONTENT: Record<string, Lesson> = {
+  [g3u03l1.id]: g3u03l1,
+  [g3u03l2.id]: g3u03l2,
+  [g3u03l3.id]: g3u03l3,
+  [g3u03l4.id]: g3u03l4,
+  [g3u03l5.id]: g3u03l5,
+  [g3u02l1.id]: g3u02l1,
+  [g3u02l2.id]: g3u02l2,
+  [g3u02l3.id]: g3u02l3,
+  [g3u02l4.id]: g3u02l4,
+  [g3u02l5.id]: g3u02l5,
+  [g3u01l1.id]: g3u01l1,
+  [g3u01l2.id]: g3u01l2,
+  [g3u01l3.id]: g3u01l3,
+  [g3u01l4.id]: g3u01l4,
+  [g3u01l5.id]: g3u01l5,
   [g1u01l1.id]: g1u01l1,
   [g1u01l2.id]: g1u01l2,
   [g1u01l3.id]: g1u01l3,

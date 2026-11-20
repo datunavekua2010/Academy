@@ -3,6 +3,10 @@ import type { CalDate } from './exercises/CalendarGeometry';
 import type { ClockTime } from './exercises/ClockGeometry';
 import type { Cell, MirrorLine, GridPicture } from './exercises/SymmetryGeometry';
 export type { Cell, MirrorLine, GridPicture } from './exercises/SymmetryGeometry';
+import type { Sentence as PuzzleSentence, Step as PuzzleStep } from './exercises/PuzzleGeometry';
+export type { Sentence as PuzzleSentence, Step as PuzzleStep, Term as PuzzleTerm } from './exercises/PuzzleGeometry';
+import type { Item as GridItem, Cell as GridCell, Grid as GridBoard, Move as GridMove, Candidate as GridCandidate, Clue as GridClue, Pattern as GridPattern } from './exercises/GridGeometry';
+export type { Item as GridItem, Cell as GridCell, Grid as GridBoard, Move as GridMove, Candidate as GridCandidate, Clue as GridClue, Pattern as GridPattern } from './exercises/GridGeometry';
 import type { Flat, FlatSpec } from './exercises/Shape2DGeometry';
 import type { Place } from './exercises/PlaceValueGeometry';
 
@@ -503,6 +507,43 @@ export type ResponseSpec =
    */
   | { type: 'flip-pick'; source: Cell[]; line: MirrorLine; options: Array<{ id: string; cells: Cell[] }>; width: number; height: number }
 
+// ───────────────────────────── missing numbers & puzzles (Unit 11) ─────────────────────────────
+
+  /**
+   * Fill the blanks in a number sentence. `sentence` is the sentence and `blanks` names the places that are empty; the
+   * answer is computed by solving it, so the content never stores the missing number twice.
+   */
+  | { type: 'sentence-fill'; sentence: PuzzleSentence; blanks: Array<'a' | 'b' | 'c'> }
+  /** Pick the sentence that checks another: each option is a whole sentence, and the answer is its id. */
+  | { type: 'sentence-check'; sentence: PuzzleSentence; options: Array<{ id: string; sentence: PuzzleSentence }>; answer: string }
+  /** One symbol has the same value in every sentence; the student types that value. Stored as the number. */
+  | { type: 'symbol-solve'; sentences: PuzzleSentence[]; symbol: string }
+  /** Solve a chain of steps: the student types the value at the asked position (`end`, or a step counted from 1). */
+  | { type: 'chain-solve'; start: number; steps: PuzzleStep[]; ask: 'end' | number }
+  /** Several blanks, one per asked position of a chain. Stored as the comma-separated values, in the order asked. */
+  | { type: 'chain-fill'; start: number; steps: PuzzleStep[]; asks: number[] }
+  /** Which sentences could both be true at once? Stored as the chosen option id. */
+  | { type: 'family-pick'; a: number; b: number; answer: string; options: Array<{ id: string; text: string }> }
+
+// ───────────────────────────── visual patterns & grids (Unit 12) ─────────────────────────────
+
+  /** What comes next in a pattern? Stored as the chosen item's index in `options`. */
+  | { type: 'pattern-next'; pattern: GridPattern; shown: number; options: GridItem[] }
+  /** Which position breaks the rule? Stored as the position, counted from 1. */
+  | { type: 'pattern-fix'; pattern: GridPattern; items: GridItem[] }
+  /** Fill the empty places of a pattern row. Stored as the comma-separated option indices, in the order of the holes. */
+  | { type: 'pattern-fill'; pattern: GridPattern; length: number; holes: number[]; options: GridItem[] }
+  /** Tap the cells a walk visits. Stored as the comma-separated `row,col` keys, in the order tapped. */
+  | { type: 'grid-route'; rows: number; cols: number; start: GridCell; moves: GridMove[] }
+  /** Which cell do the instructions reach? Stored as `row,col`. */
+  | { type: 'grid-end'; rows: number; cols: number; start: GridCell; moves: GridMove[] }
+  /** Fill the empty cells of a grid so every row and column holds each item once. Stored as `row,col=index` pairs. */
+  | { type: 'grid-fill'; grid: GridBoard; items: GridItem[]; options: GridItem[] }
+  /** Which candidates satisfy every clue? Stored as the comma-separated candidate ids. */
+  | { type: 'clue-select'; candidates: GridCandidate[]; clues: GridClue[] }
+  /** Which clue rules this candidate out? Stored as the clue index. */
+  | { type: 'clue-pick2'; candidates: GridCandidate[]; clues: GridClue[]; candidate: string }
+
 // ───────────────────────────── equality & sorting (Units 9–10) ─────────────────────────────
 
 /** One side of a number sentence: `a + b`, or a single value. */
@@ -942,7 +983,16 @@ export type ExploreTool =
   /** Divide a whole into three equal parts, and compare equal with unequal thirds. */
   | { tool: 'thirds-lab'; shapes: ShapeKind[] }
   /** Pick parts of a divided shape and watch the numerator and denominator change. */
-  | { tool: 'fraction-lab2'; shapes: Array<{ shape: ShapeKind; parts: number }> };
+  | { tool: 'fraction-lab2'; shapes: Array<{ shape: ShapeKind; parts: number }> }
+  | { tool: 'sentence-box-lab'; examples: Array<{ a: number; op: '+' | '−'; b: number; c: number; place: 'a' | 'b' | 'c' }> }
+  | { tool: 'takeaway-lab'; examples: Array<{ total: number; remove: number }> }
+  | { tool: 'fact-family-lab'; families: Array<{ a: number; b: number }> }
+  | { tool: 'symbol-lab'; puzzles: Array<{ sentences: PuzzleSentence[]; symbols: string[] }> }
+  | { tool: 'chain-lab'; puzzles: Array<{ start: number; steps: PuzzleStep[]; stages: number[] }> }
+  | { tool: 'rounding-lab'; mode: 'navigate' | 'tens' | 'hundreds' | 'estimate' | 'context'; place: 10 | 100; examples: Array<{ number: number; other?: number; op?: '+' | '−' }> }
+  | { tool: 'three-digit-lab'; op: 'add' | 'subtract'; examples: Array<{ a: number; b: number }> }
+  | { tool: 'mission-lab'; missions: Array<{ title: string; story: string; start: number; steps: Array<{ description: string; op: '+' | '−'; amount: number }> }> }
+  | { tool: 'bar-model-lab'; buildSegments?: boolean; examples: Array<{ story: string; a: number; b: number; missing: 'a' | 'b' | 'whole' }> };
 
 
 export interface ExploreActivity extends ActivityBase {
@@ -1136,7 +1186,13 @@ export type ExplainBlock =
   /** A purse arranged for counting, added up piece by piece. */
   | { type: 'money-demo'; mode: 'total' | 'make' | 'change'; pieces: number[]; target?: number; paid?: number; cost?: number; steps: string[]; caption?: string }
   /** A picture folded along its mirror line, reflected, and put back. */
-  | { type: 'symmetry-demo'; mode: 'fold' | 'flip' | 'pattern'; picture: GridPicture; line?: MirrorLine; block?: string[]; length?: number; steps: string[]; caption?: string };
+  | { type: 'symmetry-demo'; mode: 'fold' | 'flip' | 'pattern'; picture: GridPicture; line?: MirrorLine; block?: string[]; length?: number; steps: string[]; caption?: string }
+  | { type: 'sentence-demo'; a: number; op: '+' | '−'; b: number; c: number; place: 'a' | 'b' | 'c'; steps: string[] }
+  | { type: 'inverse-demo'; a: number; op: '+' | '−'; b: number; c: number; place: 'a' | 'b' | 'c'; steps: string[] }
+  | { type: 'chain-demo'; start: number; steps: PuzzleStep[] }
+  | { type: 'rounding-demo'; number: number; place: 10 | 100 }
+  | { type: 'three-digit-demo'; a: number; b: number; op: '+' | '−'; steps: string[] }
+  | { type: 'bar-model-demo'; a: number; b: number };
 
 
 export interface ExplainActivity extends ActivityBase {
