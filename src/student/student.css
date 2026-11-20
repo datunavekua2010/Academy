@@ -1352,6 +1352,29 @@
 }
 .feedback-score { font-size: .76rem; font-weight: 700; opacity: .85; }
 .answer-feedback p { margin: 7px 0 0; font-size: .86rem; font-weight: 500; line-height: 1.55; }
+.answer-encouragement {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  text-align: left;
+}
+.answer-encouragement img {
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  border-radius: 12px;
+  background: #fff;
+}
+.answer-feedback .answer-encouragement p,
+.session-complete .answer-encouragement p {
+  margin: 0;
+  font-size: .9rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .session-actions { margin-top: 16px; }
 .session-actions .btn { width: 100%; }
 .session-footer-actions {
