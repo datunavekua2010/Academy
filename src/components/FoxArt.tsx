@@ -23,12 +23,12 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
     >
       <defs>
         <linearGradient id="axi-fox-fur" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#C47B3E" />
-          <stop offset="1" stopColor="#A95C2C" />
+          <stop offset="0" stopColor="#24324A" />
+          <stop offset="1" stopColor="#1B263B" />
         </linearGradient>
         <linearGradient id="axi-fox-tail-fur" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#C47B3E" />
-          <stop offset="1" stopColor="#A95C2C" />
+          <stop offset="0" stopColor="#24324A" />
+          <stop offset="1" stopColor="#1B263B" />
         </linearGradient>
       </defs>
 
@@ -36,7 +36,7 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
       <g id="axi-tail">
         <path
           d="M 74 322 C 50 328 22 288 6 244 C 10 228 28 234 48 262 C 64 284 72 304 74 322 Z"
-          fill="#F7D8B2"
+          fill="#FFF9F2"
         />
         <path
           d="M 14 246 C 24 244 32 250 42 262 L 34 268 C 24 256 16 250 10 252 Z"
@@ -60,19 +60,19 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
       <g id="axi-body">
         <path
           d="M 65 190 C 85 195 183 195 203 190 C 218 230 220 290 200 335 C 185 350 83 350 68 335 C 48 290 50 230 65 190 Z"
-          fill="#F7D8B2"
+          fill="#FFF9F2"
         />
-        <ellipse cx="102" cy="346" rx="24" ry="8" fill="#F7D8B2" />
-        <ellipse cx="166" cy="346" rx="24" ry="8" fill="#F7D8B2" />
-        <ellipse cx="102" cy="348" rx="16" ry="5" fill="#754221" />
-        <ellipse cx="166" cy="348" rx="16" ry="5" fill="#754221" />
+        <ellipse cx="102" cy="346" rx="24" ry="8" fill="#FFF9F2" />
+        <ellipse cx="166" cy="346" rx="24" ry="8" fill="#FFF9F2" />
+        <ellipse cx="102" cy="348" rx="16" ry="5" fill="#24324A" />
+        <ellipse cx="166" cy="348" rx="16" ry="5" fill="#24324A" />
       </g>
 
       {/* Head: ears, glasses, muzzle, and interactive eyes */}
       <g id="axi-head">
         <path
           d="M 42 78 C 30 42 42 12 64 12 C 86 14 100 40 106 50 C 114 42 124 38 134 38 C 144 38 154 42 162 50 C 168 40 182 14 204 12 C 226 12 238 42 226 78 C 238 108 236 144 224 170 C 206 194 172 212 134 214 C 96 212 62 194 44 170 C 32 144 30 108 42 78 Z"
-          fill="#F7D8B2"
+          fill="#FFF9F2"
         />
 
         <g id="axi-ear-inner">
@@ -85,7 +85,7 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
 
         {/* Muzzle */}
         <g id="axi-muzzle">
-          <ellipse cx="134" cy="168" rx="14" ry="10" fill="#34231E" />
+          <ellipse cx="134" cy="168" rx="14" ry="10" fill="#1B263B" />
           <ellipse cx="131.5" cy="165.5" rx="4.5" ry="2.5" fill="#FFFFFF" opacity="0.65" />
         </g>
 
@@ -93,20 +93,20 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
         <g id="axi-eye-left">
           <ellipse cx="106.6" cy="127.3" rx="10.5" ry="10.5" fill="#FFFFFF" />
           <g id="axi-pupil-left" style={pupilStyle}>
-            <ellipse cx="106.6" cy="127.3" rx="6" ry="6" fill="#34231E" />
+            <ellipse cx="106.6" cy="127.3" rx="6" ry="6" fill="#1B263B" />
             <circle cx="104.2" cy="124.0" r="2.2" fill="#FFFFFF" />
           </g>
-          <circle cx="106.6" cy="127.3" r="10.5" fill="none" stroke="#34231E" strokeWidth="1.8" />
+          <circle cx="106.6" cy="127.3" r="10.5" fill="none" stroke="#1B263B" strokeWidth="1.8" />
         </g>
 
         {/* Right eye: blinks via #axi-eye-right */}
         <g id="axi-eye-right">
           <ellipse cx="173.5" cy="127.3" rx="10.5" ry="10.5" fill="#FFFFFF" />
           <g id="axi-pupil-right" style={pupilStyle}>
-            <ellipse cx="173.5" cy="127.3" rx="6" ry="6" fill="#34231E" />
+            <ellipse cx="173.5" cy="127.3" rx="6" ry="6" fill="#1B263B" />
             <circle cx="171.1" cy="124.0" r="2.2" fill="#FFFFFF" />
           </g>
-          <circle cx="173.5" cy="127.3" r="10.5" fill="none" stroke="#34231E" strokeWidth="1.8" />
+          <circle cx="173.5" cy="127.3" r="10.5" fill="none" stroke="#1B263B" strokeWidth="1.8" />
         </g>
       </g>
 
@@ -115,7 +115,7 @@ export function FoxArt({ pupilStyle }: { pupilStyle: CSSProperties }) {
         <path
           d="M 245 105 L 248 113 L 256 116 L 248 119 L 245 127 L 242 119 L 234 116 L 242 113 Z"
           fill="#F7C84B"
-          stroke="#754221"
+          stroke="#24324A"
           strokeWidth="1.5"
           strokeLinejoin="round"
         />
