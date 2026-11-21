@@ -1,38 +1,38 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { StudentApp } from '../src/student/StudentApp';
 import { LEARN_STORAGE_KEY, resetProgressCache } from '../src/lessons/progress';
+import { TEST_ACCOUNT_ID } from '../src/student/accountMode';
 
+beforeEach(() => { localStorage.clear(); resetProgressCache(); window.scrollTo = vi.fn(); });
 afterEach(() => { cleanup(); localStorage.clear(); resetProgressCache(); window.location.hash = ''; });
-it('does not fabricate a student when configuration is absent, and offers a clearly unavailable sign-in', () => {
-  window.scrollTo = vi.fn();
+it('opens the clearly labelled test account without sign-in or sign-out', () => {
   window.location.hash = '#/student';
   render(<StudentApp />);
-  expect(screen.getByLabelText('ელფოსტა')).toBeTruthy();
-  expect(screen.getByLabelText('პაროლი')).toBeTruthy();
-  expect((screen.getByRole('button', { name: 'შესვლა' }) as HTMLButtonElement).disabled).toBe(true);
-  expect(screen.getByRole('alert').textContent).toContain('მიუწვდომელია');
-  expect(screen.queryByText(/ნინო/)).toBeNull();
-  expect(screen.queryByText(/დემო მოსწავლედ/)).toBeNull();
+  expect(screen.getByRole('heading', { name: /გამარჯობა, მოსწავლე/ })).toBeTruthy();
+  expect(screen.getByText(/სატესტო ანგარიში · დავალებები/)).toBeTruthy();
+  expect(screen.queryByLabelText('ელფოსტა')).toBeNull();
+  expect(screen.queryByLabelText('პაროლი')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'მოსწავლის ანგარიშიდან გასვლა' })).toBeNull();
 });
-it('lets a guest view lessons without showing or changing old demo progress', () => {
-  window.scrollTo = vi.fn();
-  const previous = JSON.stringify({ 'g6-u10-l3': { status: 'completed', checkCorrect: 2, checkTotal: 2 } });
-  localStorage.setItem(LEARN_STORAGE_KEY, previous);
-  resetProgressCache();
+it('keeps test lesson progress away from legacy and real account data', () => {
+  const legacy = JSON.stringify({ 'g6-u10-l3': { status: 'completed', checkCorrect: 2, checkTotal: 2 } });
+  const real = JSON.stringify({ 'g6-u10-l3': { status: 'completed' } });
+  localStorage.setItem(LEARN_STORAGE_KEY, legacy);
+  localStorage.setItem(`${LEARN_STORAGE_KEY}:real-student`, real);
   window.location.hash = '#/student/lessons/g6-u10-l3';
   render(<StudentApp />);
-  expect(screen.getByText(/სტუმრის რეჟიმი: შეგიძლია/)).toBeTruthy();
-  fireEvent.click(screen.getByRole('textbox'));
-  expect(screen.getByText(/ანგარიშში არ ხარ შესული/)).toBeTruthy();
-  expect(localStorage.getItem(LEARN_STORAGE_KEY)).toBe(previous);
+  const input = screen.getByRole('textbox') as HTMLInputElement;
+  expect(input.readOnly).toBe(false);
+  fireEvent.change(input, { target: { value: '5x' } });
+  expect(input.value).toBe('5x');
+  expect(localStorage.getItem(LEARN_STORAGE_KEY)).toBe(legacy);
+  expect(localStorage.getItem(`${LEARN_STORAGE_KEY}:real-student`)).toBe(real);
+  expect(JSON.parse(localStorage.getItem(`${LEARN_STORAGE_KEY}:${TEST_ACCOUNT_ID}`) ?? '{}')['g6-u10-l3'].status).toBe('started');
 });
-
-it('does not expose achievements as an authenticated student when sign-in is unavailable', () => {
-  window.scrollTo = vi.fn();
+it('opens the achievement catalog directly', () => {
   window.location.hash = '#/student/achievements';
   render(<StudentApp />);
-  expect(screen.getByLabelText('ელფოსტა')).toBeTruthy();
-  expect(screen.queryByRole('heading', { name: 'მიღწევები' })).toBeNull();
+  expect(screen.getByRole('heading', { name: 'მიღწევები' })).toBeTruthy();
 });

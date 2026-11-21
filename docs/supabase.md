@@ -2,6 +2,8 @@
 
 The repository contains a schema migration and curriculum seed. They are **not applied automatically**. Check the target project’s migration history and existing rows before running either file. Use a fresh **test project first**, back up an existing project, and review for conflicts before running SQL. No SQL here deletes an existing table, but the initial migration creates public tables and fails if the names already exist. Avoid running it against an unknown schema. SQL editor runs with elevated privileges: only a trusted academy administrator should use it.
 
+> **Current release: test account only.** `TEST_ACCOUNT_MODE` is enabled in `src/student/accountMode.ts`. The app does not initialize a Supabase client, authenticate users, or read/write real account data in this mode, even if environment variables are configured. Test practice and lesson progress use separate browser-local keys. This mode is publicly accessible and is not appropriate for real student data. The instructions below describe the future authenticated rollout; restoring sign-in requires an explicit code change and security review.
+
 ## 1. Configure academy-only sign-in
 
 1. Open the Supabase project dashboard. In **Authentication → Sign In / Providers → Email**, enable email/password sign-in and disable **Allow new users to sign up**. Check **Authentication → Sign In / Providers** and disable other sign-in providers and anonymous sign-ins unless separately reviewed. Confirm public sign-up is actually blocked by trying it in the test project; hiding the app form alone is not security.

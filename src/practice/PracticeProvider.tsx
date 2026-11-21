@@ -31,6 +31,7 @@ import type { GradeId, SubtopicRef } from './types';
 import { levelForScore, usesLevelBands } from './levels';
 import { topicSubtopics } from './types';
 import { supabaseConfiguration } from '../lib/supabase';
+import { TEST_ACCOUNT_ID } from '../student/accountMode';
 import { loadStudentPractice, saveStudentAttempt, type PendingAttempt } from './supabaseStore';
 
 interface PracticeContextValue {
@@ -104,8 +105,11 @@ const REFILL_BATCH = 4;
 export function PracticeProvider({ children, studentId, mode, initialGrade }: { children: ReactNode; studentId: string; mode: 'demo' | 'connected' | 'guest'; initialGrade: GradeId }) {
   const live = mode === 'connected';
   const preview = mode === 'guest';
+  const testAccount = mode === 'demo' && studentId === TEST_ACCOUNT_ID;
+  const attemptsKey = testAccount ? 'axiom-academy.test.practice.v1' : undefined;
+  const draftKey = testAccount ? 'axiom-academy.test.practice.draft.v1' : undefined;
   const client = live ? supabaseConfiguration.client : null;
-  const [attempts, setAttempts] = useState<Attempt[]>(() => live || preview ? [] : loadAttempts());
+  const [attempts, setAttempts] = useState<Attempt[]>(() => live || preview ? [] : loadAttempts(undefined, attemptsKey));
   const [remoteAssignments, setRemoteAssignments] = useState<Assignment[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(live ? 'loading' : 'ready');
   const [reload, setReload] = useState(0);
@@ -113,7 +117,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
   const pending = useRef<PendingAttempt[]>([]);
   const syncing = useRef(false);
   const [session, setSession] = useState<SessionState | null>(() => {
-    const draft = live || preview ? null : loadDraft();
+    const draft = live || preview ? null : loadDraft(undefined, draftKey);
     if (!draft) return null;
     // A draft holds generated question ids ("templateId~seed"); the generator
     // reproduces each one exactly, so a reload never loses the session.
@@ -157,7 +161,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [live]);
-  const persistDraft = useCallback((draft: SessionState | null) => { if (!live && !preview) saveDraft(draft); }, [live, preview]);
+  const persistDraft = useCallback((draft: SessionState | null) => { if (!live && !preview) saveDraft(draft, undefined, draftKey); }, [live, preview, draftKey]);
 
   const templateCountFor = useCallback((ref: SubtopicRef) => templateCount(ref), []);
   const isPlayable = useCallback((ref: SubtopicRef) => hasTemplates(ref), []);
@@ -167,14 +171,14 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
     const attempt = newAttempt(state, startedAt);
     setAttempts((current) => {
       const updated = recordAttempt(current, attempt);
-      if (!live) saveAttempts(updated);
+      if (!live) saveAttempts(updated, undefined, attemptsKey);
       return updated;
     });
     if (live) {
       pending.current.push({ attempt, assignmentId: activeAssignmentId });
       void syncPending();
     }
-  }, [live, preview, activeAssignmentId, syncPending]);
+  }, [live, preview, attemptsKey, activeAssignmentId, syncPending]);
 
   const startPractice = useCallback((ref: SubtopicRef, assignment: Assignment | null = null) => {
 

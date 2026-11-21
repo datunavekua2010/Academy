@@ -3,6 +3,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LEARN_STORAGE_KEY, resetProgressCache } from '../src/lessons/progress';
 
+// Exercise the preserved academy-auth path, not the temporary test account.
+vi.mock('../src/student/accountMode', () => ({ TEST_ACCOUNT_MODE: false, TEST_ACCOUNT_ID: 'axiom-test-preview-v1' }));
 const auth = vi.hoisted(() => ({ callback: null as null | ((event: string, session: unknown) => void), profile: true, from: vi.fn(), passwordError: false, signIn: vi.fn() }));
 vi.mock('../src/lib/supabase', () => ({ supabaseConfiguration: { mode: 'connected', client: {
   auth: {

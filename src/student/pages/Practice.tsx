@@ -8,6 +8,7 @@ import { dueLabel, romanGrade } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
 import { topicSubtopics } from '../../practice/types';
 import { PageIntro } from './PageIntro';
+import { useStudentSession } from '../session';
 
 /**
  * The unified practice system.
@@ -18,6 +19,7 @@ import { PageIntro } from './PageIntro';
  * same question bank.
  */
 export function Practice() {
+  const { mode } = useStudentSession();
   const {
     preview,
     grade,
@@ -192,7 +194,7 @@ export function Practice() {
       {!preview && <ScoringRules />}
 
       {!preview && <p className="demo-note">
-        ანგარიშის მონაცემები: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
+        {mode === 'test' ? 'სატესტო მონაცემები' : 'ანგარიშის მონაცემები'}: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
         {attempts.length} შენახული სესია. ვარჯიშის შედეგები მოწმდება ბრაუზერში.
       </p>}
     </div>

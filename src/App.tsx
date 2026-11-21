@@ -156,7 +156,7 @@ export default function App() {
               onClick={() => setMenuOpen(false)}
             >
               <span className="nav-student-dot" aria-hidden="true" />
-              მოსწავლის შესვლა
+              მოსწავლის გვერდი
             </a>
           </nav>
           <button className="btn btn-primary nav-cta" onClick={openModal}>
@@ -457,7 +457,7 @@ export default function App() {
               {NAV.map(([href, label]) => (
                 <a key={href} href={href}>{label}</a>
               ))}
-              <a href="#/student">მოსწავლის შესვლა</a>
+              <a href="#/student">მოსწავლის გვერდი</a>
               <a
                 href="#"
                 onClick={(e) => {
