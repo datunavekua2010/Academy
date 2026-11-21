@@ -9,7 +9,7 @@ const PREFERENCES = [
 ];
 
 export function Profile() {
-  const { student } = useStudentSession();
+  const { student, mode } = useStudentSession();
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     reminders: true,
     parent: true,
@@ -36,7 +36,7 @@ export function Profile() {
             {student.grade} • Axiom Academy
           </p>
           <div className="meta-row">
-            <span className="meta-chip tone-teal">აქტიური მოსწავლე</span>
+            <span className="meta-chip tone-teal">{mode === 'test' ? 'სატესტო ანგარიში' : 'აქტიური მოსწავლე'}</span>
           </div>
         </div>
       </div>

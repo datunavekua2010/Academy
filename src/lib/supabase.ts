@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { TEST_ACCOUNT_MODE } from '../student/accountMode';
 
 export type SupabaseConfiguration =
   | { mode: 'unconfigured'; client: null }
@@ -22,7 +23,8 @@ export function createSupabaseConfiguration(url?: string, publishableKey?: strin
   }
 }
 
-export const supabaseConfiguration = createSupabaseConfiguration(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-);
+// The temporary test account must not restore an existing Supabase session,
+// contact the real service, or expose real account data, even if env vars exist.
+export const supabaseConfiguration: SupabaseConfiguration = TEST_ACCOUNT_MODE
+  ? { mode: 'unconfigured', client: null }
+  : createSupabaseConfiguration(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);

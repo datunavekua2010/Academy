@@ -135,10 +135,10 @@ export function buildDemoAssignments(
     .filter((item): item is Assignment => item !== null);
 }
 
-export function loadAttempts(storage: Storage | undefined = safeStorage()): Attempt[] {
+export function loadAttempts(storage: Storage | undefined = safeStorage(), key = STORAGE_KEY): Attempt[] {
   if (!storage) return [];
   try {
-    const raw = storage.getItem(STORAGE_KEY);
+    const raw = storage.getItem(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as StoredData;
     if (parsed?.version !== 1 || !Array.isArray(parsed.attempts)) return [];
@@ -148,20 +148,20 @@ export function loadAttempts(storage: Storage | undefined = safeStorage()): Atte
   }
 }
 
-export function saveAttempts(attempts: Attempt[], storage: Storage | undefined = safeStorage()): void {
+export function saveAttempts(attempts: Attempt[], storage: Storage | undefined = safeStorage(), key = STORAGE_KEY): void {
   if (!storage) return;
   try {
-    storage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, attempts } satisfies StoredData));
+    storage.setItem(key, JSON.stringify({ version: 1, attempts } satisfies StoredData));
   } catch {
     // Storage can be unavailable (private mode, quota). Progress then lives for
     // the current tab only instead of breaking the session.
   }
 }
 
-export function loadDraft(storage: Storage | undefined = safeStorage()): SessionState | null {
+export function loadDraft(storage: Storage | undefined = safeStorage(), key = DRAFT_KEY): SessionState | null {
   if (!storage) return null;
   try {
-    const raw = storage.getItem(DRAFT_KEY);
+    const raw = storage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as SessionState;
     if (!parsed?.ref || !Array.isArray(parsed.queue) || typeof parsed.score !== 'number') {
@@ -173,11 +173,11 @@ export function loadDraft(storage: Storage | undefined = safeStorage()): Session
   }
 }
 
-export function saveDraft(state: SessionState | null, storage: Storage | undefined = safeStorage()): void {
+export function saveDraft(state: SessionState | null, storage: Storage | undefined = safeStorage(), key = DRAFT_KEY): void {
   if (!storage) return;
   try {
-    if (state) storage.setItem(DRAFT_KEY, JSON.stringify(state));
-    else storage.removeItem(DRAFT_KEY);
+    if (state) storage.setItem(key, JSON.stringify(state));
+    else storage.removeItem(key);
   } catch {
     // ignored — see saveAttempts
   }

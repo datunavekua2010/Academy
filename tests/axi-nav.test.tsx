@@ -221,7 +221,7 @@ describe('public landing page', () => {
     ).toBeTruthy();
     expect(screen.getByRole('navigation', { name: 'მთავარი ნავიგაცია' })).toBeTruthy();
 
-    const studentLinks = screen.getAllByRole('link', { name: 'მოსწავლის შესვლა' });
+    const studentLinks = screen.getAllByRole('link', { name: 'მოსწავლის გვერდი' });
     expect(studentLinks.length).toBeGreaterThan(0);
     for (const link of studentLinks) {
       expect(link.getAttribute('href')).toBe('#/student');

@@ -11,9 +11,10 @@ single-file production build portable (no server rewrites required).
 - `Escape`, clicking Axi again, the dismiss button, or an outside tap closes the menu.
 - Bubble destinations: `#/student/lessons`, `#/student/homework`, `#/student/practice`,
   `#/student/progress`, `#/student/achievements`, `#/student/profile`.
-- Students sign in with the email and password provided by the academy. Guests
-  may browse lessons and practice but cannot submit answers or view personal data.
-  Without Supabase configuration, account sign-in is unavailable.
+- For now, the student area opens automatically as a clearly labelled **test
+  account**, without sign-in. Test data is stored only in this browser under
+  isolated keys, never sent to Supabase, and must not be treated as private or
+  real student information. Anyone with access to the site can use it.
 - The public landing page keeps its conventional navigation. A discreet
   **მოსწავლის შესვლა** link in the header/footer opens the student area.
 - The footer of every student page also lists all six sections, so navigation
@@ -117,8 +118,8 @@ npm run build
 npx wrangler dev     # serves dist/ exactly as production will
 ```
 
-## Supabase (required for account sign-in)
+## Supabase (sign-in deferred)
 
-See [Supabase setup and security notes](docs/supabase.md) for build-time configuration, the review-only migration and seed, account provisioning, tests, and current limitations. Account sign-in requires both Supabase browser variables to be configured at build time; no migration is applied automatically.
+See [Supabase setup and security notes](docs/supabase.md) for build-time configuration, the review-only migration and seed, account provisioning, tests, and current limitations. Real account sign-in is currently disabled, even when Supabase variables are configured. Restore it deliberately only after review; no migration is applied automatically.
 
 The 28-item achievement gallery is a catalog preview only; award validation and notifications are blocked until trusted server-side evidence is available. See [achievement system prerequisites](docs/achievement-system.md).

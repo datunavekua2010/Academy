@@ -1569,3 +1569,6 @@
   line-height: 1.5;
 }
 .guest-answer-notice a, .guest-preview-links a { color: #174a9b; text-decoration: underline; }
+
+/* Temporary test account is deliberately separate from real student data. */
+.test-account-banner { padding: 9px 20px; text-align: center; background: #eef7f3; color: #205a4e; border-bottom: 1px solid #d7e9e0; font-size: .8rem; font-weight: 700; line-height: 1.5; }

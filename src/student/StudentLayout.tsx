@@ -23,7 +23,7 @@ const BrandMark = () => (
 );
 
 export function StudentLayout({ children, activeSection }: { children: ReactNode; activeSection?: string }) {
-  const { student, signOut, error } = useStudentSession();
+  const { student, signOut, error, mode } = useStudentSession();
 
   // The landing page can leave `overflow: hidden` behind when navigating
   // straight from its mobile menu into the student area.
@@ -56,7 +56,7 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
               მთავარი გვერდი
             </Link>
 
-            {!student && <Link to="/student" className="student-signout">შესვლა</Link>}
+            {mode !== 'test' && !student && <Link to="/student" className="student-signout">შესვლა</Link>}
 
             {student && (
               <div className="student-chip" aria-label={`მოსწავლე: ${student.name}, ${student.grade}`}>
@@ -70,7 +70,7 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
               </div>
             )}
 
-            {student && (
+            {student && mode !== 'test' && (
               <button
                 type="button"
                 className="student-signout"
@@ -96,6 +96,7 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
         </div>
       </header>
 
+      {mode === 'test' && <div className="test-account-banner" role="status">სატესტო ანგარიში · დავალებები სადემონსტრაციოა. შედეგები ინახება მხოლოდ ამ მოწყობილობაზე და არ იგზავნება აკადემიაში.</div>}
       {student && error && <div className="student-container" role="alert">{error}</div>}
 
       <main id="student-main" className="student-main" tabIndex={-1}>

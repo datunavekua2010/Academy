@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabaseConfiguration } from '../lib/supabase';
 import { setLessonProgressOwner } from '../lessons/progress';
+import { TEST_ACCOUNT_ID, TEST_ACCOUNT_MODE } from './accountMode';
 
 export interface Student {
   id: string;
@@ -16,7 +17,7 @@ export interface Student {
 type SessionStatus = 'loading' | 'ready' | 'error';
 interface StudentSessionValue {
   student: Student | null;
-  mode: 'unconfigured' | 'connected' | 'invalid';
+  mode: 'test' | 'unconfigured' | 'connected' | 'invalid';
   status: SessionStatus;
   error: string | null;
   signedIn: boolean;
@@ -26,7 +27,33 @@ interface StudentSessionValue {
 
 const StudentSessionContext = createContext<StudentSessionValue | null>(null);
 
+const TEST_STUDENT: Student = {
+  id: TEST_ACCOUNT_ID, name: 'სატესტო მოსწავლე', firstName: 'მოსწავლე', initials: 'სმ',
+  grade: 'V კლასი', guardian: '—', email: '—',
+};
+
+/** The current public experience is local-only and does not authenticate anyone. */
+function TestStudentSessionProvider({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useLayoutEffect(() => {
+    setLessonProgressOwner(TEST_ACCOUNT_ID);
+    setReady(true);
+  }, []);
+  const value = useMemo<StudentSessionValue>(() => ({
+    student: TEST_STUDENT, mode: 'test', status: 'ready', error: null, signedIn: false,
+    signInWithPassword: async () => {}, signOut: () => {},
+  }), []);
+  if (!ready) return null;
+  return <StudentSessionContext.Provider value={value}>{children}</StudentSessionContext.Provider>;
+}
+
+/** Switch back to the academy provider once sign-in is ready for launch. */
 export function StudentSessionProvider({ children }: { children: ReactNode }) {
+  return TEST_ACCOUNT_MODE ? <TestStudentSessionProvider>{children}</TestStudentSessionProvider> : <AcademyStudentSessionProvider>{children}</AcademyStudentSessionProvider>;
+}
+
+/** Kept for the future sign-in step; never mounted in test-account mode. */
+export function AcademyStudentSessionProvider({ children }: { children: ReactNode }) {
   const { mode, client } = supabaseConfiguration;
   const [student, setStudent] = useState<Student | null>(null);
   const [user, setUser] = useState<User | null>(null);

@@ -5,8 +5,10 @@ import { needsWork, overallStats, progressFor } from '../../practice/store';
 import { topicSubtopics } from '../../practice/types';
 import { PageIntro } from './PageIntro';
 import { Link } from '../../router';
+import { useStudentSession } from '../session';
 
 export function Progress() {
+  const { mode } = useStudentSession();
   const { attempts, assignments, grade } = usePractice();
   const curriculum = getGrade(grade);
   const overall = overallStats(attempts, assignments);
@@ -175,7 +177,7 @@ export function Progress() {
       <ScoringRules compact />
 
       <p className="demo-note">
-        ვარჯიშის შედეგები ინახება ანგარიშზე. შედეგები მოწმდება ბრაუზერში და არ არის დამოუკიდებლად დადასტურებული.
+        {mode === 'test' ? 'სატესტო შედეგები მხოლოდ ამ მოწყობილობაზე ინახება.' : 'ვარჯიშის შედეგები ინახება ანგარიშზე. შედეგები მოწმდება ბრაუზერში და არ არის დამოუკიდებლად დადასტურებული.'}
       </p>
     </div>
   );

@@ -14,7 +14,7 @@ vi.mock('../src/lib/supabase', () => ({ supabaseConfiguration: { mode: 'connecte
     return query;
   },
 } } }));
-import { StudentSessionProvider, useStudentSession } from '../src/student/session';
+import { AcademyStudentSessionProvider as StudentSessionProvider, useStudentSession } from '../src/student/session';
 function View() {
   const { student, status, error, signedIn, signOut, signInWithPassword } = useStudentSession();
   return <><p data-testid="status">{status}</p><p data-testid="student">{student ? `${student.id} ${student.grade}` : 'none'}</p><p data-testid="signed">{String(signedIn)}</p><p data-testid="error">{error}</p><button onClick={signOut}>out</button><button onClick={() => void signInWithPassword('test@example.test', 'incorrect')}>in</button></>;
