@@ -20,7 +20,7 @@ function unitCounts(unit: UnitEntry, progress: ProgressMap): { done: number; rea
 export function LessonLibrary() {
   const { student } = useStudentSession();
   const [grade, setGrade] = useState<GradeNumber>(() => gradeFromLabel(student?.grade) as GradeNumber);
-  const progress = useLessonProgress();
+  const progress = useLessonProgress(!student);
   const topics = topicsForGrade(grade);
   const ready = Object.keys(LESSON_CONTENT)
     .map((id) => ({ entry: getLessonEntry(id), lesson: LESSON_CONTENT[id] }))

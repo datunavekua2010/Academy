@@ -6,7 +6,7 @@ import { useStudentSession } from './session';
 import { Link } from '../router';
 
 export function Dashboard() {
-  const { student, mode } = useStudentSession();
+  const { student } = useStudentSession();
   const { assignments, progressFor, overall } = usePractice();
   const firstName = student?.firstName ?? 'მოსწავლე';
 
@@ -66,7 +66,7 @@ export function Dashboard() {
       )}
 
       <p className="demo-note dashboard-note">
-        {mode === 'demo' ? 'დემო მოსწავლის გარემო — შედეგები ინახება ამ მოწყობილობაზე.' : 'ვარჯიშის შედეგები ანგარიშზე ინახება; გაკვეთილების პროგრესი ამ მოწყობილობაზე რჩება.'}
+        ვარჯიშის შედეგები ანგარიშზე ინახება; გაკვეთილების პროგრესი ამ მოწყობილობაზე რჩება.
       </p>
     </div>
   );

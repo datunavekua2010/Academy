@@ -34,6 +34,7 @@ import { supabaseConfiguration } from '../lib/supabase';
 import { loadStudentPractice, saveStudentAttempt, type PendingAttempt } from './supabaseStore';
 
 interface PracticeContextValue {
+  preview: boolean;
   attempts: Attempt[];
   assignments: Assignment[];
   session: SessionState | null;
@@ -100,10 +101,11 @@ const OPENING_BATCH = 8;
  */
 const REFILL_BATCH = 4;
 
-export function PracticeProvider({ children, studentId, mode, initialGrade }: { children: ReactNode; studentId: string; mode: 'demo' | 'connected'; initialGrade: GradeId }) {
+export function PracticeProvider({ children, studentId, mode, initialGrade }: { children: ReactNode; studentId: string; mode: 'demo' | 'connected' | 'guest'; initialGrade: GradeId }) {
   const live = mode === 'connected';
+  const preview = mode === 'guest';
   const client = live ? supabaseConfiguration.client : null;
-  const [attempts, setAttempts] = useState<Attempt[]>(() => live ? [] : loadAttempts());
+  const [attempts, setAttempts] = useState<Attempt[]>(() => live || preview ? [] : loadAttempts());
   const [remoteAssignments, setRemoteAssignments] = useState<Assignment[]>([]);
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(live ? 'loading' : 'ready');
   const [reload, setReload] = useState(0);
@@ -111,7 +113,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
   const pending = useRef<PendingAttempt[]>([]);
   const syncing = useRef(false);
   const [session, setSession] = useState<SessionState | null>(() => {
-    const draft = live ? null : loadDraft();
+    const draft = live || preview ? null : loadDraft();
     if (!draft) return null;
     // A draft holds generated question ids ("templateId~seed"); the generator
     // reproduces each one exactly, so a reload never loses the session.
@@ -120,7 +122,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
   const [grade, setGrade] = useState<GradeId>(initialGrade);
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
 
-  const assignments = useMemo(() => live ? remoteAssignments.filter((item) => item.ref.grade === grade) : demoAssignments(grade), [grade, live, remoteAssignments]);
+  const assignments = useMemo(() => preview ? [] : live ? remoteAssignments.filter((item) => item.ref.grade === grade) : demoAssignments(grade), [grade, live, preview, remoteAssignments]);
 
   useEffect(() => {
     if (!live || !client) return;
@@ -155,12 +157,13 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [live]);
-  const persistDraft = useCallback((draft: SessionState | null) => { if (!live) saveDraft(draft); }, [live]);
+  const persistDraft = useCallback((draft: SessionState | null) => { if (!live && !preview) saveDraft(draft); }, [live, preview]);
 
   const templateCountFor = useCallback((ref: SubtopicRef) => templateCount(ref), []);
   const isPlayable = useCallback((ref: SubtopicRef) => hasTemplates(ref), []);
 
   const persistAttempt = useCallback((state: SessionState, startedAt: string) => {
+    if (preview) return;
     const attempt = newAttempt(state, startedAt);
     setAttempts((current) => {
       const updated = recordAttempt(current, attempt);
@@ -171,7 +174,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
       pending.current.push({ attempt, assignmentId: activeAssignmentId });
       void syncPending();
     }
-  }, [live, activeAssignmentId, syncPending]);
+  }, [live, preview, activeAssignmentId, syncPending]);
 
   const startPractice = useCallback((ref: SubtopicRef, assignment: Assignment | null = null) => {
 
@@ -195,7 +198,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
 
   const answer = useCallback(
     (choice: string): Submission | null => {
-      if (!session) return null;
+      if (!session || preview) return null;
       const submission = submitAnswer(session, choice);
       if (!submission) return null;
 
@@ -206,7 +209,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
       }
       return submission;
     },
-    [session, persistAttempt, persistDraft],
+    [session, preview, persistAttempt, persistDraft],
   );
 
   const next = useCallback(() => {
@@ -273,6 +276,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
         : null);
 
     return {
+      preview,
       attempts,
       assignments,
       session,
@@ -290,7 +294,7 @@ export function PracticeProvider({ children, studentId, mode, initialGrade }: { 
       templateCountFor,
       isPlayable,
     };
-  }, [attempts, assignments, grade, session, activeAssignmentId, startPractice, answer, next, stop, clearSession, templateCountFor, isPlayable]);
+  }, [preview, attempts, assignments, grade, session, activeAssignmentId, startPractice, answer, next, stop, clearSession, templateCountFor, isPlayable]);
 
   if (loadState === 'loading') return <div className="student-container" role="status">მონაცემები იტვირთება…</div>;
   if (loadState === 'error') return <div className="student-container" role="alert"><p>მონაცემები ვერ ჩაიტვირთა. სცადე ხელახლა ან დაუკავშირდი აკადემიას.</p><button type="button" className="btn btn-primary" onClick={() => setReload((v) => v + 1)}>ხელახლა ცდა</button></div>;

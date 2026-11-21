@@ -17,7 +17,7 @@ VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=YOUR-PUBLISHABLE-KEY
 ```
 
-This file is ignored by Git. Restart `npm run dev` after editing. Never commit it. A build embeds both values in public JavaScript. When neither is set the existing, explicitly labelled demo remains available; if only one is set or the values are invalid, the student area fails closed. With both values set there is no demo fallback if Auth or profile access fails.
+This file is ignored by Git. Restart `npm run dev` after editing. Never commit it. A build embeds both values in public JavaScript. When neither is set, no fake student is signed in: guests may browse public material, but account sign-in is unavailable. If only one is set or the values are invalid, the student area fails closed. With both values set there is no demo fallback if Auth or profile access fails.
 
 **Cloudflare Workers Builds:** Go to **Cloudflare dashboard → Workers & Pages → select the Academy Worker → Settings → Build → Build Variables and Secrets**. Add the two names above and their values to the relevant production build configuration. Configure preview builds separately, preferably using a separate test Supabase project. Save and start a **new build/deployment**. `VITE_` values are read by `npm run build`, not at Worker runtime; setting only the Worker's runtime variables will not change the generated static site. Check the new deployment after it finishes. The Cloudflare Worker is static-assets only; it does not receive a privileged Supabase key.
 

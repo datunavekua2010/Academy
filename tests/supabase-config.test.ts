@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createSupabaseConfiguration } from '../src/lib/supabase';
 
 describe('Supabase browser configuration', () => {
-  it('keeps the existing demo only when both settings are absent', () => {
-    expect(createSupabaseConfiguration().mode).toBe('demo');
+  it('reports missing configuration separately while rejecting partial settings', () => {
+    expect(createSupabaseConfiguration().mode).toBe('unconfigured');
     expect(createSupabaseConfiguration('https://example.supabase.co').mode).toBe('invalid');
     expect(createSupabaseConfiguration(undefined, 'sb_publishable_test').mode).toBe('invalid');
   });

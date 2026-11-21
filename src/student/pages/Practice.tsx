@@ -8,7 +8,6 @@ import { dueLabel, romanGrade } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
 import { topicSubtopics } from '../../practice/types';
 import { PageIntro } from './PageIntro';
-import { useStudentSession } from '../session';
 
 /**
  * The unified practice system.
@@ -19,8 +18,8 @@ import { useStudentSession } from '../session';
  * same question bank.
  */
 export function Practice() {
-  const { mode } = useStudentSession();
   const {
+    preview,
     grade,
     setGrade,
     assignments,
@@ -61,7 +60,7 @@ export function Practice() {
     return (
       <div className="student-page">
         <PracticeSession
-          onExit={() => (session.completed ? clearSession() : stop())}
+          onExit={() => (preview || session.completed ? clearSession() : stop())}
         />
       </div>
     );
@@ -74,7 +73,7 @@ export function Practice() {
         title="ისწავლე და ივარჯიშე"
         description="ერთი სისტემა, ერთი ბანკი და ერთი შეფასება. აირჩიე კლასი, თემა და ქვეთემა — ან დაიწყე მასწავლებლის მიერ მინიჭებული საშინაო დავალებიდან."
       >
-        <div className="practice-summary">
+        {!preview && <div className="practice-summary">
           <div className="summary-stat">
             <strong>{overall.completed}</strong>
             <span>დასრულებული დავალება</span>
@@ -91,10 +90,11 @@ export function Practice() {
             <strong>{stats.attempts}</strong>
             <span>სესია</span>
           </div>
-        </div>
+        </div>}
       </PageIntro>
 
-      <section className="assignments-panel" aria-labelledby="assigned-heading">
+      {preview && <p className="guest-preview-note">სტუმრის რეჟიმი: დაათვალიერე სავარჯიშოები. პასუხებისთვის საჭიროა აკადემიის ანგარიში.</p>}
+      {!preview && <section className="assignments-panel" aria-labelledby="assigned-heading">
         <div className="section-label" style={{ marginTop: 0 }}>
           <h2 id="assigned-heading">📌 მასწავლებლის მიერ მინიჭებული</h2>
           <span>{grade} კლასი · {open.length} აქტიური</span>
@@ -138,7 +138,7 @@ export function Practice() {
             })}
           </ul>
         )}
-      </section>
+      </section>}
 
       <section className="grade-panel" aria-labelledby="curriculum-heading">
         <div className="section-label">
@@ -189,12 +189,12 @@ export function Practice() {
         />
       </section>
 
-      <ScoringRules />
+      {!preview && <ScoringRules />}
 
-      <p className="demo-note">
-        {mode === 'demo' ? 'დემო მონაცემები' : 'ანგარიშის მონაცემები'}: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
-        {attempts.length} შენახული სესია. {mode === 'demo' ? 'რეალური სასწავლო გეგმა ჩაანაცვლებს ამ თემებს — სისტემა იგივე დარჩება.' : 'ვარჯიშის შედეგები მოწმდება ბრაუზერში.'}
-      </p>
+      {!preview && <p className="demo-note">
+        ანგარიშის მონაცემები: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
+        {attempts.length} შენახული სესია. ვარჯიშის შედეგები მოწმდება ბრაუზერში.
+      </p>}
     </div>
   );
 }

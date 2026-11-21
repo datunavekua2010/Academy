@@ -73,13 +73,26 @@ export const STUDENT_NAV: StudentNavItem[] = [
     key: 'progress',
     to: '/student/progress',
     label: 'ჩემი პროგრესი',
-    description: 'შედეგები და მიღწევები',
+    description: 'შედეგები და სტატისტიკა',
     tone: 'pink',
     icon: (
       <svg {...iconProps}>
         <path d="M4 20h16" />
         <path d="M7 20v-6M12 20V8M17 20v-9" />
         <path d="m5 9 4-4 3 3 5-5" />
+      </svg>
+    ),
+  },
+  {
+    key: 'achievements',
+    to: '/student/achievements',
+    label: 'მიღწევები',
+    description: 'სამახსოვრო ნიშნები',
+    tone: 'yellow',
+    icon: (
+      <svg {...iconProps}>
+        <circle cx="12" cy="8.5" r="5.5" />
+        <path d="m8.5 13-1 8 4.5-2.5 4.5 2.5-1-8M12 5.8l.8 1.7 1.8.3-1.3 1.2.3 1.8-1.6-.8-1.6.8.3-1.8-1.3-1.2 1.8-.3z" />
       </svg>
     ),
   },

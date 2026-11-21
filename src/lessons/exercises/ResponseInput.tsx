@@ -53,6 +53,7 @@ interface Props {
   label: string;
   /** How many hints the student has opened (some responses show extra help after a hint). */
   hintsShown?: number;
+  readOnly?: boolean;
 }
 
 function CheckIcon() {
@@ -104,7 +105,7 @@ function Choices({ options, value, onChange, disabled, verdict }: { options: Cho
   );
 }
 
-export function ResponseInput({ response, value, onChange, onSubmit, disabled, verdict, label, hintsShown = 0 }: Props) {
+export function ResponseInput({ response, value, onChange, onSubmit, disabled, verdict, label, hintsShown = 0, readOnly = false }: Props) {
   const onEnter = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -130,6 +131,7 @@ export function ResponseInput({ response, value, onChange, onSubmit, disabled, v
             placeholder={response.type === 'expression' ? (response.placeholder ?? 'ჩაწერე პასუხი') : 'ჩაწერე რიცხვი'}
             value={typeof value === 'string' ? value : ''}
             disabled={disabled}
+            readOnly={readOnly}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={onEnter}
           />
