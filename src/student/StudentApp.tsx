@@ -10,6 +10,7 @@ import { Practice } from './pages/Practice';
 import { Profile } from './pages/Profile';
 import { Progress } from './pages/Progress';
 import { Achievements } from './pages/Achievements';
+import { Streaks } from './pages/Streaks';
 import { StudentLayout } from './StudentLayout';
 import { StudentSignIn } from './StudentSignIn';
 import { StudentSessionProvider, useStudentSession } from './session';
@@ -21,6 +22,7 @@ const TITLES: Record<string, string> = {
   practice: 'ვარჯიში',
   progress: 'ჩემი პროგრესი',
   achievements: 'მიღწევები',
+  streaks: 'სწავლის სერია',
   profile: 'ჩემი პროფილი',
 };
 
@@ -96,6 +98,9 @@ function StudentRoutes() {
       break;
     case 'achievements':
       page = <Achievements />;
+      break;
+    case 'streaks':
+      page = <Streaks />;
       break;
     case 'profile':
       page = <Profile />;

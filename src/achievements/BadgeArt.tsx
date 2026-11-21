@@ -22,7 +22,8 @@ export function BadgeArt({ achievement }: { achievement: Achievement }) {
   }
   return <span className={`achievement-art tier-${achievement.tier ?? 'none'} category-${achievement.category}`} aria-hidden="true">
     <svg viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" focusable="false">
-      <circle className="achievement-art-disc" cx="40" cy="39" r="33" strokeWidth="1.5" />
+      <path className="achievement-art-disc" d="M40 4 67 17v27c0 14-10 24-27 32C23 68 13 58 13 44V17z" strokeWidth="1.5" />
+      <path className="achievement-art-inset" d="M40 10 61 20v23c0 11-8 19-21 25-13-6-21-14-21-25V20z" strokeWidth="1" />
       {drawing}
     </svg>
   </span>;

@@ -97,6 +97,19 @@ export const STUDENT_NAV: StudentNavItem[] = [
     ),
   },
   {
+    key: 'streaks',
+    to: '/student/streaks',
+    label: 'სწავლის სერია',
+    description: 'სასწავლო დღეები',
+    tone: 'yellow',
+    icon: (
+      <svg {...iconProps}>
+        <path d="M12 2c1 5-3 6-3 10-1-1-2-2-2-4-4 3-4 6-4 7.5a9 9 0 0 0 18 0C21 10 17 5 12 2z" />
+        <path d="M12 13c0 2-2 3-2 5a2.5 2.5 0 0 0 5 0c0-2-1-3.5-3-5z" />
+      </svg>
+    ),
+  },
+  {
     key: 'profile',
     to: '/student/profile',
     label: 'ჩემი პროფილი',

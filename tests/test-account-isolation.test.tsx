@@ -22,3 +22,14 @@ it('uses an isolated writable test session and never connects to real account AP
   expect(calls.auth).not.toHaveBeenCalled();
   expect(calls.from).not.toHaveBeenCalled();
 });
+
+it('shows the actual test profile on the achievement dashboard without claiming progress', async () => {
+  window.location.hash = '#/student/achievements';
+  render(<StudentApp />);
+  expect(await screen.findByRole('heading', { name: 'სატესტო მოსწავლე' })).toBeTruthy();
+  expect(screen.getByRole('link', { name: /პროფილის ნახვა/ }).getAttribute('href')).toBe('#/student/profile');
+  expect(screen.getAllByRole('button', { name: /პროგრესი მიუწვდომელია, იხილე პირობები/ })).toHaveLength(28);
+  expect(screen.queryByRole('progressbar')).toBeNull();
+  expect(calls.auth).not.toHaveBeenCalled();
+  expect(calls.from).not.toHaveBeenCalled();
+});

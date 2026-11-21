@@ -2,6 +2,7 @@ import { usePractice } from '../practice/PracticeProvider';
 import { dueLabel } from '../practice/format';
 import { assignmentStatus } from '../practice/store';
 import { AxiNav } from './AxiNav';
+import { StreakCard } from '../streaks/StreakCard';
 import { useStudentSession } from './session';
 import { Link } from '../router';
 
@@ -29,6 +30,8 @@ export function Dashboard() {
           აირჩიე ის სექცია, სადაც გინდა გადახვიდე.
         </p>
       </div>
+
+      <StreakCard />
 
       <AxiNav />
 
