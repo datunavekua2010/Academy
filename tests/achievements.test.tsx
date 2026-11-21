@@ -5,6 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { ACHIEVEMENTS, CATEGORIES } from '../src/achievements/catalog';
 import { StudentApp } from '../src/student/StudentApp';
 import { Achievements } from '../src/student/pages/Achievements';
+import { StudentSessionProvider } from '../src/student/session';
 
 beforeEach(() => { window.localStorage.clear(); window.location.hash = '#/student'; window.scrollTo = vi.fn(); });
 afterEach(() => { cleanup(); window.localStorage.clear(); window.location.hash = ''; });
@@ -21,7 +22,7 @@ describe('achievement catalog', () => {
   });
 
   it('filters without reloading and opens and closes accessible requirement details', () => {
-    render(<Achievements />);
+    render(<StudentSessionProvider><Achievements /></StudentSessionProvider>);
     expect(screen.getAllByRole('button', { name: /იხილე პირობები/ })).toHaveLength(28);
     const filters = screen.getByRole('group', { name: 'მიღწევების კატეგორია' });
     fireEvent.click(within(filters).getByRole('button', { name: 'ლოგიკა და მსჯელობა' }));
@@ -42,10 +43,20 @@ describe('achievement catalog', () => {
   });
 
   it('reports unavailable verification rather than inventing an earned count or progress', () => {
-    render(<Achievements />);
+    render(<StudentSessionProvider><Achievements /></StudentSessionProvider>);
     expect(screen.getByText(/მიღებული ნიშნების რაოდენობა და პროგრესი ჯერ მიუწვდომელია/)).toBeTruthy();
     expect(screen.queryByRole('progressbar')).toBeNull();
     expect(screen.getAllByText(/ჯერ ვერ მოწმდება/)).toHaveLength(28);
+    expect(screen.getByRole('heading', { name: 'რომელ მიღწევასთან ხარ ყველაზე ახლოს?' })).toBeTruthy();
+    expect(screen.getByText(/დადასტურებული პროგრესია საჭირო/)).toBeTruthy();
+    const cards = screen.getAllByRole('button', { name: /პროგრესი მიუწვდომელია, იხილე პირობები/ });
+    expect(cards).toHaveLength(28);
+    for (const card of cards) {
+      expect(within(card).getByText('პროგრესი')).toBeTruthy();
+      expect(card.querySelector('.achievement-progress-track')?.getAttribute('aria-hidden')).toBe('true');
+    }
+    expect(document.querySelectorAll('.achievement-progress-track')).toHaveLength(30);
+    expect(screen.getByRole('heading', { name: 'ნინო ბერიძე' })).toBeTruthy();
   });
 });
 

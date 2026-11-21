@@ -1,6 +1,6 @@
 # Achievement gallery: implementation and prerequisites
 
-The gallery exposes the 28 launch requirements and navigation, but **does not award achievements or show earned, locked, or in-progress counts**. An em dash means the student's verified collection is unavailable; it does not mean zero. No attempt or local lesson progress is used as achievement evidence. There are no notifications yet. The gallery is behind the student session gate.
+The gallery exposes the 28 launch requirements and navigation, but **does not award achievements or show earned, locked, or in-progress counts**. An em dash and a muted progress track mean verified progress is unavailable; they do not mean zero. The next-achievement panel cannot identify a closest badge without verified evidence. No attempt or local lesson progress is used as achievement evidence. There are no notifications yet. The gallery is behind the student session gate.
 
 ## Why awarding is blocked
 
