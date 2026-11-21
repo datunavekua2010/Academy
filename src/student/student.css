@@ -1557,3 +1557,15 @@
 .academy-signin-form label { display: grid; gap: 6px; color: var(--navy); font-weight: 700; text-align: left; }
 .academy-signin-form input { width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
 .academy-signin-form input:focus-visible { outline: 3px solid #86a7fa; outline-offset: 2px; }
+
+/* Public preview: browsing is available, answers require an academy account. */
+.guest-preview-note, .guest-answer-notice, .guest-preview-links {
+  padding: 12px 14px;
+  border: 1px solid #cadcf4;
+  border-radius: 12px;
+  background: #f4f8ff;
+  color: #172b4d;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+.guest-answer-notice a, .guest-preview-links a { color: #174a9b; text-decoration: underline; }

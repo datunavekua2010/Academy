@@ -9,6 +9,7 @@ import { Lessons } from './pages/Lessons';
 import { Practice } from './pages/Practice';
 import { Profile } from './pages/Profile';
 import { Progress } from './pages/Progress';
+import { Achievements } from './pages/Achievements';
 import { StudentLayout } from './StudentLayout';
 import { StudentSignIn } from './StudentSignIn';
 import { StudentSessionProvider, useStudentSession } from './session';
@@ -19,13 +20,19 @@ const TITLES: Record<string, string> = {
   homework: 'საშინაო დავალება',
   practice: 'ვარჯიში',
   progress: 'ჩემი პროგრესი',
+  achievements: 'მიღწევები',
   profile: 'ჩემი პროფილი',
 };
 
-/** The student area is only rendered for an authenticated (demo) session. */
-function RequireStudent({ children }: { children: ReactNode }) {
-  const { student, mode } = useStudentSession();
-  if (!student) return <StudentSignIn />;
+/** Public material has an isolated, non-persistent guest preview. */
+function RequireStudent({ children, publicPreview }: { children: ReactNode; publicPreview: boolean }) {
+  const { student, mode, status, signedIn } = useStudentSession();
+  if (!student) {
+    if (publicPreview && status === 'ready' && !signedIn && mode !== 'invalid') {
+      return <PracticeProvider key="guest" studentId="" mode="guest" initialGrade={1}>{children}</PracticeProvider>;
+    }
+    return <StudentSignIn />;
+  }
   return <PracticeProvider key={`${mode}:${student.id}`} studentId={student.id} mode={mode === 'connected' ? 'connected' : 'demo'} initialGrade={parseStudentGrade(student.grade) ?? 5}>{children}</PracticeProvider>;
 }
 
@@ -48,10 +55,10 @@ function NotFound() {
 
 /** The URL is the source of truth for a homework grade, including on reload/back. */
 function GradeHomework({ grade }: { grade: GradeId }) {
-  const { grade: currentGrade, setGrade } = usePractice();
+  const { grade: currentGrade, setGrade, preview } = usePractice();
   useLayoutEffect(() => { setGrade(grade); }, [grade, setGrade]);
   if (currentGrade !== grade) return null;
-  return <Homework />;
+  return preview ? <Practice /> : <Homework />;
 }
 
 function StudentRoutes() {
@@ -87,6 +94,9 @@ function StudentRoutes() {
     case 'progress':
       page = <Progress />;
       break;
+    case 'achievements':
+      page = <Achievements />;
+      break;
     case 'profile':
       page = <Profile />;
       break;
@@ -97,7 +107,7 @@ function StudentRoutes() {
 
   return (
     <StudentLayout activeSection={head === 'homework' ? head : undefined}>
-      <RequireStudent>{page}</RequireStudent>
+      <RequireStudent publicPreview={head === 'practice' || head === 'lessons' || head === 'homework'}>{page}</RequireStudent>
     </StudentLayout>
   );
 }

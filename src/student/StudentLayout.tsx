@@ -23,7 +23,7 @@ const BrandMark = () => (
 );
 
 export function StudentLayout({ children, activeSection }: { children: ReactNode; activeSection?: string }) {
-  const { student, signOut, mode, error } = useStudentSession();
+  const { student, signOut, error } = useStudentSession();
 
   // The landing page can leave `overflow: hidden` behind when navigating
   // straight from its mobile menu into the student area.
@@ -55,6 +55,8 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
             <Link to="/" className="student-site-link">
               მთავარი გვერდი
             </Link>
+
+            {!student && <Link to="/student" className="student-signout">შესვლა</Link>}
 
             {student && (
               <div className="student-chip" aria-label={`მოსწავლე: ${student.name}, ${student.grade}`}>
@@ -102,7 +104,7 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
 
       <footer className="student-footer">
         <div className="student-container student-footer-inner">
-          <span>© {new Date().getFullYear()} Axiom Academy{mode === 'demo' ? ' • მოსწავლის დემო გარემო' : ''}</span>
+          <span>© {new Date().getFullYear()} Axiom Academy</span>
           {/*
             Always-visible fallback navigation. If the bubble animation fails or
             a user prefers a plain list, every student section stays reachable.

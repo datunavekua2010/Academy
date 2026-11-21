@@ -13,19 +13,13 @@ export interface Student {
   email: string;
 }
 
-const DEMO_STUDENT: Student = {
-  id: 'demo-student', name: 'ნინო ბერიძე', firstName: 'ნინო', initials: 'ნბ',
-  grade: 'V კლასი', guardian: 'მარიამ ბერიძე', email: 'nino.beridze@example.com',
-};
-
 type SessionStatus = 'loading' | 'ready' | 'error';
 interface StudentSessionValue {
   student: Student | null;
-  mode: 'demo' | 'connected' | 'invalid';
+  mode: 'unconfigured' | 'connected' | 'invalid';
   status: SessionStatus;
   error: string | null;
   signedIn: boolean;
-  signIn: () => void;
   signInWithPassword: (email: string, password: string) => Promise<void>;
   signOut: () => void;
 }
@@ -34,11 +28,11 @@ const StudentSessionContext = createContext<StudentSessionValue | null>(null);
 
 export function StudentSessionProvider({ children }: { children: ReactNode }) {
   const { mode, client } = supabaseConfiguration;
-  const [student, setStudent] = useState<Student | null>(mode === 'demo' ? DEMO_STUDENT : null);
+  const [student, setStudent] = useState<Student | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const userId = useRef<string | null | undefined>(undefined);
   const [status, setStatus] = useState<SessionStatus>(mode === 'connected' ? 'loading' : mode === 'invalid' ? 'error' : 'ready');
-  const [error, setError] = useState<string | null>(mode === 'invalid' ? 'Supabase-ის პარამეტრები არასწორია. დაუკავშირდი აკადემიას.' : null);
+  const [error, setError] = useState<string | null>(mode === 'invalid' || mode === 'unconfigured' ? 'ანგარიშით შესვლა ამჟამად მიუწვდომელია. დაუკავშირდი აკადემიას.' : null);
 
   useEffect(() => {
     if (!client) return;
@@ -90,7 +84,6 @@ export function StudentSessionProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<StudentSessionValue>(() => ({
     student, mode, status, error, signedIn: Boolean(user),
-    signIn: () => { if (mode === 'demo') setStudent(DEMO_STUDENT); },
     signInWithPassword: async (email, password) => {
       if (!client) return;
       setError(null);
@@ -100,7 +93,6 @@ export function StudentSessionProvider({ children }: { children: ReactNode }) {
       } catch { setError('შესვლა ვერ მოხერხდა. შეამოწმე მონაცემები ან დაუკავშირდი აკადემიას.'); }
     },
     signOut: () => {
-      if (mode === 'demo') { setStudent(null); return; }
       if (!client) return;
       void client.auth.signOut().then(({ error: signOutError }) => {
         if (signOutError) setError('გასვლა ვერ მოხერხდა. სცადე ხელახლა.');

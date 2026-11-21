@@ -96,6 +96,10 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-export function useLessonProgress(): ProgressMap {
-  return useSyncExternalStore(subscribe, snapshot, snapshot);
+const emptyProgress: ProgressMap = {};
+const emptySnapshot = () => emptyProgress;
+const noSubscription = () => () => {};
+
+export function useLessonProgress(preview = false): ProgressMap {
+  return useSyncExternalStore(preview ? noSubscription : subscribe, preview ? emptySnapshot : snapshot, preview ? emptySnapshot : snapshot);
 }

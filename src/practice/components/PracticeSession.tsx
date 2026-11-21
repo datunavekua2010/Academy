@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePractice } from '../PracticeProvider';
+import { PreviewAnswerGuard } from '../../components/PreviewAnswerGuard';
 import { getSubtopic, getTopic } from '../curriculum';
 import { signed } from '../format';
 import { MAX_SCORE } from '../scoring';
@@ -95,13 +96,14 @@ const visualClass = (visual: string): string => {
  * practice both land here — there is no second activity component.
  */
 export function PracticeSession({ onExit }: { onExit: () => void }) {
-  const { session, answer, next, stop, activeAssignment } = usePractice();
+  const { session, answer, next, stop, activeAssignment, preview } = usePractice();
   const [choice, setChoice] = useState<string | null>(null);
   const [typed, setTyped] = useState('');
   /** Positions (1-based) the student has tapped so far, in order. */
   const [sequence, setSequence] = useState<number[]>([]);
   const [feedback, setFeedback] = useState<Submission | null>(null);
   const [confirmStop, setConfirmStop] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(1);
   const feedbackRef = useRef<HTMLDivElement>(null);
 
   // Reset only when the question itself changes — NOT when it is answered,
@@ -151,7 +153,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
   const attemptMode = activeAssignment ? 'საშინაო დავალება' : 'ვარჯიში';
 
   const submit = (value: string) => {
-    if (answered || value.trim() === '') return;
+    if (preview || answered || value.trim() === '') return;
     const submission = answer(value);
     if (!submission) return;
     setChoice(value);
@@ -271,8 +273,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
           <span aria-hidden="true">←</span> სესიიდან გასვლა
         </button>
         <span className={`session-mode ${activeAssignment ? 'is-homework' : ''}`}>
-          {activeAssignment ? '📌 ' : '✦ '}
-          {attemptMode}
+          {preview ? 'სტუმრის რეჟიმი' : <>{activeAssignment ? '📌 ' : '✦ '}{attemptMode}</>}
         </span>
       </div>
 
@@ -284,7 +285,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
           <h1 className="session-title">
             {activeAssignment ? 'საშინაო დავალება' : subtopic.title}
           </h1>
-          <p className="session-meta">
+          {!preview && <p className="session-meta">
             {session.correct + session.incorrect}{' '}
             {session.correct + session.incorrect === 1 ? 'პასუხი' : 'პასუხი'} · სწორი{' '}
             <strong>{session.correct}</strong> · არასწორი <strong>{session.incorrect}</strong>
@@ -294,9 +295,9 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 · დონე <strong>{level}</strong> — {bandForLevel(level).label}
               </>
             )}
-          </p>
+          </p>}
         </div>
-        <ScoreMeter score={session.score} label="სესიის ქულა" />
+        {!preview && <ScoreMeter score={session.score} label="სესიის ქულა" />}
       </div>
 
       {exhausted ? (
@@ -305,11 +306,11 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             ✅
           </div>
           <h2>ამ თემის კითხვები ამოიწურა.</h2>
-          <p>
+          {preview ? <p>შენ ნახე ამ თემის ხელმისაწვდომი სავარჯიშოები.</p> : <p>
             ქულა: <strong>{session.score}</strong> / {MAX_SCORE} · {session.correct} სწორი და{' '}
             {session.incorrect} არასწორი პასუხი. ეს თემა ჯერ ამ რაოდენობის კითხვას გვაძლევს,
             ამიტომ სესია აქ სრულდება — შედეგი პროგრესში შენახულია.
-          </p>
+          </p>}
           <div className="page-actions">
             <button type="button" className="btn btn-primary" onClick={onExit}>
               გაგრძელება
@@ -336,9 +337,11 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
       ) : question ? (
         <div className="question-card">
           <div className="question-count">
-            კითხვა #{session.correct + session.incorrect + 1}
+            კითხვა #{preview ? previewIndex : session.correct + session.incorrect + 1}
             <span className="question-bank-hint">ავტომატურად გენერირებული</span>
           </div>
+          {preview && <p className="guest-preview-note">შეგიძლია დაათვალიერო კითხვა. პასუხისთვის საჭიროა აკადემიის ანგარიში.</p>}
+          <PreviewAnswerGuard preview={preview} key={question.id}>
           {(question.pictures ?? []).map((picture, index) => (
             <PictureView key={`t${index}`} picture={picture} />
           ))}
@@ -364,7 +367,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
           ) : (
             <p className="question-prompt">{question.prompt}</p>
           )}
-          {pick?.enabled && (
+          {!preview && pick?.enabled && (
             <p className="pic-pick-hint">შეგიძლია პასუხი სურათზეც მონიშნო — შეეხე სწორ ადგილს.</p>
           )}
 
@@ -447,6 +450,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                   value={typed}
                   onChange={(event) => setTyped(event.target.value)}
                   disabled={answered}
+                  readOnly={preview}
                   aria-describedby="answer-entry-hint"
                 />
                 <button type="submit" className="btn btn-primary" disabled={answered || typed.trim() === ''}>
@@ -454,7 +458,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </button>
               </div>
               <p id="answer-entry-hint" className="answer-entry-hint">
-                {answered ? '' : timeMode ? 'ჩაწერე დრო ასე: 07:30.' : 'შეიყვანე რიცხვი კლავიატურით.'}
+                {preview ? '' : answered ? '' : timeMode ? 'ჩაწერე დრო ასე: 07:30.' : 'შეიყვანე რიცხვი კლავიატურით.'}
               </p>
               {answered && (
                 <p className={`answer-entry-result ${feedback?.result.correct ? 'is-correct' : 'is-wrong'}`}>
@@ -559,6 +563,8 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
           </div>
           )}
 
+          </PreviewAnswerGuard>
+
           <div aria-live="polite" ref={feedbackRef} tabIndex={-1} className="feedback-region">
             {answered && feedback && (
               <div className={`answer-feedback ${feedback.result.correct ? 'is-correct' : 'is-wrong'}`}>
@@ -577,6 +583,11 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             )}
           </div>
 
+          {preview && !complete && (
+            <div className="session-actions">
+              <button type="button" className="btn btn-primary" onClick={() => { next(); setPreviewIndex((i) => i + 1); }}>შემდეგი სავარჯიშო <span aria-hidden="true">→</span></button>
+            </div>
+          )}
           {answered && !complete && (
             <div className="session-actions">
               <button type="button" className="btn btn-primary" onClick={next}>
@@ -585,7 +596,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
             </div>
           )}
 
-          <div className="session-footer-actions">
+          {!preview && <div className="session-footer-actions">
             {!answered && (
               <span className="score-hint">
                 შესაძლო ქულა: <strong>{potential(session.score)}</strong>
@@ -606,7 +617,7 @@ export function PracticeSession({ onExit }: { onExit: () => void }) {
                 </button>
               </span>
             )}
-          </div>
+          </div>}
         </div>
       ) : null}
     </div>

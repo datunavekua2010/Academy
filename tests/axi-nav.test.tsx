@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import './helpers/signed-in-student';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from '../src/App';
@@ -9,6 +10,7 @@ const BUBBLES = [
   'საშინაო დავალება',
   'ვარჯიში',
   'ჩემი პროგრესი',
+  'მიღწევები',
   'ჩემი პროფილი',
 ];
 
@@ -30,7 +32,7 @@ afterEach(() => {
 });
 
 describe('Axi student navigation', () => {
-  it('opens all five destinations and closes when Axi is clicked again', () => {
+  it('opens all six destinations and closes when Axi is clicked again', () => {
     render(<StudentApp />);
 
     const panel = openAxi();
@@ -71,10 +73,9 @@ describe('Axi student navigation', () => {
     render(<StudentApp />);
 
     fireEvent.click(screen.getByRole('button', { name: 'მოსწავლის ანგარიშიდან გასვლა' }));
-    expect(screen.getByRole('button', { name: 'შესვლა დემო მოსწავლედ' })).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('button', { name: 'შესვლა დემო მოსწავლედ' }));
-    expect(screen.getByRole('heading', { level: 1, name: /გამარჯობა, ნინო/ })).toBeTruthy();
+    expect(screen.getByLabelText('ელფოსტა')).toBeTruthy();
+    expect(screen.getByLabelText('პაროლი')).toBeTruthy();
+    expect(screen.queryByRole('heading', { level: 1, name: /გამარჯობა, ნინო/ })).toBeNull();
   });
 });
 

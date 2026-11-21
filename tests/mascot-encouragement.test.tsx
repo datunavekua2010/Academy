@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import './helpers/signed-in-student';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { StudentApp } from '../src/student/StudentApp';

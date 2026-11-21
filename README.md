@@ -2,21 +2,21 @@
 
 Axiom Academy — online mathematics and logic for Grades I–VII.
 
-## Student area (demo)
+## Student area
 
 The authenticated student dashboard lives at `#/student`. Hash routing keeps the
 single-file production build portable (no server rewrites required).
 
-- Click Axi to open or close the five radial navigation bubbles.
+- Click Axi to open or close the six radial navigation bubbles.
 - `Escape`, clicking Axi again, the dismiss button, or an outside tap closes the menu.
 - Bubble destinations: `#/student/lessons`, `#/student/homework`, `#/student/practice`,
-  `#/student/progress`, `#/student/profile`.
-- A demo student session is pre-populated so the dashboard is explorable. Use
-  **გასვლა** in the header to see the session gate. Real authentication and
-  authorization must be connected before production.
+  `#/student/progress`, `#/student/achievements`, `#/student/profile`.
+- Students sign in with the email and password provided by the academy. Guests
+  may browse lessons and practice but cannot submit answers or view personal data.
+  Without Supabase configuration, account sign-in is unavailable.
 - The public landing page keeps its conventional navigation. A discreet
   **მოსწავლის შესვლა** link in the header/footer opens the student area.
-- The footer of every student page also lists all five sections, so navigation
+- The footer of every student page also lists all six sections, so navigation
   remains usable if the bubble animation fails.
 
 ## Unified practice and homework system
@@ -117,6 +117,8 @@ npm run build
 npx wrangler dev     # serves dist/ exactly as production will
 ```
 
-## Supabase (optional, review before rollout)
+## Supabase (required for account sign-in)
 
-See [Supabase setup and security notes](docs/supabase.md) for build-time configuration, the review-only migration and seed, account provisioning, tests, and current limitations. The current deployment remains a demo unless both Supabase browser variables are configured; no migration is applied automatically.
+See [Supabase setup and security notes](docs/supabase.md) for build-time configuration, the review-only migration and seed, account provisioning, tests, and current limitations. Account sign-in requires both Supabase browser variables to be configured at build time; no migration is applied automatically.
+
+The 28-item achievement gallery is a catalog preview only; award validation and notifications are blocked until trusted server-side evidence is available. See [achievement system prerequisites](docs/achievement-system.md).

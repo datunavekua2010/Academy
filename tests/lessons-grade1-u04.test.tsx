@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import './helpers/signed-in-student';
 import { useState } from 'react';
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

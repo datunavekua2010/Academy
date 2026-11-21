@@ -5,9 +5,9 @@ import { useLessonProgress } from './progress';
 import { lessonHref, LESSONS_HOME, ROMAN } from './routes';
 
 /** The five lessons of one unit. */
-export function UnitPage({ unitId }: { unitId: string }) {
+export function UnitPage({ unitId, preview = false }: { unitId: string; preview?: boolean }) {
   const unit = getUnit(unitId);
-  const progress = useLessonProgress();
+  const progress = useLessonProgress(preview);
 
   if (!unit) {
     return (

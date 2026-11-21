@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Mascot } from '../components/Mascot';
+import { PreviewAnswerGuard } from '../components/PreviewAnswerGuard';
 import { Link } from '../router';
 import { allUnits, getUnit, nextLessonInUnit } from './catalog';
 import { lessonHref } from './routes';
@@ -64,6 +65,7 @@ interface Props {
   lesson: Lesson;
   /** Where "back" goes: the unit's lesson list. */
   backTo: string;
+  preview?: boolean;
 }
 
 interface Coach {
@@ -249,7 +251,7 @@ function ExplainView({ activity }: { activity: ExplainActivity }) {
   );
 }
 
-export function LessonPlayer({ entry, lesson, backTo }: Props) {
+export function LessonPlayer({ entry, lesson, backTo, preview = false }: Props) {
   const { activities } = lesson;
   const [index, setIndex] = useState(0);
   const [finished, setFinished] = useState(false);
@@ -275,8 +277,8 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   };
 
   useEffect(() => {
-    markStarted(lesson.id);
-  }, [lesson.id]);
+    if (!preview) markStarted(lesson.id);
+  }, [lesson.id, preview]);
 
   useEffect(() => {
     setCoach(introFor(index));
@@ -332,7 +334,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   };
 
   const submit = () => {
-    if (!isQuestionLike(activity) || state.status !== 'answering') return;
+    if (preview || !isQuestionLike(activity) || state.status !== 'answering') return;
     if (state.last?.verdict === 'incorrect') return; // must press "try again" first
     const input = inputs[activity.id] ?? (activity.response.type === 'blanks' ? [] : '');
     const next = submitAnswer(state, activity, activity.stage, input);
@@ -360,7 +362,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
     if (index < total - 1) {
       setIndex(index + 1);
     } else {
-      if (passed) markCompleted(lesson.id, checkCorrect, checkIds.length);
+      if (!preview && passed) markCompleted(lesson.id, checkCorrect, checkIds.length);
       setCoach(null);
       setFinished(true);
       setWaveKey((k) => k + 1);
@@ -401,7 +403,9 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   let primary: Action;
   let showHintButton = false;
 
-  if (!isQuestionLike(activity)) {
+  if (preview) {
+    primary = { label: isLast ? 'ნახვის დასრულება' : 'შემდეგი ნაბიჯი', onClick: next };
+  } else if (!isQuestionLike(activity)) {
     primary = { label: isLast ? 'გაკვეთილის დასრულება' : 'გაგრძელება', onClick: next };
     showHintButton = exploreHints.length > 0;
   } else if (state.status !== 'answering') {
@@ -420,7 +424,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
   const progressPct = finished ? 100 : Math.round(((index + (stepDone ? 1 : 0)) / total) * 100);
   const stage = activity.stage;
   const showMascot = !finished && stage !== 'understand';
-  const showQuestion = isQuestionLike(activity) && (activity.kind === 'question' || allMoved(activity));
+  const showQuestion = isQuestionLike(activity) && (preview || activity.kind === 'question' || allMoved(activity));
 
   return (
     <div className="lp-root" data-testid="lesson-player">
@@ -449,6 +453,7 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
 
       <div className="lp-body">
         <div className="lp-inner">
+        {preview && <p className="guest-preview-note">სტუმრის რეჟიმი: შეგიძლია დაათვალიერო გაკვეთილი. პასუხისთვის საჭიროა აკადემიის ანგარიში.</p>}
         {showMascot && (
           <aside className="lp-coach" aria-label="Axi">
             <Mascot key={waveKey} scale={0.3} thoughts={['']} showThoughtBubble={false} waveOnMount={waveKey > 0} onClick={tapMascot} className="lp-mascot" buttonLabel="Axi — მინიშნების თხოვნა" />
@@ -487,23 +492,27 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
             {activity.kind === 'tiles' && (
               <>
                 <RichText text={activity.prompt} className="lp-lead" />
+                <PreviewAnswerGuard preview={preview} key={`tiles-${activity.id}`}>
                 <TilesBoard
                   groups={activity.tiles}
                   moved={tileMoved(activity)}
-                  onMove={(gi) => setMoved((all) => ({ ...all, [activity.id]: tileMoved(activity).map((m, i) => (i === gi ? Math.min(m + 1, activity.tiles[gi].count) : m)) }))}
-                  onReset={() => setMoved((all) => ({ ...all, [activity.id]: activity.tiles.map(() => 0) }))}
+                  onMove={(gi) => !preview && setMoved((all) => ({ ...all, [activity.id]: tileMoved(activity).map((m, i) => (i === gi ? Math.min(m + 1, activity.tiles[gi].count) : m)) }))}
+                  onReset={() => !preview && setMoved((all) => ({ ...all, [activity.id]: activity.tiles.map(() => 0) }))}
                   locked={state.status !== 'answering'}
                 />
+                </PreviewAnswerGuard>
               </>
             )}
 
             {showQuestion && isQuestionLike(activity) && (
               <div className="lp-question">
                 {activity.kind === 'tiles' && <RichText text={activity.askPrompt} className="lp-ask" />}
+                <PreviewAnswerGuard preview={preview} key={`response-${activity.id}`}>
                 <ResponseInput
                   response={activity.response}
                   value={inputs[activity.id] ?? (activity.response.type === 'blanks' ? [] : '')}
                   onChange={(v) => {
+                    if (preview) return;
                     setInputs((all) => ({ ...all, [activity.id]: v }));
                     if (state.last?.verdict === 'incomplete') patch(activity.id, clearFeedback);
                   }}
@@ -512,14 +521,22 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
                   verdict={state.last?.verdict}
                   label={plainText(activity.kind === 'tiles' ? activity.askPrompt : activity.prompt)}
                   hintsShown={state.hintsShown}
+                  readOnly={preview}
                 />
+                </PreviewAnswerGuard>
                 <Feedback question={activity} state={state} />
               </div>
             )}
           </section>
         )}
 
-        {finished && (
+        {finished && preview && (
+          <section className="lp-stage lp-done">
+            <h1 className="lp-heading" tabIndex={-1} ref={stepRef}>გაკვეთილის ნახვა დასრულდა</h1>
+            <p>პასუხის გასაცემად შედი აკადემიის ანგარიშით.</p>
+          </section>
+        )}
+        {finished && !preview && (
           <section className="lp-stage lp-done" key="done">
             <p className="lp-stage-label is-done">{passed ? 'დასრულებულია' : 'კიდევ ერთი ცდა'}</p>
             <h1 className="lp-heading" tabIndex={-1} ref={stepRef}>
@@ -572,6 +589,8 @@ export function LessonPlayer({ entry, lesson, backTo }: Props) {
             <button type="button" className="btn btn-primary lp-primary" onClick={primary.onClick} disabled={primary.disabled}>
               {primary.label}
             </button>
+          ) : preview ? (
+            <Link to={backTo} className="btn btn-primary lp-primary">გაკვეთილების სიაში დაბრუნება</Link>
           ) : passed && nextPlayable ? (
             <>
               <Link to={backTo} className="btn btn-ghost lp-secondary">

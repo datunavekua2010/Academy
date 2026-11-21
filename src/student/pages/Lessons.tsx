@@ -3,6 +3,7 @@ import { LessonScreen } from '../../lessons/LessonScreen';
 import { parseLessonsRoute } from '../../lessons/routes';
 import { UnitPage } from '../../lessons/UnitPage';
 import { PageIntro } from './PageIntro';
+import { useStudentSession } from '../session';
 
 const LESSONS = [
   {
@@ -49,9 +50,11 @@ const LESSONS = [
  * Sub-routes: `#/student/lessons/<unit>` and `#/student/lessons/<lesson>`.
  */
 export function Lessons({ sub = '' }: { sub?: string }) {
+  const { student } = useStudentSession();
+  const preview = !student;
   const route = parseLessonsRoute(sub);
-  if (route.page === 'lesson') return <LessonScreen lessonId={route.lessonId} />;
-  if (route.page === 'unit') return <UnitPage unitId={route.unitId} />;
+  if (route.page === 'lesson') return <LessonScreen lessonId={route.lessonId} preview={preview} />;
+  if (route.page === 'unit') return <UnitPage unitId={route.unitId} preview={preview} />;
   if (route.page === 'unknown') {
     return (
       <div className="student-page">
@@ -71,8 +74,9 @@ export function Lessons({ sub = '' }: { sub?: string }) {
         title="გაკვეთილები და თემები"
         description="აქ ნახავ ინტერაქტიულ გაკვეთილებს და შენს მიმდინარე გაკვეთილებს. თითოეული თემა ეყრდნობა წინა ცოდნას, ამიტომ თანმიმდევრობა მნიშვნელოვანია."
       />
+      {preview && <p className="guest-preview-note">სტუმრის რეჟიმი: დაათვალიერე გაკვეთილები. პასუხებისთვის საჭიროა აკადემიის ანგარიში.</p>}
       <LessonLibrary />
-      <LessonSchedule />
+      {!preview && <LessonSchedule />}
     </div>
   );
 }

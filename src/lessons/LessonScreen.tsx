@@ -6,7 +6,7 @@ import { LessonPlayer } from './LessonPlayer';
 import { LESSONS_HOME, unitHref } from './routes';
 
 /** Resolves a lesson id to catalog entry + content and renders the player. */
-export function LessonScreen({ lessonId }: { lessonId: string }) {
+export function LessonScreen({ lessonId, preview = false }: { lessonId: string; preview?: boolean }) {
   const entry = getLessonEntry(lessonId);
   const lesson = getLessonContent(lessonId);
 
@@ -48,5 +48,5 @@ export function LessonScreen({ lessonId }: { lessonId: string }) {
       </div>
     );
   }
-  return <LessonPlayer key={lesson.id} entry={entry} lesson={lesson} backTo={unitHref(entry.unitId)} />;
+  return <LessonPlayer key={lesson.id} entry={entry} lesson={lesson} backTo={unitHref(entry.unitId)} preview={preview} />;
 }

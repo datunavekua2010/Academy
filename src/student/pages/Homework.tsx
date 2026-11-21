@@ -6,7 +6,6 @@ import { dueLabel } from '../../practice/format';
 import { assignmentStatus } from '../../practice/store';
 import { PageIntro } from './PageIntro';
 import { Link } from '../../router';
-import { useStudentSession } from '../session';
 
 /**
  * Homework is NOT a separate product.
@@ -17,7 +16,6 @@ import { useStudentSession } from '../session';
  * as the practice page.
  */
 export function Homework() {
-  const { mode } = useStudentSession();
   const { grade: selectedGrade, assignments, attempts, startPractice, progressFor, session, stop, clearSession } =
     usePractice();
 
@@ -150,7 +148,7 @@ export function Homework() {
 
       <p className="demo-note">
         {attempts.length > 0
-          ? `${attempts.length} სესიის შედეგი ${mode === 'demo' ? 'ამ მოწყობილობაზე' : 'ამ ანგარიშისთვის'}.`
+          ? `${attempts.length} სესიის შედეგი ამ ანგარიშისთვის.`
           : 'ჯერ არც ერთი სესია არ დაგიწყია — აირჩიე დავალება და დაიწყე.'}
       </p>
     </div>
