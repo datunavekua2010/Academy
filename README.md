@@ -4,8 +4,10 @@ Axiom Academy — online mathematics and logic for Grades I–VII.
 
 ## Student area
 
-The authenticated student dashboard lives at `#/student`. Hash routing keeps the
-single-file production build portable (no server rewrites required).
+The student dashboard lives at `#/student`. Hash routing keeps static-host
+navigation portable (no server rewrites required). The build emits a small initial
+entry and loads the landing and app bundles on demand. Serve the whole `dist/`
+directory over HTTP(S); opening `index.html` as a local file is not supported.
 
 - Click Axi to open or close the six radial navigation bubbles.
 - `Escape`, clicking Axi again, the dismiss button, or an outside tap closes the menu.
@@ -79,15 +81,17 @@ src/practice/
 ## Commands
 
 - `npm run dev` — start the dev server
-- `npm run build` — production build (single `dist/index.html`)
+- `npm run build` — production static build (`dist/index.html` plus hashed assets)
+- `node scripts/check-entry-build.mjs` — check the initial payload and required assets after a build
 - `npm test` — scoring, bank and interaction tests (jsdom)
 - `npm run typecheck` — TypeScript check
 
 ## Deployment (Cloudflare Workers)
 
 This project deploys to **Cloudflare Workers as static assets only**. The build
-is a single self-contained `dist/index.html`, and there is no Worker script —
-`wrangler.toml` supplies the assets-only configuration:
+includes `dist/index.html`, hashed JS/CSS and static assets; there is no Worker
+script. Deploy the entire `dist/` directory. `wrangler.toml` supplies the
+assets-only configuration:
 
 ```toml
 name = "axiom-academy"

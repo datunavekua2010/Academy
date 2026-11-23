@@ -1,8 +1,8 @@
 .preview-choice { min-height: 100vh; background: #f6f9fd; color: #172b4d; padding: 0 24px 64px; }
 .preview-choice-header { max-width: 1120px; margin: 0 auto; min-height: 88px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
-.preview-choice-brand { display: inline-flex; align-items: center; gap: 10px; font-size: 1rem; font-weight: 800; color: #172b4d; }
+.preview-choice-brand { display: inline-flex; min-height: 48px; align-items: center; gap: 10px; font-size: 1rem; font-weight: 800; color: #172b4d; }
 .preview-choice-brand span { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 13px; background: #2563eb; color: #fff; font-size: 1.2rem; }
-.preview-site-link { color: #375a7b; font-size: .8rem; font-weight: 700; }
+.preview-site-link { display: inline-flex; align-items: center; min-height: 48px; min-width: 48px; color: #375a7b; font-size: .8rem; font-weight: 700; }
 .preview-choice-content { width: min(100%, 760px); margin: clamp(45px, 9vh, 100px) auto 0; text-align: center; }
 .preview-choice-kicker { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #d9e9e3; border-radius: 999px; padding: 7px 12px; background: #f0faf5; color: #226047; font-size: .75rem; font-weight: 800; }
 .preview-choice-kicker span { width: 7px; height: 7px; border-radius: 50%; background: #25865f; }
@@ -22,3 +22,5 @@
 .preview-choice a:focus-visible { outline: 3px solid #2563eb; outline-offset: 4px; }
 @media (max-width: 580px) { .preview-choice { padding: 0 16px 40px; } .preview-choice-header { min-height: 72px; } .preview-choice-content { margin-top: 38px; } .preview-choice-grid { grid-template-columns: 1fr; gap: 12px; margin-top: 25px; } .preview-choice-card { min-height: 0; padding: 20px; } .preview-choice-description { margin-bottom: 14px; } }
 @media (prefers-reduced-motion: reduce) { .preview-choice-card { transition: none; } .preview-choice-card:hover { transform: none; } }
+
+.preview-choice-footer { max-width: 1120px; margin: 64px auto 0; text-align: center; color: #586c80; font-size: .76rem; }

@@ -22,15 +22,7 @@ export async function startGoogleAuth(client: SupabaseClient, origin: string, pa
   } catch (error) { storage.removeItem(pendingKey); throw error; }
 }
 
-/** Scrub all callback parameters before rendering, including provider errors and tokens. */
-export function consumeGoogleCallback(href: string, history: Pick<History, 'replaceState'>): {code:string|null} | null {
-  const url = new URL(href);
-  if (url.searchParams.get('google_auth') !== '1') return null;
-  const codes = url.searchParams.getAll('code');
-  const code = codes.length === 1 && codes[0].length > 0 && codes[0].length <= 2048 && !url.searchParams.has('error') ? codes[0] : null;
-  history.replaceState(null, '', `${url.pathname}#/account/google`);
-  return { code };
-}
+export { consumeGoogleCallback } from './authCallbacks';
 
 /** PKCE verifier is managed by the main Supabase client. Complete before mounting app views. */
 export async function finishGoogleAuth(client: SupabaseClient | null, callback: {code:string|null}, storage: StorageAccess): Promise<void> {

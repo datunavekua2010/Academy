@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import './index.css';
 import App from './App';
 import { StudentApp } from './student/StudentApp';
 import { TeacherApp } from './teacher/TeacherApp';

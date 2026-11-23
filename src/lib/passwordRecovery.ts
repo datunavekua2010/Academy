@@ -35,16 +35,7 @@ export const recoveryClient: SupabaseClient | null = (() => {
 })();
 
 export interface RecoveryCallback { code: string | null }
-/** Called before mounting React. Remove all callback parameters and fragments,
- * including errors or implicit tokens, from the address bar/history immediately. */
-export function consumeRecoveryCallback(href: string, history: Pick<History, 'replaceState'>): RecoveryCallback | null {
-  const url = new URL(href);
-  if (url.searchParams.get('recovery') !== '1') return null;
-  const codes = url.searchParams.getAll('code');
-  const code = codes.length === 1 && codes[0].length > 0 && codes[0].length <= 2048 ? codes[0] : null;
-  history.replaceState(null, '', `${url.pathname}#/account/recovery`);
-  return { code };
-}
+export { consumeRecoveryCallback } from './authCallbacks';
 
 /** The request must use a fixed same-origin callback, never a caller-supplied redirect. */
 export async function requestRecovery(client: SupabaseClient, email: string, origin: string, pathname: string): Promise<void> {

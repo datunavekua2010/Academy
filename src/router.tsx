@@ -3,9 +3,8 @@ import { useEffect, useState, type AnchorHTMLAttributes, type ReactNode } from '
 /**
  * Minimal hash router.
  *
- * Hash routing is used on purpose: the project is built as a single static
- * file (vite-plugin-singlefile), so there is no server that could rewrite
- * `/student/...` back to index.html. Hash URLs work on any static host and
+ * Hash routing keeps deep links compatible with static hosts.
+ * Hash URLs work without server-side route handling and
  * keep the existing landing-page anchors (#approach, #faq, ...) working.
  */
 
