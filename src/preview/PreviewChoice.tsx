@@ -3,8 +3,9 @@ import './preview.css';
 
 /** Temporary navigation only: choosing a view never grants a real role. */
 export function PreviewChoice() {
-  return <main className="preview-choice">
-    <header className="preview-choice-header"><a href="#home" className="preview-choice-brand"><span aria-hidden="true">✦</span> Axiom Academy</a><a href="#home" className="preview-site-link">ვებგვერდის ნახვა ↗</a></header>
+  return <div className="preview-choice">
+    <header className="preview-choice-header"><a href="#home" className="preview-choice-brand"><span aria-hidden="true">✦</span> Axiom Academy</a><nav aria-label="საიტის ნავიგაცია"><a href="#home" className="preview-site-link">ვებგვერდის ნახვა ↗</a></nav></header>
+    <main>
     <div className="preview-choice-content">
       <p className="preview-choice-kicker"><span aria-hidden="true" /> Axiom Academy</p>
       <h1>რომელი სივრცის ნახვა გსურთ?</h1>
@@ -21,5 +22,7 @@ export function PreviewChoice() {
       </div>
       <p className="preview-choice-note">მოსწავლის პროგრესი ინახება მხოლოდ ამ მოწყობილობაზე. მასწავლებლის სივრცეში რეალური მოსწავლეების მონაცემები არ ჩანს.</p>
     </div>
-  </main>;
+    </main>
+    <footer className="preview-choice-footer">Axiom Academy · სასწავლო სივრცის დათვალიერება</footer>
+  </div>;
 }

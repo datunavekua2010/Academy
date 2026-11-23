@@ -33,11 +33,7 @@ export async function requestSignup(client:SupabaseClient,email:string,password:
  if(result.data.session){await client.auth.signOut({scope:'local'}).catch(()=>{});throw new Error('Signup unavailable');}
  if(result.error)throw new Error('Signup unavailable');
 }
-export function consumeSignupCallback(href:string,history:Pick<History,'replaceState'>):{code:string|null}|null{
- const u=new URL(href);if(u.searchParams.get('signup')!=='1')return null;
- const codes=u.searchParams.getAll('code');const code=codes.length===1&&codes[0].length>0&&codes[0].length<=2048?codes[0]:null;
- history.replaceState(null,'',`${u.pathname}#/account/confirmed`);return {code};
-}
+export { consumeSignupCallback } from './authCallbacks';
 export async function exchangeSignup(client:SupabaseClient|null,callback:{code:string|null}):Promise<void>{
  if(!client||!callback.code)throw new Error('Signup unavailable');
  try{
