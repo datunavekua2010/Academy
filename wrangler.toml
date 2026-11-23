@@ -1,9 +1,9 @@
 # Production Worker and static assets. This routes CAPTCHA pre-verification;
 # Supabase Auth must also enforce CAPTCHA independently. Deploy only after the
 # production widget/secret, build variables and database upgrade are ready.
-# Confirm in the Cloudflare dashboard which Worker actually serves axiacad.uk;
-# Workers Builds may override this name or use settings not visible in this repo.
-name = "axiom-academy"
+# The owner identified axiomacademy9 as the Worker serving axiacad.uk.
+# Workers Builds may override settings not visible in this repository.
+name = "axiomacademy9"
 main = "server/auth-captcha-review-worker.ts"
 compatibility_date = "2025-01-01"
 
