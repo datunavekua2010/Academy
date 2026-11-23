@@ -541,7 +541,7 @@ export const G3_U06_TEMPLATES: QuestionTemplate[] = [
       'მხოლოდ ერთი შესაკრებია მეტი',
       'ჯამები ყოველთვის ტოლია',
     ],
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars, answer: _answer }) =>
       `რადგან ${vars.a1} > ${vars.a2} და ${vars.b1} > ${vars.b2}, ორივე შესაკრები ცალ-ცალკე მეტია, ამიტომ ჯამიც მეტია.`,
   }),
 

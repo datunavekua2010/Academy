@@ -120,7 +120,7 @@ export const G2_U13_TEMPLATES: QuestionTemplate[] = [
       const nextH = hNum === 12 ? 1 : hNum + 1;
       return [`12:0${vars.h}`, `${vars.h}:30`, `${nextH}:00`];
     },
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `როცა გრძელი ისარი 12-ზეა, საათი აჩვენებს ზუსტ დროს: ${answer}.`,
   }),
 
@@ -154,7 +154,7 @@ export const G2_U13_TEMPLATES: QuestionTemplate[] = [
     answer: (v) => String(v.correct),
     format: { kind: 'text' },
     distractors: ({ vars }) => [String(vars.w1), String(vars.w2), String(vars.w3)],
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `როცა გრძელი ისარი 6-ზეა, გასულია 30 წუთი, ანუ დროა ${answer}.`,
   }),
 
@@ -889,7 +889,7 @@ export const G2_U13_TEMPLATES: QuestionTemplate[] = [
     answer: (v) => String(v.day),
     format: { kind: 'text' },
     distractors: ({ vars }) => [String(vars.w1), String(vars.w2), String(vars.w3)],
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `7 დღის (1 კვირის) შემდეგ ისევ იგივე დღე — ${answer} იქნება.`,
   }),
 
@@ -932,7 +932,7 @@ export const G2_U13_TEMPLATES: QuestionTemplate[] = [
       ['ორშაბათი', 'სამშაბათი', 'ოთხშაბათი', 'ხუთშაბათი', 'პარასკევი', 'შაბათი', 'კვირა'].filter(
         (d) => d !== vars.day,
       ).slice(0, 3),
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `1 + 7 = 8, ანუ ზუსტად 1 კვირის შემდეგ ისევ ${answer} იქნება.`,
   }),
 
@@ -1275,7 +1275,7 @@ export const G2_U13_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.h) * 60,
     format: { kind: 'integer', min: 1 },
-    distractors: ({ vars, answer }) =>
+    distractors: ({ vars, answer: _answer }) =>
       vars.h === '2' ? [60, 90, 180] : [120, 150, 200],
     explanation: ({ vars, answer }) =>
       `1 საათი 60 წუთია. ${vars.h} საათი არის ${vars.h} × 60 = ${answer} წუთი.`,
@@ -1494,7 +1494,7 @@ export const G2_U13_TEMPLATES: QuestionTemplate[] = [
       `${vars.nextH}:15`,
       `${vars.nextH}:30`,
     ],
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `45 წუთს + 15 წუთი = 60 წუთი (1 სრული საათი), ამიტომ დრო გახდება ${answer}.`,
   }),
 

@@ -1,4 +1,5 @@
 import { defineTemplate, QuestionTemplate } from './types';
+import type { Vars } from './types';
 
 /**
  * Grade 3 — Unit 12: მონაცემები და ალბათობა (Data & Probability)
@@ -30,7 +31,6 @@ const addr = (options: { id: string; subtopicId: G3U12SubtopicId; difficulty: 1 
   ...options,
 });
 
-type Vars = Record<string, string | number>;
 
 export function nearMisses(answer: number, count = 3, min = 0, step = 1): number[] {
   const result = new Set<number>();
@@ -114,15 +114,15 @@ export const G3_U12_TEMPLATES: QuestionTemplate[] = [
       low1: { kind: 'int', min: 8, max: 14 },
       low2: { kind: 'int', min: 15, max: 20 },
       high: { kind: 'int', min: 25, max: 35 },
-      v1: { kind: 'choice', values: (v: Vars) => [v.maxType === 'ვაშლის' ? v.high : v.low1] },
-      v2: { kind: 'choice', values: (v: Vars) => [v.maxType === 'ფორთოხლის' ? v.high : v.low2] },
-      v3: { kind: 'choice', values: (v: Vars) => [v.maxType === 'ალუბლის' ? v.high : (v.maxType === 'ვაშლის' ? v.low2 : v.low1)] },
+      v1: { kind: 'choice', values: (v: Vars) => [(v.maxType === 'ვაშლის' ? v.high : v.low1) as number] },
+      v2: { kind: 'choice', values: (v: Vars) => [(v.maxType === 'ფორთოხლის' ? v.high : v.low2) as number] },
+      v3: { kind: 'choice', values: (v: Vars) => [(v.maxType === 'ალუბლის' ? v.high : (v.maxType === 'ვაშლის' ? v.low2 : v.low1)) as number] },
     },
     answer: (v: Vars) => String(v.maxType),
     format: { kind: 'text' },
     options: () => ['ვაშლის', 'ფორთოხლის', 'ალუბლის', 'ყველა თანაბარია'],
     optionCount: 4,
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `ყველაზე მეტი ხმა აქვს ${answer} წვენს, ამიტომ ის არის ყველაზე პოპულარული.`,
   }),
 
@@ -358,7 +358,7 @@ export const G3_U12_TEMPLATES: QuestionTemplate[] = [
       'არცერთი მონაცემი არაა ზედმეტი',
     ],
     optionCount: 4,
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `თანხის გამოსათვლელად საჭიროა მხოლოდ რაოდენობა და ფასი. ${answer} ზედმეტი მონაცემია.`,
   }),
 
@@ -443,10 +443,10 @@ export const G3_U12_TEMPLATES: QuestionTemplate[] = [
       low2: { kind: 'int', min: 21, max: 25 },
       low3: { kind: 'int', min: 26, max: 30 },
       high: { kind: 'int', min: 35, max: 45 },
-      d1: { kind: 'choice', values: (v: Vars) => [v.bestDay === 'ორშაბათს' ? v.high : v.low1] },
-      d2: { kind: 'choice', values: (v: Vars) => [v.bestDay === 'სამშაბათს' ? v.high : v.low2] },
-      d3: { kind: 'choice', values: (v: Vars) => [v.bestDay === 'ოთხშაბათს' ? v.high : v.low3] },
-      d4: { kind: 'choice', values: (v: Vars) => [v.bestDay === 'ხუთშაბათს' ? v.high : v.low1] },
+      d1: { kind: 'choice', values: (v: Vars) => [(v.bestDay === 'ორშაბათს' ? v.high : v.low1) as number] },
+      d2: { kind: 'choice', values: (v: Vars) => [(v.bestDay === 'სამშაბათს' ? v.high : v.low2) as number] },
+      d3: { kind: 'choice', values: (v: Vars) => [(v.bestDay === 'ოთხშაბათს' ? v.high : v.low3) as number] },
+      d4: { kind: 'choice', values: (v: Vars) => [(v.bestDay === 'ხუთშაბათს' ? v.high : v.low1) as number] },
     },
     answer: (v: Vars) => String(v.bestDay),
     format: { kind: 'text' },

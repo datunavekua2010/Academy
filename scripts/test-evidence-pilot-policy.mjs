@@ -1,0 +1,27 @@
+// Ephemeral local database, synthetic identities and synthetic questions only.
+import {PGlite} from '@electric-sql/pglite';import {readFileSync} from 'node:fs';import assert from 'node:assert/strict';
+const db=new PGlite();
+try{
+ await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;create table auth.users(id uuid primary key,email_confirmed_at timestamptz default now(),banned_until timestamptz,deleted_at timestamptz,is_anonymous boolean default false);create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;grant usage on schema auth to authenticated,anon;grant execute on function auth.uid() to authenticated,anon;`);
+ for(const f of ['202611200001_initial_academy.sql','202611220001_tutor_lesson_notes.sql','202611230001_classrooms_review.sql','202611240001_teacher_tests_review.sql','202611250001_classroom_capacity_review.sql','202611260001_classroom_abuse_review.sql','202611270001_classroom_codes_review.sql','202611280001_admin_teacher_links_review.sql','202611290001_teacher_link_revoke_review.sql','202611300001_teacher_write_lock_review.sql','202612010001_homework_review.sql','202612020001_role_lifecycle_review.sql','202612030001_parent_link_review.sql','202612040001_role_regrant_review.sql','202612050001_profile_provision_review.sql','202612060001_parent_dashboard_review.sql','202612070001_evidence_pilot_review.sql','202612080001_profile_reconcile_review.sql','202612090001_parent_link_requests_review.sql','202612100001_parent_data_minimization_review.sql','202612110001_parent_link_rpc_privileges_review.sql'])await db.exec(readFileSync('supabase/migrations/'+f,'utf8'));
+ const [student,other,admin]=[1,2,3].map(n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`),id=n=>`10000000-0000-4000-8000-${String(n).padStart(12,'0')}`,q=(sql,args=[])=>db.query(sql,args);
+ for(const x of [student,other,admin]){await q('insert into auth.users values($1)',[x]);await q("insert into public.profiles(id,display_name,first_name) values($1,'Name','Name')",[x]);}for(const [x,r] of [[student,'student'],[other,'student'],[admin,'admin']])await q('insert into public.user_roles values($1,$2)',[x,r]);
+ for(const role of ['anon','authenticated']){await db.exec('set role '+role);await assert.rejects(()=>q('select public.evidence_pilot_start($1,$2)',[student,id(1)]));await assert.rejects(()=>q('select * from academy_private.evidence_pilot_questions'));await db.exec('reset role');}
+ await db.exec('set role service_role');await assert.rejects(()=>q('select * from academy_private.evidence_pilot_questions'));
+ const start=async(actor,key)=>(await q('select public.evidence_pilot_start($1,$2) as s',[actor,key])).rows[0].s;
+ const issue=async(actor,s,i,prompt=`Question ${i}`,opts=['yes','no'],answer='yes')=>(await q('select * from public.evidence_pilot_issue($1,$2,$3,$4,$5,$6)',[actor,s,id(i+100),prompt,opts,answer])).rows[0];
+ const submit=(actor,s,question,choice)=>q('select public.evidence_pilot_submit($1,$2,$3,$4) as correct',[actor,s,question,choice]);
+ const finish=(actor,s)=>q('select * from public.evidence_pilot_finish($1,$2)',[actor,s]);
+ const s=await start(student,id(1));assert.equal(await start(student,id(1)),s);await assert.rejects(()=>issue(other,s,1));await assert.rejects(()=>finish(student,s));
+ await assert.rejects(()=>issue(student,s,1,'bad',['same','same'],'same'));await assert.rejects(()=>issue(student,s,1,'bad',['yes','no'],'other'));
+ const first=await issue(student,s,1);assert.deepEqual(Object.keys(first).sort(),['options','prompt','question_id']);assert.deepEqual(await issue(student,s,1,'changed',['a','b'],'a'),first);
+ await assert.rejects(()=>issue(student,s,2));await assert.rejects(()=>submit(other,s,first.question_id,'yes'));await assert.rejects(()=>submit(student,s,first.question_id,'other'));
+ assert.equal((await submit(student,s,first.question_id,'yes')).rows[0].correct,true);assert.equal((await submit(student,s,first.question_id,'yes')).rows[0].correct,true);await assert.rejects(()=>submit(student,s,first.question_id,'no'));await assert.rejects(()=>issue(student,s,2,'Question 1'));
+ for(let i=2;i<=10;i++){const row=await issue(student,s,i);assert.equal((await submit(student,s,row.question_id,i===2?'no':'yes')).rows[0].correct,i!==2);}
+ const result=(await finish(student,s)).rows[0];assert.equal(Number(result.answered),10);assert.equal(Number(result.correct),9);assert.deepEqual((await finish(student,s)).rows[0],result);await assert.rejects(()=>issue(student,s,11));
+ const s2=await start(student,id(2)),s3=await start(student,id(3)),s4=await start(student,id(4));await assert.rejects(()=>start(student,id(5)));assert(s2&&s3&&s4);
+ await db.exec('reset role');await q("update academy_private.evidence_pilot_sessions set created_at=clock_timestamp()-interval '2 hours',expires_at=clock_timestamp()-interval '1 minute' where id=$1",[s2]);await db.exec('set role service_role');
+ await assert.rejects(()=>issue(student,s2,12));await assert.rejects(()=>finish(student,s2));assert(await start(student,id(5)));
+ await db.exec('reset role');await q("delete from public.user_roles where user_id=$1 and role='student'",[student]);await db.exec('set role service_role');await assert.rejects(()=>finish(student,s));await assert.rejects(()=>start(student,id(1)));
+ console.log('Evidence pilot synthetic policy and transaction tests: passed.');
+}finally{await db.close();}

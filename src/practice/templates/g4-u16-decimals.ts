@@ -1,4 +1,6 @@
 import { defineTemplate, type QuestionTemplate } from './types';
+// These fraction/decimal fields are drawn from string-valued choice variables.
+
 
 export function nearMisses(answer: number, count = 3, min = 0, step = 1): number[] {
   const result = new Set<number>();
@@ -101,7 +103,7 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.w1), String(v.w2), String(v.w3)],
-    explanation: ({ vars, answer }) => `მძიმის შემდეგ პირველი ციფრი აღნიშნავს ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მძიმის შემდეგ პირველი ციფრი აღნიშნავს ${answer}.`,
   }),
 
   // g4-u16-04 (Level 2)
@@ -165,7 +167,7 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     options: (v) => [Number(v.ans), Number(v.w1), Number(v.w2), Number(v.w3)],
-    explanation: ({ vars, answer }) => `მძიმის შემდეგ მეორე ციფრი არის მეასედების ციფრი, ამიტომ სწორი პასუხია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მძიმის შემდეგ მეორე ციფრი არის მეასედების ციფრი, ამიტომ სწორი პასუხია ${answer}.`,
   }),
 
   // g4-u16-07 (Level 1)
@@ -438,9 +440,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 1.0).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 1.0).toFixed(1).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
   }),
@@ -460,9 +462,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 1.0).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 1.0).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
   }),
@@ -482,9 +484,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 1.0).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 1.0).toFixed(1).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
   }),
@@ -504,9 +506,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.01).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.01).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
   }),
@@ -526,9 +528,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 1.0).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 1.0).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
   }),
@@ -548,9 +550,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 1.0).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 1.0).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
   }),
@@ -570,9 +572,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 1.0).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 1.0).toFixed(1).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
   }),
@@ -592,9 +594,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 1.0).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 1.0).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
   }),
@@ -614,9 +616,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 1.0).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(1).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 1.0).toFixed(1).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
   }),
@@ -636,9 +638,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.01).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.01).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
   }),
@@ -658,9 +660,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 1.0).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 1.0).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
   }),
@@ -680,9 +682,9 @@ export const G4_U16_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => [
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
-      `${(parseFloat(ctx.vars.ans.replace(',', '.')) + 1.0).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) - 0.1).toFixed(2).replace('.', ',')}`,
+      `${(parseFloat((ctx.vars.ans as string).replace(',', '.')) + 1.0).toFixed(2).replace('.', ',')}`,
     ],
     explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
   }),

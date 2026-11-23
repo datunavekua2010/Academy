@@ -230,7 +230,7 @@ export const G3_U14_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'text' },
     options: (v: Vars) => [String(v.s4), String(v.s1), String(v.s2), String(v.decoy)],
     optionCount: 4,
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `ციკლის მეოთხე ელემენტია ${answer}.`,
   }),
 
@@ -683,7 +683,7 @@ export const G3_U14_TEMPLATES: QuestionTemplate[] = [
     answer: (v: Vars) => Number(v.posts),
     format: { kind: 'integer', min: 1 },
     distractors: ({ answer }) => nearMisses(Number(answer), 3, 1, 1),
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `წრიულ ხაზზე შუალედების რაოდენობა ბოძების რაოდენობის ტოლია: ${answer} შუალედი.`,
   }),
 
@@ -1217,7 +1217,7 @@ export const G3_U14_TEMPLATES: QuestionTemplate[] = [
     format: { kind: 'text' },
     options: (v: Vars) => [String(v.e3), String(v.e1), String(v.e2), String(v.e4)],
     optionCount: 4,
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars, answer: _answer }) =>
       `${vars.x} × 3 = ${Number(vars.x) * 3}, რაც ყველაზე დიდია.`,
   }),
 

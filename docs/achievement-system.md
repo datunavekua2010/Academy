@@ -22,3 +22,7 @@ Consequently **all 28** badges are blocked from being awarded. M01 and C01–C07
 5. Review grants and RLS alongside existing linked-parent/teacher access; enforce the requested student-only read boundary for this feature without breaking existing policies inadvertently. Test actual authenticated and unauthorized API calls as well as concurrent processors against a non-production project before rollout. A server-side service secret must never be included in the browser.
 
 This document is a proposal, not an applied migration. No database tables, policies or records were modified by this feature. Production deployment and database changes require separate authorization.
+
+A local unrouted single-choice issuance/comparison prototype exists in `server/practice-evidence-review.ts`; it is single-process, non-durable and not used for achievements or awards. See `docs/security-rollout-checklist.md`. The prerequisites above remain unresolved.
+
+A separate unapplied service-only durable single-choice scoring pilot and unrouted gateway now exist locally. They do not issue awards, provide verified lesson evidence, or satisfy the prerequisites above; see `security-rollout-checklist.md`.

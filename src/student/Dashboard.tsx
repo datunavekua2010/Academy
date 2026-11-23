@@ -8,11 +8,11 @@ import { Link } from '../router';
 
 export function Dashboard() {
   const { student, mode } = useStudentSession();
-  const { assignments, progressFor, overall } = usePractice();
+  const { assignments, progressForAssignment, overall } = usePractice();
   const firstName = student?.firstName ?? 'მოსწავლე';
 
   const nextUp = assignments
-    .map((assignment) => ({ assignment, status: assignmentStatus(progressFor(assignment.ref)) }))
+    .map((assignment) => ({ assignment, status: assignmentStatus(progressForAssignment(assignment)) }))
     .filter((item) => item.status !== 'completed')
     .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime())[0];
 
@@ -69,7 +69,7 @@ export function Dashboard() {
       )}
 
       <p className="demo-note dashboard-note">
-        {mode === 'test' ? 'სატესტო ანგარიში — შედეგები ინახება მხოლოდ ამ მოწყობილობაზე.' : 'ვარჯიშის შედეგები ანგარიშზე ინახება; გაკვეთილების პროგრესი ამ მოწყობილობაზე რჩება.'}
+        {mode === 'test' ? 'შედეგები ინახება მხოლოდ ამ მოწყობილობაზე.' : 'ვარჯიშის შედეგები ანგარიშზე ინახება; გაკვეთილების პროგრესი ამ მოწყობილობაზე რჩება.'}
       </p>
     </div>
   );

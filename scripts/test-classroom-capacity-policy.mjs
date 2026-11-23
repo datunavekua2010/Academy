@@ -1,0 +1,40 @@
+import { PGlite } from '@electric-sql/pglite';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const db = new PGlite();
+try {
+  await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;`);
+  for (const file of ['202611200001_initial_academy.sql','202611230001_classrooms_review.sql','202611250001_classroom_capacity_review.sql']) await db.exec(fs.readFileSync(`supabase/migrations/${file}`, 'utf8'));
+  const [teacher, otherTeacher, s1, s2, unlinked, s3] = [1,2,3,4,5,6].map(n => `00000000-0000-4000-8000-${String(n).padStart(12,'0')}`);
+  for (const id of [teacher, otherTeacher, s1, s2, unlinked, s3]) { await db.query('insert into auth.users values($1)',[id]); await db.query('insert into public.profiles(id,display_name,first_name) values($1,$2,$2)',[id,'Name']); }
+  for (const [id, role] of [[teacher,'teacher'],[otherTeacher,'teacher'],[s1,'student'],[s2,'student'],[unlinked,'student'],[s3,'student']]) await db.query('insert into public.user_roles values($1,$2)',[id,role]);
+  await db.query('insert into public.teacher_students values($1,$2),($1,$3),($1,$4)',[teacher,s1,s2,s3]);
+  const as=async(id)=>{await db.exec('reset role; set role authenticated'); await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);};
+  const q=(sql,args=[])=>db.query(sql,args);
+  const reject=(sql,args=[])=>assert.rejects(()=>q(sql,args));
+  const add=(room,s)=>q('select public.teacher_classroom_add_student($1,$2)',[room,s]);
+  const remove=(room,s)=>q('select public.teacher_classroom_remove_student($1,$2)',[room,s]);
+  const set=(room,cap,rev)=>q('select public.teacher_classroom_set_capacity($1,$2,$3)',[room,cap,rev]);
+  const status=(room)=>q('select * from public.teacher_classroom_capacity($1)',[room]);
+  await as(teacher);
+  const room=(await q("select public.teacher_classroom_save(null,'Room',1::smallint,'',null) as id")).rows[0].id;
+  assert.equal((await status(room)).rows[0].capacity,null);
+  await reject('select public.teacher_classroom_set_capacity($1,$2,$3)',[room,0,1]);
+  await set(room,1,1); await reject('select public.teacher_classroom_set_capacity($1,$2,$3)',[room,2,1]);
+  await add(room,s1); await add(room,s1); await assert.rejects(()=>add(room,s2)); await assert.rejects(()=>add(room,unlinked));
+  assert.equal(Number((await status(room)).rows[0].active_students),1);
+  await remove(room,s1); assert.equal(Number((await status(room)).rows[0].active_students),0); await add(room,s2);
+  await set(room,2,2); await add(room,s1); await assert.rejects(()=>set(room,1,3));
+  await as(otherTeacher); await reject('select * from public.teacher_classroom_capacity($1)',[room]); await assert.rejects(()=>set(room,3,3)); await assert.rejects(()=>add(room,unlinked));
+  await as(s1); await reject('select * from public.teacher_classroom_capacity($1)',[room]); await assert.rejects(()=>set(room,3,3)); await reject('select * from public.classrooms'); await reject('select academy_private.classroom_has_inactive_members($1,$2)',[room,teacher]);
+  await db.exec('reset role'); await q('delete from public.teacher_students where teacher_id=$1 and student_id=$2',[teacher,s1]);
+  await as(teacher); const state=(await status(room)).rows[0]; assert.equal(Number(state.active_students),1); assert.equal(state.needs_membership_review,true);
+  await assert.rejects(()=>set(room,3,3)); await assert.rejects(()=>add(room,s1)); await assert.rejects(()=>add(room,s3));
+  await db.exec('reset role'); await q('delete from public.classroom_students where classroom_id=$1 and student_id=$2',[room,s1]);
+  await as(teacher); assert.equal((await status(room)).rows[0].needs_membership_review,false); await set(room,1,3);
+  await q('select public.teacher_classroom_archive($1,$2)',[room,4]); await assert.rejects(()=>add(room,s1)); await assert.rejects(()=>set(room,2,5));
+  await db.exec('reset role'); await q("delete from public.user_roles where user_id=$1 and role='teacher'",[teacher]);
+  await as(teacher); await reject('select * from public.teacher_classroom_capacity($1)',[room]); await assert.rejects(()=>set(room,2,5));
+  await db.exec('reset role; set role anon'); await reject('select * from public.teacher_classroom_capacity($1)',[room]); await reject('select * from public.classrooms');
+  console.log('Classroom capacity local policy tests: passed.');
+} finally { await db.close(); }

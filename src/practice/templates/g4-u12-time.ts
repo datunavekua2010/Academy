@@ -445,7 +445,7 @@ export const G4_U12_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) - 10} წთ`,
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) + 10} წთ`,
     ],
-    explanation: ({ vars, answer }) => `გასული დროა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გასული დროა: ${answer}.`,
   }),
 
   // g4-u12-21 (Level 2)
@@ -468,7 +468,7 @@ export const G4_U12_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) - 10} წთ`,
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) + 10} წთ`,
     ],
-    explanation: ({ vars, answer }) => `მგზავრობის ხანგრძლივობაა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მგზავრობის ხანგრძლივობაა: ${answer}.`,
   }),
 
   // g4-u12-22 (Level 2)
@@ -491,7 +491,7 @@ export const G4_U12_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) - 10} წთ`,
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) + 10} წთ`,
     ],
-    explanation: ({ vars, answer }) => `ნინო მეცადინეობდა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ნინო მეცადინეობდა: ${answer}.`,
   }),
 
   // g4-u12-23 (Level 3)
@@ -514,7 +514,7 @@ export const G4_U12_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) - 15} წთ`,
       `${ctx.vars.h} სთ ${Number(ctx.vars.m) + 15} წთ`,
     ],
-    explanation: ({ vars, answer }) => `თამაში გაგრძელდა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `თამაში გაგრძელდა: ${answer}.`,
   }),
 
   // g4-u12-24 (Level 3)

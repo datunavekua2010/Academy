@@ -1,33 +1,31 @@
-import { StrictMode, useEffect, useRef } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App";
-import { StudentApp } from "./student/StudentApp";
-import { isStudentPath, useHashRoute } from "./router";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import { Shell } from './Shell';
+import { consumeRecoveryCallback, exchangeRecovery, recoveryClient } from './lib/passwordRecovery';
+import type { RecoveryResult } from './account/PasswordRecovery';
+import { consumeSignupCallback,exchangeSignup,signupClient } from './lib/accountSignup';
+import type { SignupResult } from './account/Signup';
+import { consumeGoogleCallback, finishGoogleAuth, googleAuthClient } from './lib/googleAuth';
+import { GoogleCallback } from './account/GoogleAuth';
 
-function Shell() {
-  const path = useHashRoute();
-  const studentArea = isStudentPath(path);
-  const previous = useRef(studentArea);
+// One exchange per page load, outside React effects (including StrictMode).
+// Remove the code/error from browser history before making any Auth request.
+const googleCallback = consumeGoogleCallback(window.location.href, window.history);
+const callback = googleCallback ? null : consumeRecoveryCallback(window.location.href, window.history);
+const recovery: Promise<RecoveryResult> | null = callback
+  ? exchangeRecovery(recoveryClient, callback).then(ready => ({ ready }), () => ({ error: true }))
+  : null;
 
-  // Reset scroll only when crossing between the public site and the student
-  // area — the landing page's own #section anchors must keep working.
-  useEffect(() => {
-    if (previous.current !== studentArea) {
-      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-      previous.current = studentArea;
-    }
-  }, [studentArea]);
+const signupCallback = callback || googleCallback ? null : consumeSignupCallback(window.location.href, window.history);
+const signup: Promise<SignupResult> | null = signupCallback ? exchangeSignup(signupClient,signupCallback).then(() => ({ok:true}), () => ({error:true})) : null;
 
-  useEffect(() => {
-    if (!studentArea) document.title = 'Axiom Academy — მათემატიკა და ლოგიკა';
-  }, [studentArea]);
-
-  return studentArea ? <StudentApp /> : <App />;
+const root = createRoot(document.getElementById('root')!);
+if (googleCallback) {
+  root.render(<main role="status">მოწმდება…</main>);
+  // Exchange before mounting any role-specific view; handle blocked sessionStorage too.
+  void Promise.resolve().then(() => finishGoogleAuth(googleAuthClient, googleCallback, window.sessionStorage))
+    .then(() => root.render(<GoogleCallback result="ok" />), () => root.render(<GoogleCallback result="error" />));
+} else {
+  root.render(<StrictMode><Shell recovery={recovery} signup={signup} /></StrictMode>);
 }
-
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <Shell />
-  </StrictMode>
-);

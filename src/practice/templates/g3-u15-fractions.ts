@@ -123,7 +123,7 @@ export const G3_U15_TEMPLATES: QuestionTemplate[] = [
       const res = new Set<number>([k, n - k, n + 1, k + 1].filter((x) => x !== n && x > 0));
       return Array.from(res).slice(0, 3);
     },
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `წილადის ხაზის ქვემოთ წერია მნიშვნელი, რომელიც აჩვენებს, რამდენ ტოლ ნაწილადაა დაყოფილი მთელი. მნიშვნელია ${answer}.`,
   }),
 
@@ -159,7 +159,7 @@ export const G3_U15_TEMPLATES: QuestionTemplate[] = [
       const res = new Set<number>([n, n - k, k + 1, k - 1].filter((x) => x !== k && x > 0));
       return Array.from(res).slice(0, 3);
     },
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `წილადის ხაზის ზემოთ წერია მრიცხველი, რომელიც აჩვენებს, რამდენი ნაწილია აღებული. მრიცხველია ${answer}.`,
   }),
 

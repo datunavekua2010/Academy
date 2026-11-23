@@ -1,4 +1,5 @@
 import { defineTemplate, QuestionTemplate } from './types';
+import type { Vars } from './types';
 
 /**
  * Grade 3 — Unit 09: დამრგვალება და მიახლოება (Rounding & Approximation)
@@ -24,7 +25,6 @@ const addr = (options: { id: string; subtopicId: G3U09SubtopicId; difficulty: 1 
   ...options,
 });
 
-type Vars = Record<string, string | number>;
 
 export const roundNearest = (n: number, step: number): number => Math.round(n / step) * step;
 
@@ -152,7 +152,7 @@ export const G3_U09_TEMPLATES: QuestionTemplate[] = [
       `ყოველთვის მრგვალდება 0-მდე`,
     ],
     optionCount: 4,
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `მათემატიკური წესით, როდესაც გასამრგვალებელი ციფრი არის 5, ვამრგვალებთ ${answer}.`,
   }),
 

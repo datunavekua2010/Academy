@@ -158,7 +158,7 @@ export const G4_U09_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `საერთო თანხის მისაღებად საჭიროა სულ ${answer} მონეტა.`,
+    explanation: ({ vars: _vars, answer }) => `საერთო თანხის მისაღებად საჭიროა სულ ${answer} მონეტა.`,
   }),
 
   // g4-u09-06 (Level 3)
@@ -406,7 +406,7 @@ export const G4_U09_TEMPLATES: QuestionTemplate[] = [
         `${l} ლარი და ${(remT + 10) % 100} თეთრი`,
       ];
     },
-    explanation: ({ vars, answer }) => `ორივე ერთად ღირს: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ორივე ერთად ღირს: ${answer}.`,
   }),
 
   // g4-u09-17 (Level 3)
@@ -442,7 +442,7 @@ export const G4_U09_TEMPLATES: QuestionTemplate[] = [
         `${l} ლარი და ${(remT + 15) % 100} თეთრი`,
       ];
     },
-    explanation: ({ vars, answer }) => `სულ დახარჯა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `სულ დახარჯა: ${answer}.`,
   }),
 
   // g4-u09-18 (Level 3)

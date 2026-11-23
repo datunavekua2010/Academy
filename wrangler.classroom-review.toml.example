@@ -1,0 +1,15 @@
+# REVIEW EXAMPLE ONLY. Do not replace wrangler.toml or deploy without approval.
+# Requires a dedicated test Supabase project, reviewed migrations, and secrets.
+name = "academy-classroom-review"
+main = "server/classroom-worker.ts"
+compatibility_date = "2025-01-01"
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/classroom-code/*"]
+[vars]
+# Deliberately disabled until ingress and authorization review is complete.
+CLASSROOM_CODES_ENABLED = "false"
+# Set CLASSROOM_ALLOWED_ORIGIN and SUPABASE_URL for an isolated test environment.
+# Store CLASSROOM_RATE_KEY and SUPABASE_SERVICE_ROLE_KEY as Worker secrets only.

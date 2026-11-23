@@ -112,6 +112,8 @@ export interface SessionAnswer {
 
 export interface SessionState {
   id: string;
+  /** The exact assignment survives local draft reloads. */
+  assignmentId?: string | null;
   ref: SubtopicRef;
   /** Question ids still to be answered, current question first. */
   queue: string[];

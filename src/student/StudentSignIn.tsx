@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from '../router';
 import { useStudentSession } from './session';
+import { RecoveryRequest } from '../account/PasswordRecovery';
+import { recoveryClient } from '../lib/passwordRecovery';
+import { signupClient } from '../lib/accountSignup';
+import { googleAuthClient } from '../lib/googleAuth';
+import { GoogleAuthButton } from '../account/GoogleAuth';
 
 export function StudentSignIn() {
   const { signInWithPassword, signOut, mode, status, error, signedIn } = useStudentSession();
@@ -26,6 +31,10 @@ export function StudentSignIn() {
             <label>პაროლი<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
             <button type="submit" className="btn btn-primary" disabled={submitting || mode !== 'connected'}>{submitting ? 'იტვირთება…' : 'შესვლა'}</button>
           </form>}
+          {!signedIn && mode === 'connected' && <GoogleAuthButton client={googleAuthClient} />}
+          {!signedIn && mode === 'connected' && <RecoveryRequest client={recoveryClient} />}
+          {!signedIn && signupClient && <p><Link to="/account/register">ანგარიშის მოთხოვნა</Link></p>}
+          {signedIn && (signupClient || googleAuthClient) && <p><Link to="/account/status">ანგარიშის ნომერი</Link></p>}
           {signedIn && <button type="button" className="btn btn-ghost" onClick={signOut}>ანგარიშიდან გასვლა</button>}
         </>}
         {status === 'ready' && !signedIn && mode !== 'invalid' && (

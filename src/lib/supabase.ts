@@ -7,7 +7,7 @@ export type SupabaseConfiguration =
   | { mode: 'connected'; client: SupabaseClient };
 
 /** Missing, partial or invalid configuration never creates a fake student session. */
-export function createSupabaseConfiguration(url?: string, publishableKey?: string): SupabaseConfiguration {
+export function createSupabaseConfiguration(url?: string, publishableKey?: string, googleReview = false): SupabaseConfiguration {
   const endpoint = url?.trim() ?? '';
   const key = publishableKey?.trim() ?? '';
   if (!endpoint && !key) return { mode: 'unconfigured', client: null };
@@ -17,7 +17,8 @@ export function createSupabaseConfiguration(url?: string, publishableKey?: strin
     if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.search || parsed.hash) {
       return { mode: 'invalid', client: null };
     }
-    return { mode: 'connected', client: createClient(endpoint, key) };
+    // Password recovery uses a separate client; do not consume callback URLs here.
+    return { mode: 'connected', client: createClient(endpoint, key, { auth: { detectSessionInUrl: false, ...(googleReview ? { flowType: 'pkce' as const } : {}) } }) };
   } catch {
     return { mode: 'invalid', client: null };
   }
@@ -27,4 +28,4 @@ export function createSupabaseConfiguration(url?: string, publishableKey?: strin
 // contact the real service, or expose real account data, even if env vars exist.
 export const supabaseConfiguration: SupabaseConfiguration = TEST_ACCOUNT_MODE
   ? { mode: 'unconfigured', client: null }
-  : createSupabaseConfiguration(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+  : createSupabaseConfiguration(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, import.meta.env.VITE_GOOGLE_AUTH_REVIEW === 'true');
