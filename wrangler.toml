@@ -1,6 +1,7 @@
 # Production Worker and static assets. This routes CAPTCHA pre-verification;
 # Supabase Auth must also enforce CAPTCHA independently. Deploy only after the
-# production widget/secret, build variables and database upgrade are ready.
+# rollout prerequisites are ready. The first script deployment must precede
+# adding Worker secrets if the existing deployment serves static assets only.
 # The owner identified axiomacademy9 as the Worker serving axiacad.uk.
 # Workers Builds may override settings not visible in this repository.
 name = "axiomacademy9"
