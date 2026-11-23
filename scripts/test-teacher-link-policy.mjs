@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 const db=new PGlite();
 try {
  await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;`);
- for(const f of ['202611200001_initial_academy.sql','202611230001_classrooms_review.sql','202611280001_admin_teacher_links_review.sql']) await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));
+ for(const f of ['20261120154717_initial_academy.sql','202611230001_classrooms_review.sql','202611280001_admin_teacher_links_review.sql']) await db.exec(fs.readFileSync('supabase/migrations/'+f,'utf8'));
  const [admin,teacher,student,other,missing]=[1,2,3,4,5].map(n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`);
  for(const id of [admin,teacher,student,other,missing]) {await db.query('insert into auth.users values($1)',[id]); await db.query("insert into public.profiles(id,display_name,first_name) values($1,'name','name')",[id]);}
  for(const [id,role] of [[admin,'admin'],[teacher,'teacher'],[student,'student'],[other,'student']]) await db.query('insert into public.user_roles values($1,$2)',[id,role]);

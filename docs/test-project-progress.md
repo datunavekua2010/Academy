@@ -8,7 +8,7 @@ The user explicitly approved migrations and synthetic testing only in **axiom ac
 
   | Local migration version | Remote version | Name |
   | --- | --- | --- |
-  | 202611200001 | 20261123104237 | initial_academy_schema |
+  | 20261120154717 | 20261123104237 | initial_academy_schema (local version aligned with production; staging history unchanged) |
   | 202611220001 | 20261123104424 | tutor_lesson_notes_review |
   | 202611230001 | 20261123104821 | classrooms_review |
   | 202611240001 | 20261123121013 | teacher_tests_review |

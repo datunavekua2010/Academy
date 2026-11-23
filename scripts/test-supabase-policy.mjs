@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const db = new PGlite();
 await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users (id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$; grant usage on schema auth to authenticated, anon; grant execute on function auth.uid() to authenticated, anon;`);
-await db.exec(fs.readFileSync('supabase/migrations/202611200001_initial_academy.sql','utf8'));
+await db.exec(fs.readFileSync('supabase/migrations/20261120154717_initial_academy.sql','utf8'));
 await db.exec(fs.readFileSync('supabase/curriculum-seed.sql','utf8'));
 const counts = await db.query('select (select count(*) from public.curriculum_subunits) as subunits, (select count(*) from public.exercise_templates) as templates');
 assert.ok(counts.rows[0].subunits > 0 && counts.rows[0].templates > 0);

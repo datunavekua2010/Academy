@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 const db = new PGlite();
 try {
   await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;`);
-  for (const f of ['202611200001_initial_academy.sql','202611260001_classroom_abuse_review.sql']) await db.exec(fs.readFileSync(`supabase/migrations/${f}`,'utf8'));
+  for (const f of ['20261120154717_initial_academy.sql','202611260001_classroom_abuse_review.sql']) await db.exec(fs.readFileSync(`supabase/migrations/${f}`,'utf8'));
   const invoke=(a,n)=>db.query('select public.classroom_code_consume_rate($1,$2) as allowed',[a,n]);
   const account='a'.repeat(64), net='b'.repeat(64);
   await db.exec('set role authenticated'); await assert.rejects(()=>invoke(account,net)); await assert.rejects(()=>db.query('select public.classroom_code_clean_rate_buckets()')); await assert.rejects(()=>db.query('select * from academy_private.classroom_code_rate_buckets'));

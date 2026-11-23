@@ -11,7 +11,7 @@ do $preflight$ begin
   if exists(select 1 from pg_catalog.pg_namespace where nspname='academy_private') then raise exception 'Refusing existing academy_private schema'; end if;
 end $preflight$;
 
--- ===== 202611200001_initial_academy.sql =====
+-- ===== 20261120154717_initial_academy.sql =====
 -- REVIEW ONLY. Do not apply until the schema, permissions and project are approved.
 -- Student-submitted attempts are UNVERIFIED. Do not use them to grant rewards.
 
