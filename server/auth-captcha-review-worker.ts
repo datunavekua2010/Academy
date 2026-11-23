@@ -1,4 +1,5 @@
-/** REVIEW ONLY: separate Worker example. This precheck does not secure Supabase's direct Auth API. */
+/** Worker entry point for the app assets and CAPTCHA precheck.
+ * Supabase must enforce CAPTCHA independently for direct Auth API requests. */
 type Env = { ASSETS: { fetch(request: Request): Promise<Response> }; TURNSTILE_REVIEW_ENABLED?: string; TURNSTILE_WORKER_SECRET?: string; TURNSTILE_ALLOWED_ORIGIN?: string };
 const reply = (status: number) => new Response(status === 204 ? null : 'Unavailable', { status, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
 export async function verifyWorkerTurnstile(token: string, secret: string, hostname: string, fetcher: typeof fetch = fetch): Promise<boolean> {
