@@ -1,0 +1,37 @@
+.login-preview { min-height:100vh; color:#18382e; background:#f6f8f2; font-family:"FiraGO","Noto Sans Georgian",system-ui,sans-serif; }
+.login-preview *, .login-preview *::before, .login-preview *::after { box-sizing:border-box; }
+.login-preview a { text-decoration:none; }
+.login-preview a:focus-visible { outline:3px solid #287f5d; outline-offset:4px; border-radius:4px; }
+.login-preview-header { width:min(1120px,calc(100% - 64px)); min-height:90px; display:flex; align-items:center; justify-content:space-between; gap:20px; margin:0 auto; }
+.login-preview-brand { display:inline-flex; align-items:center; gap:11px; color:#193a2e; font-size:1.08rem; font-weight:800; white-space:nowrap; }
+.login-preview-brand strong { color:#1d805d; }
+.login-preview-brand-mark { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; background:#187c59; color:#fff; font-size:1.4rem; }
+.login-preview-back { display:inline-flex; align-items:center; gap:10px; color:#526b5e; font-size:.83rem; font-weight:700; }
+.login-preview-back:hover, .login-preview-explore:hover { color:#095d43; }
+.login-preview-main { padding:clamp(30px,7vh,78px) 24px 30px; }
+.login-preview-card { width:min(100%,980px); min-height:580px; margin:0 auto; display:grid; grid-template-columns:1fr 1.06fr; overflow:hidden; border:1px solid #e0eae0; border-radius:26px; background:#fff; box-shadow:0 24px 70px rgba(30,66,47,.09); }
+.login-preview-intro { position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; padding:48px; color:#f6fff8; background:#166548; }
+.login-preview-intro::before { content:""; position:absolute; width:360px; height:360px; border:1px solid rgba(255,255,255,.16); border-radius:50%; top:-165px; right:-85px; box-shadow:0 0 0 45px rgba(255,255,255,.035),0 0 0 90px rgba(255,255,255,.025); }
+.login-preview-art { position:absolute; top:75px; left:50px; width:175px; height:175px; border:1px solid rgba(218,245,222,.24); border-radius:34px; background:rgba(239,255,240,.08); transform:rotate(-8deg); }
+.login-preview-art span { position:absolute; top:24px; left:47px; font-size:4.5rem; color:#d8ebaa; line-height:1; }
+.login-preview-art i,.login-preview-art b,.login-preview-art em { position:absolute; font-style:normal; font-weight:700; color:#d7f0de; }
+.login-preview-art i { top:8px; right:20px; font-size:1.5rem; }.login-preview-art b { bottom:8px; right:22px; font-size:2.2rem; }.login-preview-art em { bottom:19px; left:21px; font-size:1.5rem; }
+.login-preview-kicker,.login-preview-eyebrow { margin:0 0 12px; font-size:.69rem; font-weight:850; letter-spacing:.09em; }
+.login-preview-kicker { color:#bde1c4; }
+.login-preview-intro h1 { margin:0 0 16px; color:white; font-size:clamp(2rem,3vw,2.85rem); line-height:1.25; font-weight:850; }
+.login-preview-intro h1 span { color:#e6c16c; }
+.login-preview-intro > p:not(.login-preview-kicker) { max-width:320px; color:#d6eadb; font-size:.92rem; line-height:1.85; margin:0; }
+.login-preview-quote { display:flex; align-items:center; gap:12px; margin-top:33px; padding-top:22px; border-top:1px solid rgba(225,246,229,.22); }
+.login-preview-quote > span { color:#e5c170; font-size:1.7rem; }.login-preview-quote p { margin:0; color:#cde5d2; font-size:.77rem; line-height:1.6; }.login-preview-quote strong { color:#fff; }
+.login-preview-form-panel { display:flex; flex-direction:column; justify-content:center; padding:clamp(30px,5vw,60px); }
+.login-preview-eyebrow { color:#258461; }.login-preview-form-panel h2 { margin:0; color:#18382e; font-size:1.75rem; line-height:1.35; }.login-preview-subtitle { color:#73867a; font-size:.87rem; margin:8px 0 22px; }
+.login-preview-notice { display:flex; gap:10px; margin:0 0 22px; padding:13px 14px; border:1px solid #e7dcb9; border-radius:10px; color:#695a31; background:#fffbef; font-size:.77rem; line-height:1.65; }.login-preview-notice > span:first-child { color:#a67e27; font-size:1rem; line-height:1.3; }
+.login-preview form, .login-preview fieldset { margin:0; padding:0; border:0; min-width:0; }.login-preview fieldset { display:grid; gap:9px; }
+.login-preview label { margin-top:4px; color:#3f5a4a; font-size:.78rem; font-weight:750; }
+.login-preview input { width:100%; height:50px; margin-bottom:8px; padding:0 14px; border:1px solid #dce6dd; border-radius:10px; color:#7b8c80; background:#f7f9f6; font:inherit; font-size:.85rem; opacity:1; -webkit-text-fill-color:#7b8c80; }
+.login-preview input::placeholder { color:#9daea1; opacity:1; -webkit-text-fill-color:#9daea1; }
+.login-preview button { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; min-height:50px; margin-top:6px; border:0; border-radius:10px; color:#fff; background:#83ad98; font:inherit; font-size:.85rem; font-weight:800; cursor:not-allowed; opacity:1; }
+.login-preview-divider { height:1px; background:#e9eee8; margin:24px 0 18px; }.login-preview-help { margin:0 0 9px; color:#718579; font-size:.77rem; line-height:1.7; }.login-preview-explore { align-self:flex-start; color:#197955; font-size:.8rem; font-weight:800; }.login-preview-explore span { margin-left:5px; }
+.login-preview-footer { margin:24px 0 0; text-align:center; color:#87988a; font-size:.72rem; }
+@media (max-width:700px) { .login-preview-header { width:calc(100% - 36px); min-height:72px; }.login-preview-main { padding:18px 18px 30px; }.login-preview-card { grid-template-columns:1fr; min-height:0; border-radius:20px; }.login-preview-intro { min-height:235px; padding:32px; }.login-preview-art { top:35px; left:auto; right:38px; width:120px; height:120px; opacity:.55; }.login-preview-art span { top:20px; left:32px; font-size:3rem; }.login-preview-art b { font-size:1.5rem; }.login-preview-intro h1 { position:relative; font-size:1.9rem; }.login-preview-intro > p:not(.login-preview-kicker) { position:relative; max-width:260px; }.login-preview-quote { display:none; }.login-preview-form-panel { padding:30px 28px 34px; } }
+@media (max-width:380px) { .login-preview-back { font-size:.72rem; }.login-preview-brand { font-size:.94rem; }.login-preview-intro { padding:26px; }.login-preview-form-panel { padding:26px 22px; } }

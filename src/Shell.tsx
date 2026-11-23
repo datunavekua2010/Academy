@@ -12,6 +12,7 @@ import { PasswordRecovery, type RecoveryResult } from './account/PasswordRecover
 import { recoveryClient } from './lib/passwordRecovery';
 import { SignupPage,SignupConfirmation,type SignupResult } from './account/Signup';
 import { AccountStatus } from './account/AccountStatus';
+import { LoginPreview } from './account/LoginPreview';
 import { GoogleCallback } from './account/GoogleAuth';
 
 export function Shell({ recovery = null, signup = null }: { recovery?: Promise<RecoveryResult> | null; signup?: Promise<SignupResult> | null }) {
@@ -30,6 +31,7 @@ export function Shell({ recovery = null, signup = null }: { recovery?: Promise<R
   useEffect(() => {
     if (!studentArea && !teacherArea && !parentArea && !adminArea) document.title = 'Axiom Academy — მათემატიკა და ლოგიკა';
   }, [studentArea, teacherArea, parentArea, adminArea]);
+  if (path === '/account/login') return <LoginPreview />;
   if (path === '/account/google') return <GoogleCallback result="error" />;
   if (path === '/account/status') return <AccountStatus />;
   if (path === '/account/register') return <SignupPage />;
