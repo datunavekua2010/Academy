@@ -1,4 +1,4 @@
-import {useEffect,useState,type FormEvent} from 'react';
+import {useEffect,useRef,useState,type FormEvent} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
 import {Link} from '../router';
 import {requestSignup,signupClient} from '../lib/accountSignup';
@@ -10,11 +10,12 @@ export type SignupResult={ok:true}|{error:true};
 export function SignupForm({client,googleClient=googleAuthClient}:{client:SupabaseClient|null;googleClient?:SupabaseClient|null}){
  const captcha=useTurnstileReview();
  const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[confirm,setConfirm]=useState(''),[adult,setAdult]=useState(false),[busy,setBusy]=useState(false),[done,setDone]=useState(false),[error,setError]=useState('');
- const submit=async(e:FormEvent)=>{e.preventDefault();if(!client||busy)return;
+ const pending=useRef(false);
+ const submit=async(e:FormEvent)=>{e.preventDefault();if(!client||pending.current)return;
   if(!adult||password!==confirm){setError('დაადასტურეთ მოთხოვნები და გადაამოწმეთ პაროლები.');return;}
-  setBusy(true);setError('');try{const token=await captcha.verify();await requestSignup(client,email,password,window.location.origin,window.location.pathname,token);setDone(true);}
+  pending.current=true;setBusy(true);setError('');try{const token=await captcha.verify();await requestSignup(client,email,password,window.location.origin,window.location.pathname,token);setDone(true);}
   catch{setError('მოთხოვნის შედეგი ვერ დადასტურდა. შესაძლოა ანგარიში უკვე შეიქმნა. დაუკავშირდით აკადემიას ან სცადეთ შესვლა.');}
-  finally{captcha.reset();setPassword('');setConfirm('');setBusy(false);}
+  finally{captcha.reset();setPassword('');setConfirm('');pending.current=false;setBusy(false);}
  };
  return <main className="recovery-page"><section className="recovery-card"><h1>ანგარიშის მოთხოვნა</h1>
   {!client&&!googleClient?<p>რეგისტრაცია ამჟამად მიუწვდომელია.</p>:done?<p role="status">თუ მოთხოვნა მიღებულია, ელფოსტაზე დადასტურების ბმულს მიიღებთ. გახსენით იმავე ბრაუზერსა და მოწყობილობაზე. დადასტურება ავტომატურად არ ანიჭებს აკადემიის სივრცეებზე წვდომას; დაუკავშირდით აკადემიას.</p>:<>

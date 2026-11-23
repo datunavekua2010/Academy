@@ -1,6 +1,6 @@
 # Connected features: security review and isolated-test checklist
 
-**Status: local draft, not an approval or a deployment plan for the live project.** Real account mode, connected homework, recovery and classroom code services remain disabled. The initial schema, tutor-notes and classrooms migrations were applied only to the authorized test project; the remaining review migrations and Worker have not been deployed. See [test-project-progress.md](test-project-progress.md). Use synthetic data only. Independent security and privacy/legal review is still required.
+**Status: local draft, not an approval or a deployment plan for the live project.** The 21 migration files were applied in order only to the authorized isolated test project under connector-assigned versions; the Worker is not deployed by this PR. The live project has not received the later review migrations or connected-account configuration. See [test-project-progress.md](test-project-progress.md) for the version mapping, selected catalog comparison and remaining verification. Use synthetic data only. Independent security and privacy/legal review is still required.
 
 ## Privileged-path and lock inventory
 

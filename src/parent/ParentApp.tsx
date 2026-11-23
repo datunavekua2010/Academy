@@ -23,6 +23,8 @@ type Access = {kind:'loading'|'signed-out'|'error'} | {kind:'ready';parentId:str
 export function ParentReviewApp({client}: {client:SupabaseClient}) {
   const [access,setAccess]=useState<Access>({kind:'loading'});
   const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [busy,setBusy]=useState(false);
+  // A synchronous guard also covers submissions before React commits busy=true.
+  const signInPending=useRef(false);
   const captcha=useTurnstileReview();
   const [selected,setSelected]=useState<string|null>(null);
   const [detail,setDetail]=useState<{attempts:ParentAttempt[];notes:ParentNote[]}|null>(null);
@@ -46,7 +48,7 @@ export function ParentReviewApp({client}: {client:SupabaseClient}) {
     try{const children=await loadParentChildren(client,parentId);if(current===revision.current)setAccess({kind:'ready',parentId,children});}
     catch{if(current===revision.current)setAccess({kind:'error'});}
   };
-  const signIn=async(e:FormEvent)=>{e.preventDefault();setBusy(true);try{const token=await captcha.verify();const {error}=await client.auth.signInWithPassword({email:email.trim(),password,...(token?{options:{captchaToken:token}}:{})});if(error)throw error;}catch{setAccess({kind:'error'});}finally{captcha.reset();setPassword('');setBusy(false);}};
+  const signIn=async(e:FormEvent)=>{e.preventDefault();if(signInPending.current)return;signInPending.current=true;setBusy(true);try{const token=await captcha.verify();const {error}=await client.auth.signInWithPassword({email:email.trim(),password,...(token?{options:{captchaToken:token}}:{})});if(error)throw error;}catch{setAccess({kind:'error'});}finally{captcha.reset();setPassword('');signInPending.current=false;setBusy(false);}};
   const signOut=async()=>{revision.current++;detailRevision.current++;setSelected(null);setDetail(null);setAccess({kind:'loading'});setBusy(true);try{const {error}=await client.auth.signOut();if(error)throw error;}catch{setAccess({kind:'error'});}finally{setBusy(false);}};
   const open=async(studentId:string)=>{
     if(access.kind!=='ready')return;const current=++detailRevision.current;setSelected(studentId);setDetail(null);setDetailError(false);

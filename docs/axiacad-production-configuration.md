@@ -40,6 +40,14 @@ Create/configure a Turnstile widget for `axiacad.uk`. The frontend uses its publ
 
 Review `public/_headers` before release: its current draft allows the staging Supabase origin as well as production and disables iframe embedding; test the actual CSP, preview environment and real Auth/Turnstile in a browser. Worker API responses need their own headers.
 
+## Proposed production upgrade sequence — approval required
+
+1. Keep parent access and connected entry points off. Independently review privacy, parental authority, session/abuse controls, data retention and the actual production catalog, grants, dependencies, policies and existing data. Confirm backups and a tested restore procedure, maintenance window, owner, monitoring and previous Cloudflare build/configuration. Do not copy the staging version map to production.
+2. Compare production's recorded `20261120154717 initial_academy_schema` and current catalog against the local initial migration and the complete ordered chain. Investigate any drift, conflicting object, existing data or unexpected privilege. Design and independently review a **data-preserving incremental upgrade** with preconditions and postconditions for the actual production state. The fresh-schema snapshot is not an upgrade, and the baseline must not be replayed simply because its local version differs. Stop on discrepancy; no history repair or migrations without a reviewed plan and separate authorization.
+3. Rehearse the approved exact upgrade against a production-like isolated copy containing synthetic data only. Verify integrity, all effective parent-only read paths, admin provisioning, role/link suspension and revocation, unrelated-family denial, and safe behavior during partial failure. Parent minimization must be effective before links or the dashboard are exposed. Confirm operational handling of legacy records and independent student/teacher roles. Do not assume migration names alone guarantee the policies are effective.
+4. After explicit separate approval, an operator would execute the reviewed incremental plan during the agreed window, inspect migration results and postconditions, and stop on any failure. Configure production Auth, SMTP, Turnstile, Worker and build variables as described above only under that approval. Separately verify real sessions, redirects, mail and RLS before enabling the account/parent switches. Record the results and release identifiers.
+5. For an incident, disable new account and parent entry points and restore the previous verified Cloudflare build/configuration. Preserve data and stricter DB policies; avoid an automatic down-migration or relaxing RLS. Diagnose and apply only independently reviewed forward fixes. A database restore, if unavoidable, requires an approved recovery plan including point-in-time boundary, data-loss assessment and separate authorization.
+
 ## Verification and rollback
 
 Local commands, from `/home/user/Academy`:
