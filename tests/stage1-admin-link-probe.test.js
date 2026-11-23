@@ -63,6 +63,14 @@ describe('staging admin synthetic link workflow probe', () => {
     await expect(runAdminLinkProbe(prompt, simulation(scenario).fetcher)).rejects.toThrow();
   });
   it('rejects privileged keys before any request', async () => {
-    await expect(runAdminLinkProbe(async () => 'sb_secret_test', () => { throw Error('unexpected network'); })).rejects.toThrow('Invalid staging key');
+    await expect(runAdminLinkProbe(async () => 'sb_secret_test', () => { throw Error('unexpected network'); })).rejects.toThrow('configuration');
+  });
+  it('reports only the safe phase and HTTP status for a sign-in failure', async () => {
+    await expect(runAdminLinkProbe(prompt, async () => reply({ message: 'do-not-log-response' }, 401)))
+      .rejects.toThrow('sign-in for admin-stage1@example.com (HTTP 401)');
+  });
+  it('does not expose arbitrary network errors', async () => {
+    await expect(runAdminLinkProbe(prompt, async () => { throw Error('sensitive-network-details'); }))
+      .rejects.toThrow('Staging probe stopped during sign-in for admin-stage1@example.com.');
   });
 });
