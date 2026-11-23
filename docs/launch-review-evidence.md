@@ -2,6 +2,10 @@
 
 This is a handoff for an independent reviewer, **not** an independent security or privacy review and not approval to release. No user data, credentials or session tokens belong in this document. Production changes, deployment and merge require separate authorization.
 
+## Staging read-test update
+
+The owner reported that the real-session four-user staging parent/student read probe passed. It checks the particular read paths described in `staging-two-family-session-test.md`; admin link/provisioning mutations, revocation, full summary response shape, other exposure paths and production remain unverified. Some historical statements below predate this result or the production upgrade.
+
 ## Current evidence and boundaries
 
 | Stage | Evidence available | Required before calling the stage complete |
