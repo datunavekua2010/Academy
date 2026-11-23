@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { runAdminLinkProbe } from '../scripts/stage1-admin-link-probe.mjs';
 
 const actors = [
-  ['admin-stage1@example.com', '7493bb2d-e0ec-4d28-a8c5-ba672fd5d14a', 'admin'],
+  ['admin-stage1@example.com', '28619a4f-a49b-4e77-921f-0859d0d90ced', 'admin'],
   ['parent-c@example.com', '7f30b94b-2e76-4158-acfa-69f55d024949', 'parent', '9db864a5-1d53-4ac4-9562-e7c935bcd45b'],
   ['parent-d@example.com', 'f8b9601f-a760-4864-9755-3306ba80bc36', 'parent', '6043be3c-6238-447d-9697-7c4663a59dbb'],
 ];

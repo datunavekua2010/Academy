@@ -10,7 +10,7 @@ class HttpFailure extends Error {
 class ProbeFailure extends Error {}
 
 const origin = 'https://wxxgwayrieasrzngpuul.supabase.co';
-const admin = { email: 'admin-stage1@example.com', id: '7493bb2d-e0ec-4d28-a8c5-ba672fd5d14a', role: 'admin' };
+const admin = { email: 'admin-stage1@example.com', id: '28619a4f-a49b-4e77-921f-0859d0d90ced', role: 'admin' };
 const parentC = { email: 'parent-c@example.com', id: '7f30b94b-2e76-4158-acfa-69f55d024949', role: 'parent', student: '9db864a5-1d53-4ac4-9562-e7c935bcd45b' };
 const parentD = { email: 'parent-d@example.com', id: 'f8b9601f-a760-4864-9755-3306ba80bc36', role: 'parent', student: '6043be3c-6238-447d-9697-7c4663a59dbb' };
 
