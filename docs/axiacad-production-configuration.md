@@ -1,5 +1,9 @@
 # axiacad.uk account configuration — preparation only
 
+## Turnstile credential incident — deployment blocked
+
+During an attempted connected-build deployment, Wrangler reported `TURNSTILE_WORKER_SECRET` as a remote plaintext variable and its value appeared in the owner-provided output. Treat that credential as exposed. The owner was instructed to decline the deployment, rotate the Turnstile widget secret, replace the production Supabase Auth secret, and remove the plaintext Worker variable before installing the replacement as an encrypted Worker secret. Completion is not yet confirmed. Do not record or repeat either credential. Cloudflare documents a rotation grace period, so the old key may remain valid temporarily. No connected build should be deployed until the rotation, binding types, both settings, and actual verification are checked.
+
 ## Live upgrade status
 
 The owner ran Supabase CLI v3.3.0 `db push` against production after verifying the reviewed migration manifest, backing up and restoring locally, and saving the backup outside Codespaces. Read-only post-upgrade checks independently found all 21 expected migration versions, healthy database/Auth/REST, and unchanged aggregate counts: one Auth user, one profile, one role, 118 topics, 118 units, 978 subunits, 6,548 templates, and zero parent/teacher links, attempts, assignments, progress and rewards. Six SELECT policies now scope direct reads to the student or authorized teachers/self; no additional SELECT/ALL policies on those six tables were present. The expected parent/provisioning RPCs exist, are not executable by `anon`, and the legacy direct parent-link primitive is not executable by `authenticated`. These catalog/count checks do not prove full data integrity, actual session behavior, or policy safety under real JWTs. No real provider or direct API tests have yet passed. Production connected login remains preview-disabled.
