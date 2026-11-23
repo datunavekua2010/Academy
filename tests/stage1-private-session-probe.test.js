@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { runPrivateSessionProbe } from '../scripts/stage1-private-session-probe.mjs';
 
-const ids = ['3102b6df-b786-4074-81dc-074caf5e84a8', '8bea62cc-fcf0-469e-8935-1ddae111bb00', 'b54bf634-d0c3-4bae-afc6-5f800942a90c', '50d86684-17aa-41db-bdc7-cb5346dc06ec'];
-const emails = ['parent-a@example.com', 'parent-b@example.com', 'student-a@example.com', 'student-b@example.com'];
+const ids = ['7f30b94b-2e76-4158-acfa-69f55d024949', 'f8b9601f-a760-4864-9755-3306ba80bc36', '9db864a5-1d53-4ac4-9562-e7c935bcd45b', '6043be3c-6238-447d-9697-7c4663a59dbb'];
+const emails = ['parent-c@example.com', 'parent-d@example.com', 'student-c@example.com', 'student-d@example.com'];
 const tokens = emails.map((_, i) => `synthetic-token-${i}`);
 const response = (body, status = 200) => new Response(JSON.stringify(body), { status });
 

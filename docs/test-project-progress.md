@@ -85,7 +85,7 @@ To unblock actual end-to-end verification, an operator must provide a reachable,
 
 ### Update: persistent synthetic family fixtures
 
-Four confirmed synthetic Auth users and two family fixtures were created for the real-session probe. At the owner's request the application fixtures (including role lifecycle epochs) were subsequently removed in a scoped staging transaction; the four Auth users still existed at verification and the owner intends to delete them. Synthetic curriculum remains. Replacement accounts and fixtures are still needed; the scripts' fixed original IDs must be updated before use. The privileged fixture insertion did not exercise the real admin provisioning/link workflow, and no real-session result has yet been obtained. See [staging-two-family-session-test.md](staging-two-family-session-test.md) for details. This update supersedes earlier historical account and fixture counts.
+The original A/B synthetic family fixtures were removed at the owner's request, and the owner deleted the corresponding Auth users. Four confirmed C/D replacement users now have two synthetic family fixtures in staging; their passwords were displayed in chat at the owner's request and must be treated as public. These accounts must never access real data and will be removed after testing. The privileged fixture insertion did not exercise the real admin provisioning/link workflow, and no real-session result has yet been obtained. See [staging-two-family-session-test.md](staging-two-family-session-test.md) for details. This update supersedes earlier historical account and fixture counts.
 
 ### Read-only real-session probe (prepared, not run against staging)
 
