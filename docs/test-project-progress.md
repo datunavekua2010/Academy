@@ -4,18 +4,45 @@ The user explicitly approved migrations and synthetic testing only in **axiom ac
 
 ## Applied and verified
 
-- Test migration history: `20261123104237 initial_academy_schema` corresponds to `202611200001_initial_academy.sql`; `20261123104424 tutor_lesson_notes_review` corresponds to `202611220001_tutor_lesson_notes.sql`; `20261123104821 classrooms_review` corresponds to `202611230001_classrooms_review.sql`; `20261123121013 teacher_tests_review` corresponds to `202611240001_teacher_tests_review.sql` (comments omitted). The connector assigned remote timestamps different from repository versions; SQL was equivalent to the repository files; comments were omitted from the first two submissions. **Do not rerun these migrations**. Reconcile migration history deliberately before using Supabase CLI migrations; automatic replay of local versions would conflict.
+- All 21 repository migrations were applied in order to this isolated project using the connector. The connector assigned **different remote timestamps**. The following is a name/order mapping, not an assertion of byte-for-byte identity (connector submissions omitted comments); validate actual SQL/catalog before reconciling. **Do not rerun these migrations** or blindly use CLI migration replay/repair. Production has a different history and requires its own reviewed upgrade plan.
+
+  | Local migration version | Remote version | Name |
+  | --- | --- | --- |
+  | 202611200001 | 20261123104237 | initial_academy_schema |
+  | 202611220001 | 20261123104424 | tutor_lesson_notes_review |
+  | 202611230001 | 20261123104821 | classrooms_review |
+  | 202611240001 | 20261123121013 | teacher_tests_review |
+  | 202611250001 | 20261123123529 | classroom_capacity_review |
+  | 202611260001 | 20261123123543 | classroom_abuse_review |
+  | 202611270001 | 20261123123613 | classroom_codes_review |
+  | 202611280001 | 20261123123648 | admin_teacher_links_review |
+  | 202611290001 | 20261123123743 | teacher_link_revoke_review |
+  | 202611300001 | 20261123123821 | teacher_write_lock_review |
+  | 202612010001 | 20261123123904 | homework_review |
+  | 202612020001 | 20261123124000 | role_lifecycle_review |
+  | 202612030001 | 20261123124039 | parent_link_review |
+  | 202612040001 | 20261123124051 | role_regrant_review |
+  | 202612050001 | 20261123124109 | profile_provision_review |
+  | 202612060001 | 20261123124121 | parent_dashboard_review |
+  | 202612070001 | 20261123124219 | evidence_pilot_review |
+  | 202612080001 | 20261123124248 | profile_reconcile_review |
+  | 202612090001 | 20261123124309 | parent_link_requests_review |
+  | 202612100001 | 20261123124330 | parent_data_minimization_review |
+  | 202612110001 | 20261123124337 | parent_link_rpc_privileges_review |
 - The initial schema has 14 public tables, each with RLS enabled. No seed was applied.
-- In a transaction rolled back at the end, synthetic Auth rows, roles, relationships and attempts exercised database roles and JWT subject settings: an unlinked student saw no attempts, the student and linked teacher saw the student's attempt, a student could not grant themself an admin role, and a linked parent could read raw attempt data under the initial baseline. This is a known unacceptable production boundary; the later restrictions are **not yet applied**.
+- In a transaction rolled back at the end, synthetic Auth rows, roles, relationships and attempts exercised database roles and JWT subject settings: an unlinked student saw no attempts, the student and linked teacher saw the student's attempt, a student could not grant themself an admin role, and a linked parent could read raw attempt data under the initial baseline. This is a known unacceptable production boundary; later staging migrations replaced this policy; production still has the broad baseline.
 - A second rollback-only synthetic SQL test checked that a linked parent saw a published note but not a private one, an unlinked parent was denied, authenticated users lacked direct note-table select, and the linked tutor saw both notes via the tutor RPC. Auth users, profiles, notes and parent links were confirmed empty afterward.
 - The teacher-test migration was applied on the isolated test project. A rollback-only SQL role/JWT simulation verified a synthetic teacher can create/list a draft, another teacher cannot see or delete it, a parent cannot list it, and authenticated direct table reads fail. After rollback the teacher test, Auth user and profile tables were empty. The table has RLS and no anon/authenticated direct SELECT; its three RPCs have fixed empty search paths, are owned by postgres, allow authenticated execute and deny anon execute. No real Auth or PostgREST session was used.
 - The classrooms migration created two RLS-enabled tables with no anon or authenticated direct SELECT grants. Its six security-definer RPCs are owned by `postgres`, executable by authenticated but not anon. A rollback-only role/JWT simulation checked classroom creation, linked-student enrollment, rejection of an unlinked student, and denial of direct-table and other-teacher roster access. After rollback, Auth users, profiles, classrooms and memberships were confirmed empty. These tests do not prove real Auth or concurrent behavior.
 - `pgcrypto` is installed in the `extensions` schema; test project Auth, database and REST health checks were healthy.
-- Catalog checks confirmed anon has no attempt SELECT; authenticated has no direct notes SELECT but may execute the parent notes RPC. `service_role` has note table and function access and bypasses RLS, so protect service credentials. These checks do not cover all paths.
+- Rollback-only role/JWT simulations passed classroom capacity/full-room and ownership checks, admin teacher linking and revocation, role suspension hiding linked-student access, and parent summary access: linked parent could see the summary but not the raw attempt, unlinked/revoked parents were denied, and the linked teacher could still read the attempt. These did not test actual Auth/PostgREST or concurrent transactions.
+- After the complete chain, a rollback-only role/JWT simulation passed confirmed-user profile provisioning and identical retry, denied an unconfirmed account, exercised the fenced parent-link wrapper and identical retry, denied a fenced request and a non-admin mutation, and showed a linked parent could list their child via RPC but could not directly read the child's profile or grade. Auth users, profiles, rooms and assignments were zero after rollback. Other tables and every exposure path were not exhaustively checked.
+- A rollback-only homework simulation created an assignment and repeated the same request successfully; the linked student saw it, while a parent-only user and an unlinked teacher did not. Subsequent counts were zero for Auth users, profiles, classrooms, assignments, attempts, topics, parent requests and provision audit rows. Cancellation, assignment-linked attempts and concurrency were not covered by this staging test.
+- Final catalog check found the six SELECT policies for attempts, profiles, grades, progress, rewards and assignments exclude parent-only direct reads. Authenticated can execute the parent summary/notes and fenced link RPCs; anon and service role cannot. Legacy link primitives are not executable by authenticated, anon or service role. Independent student/teacher roles confer their separate permissions. Catalog inspection is not a substitute for API or privacy review. The earlier note-table service grants were subsequently revoked by role-lifecycle migration; service credentials remain privileged and must be protected.
 
 ## Still needed
 
-Apply and verify the remaining 17 ordered repository migrations, starting with `202611250001_classroom_capacity_review.sql`, in this test project only. Preserve and map the connector-assigned migration versions; check real Supabase extension placement, ownership, grants and function behavior, and stop on any failure rather than retrying blindly. The incomplete baseline permits broad parent access: **do not create real accounts or links or enable the app**. Seed only after reviewing the empty target and the seed. Then test RLS and RPCs under ordinary authenticated roles, actual Auth sessions and PostgREST, role/link revocations and selected concurrency; direct SQL role simulation is not a substitute for actual sign-in.
+Do not create real accounts or links or enable the app. Catalog-verify all relevant grants, ownership, RLS and exposure paths and test write locks, additional homework paths, role restoration, service-only evidence and remaining parent data-minimization behavior with representative fixtures. Seed only after reviewing the empty target and the seed. Test real Supabase Auth sessions and PostgREST (including cross-user denial, role/link revocation and sign-out), and selected concurrent transactions; direct SQL role simulation is not a substitute. Full migration execution does not establish production readiness.
 
 The sandbox cannot directly connect to the Supabase project's public Auth endpoint, so real email and browser session testing requires an accessible test preview and careful test-only Auth URL/redirect and mail configuration. Confirmation delivery and recovery have not been tested. Independent security/privacy review and explicit production approval are still required. Do not share passwords, service keys or tokens in chat.
 
