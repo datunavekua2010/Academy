@@ -1572,3 +1572,8 @@
 
 /* Temporary test account is deliberately separate from real student data. */
 .test-account-banner { padding: 9px 20px; text-align: center; background: #eef7f3; color: #205a4e; border-bottom: 1px solid #d7e9e0; font-size: .8rem; font-weight: 700; line-height: 1.5; }
+
+.student-page .class-code-panel { margin-top: 18px; }
+.student-page .class-code-panel fieldset { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; border: 0; padding: 0; margin: 0; min-width: 0; }
+.student-page .class-code-panel label { display: grid; gap: 6px; }
+.student-page .class-code-panel input { max-width: 100%; }

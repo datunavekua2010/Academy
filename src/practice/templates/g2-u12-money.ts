@@ -1185,7 +1185,7 @@ export const G2_U12_TEMPLATES: QuestionTemplate[] = [
     answer: (v) => Number(v.needed),
     format: { kind: 'integer', min: 1 },
     distractors: ({ answer }) => nearMisses(Number(answer), 3, 5, 10),
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `1 ლარამდე (100 თეთრამდე) დარჩენილმა თანხამ უნდა შეავსოს ${answer} თეთრი.`,
   }),
 

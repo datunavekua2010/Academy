@@ -29,6 +29,7 @@ export function Practice() {
     session,
     startPractice,
     progressFor,
+    progressForAssignment,
     templateCountFor,
     isPlayable,
     stats,
@@ -47,7 +48,7 @@ export function Practice() {
   );
 
   const open = assignmentsForGrade
-    .map((assignment) => ({ assignment, status: assignmentStatus(progressFor(assignment.ref)) }))
+    .map((assignment) => ({ assignment, status: assignmentStatus(progressForAssignment(assignment)) }))
     .filter((item) => item.status !== 'completed')
     .sort((a, b) => new Date(a.assignment.dueAt).getTime() - new Date(b.assignment.dueAt).getTime());
 
@@ -115,7 +116,7 @@ export function Practice() {
                 ? topicSubtopics(topic).find((item) => item.id === assignment.ref.subtopicId)
                 : undefined;
               if (!topic || !subtopic) return null;
-              const progress = progressFor(assignment.ref);
+              const progress = progressForAssignment(assignment);
               return (
                 <li key={assignment.id} className="assignment-item">
                   <div className="assignment-body">
@@ -194,7 +195,7 @@ export function Practice() {
       {!preview && <ScoringRules />}
 
       {!preview && <p className="demo-note">
-        {mode === 'test' ? 'სატესტო მონაცემები' : 'ანგარიშის მონაცემები'}: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
+        {mode === 'test' ? 'ადგილობრივი მონაცემები' : 'ანგარიშის მონაცემები'}: კლასი {romanGrade(grade)} · {curriculum.topics.length} თემა ·{' '}
         {attempts.length} შენახული სესია. ვარჯიშის შედეგები მოწმდება ბრაუზერში.
       </p>}
     </div>

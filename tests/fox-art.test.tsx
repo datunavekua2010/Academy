@@ -3,28 +3,29 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { Mascot } from '../src/components/Mascot';
+import { FoxArt } from '../src/components/FoxArt';
 
 /**
- * The mascot artwork is an inlined SVG (components/FoxArt.tsx). These tests
- * guard the contract the CSS animates against: if a group id is renamed or
- * dropped, the blink/wag/tracking silently stop working — no other test
- * would notice, because nothing throws.
+ * The standalone FoxArt remains an SVG used by grade selection, while Mascot
+ * uses the supplied raster artwork and animates the whole character. Test each
+ * component's actual contract rather than expecting the SVG inside Mascot.
  */
 afterEach(cleanup);
 
 const renderMascot = () =>
   render(<Mascot thoughts={['გამარჯობა']} waveOnMount={false} />);
+const renderFoxArt = () => render(<FoxArt pupilStyle={{}} />);
 
-describe('fox artwork', () => {
+describe('standalone fox artwork', () => {
   it('inlines an SVG rather than a background image', () => {
-    const { container } = renderMascot();
+    const { container } = renderFoxArt();
     expect(container.querySelector('svg.fox-art')).toBeTruthy();
     // A background-image would render but nothing inside it could animate.
     expect(container.querySelector('[style*="background-image"]')).toBeNull();
   });
 
   it('keeps every group the animations target', () => {
-    const { container } = renderMascot();
+    const { container } = renderFoxArt();
     for (const id of [
       'axi-tail',
       'axi-body',
@@ -42,13 +43,13 @@ describe('fox artwork', () => {
   });
 
   it('draws the fox from real geometry, not an empty shell', () => {
-    const { container } = renderMascot();
+    const { container } = renderFoxArt();
     const shapes = container.querySelectorAll('svg.fox-art path, svg.fox-art ellipse, svg.fox-art circle');
     expect(shapes.length).toBeGreaterThanOrEqual(20);
   });
 
-  it('namespaces its gradient ids so two mascots cannot collide', () => {
-    const { container } = renderMascot();
+  it('prefixes the gradient references used by the SVG', () => {
+    const { container } = renderFoxArt();
     // Both the defs and the fills must agree; a mismatch renders the fox black.
     expect(container.querySelector('#axi-fox-fur')).toBeTruthy();
     expect(container.querySelector('#axi-fox-tail-fur')).toBeTruthy();
@@ -56,6 +57,16 @@ describe('fox artwork', () => {
     expect(furUsers.length).toBeGreaterThan(0);
     expect(container.innerHTML).not.toContain('url(#fur)');
     expect(container.innerHTML).not.toContain('url(#tailFur)');
+  });
+
+});
+
+describe('raster mascot', () => {
+  it('renders the supplied image rather than a background image', () => {
+    const { container } = renderMascot();
+    const image = container.querySelector<HTMLImageElement>('img.mascot-art');
+    expect(image?.getAttribute('src')).toMatch(/raccoon-mascot\.png/);
+    expect(container.querySelector('[style*="background-image"]')).toBeNull();
   });
 
   it('lets a placement override its size from CSS', () => {
@@ -70,9 +81,12 @@ describe('fox artwork', () => {
 
   it('exposes the mascot to assistive tech exactly once', () => {
     const { container } = renderMascot();
-    // The SVG is decorative; the wrapper carries the accessible name.
-    const svg = container.querySelector('svg.fox-art');
-    expect(svg?.getAttribute('aria-hidden')).toBe('true');
+    // The raster image is decorative; the wrapper carries the accessible name.
+    const image = container.querySelector('img.mascot-art');
+    const wrapper = container.querySelector('[role="img"]');
+    expect(image?.getAttribute('alt')).toBe('');
+    expect(wrapper?.getAttribute('aria-label')).toBe('Axi — მეგობრული ენოტი');
+    expect(container.querySelectorAll('[role="img"]')).toHaveLength(1);
   });
 });
 

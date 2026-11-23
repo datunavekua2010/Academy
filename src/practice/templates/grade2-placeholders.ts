@@ -1,5 +1,5 @@
 import { defineTemplate } from './types';
-import type { QuestionTemplate, Vars } from './types';
+import type { QuestionTemplate } from './types';
 
 /**
  * Grade II placeholders — one template per subtopic of the academy curriculum (140 subtopics).
@@ -37,75 +37,6 @@ const addr = (spec: G2Address) => ({
   difficulty: 1 as const,
   hint: spec.hint,
 });
-
-/** Generic 2-digit adder */
-const add2 = (spec: G2Address, minA: number, maxA: number, minB: number, maxB: number, promptText?: string): QuestionTemplate =>
-  defineTemplate({
-    ...addr(spec),
-    prompt: promptText ?? '{a} + {b} = ?',
-    variables: {
-      a: { kind: 'int', min: minA, max: maxA },
-      b: { kind: 'int', min: minB, max: maxB },
-    },
-    answer: (v: Vars) => Number(v.a) + Number(v.b),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a} + ${vars.b} = ${answer}.`,
-  });
-
-/** Generic subtractor where minuend >= subtrahend */
-const sub2 = (spec: G2Address, minA: number, maxA: number, minB: number, maxB: number, promptText?: string): QuestionTemplate =>
-  defineTemplate({
-    ...addr(spec),
-    prompt: promptText ?? '{a} − {b} = ?',
-    variables: {
-      a: { kind: 'int', min: minA, max: maxA },
-      b: { kind: 'int', min: minB, max: (v: Vars) => Math.min(maxB, Number(v.a)) },
-    },
-    constraints: [{ test: (v: Vars) => Number(v.a) >= Number(v.b), note: 'a >= b' }],
-    answer: (v: Vars) => Number(v.a) - Number(v.b),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ answer }) => nearMisses(Number(answer)),
-    explanation: ({ vars, answer }) => `${vars.a} − ${vars.b} = ${answer}.`,
-  });
-
-/** Compare two numbers */
-const comp2 = (spec: G2Address, min: number, max: number): QuestionTemplate =>
-  defineTemplate({
-    ...addr(spec),
-    prompt: 'რომელი რიცხვია მეტი: {a} თუ {b}?',
-    variables: {
-      a: { kind: 'int', min, max },
-      b: { kind: 'int', min, max },
-    },
-    constraints: [{ test: (v: Vars) => v.a !== v.b, note: 'a != b' }],
-    optionCount: 2,
-    answer: (v: Vars) => (Number(v.a) > Number(v.b) ? Number(v.a) : Number(v.b)),
-    format: { kind: 'integer', min: 0 },
-    distractors: ({ vars }) => [Math.min(Number(vars.a), Number(vars.b))],
-    explanation: ({ vars, answer }) =>
-      `${answer} მეტია ${Number(vars.a) === Number(answer) ? vars.b : vars.a}-ზე.`,
-  });
-
-/** Fixed choices with instruction variants */
-const choiceFact = (spec: G2Address & { prompt: string; options: string[]; answer: string; why?: string }): QuestionTemplate => {
-  const wrong = spec.options.filter((o) => o !== spec.answer);
-  return defineTemplate({
-    ...addr(spec),
-    prompt: `${spec.prompt} {variant}`,
-    variables: {
-      variant: {
-        kind: 'choice',
-        values: ['აირჩიე სწორი პასუხი.', 'მონიშნე სწორი ვარიანტი.', 'რომელია სწორი?'],
-      },
-    },
-    optionCount: wrong.length + 1,
-    answer: () => spec.answer,
-    format: { kind: 'text' },
-    distractors: () => wrong,
-    explanation: () => spec.why ?? `სწორი პასუხია: ${spec.answer}.`,
-  });
-};
 
 /* ------------------------------------------------------------------ *
  * All 140 Grade 2 subtopic templates

@@ -1631,7 +1631,7 @@ export const G2_U14_TEMPLATES: QuestionTemplate[] = [
     answer: (v) => String(v.correct),
     format: { kind: 'text' },
     distractors: ({ vars }) => [String(vars.witem1), String(vars.witem2), String(vars.witem3)],
-    explanation: ({ vars, answer }) => `ყველაზე მეტი წონა აქვს ${vars.correct}-ს (${vars.w3} ერთეული).`,
+    explanation: ({ vars, answer: _answer }) => `ყველაზე მეტი წონა აქვს ${vars.correct}-ს (${vars.w3} ერთეული).`,
   }),
 
   // =========================================================================

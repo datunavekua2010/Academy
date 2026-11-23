@@ -1,0 +1,70 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { LessonNotes } from '../src/teacher/LessonNotes';
+import { Shell } from '../src/Shell';
+
+beforeEach(() => { window.location.hash = '#/teacher/students'; window.scrollTo = vi.fn(); });
+afterEach(() => { cleanup(); window.location.hash = ''; vi.restoreAllMocks(); });
+function go(path: string) { window.location.hash = path; fireEvent(window, new HashChangeEvent('hashchange')); }
+it('opens from my students and demonstrates drafts, publishing, editing, unpublishing and confirmed deletion without storing or sending data', async () => {
+  render(<Shell />);
+  fireEvent.click(screen.getByRole('link', { name: 'გაკვეთილის ჩანაწერები' }));
+  expect(await screen.findByText(/არ არის პირადი, არ ინახება/)).toBeTruthy();
+  expect(await screen.findByText('ჩანაწერი ჯერ არ არის.')).toBeTruthy();
+  const input = screen.getByLabelText('დაკვირვება');
+  fireEvent.change(input, { target: { value: '   ' } });
+  fireEvent.click(screen.getByRole('button', { name: 'მონახაზის შენახვა' }));
+  expect(screen.getByRole('alert').textContent).toContain('შეიყვანეთ ჩანაწერი');
+  fireEvent.change(input, { target: { value: 'სატესტო დაკვირვება' } });
+  fireEvent.change(screen.getByLabelText('ხილვადობა'), { target: { value: 'parent' } });
+  fireEvent.click(screen.getByRole('button', { name: 'მონახაზის შენახვა' }));
+  const item = (await screen.findByText('სატესტო დაკვირვება', { selector: 'p' })).closest('li')!;
+  expect(item.textContent).toContain('მშობლისთვის · მონახაზი');
+  fireEvent.click(within(item).getByRole('button', { name: 'გამოქვეყნება' }));
+  await waitFor(() => expect(item.textContent).toContain('ადგილობრივად გამოქვეყნებული'));
+  expect(screen.getByText(/ადგილობრივად გამოქვეყნდა; მშობელს არაფერი ეგზავნება/)).toBeTruthy();
+  fireEvent.click(within(item).getByRole('button', { name: 'შეცვლა' }));
+  expect(screen.getByText(/შენახვისას გამოქვეყნებული ჩანაწერი/)).toBeTruthy();
+  fireEvent.change(input, { target: { value: 'შეცვლილი' } });
+  fireEvent.click(screen.getByRole('button', { name: 'მონახაზის შენახვა' }));
+  const edited = (await screen.findByText('შეცვლილი', { selector: 'p' })).closest('li')!;
+  expect(edited.textContent).toContain('მშობლისთვის · მონახაზი');
+  fireEvent.click(within(edited).getByRole('button', { name: 'გამოქვეყნება' }));
+  const unpublish = await within(edited).findByRole('button', { name: 'გამოქვეყნების გაუქმება' });
+  fireEvent.click(unpublish);
+  await waitFor(() => expect(edited.textContent).toContain('მშობლისთვის · მონახაზი'));
+  fireEvent.click(within(edited).getByRole('button', { name: 'წაშლა' }));
+  expect(within(edited).getByText('ნამდვილად წავშალოთ?')).toBeTruthy();
+  fireEvent.click(within(edited).getByRole('button', { name: 'არა' }));
+  expect(screen.getByText('შეცვლილი')).toBeTruthy();
+  fireEvent.click(within(edited).getByRole('button', { name: 'წაშლა' }));
+  fireEvent.click(within(edited).getByRole('button', { name: 'დიახ, წაშლა' }));
+  await waitFor(() => expect(screen.queryByText('შეცვლილი')).toBeNull());
+  fireEvent.change(input, { target: { value: 'დროებითი სატესტო ჩანაწერი' } });
+  fireEvent.change(screen.getByLabelText('ხილვადობა'), { target: { value: 'tutor' } });
+  fireEvent.click(screen.getByRole('button', { name: 'მონახაზის შენახვა' }));
+  const privateNote = (await screen.findByText('დროებითი სატესტო ჩანაწერი', { selector: 'p' })).closest('li')!;
+  expect(privateNote.textContent).toContain('მხოლოდ მასწავლებლისთვის');
+  expect(within(privateNote).queryByRole('button', { name: 'გამოქვეყნება' })).toBeNull();
+  go('#/teacher/students'); go('#/teacher/students/test-student/notes');
+  expect(await screen.findByText('ჩანაწერი ჯერ არ არის.')).toBeTruthy();
+});
+it('shows an operation error without falsely reporting success or discarding the draft', async () => {
+  const rpc = vi.fn((name: string) => name === 'tutor_lesson_notes_list' ? { order() { return this; }, range: async () => ({ data: [], error: null }) } : Promise.resolve({ data: null, error: { message: 'denied' } }));
+  const client = { rpc } as unknown as SupabaseClient;
+  render(<LessonNotes client={client} teacherId="teacher" studentId="student" authorName="Teacher" test={false} />);
+  expect(await screen.findByText('ჩანაწერი ჯერ არ არის.')).toBeTruthy();
+  fireEvent.change(screen.getByLabelText('დაკვირვება'), { target: { value: 'ჩემი ტექსტი' } });
+  fireEvent.click(screen.getByRole('button', { name: 'მონახაზის შენახვა' }));
+  expect((await screen.findByRole('alert')).textContent).toContain('მოქმედება ვერ შესრულდა');
+  expect((screen.getByLabelText('დაკვირვება') as HTMLTextAreaElement).value).toBe('ჩემი ტექსტი');
+  expect(screen.queryByText('ჩანაწერი შენახულია როგორც მონახაზი.')).toBeNull();
+});
+it('does not show another student’s notes in the public test preview', async () => {
+  window.location.hash = '#/teacher/students/other/notes';
+  render(<Shell />);
+  expect(await screen.findByText('სანიმუშო მოსწავლე ვერ მოიძებნა.')).toBeTruthy();
+  expect(screen.queryByLabelText('დაკვირვება')).toBeNull();
+});

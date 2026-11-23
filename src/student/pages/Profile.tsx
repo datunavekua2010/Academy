@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { PageIntro } from './PageIntro';
 import { useStudentSession } from '../session';
+import { StudentCodeControls } from '../../classrooms/ClassroomCodeControls';
+import { classroomCodeServices } from '../../classrooms/codeService';
+import { supabaseConfiguration } from '../../lib/supabase';
 
 const PREFERENCES = [
   { id: 'reminders', title: 'გაკვეთილის შეხსენება', description: 'გაფრთხილება გაკვეთილამდე 30 წუთით' },
@@ -9,7 +12,7 @@ const PREFERENCES = [
 ];
 
 export function Profile() {
-  const { student, mode } = useStudentSession();
+  const { student, mode, signedIn } = useStudentSession();
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     reminders: true,
     parent: true,
@@ -23,7 +26,7 @@ export function Profile() {
       <PageIntro
         eyebrow="ჩემი პროფილი"
         title="პირადი ინფორმაცია"
-        description="აქ ნახავ შენს მონაცემებს. შეტყობინებების პარამეტრები ამჟამად დემოა და არ ინახება."
+        description="აქ ნახავ შენს მონაცემებს. შეტყობინებების პარამეტრები არ ინახება."
       />
 
       <div className="profile-head">
@@ -36,7 +39,7 @@ export function Profile() {
             {student.grade} • Axiom Academy
           </p>
           <div className="meta-row">
-            <span className="meta-chip tone-teal">{mode === 'test' ? 'სატესტო ანგარიში' : 'აქტიური მოსწავლე'}</span>
+            <span className="meta-chip tone-teal">{mode === 'test' ? 'ადგილობრივი პროფილი' : 'აქტიური მოსწავლე'}</span>
           </div>
         </div>
       </div>
@@ -91,8 +94,10 @@ export function Profile() {
         </section>
       </div>
 
+      <StudentCodeControls service={classroomCodeServices(supabaseConfiguration.client, mode === 'connected' && signedIn && import.meta.env.VITE_CLASSROOM_CODES_ENABLED === 'true')?.student ?? null} />
+
       <p className="demo-note">
-        შეტყობინებების პარამეტრები დემოა და არ ინახება.
+        შეტყობინებების პარამეტრები არ ინახება.
       </p>
     </div>
   );

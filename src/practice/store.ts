@@ -15,6 +15,8 @@ import type { GradeId, SubtopicRef } from './types';
 
 export interface Attempt {
   id: string;
+  /** A session may be associated with one specific homework assignment. */
+  assignmentId?: string | null;
   ref: SubtopicRef;
   key: string;
   score: number;
@@ -34,6 +36,10 @@ export interface Assignment {
   assignedAt: string;
   dueAt: string;
   assignedBy: string;
+  /** Legacy demo rows keep their historic subtopic-based status. */
+  tracking?: 'assignment';
+  title?: string;
+  instructions?: string;
 }
 
 export interface SubtopicProgress {
@@ -231,6 +237,11 @@ export function progressFor(attempts: Attempt[], ref: SubtopicRef): SubtopicProg
   };
 }
 
+/** Assignment-linked sessions must not complete another assignment on the same subtopic. */
+export function progressForAssignment(attempts: Attempt[], assignment: Assignment): SubtopicProgress {
+  return progressFor(assignment.tracking === 'assignment' ? attempts.filter((attempt) => attempt.assignmentId === assignment.id) : attempts, assignment.ref);
+}
+
 export function assignmentStatus(progress: SubtopicProgress): AssignmentStatus {
   if (progress.completed) return 'completed';
   if (progress.attempts > 0) return 'in-progress';
@@ -244,7 +255,7 @@ export function gradeStats(
 ): GradeStats {
   const gradeAssignments = assignments.filter((assignment) => assignment.ref.grade === grade);
   const statuses = gradeAssignments.map((assignment) =>
-    assignmentStatus(progressFor(attempts, assignment.ref)),
+    assignmentStatus(progressForAssignment(attempts, assignment)),
   );
   const touched = attempts.filter((attempt) => attempt.ref.grade === grade);
   const bestByKey = new Map<string, number>();
@@ -270,7 +281,7 @@ export function gradeStats(
 
 export function overallStats(attempts: Attempt[], assignments: Assignment[]) {
   const statuses = assignments.map((assignment) =>
-    assignmentStatus(progressFor(attempts, assignment.ref)),
+    assignmentStatus(progressForAssignment(attempts, assignment)),
   );
   const completed = statuses.filter((status) => status === 'completed').length;
   return {

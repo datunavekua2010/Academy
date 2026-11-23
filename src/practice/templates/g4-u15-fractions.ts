@@ -1,4 +1,6 @@
 import { defineTemplate, type QuestionTemplate } from './types';
+// These fraction/decimal fields are drawn from string-valued choice variables.
+
 
 export function nearMisses(answer: number, count = 3, min = 0, step = 1): number[] {
   const result = new Set<number>();
@@ -89,7 +91,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.sh}/${Number(ctx.vars.tot) + 1}`,
       `${ctx.vars.tot}/${ctx.vars.sh}`,
     ],
-    explanation: ({ vars, answer }) => `გაფერადებული ნაწილია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გაფერადებული ნაწილია ${answer}.`,
   }),
 
   // g4-u15-03 (Level 2)
@@ -111,7 +113,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.ate}/${Number(ctx.vars.tot) + 1}`,
       `${Number(ctx.vars.tot) - Number(ctx.vars.ate)}/${ctx.vars.tot}`,
     ],
-    explanation: ({ vars, answer }) => `შეჭამეს ${answer} ნაწილი.`,
+    explanation: ({ vars: _vars, answer }) => `შეჭამეს ${answer} ნაწილი.`,
   }),
 
   // g4-u15-04 (Level 2)
@@ -133,7 +135,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.sh}/${Number(ctx.vars.tot) + 1}`,
       `${ctx.vars.tot}/${ctx.vars.sh}`,
     ],
-    explanation: ({ vars, answer }) => `შესაბამისი წილადია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `შესაბამისი წილადია ${answer}.`,
   }),
 
   // g4-u15-05 (Level 3)
@@ -155,7 +157,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.ate}/${Number(ctx.vars.tot) + 1}`,
       `${Number(ctx.vars.tot) - Number(ctx.vars.ate)}/${ctx.vars.tot}`,
     ],
-    explanation: ({ vars, answer }) => `ბავშვმა შეჭამა ${answer} ნაწილი.`,
+    explanation: ({ vars: _vars, answer }) => `ბავშვმა შეჭამა ${answer} ნაწილი.`,
   }),
 
   // g4-u15-06 (Level 3)
@@ -177,7 +179,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${ctx.vars.red}/${Number(ctx.vars.tot) + 1}`,
       `${Number(ctx.vars.tot) - Number(ctx.vars.red)}/${ctx.vars.tot}`,
     ],
-    explanation: ({ vars, answer }) => `წითელია ვაშლების ${answer} ნაწილი.`,
+    explanation: ({ vars: _vars, answer }) => `წითელია ვაშლების ${answer} ნაწილი.`,
   }),
 
   // g4-u15-07 (Level 1)
@@ -195,7 +197,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `ზედა რიცხვი არის მრიცხველი: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ზედა რიცხვი არის მრიცხველი: ${answer}.`,
   }),
 
   // g4-u15-08 (Level 1)
@@ -213,7 +215,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `ქვედა რიცხვი არის მნიშვნელი: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ქვედა რიცხვი არის მნიშვნელი: ${answer}.`,
   }),
 
   // g4-u15-09 (Level 2)
@@ -234,7 +236,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.w1), String(v.w2), String(v.w3)],
-    explanation: ({ vars, answer }) => `მრიცხველი გვიჩვენებს: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მრიცხველი გვიჩვენებს: ${answer}.`,
   }),
 
   // g4-u15-10 (Level 2)
@@ -255,7 +257,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.w1), String(v.w2), String(v.w3)],
-    explanation: ({ vars, answer }) => `მნიშვნელი გვიჩვენებს: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მნიშვნელი გვიჩვენებს: ${answer}.`,
   }),
 
   // g4-u15-11 (Level 3)
@@ -277,7 +279,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${Number(ctx.vars.n) + 1}/${ctx.vars.d}`,
       `${ctx.vars.n}/${Number(ctx.vars.d) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `მრიცხველი იწერება ზემოთ, მნიშვნელი ქვემოთ: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მრიცხველი იწერება ზემოთ, მნიშვნელი ქვემოთ: ${answer}.`,
   }),
 
   // g4-u15-12 (Level 3)
@@ -299,7 +301,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${Number(ctx.vars.n) + 1}/${ctx.vars.d}`,
       `${ctx.vars.n}/${Number(ctx.vars.d) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `სწორი წილადია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `სწორი წილადია ${answer}.`,
   }),
 
   // g4-u15-13 (Level 1)
@@ -321,7 +323,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `1/${Number(ctx.vars.tot) + 1}`,
       `${ctx.vars.tot}/1`,
     ],
-    explanation: ({ vars, answer }) => `პირველი დანაყოფი შეესაბამება წილადს ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `პირველი დანაყოფი შეესაბამება წილადს ${answer}.`,
   }),
 
   // g4-u15-14 (Level 1)
@@ -343,7 +345,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `3/${ctx.vars.tot}`,
       `2/${Number(ctx.vars.tot) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `მეორე დანაყოფი შეესაბამება წილადს ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მეორე დანაყოფი შეესაბამება წილადს ${answer}.`,
   }),
 
   // g4-u15-15 (Level 2)
@@ -365,7 +367,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `4/${ctx.vars.tot}`,
       `3/${Number(ctx.vars.tot) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `მესამე დანაყოფი შეესაბამება წილადს ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მესამე დანაყოფი შეესაბამება წილადს ${answer}.`,
   }),
 
   // g4-u15-16 (Level 2)
@@ -387,7 +389,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `6/${ctx.vars.tot}`,
       `5/${Number(ctx.vars.tot) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `მეხუთე დანაყოფი შეესაბამება წილადს ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მეხუთე დანაყოფი შეესაბამება წილადს ${answer}.`,
   }),
 
   // g4-u15-17 (Level 3)
@@ -409,7 +411,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `8/${ctx.vars.tot}`,
       `7/${Number(ctx.vars.tot) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `{tick} დანაყოფზე არის წილადი ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `{tick} დანაყოფზე არის წილადი ${answer}.`,
   }),
 
   // g4-u15-18 (Level 3)
@@ -430,7 +432,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `1/${ctx.vars.tot}`,
       `${Number(ctx.vars.tot) + 1}/${ctx.vars.tot}`,
     ],
-    explanation: ({ vars, answer }) => `ბოლო დანაყოფი შეესაბამება მთელს: ${answer} = 1.`,
+    explanation: ({ vars: _vars, answer }) => `ბოლო დანაყოფი შეესაბამება მთელს: ${answer} = 1.`,
   }),
 
   // g4-u15-19 (Level 1)
@@ -447,14 +449,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.frac.includes('/') ? ctx.vars.frac.split('/') : [ctx.vars.frac, '1'];
+      const parts = (ctx.vars.frac as string).includes('/') ? (ctx.vars.frac as string).split('/') : [ctx.vars.frac, '1'];
       return [
         `${parts[0]}/${Number(parts[1]) + 1}`,
         `${Number(parts[1]) - 1}/${parts[0]}`,
         `${parts[0]}/${parts[1]}`,
       ];
     },
-    explanation: ({ vars, answer }) => `შებრუნებული წილადის მისაღებად მრიცხველი და მნიშვნელი ადგილებს ცვლიან: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `შებრუნებული წილადის მისაღებად მრიცხველი და მნიშვნელი ადგილებს ცვლიან: ${answer}.`,
   }),
 
   // g4-u15-20 (Level 1)
@@ -471,14 +473,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.frac.split('/');
+      const parts = (ctx.vars.frac as string).split('/');
       return [
         `${parts[0]}/${parts[1]}`,
         `${Number(parts[1]) + 1}/${parts[0]}`,
         `${parts[0]}/${Number(parts[1]) + 1}`,
       ];
     },
-    explanation: ({ vars, answer }) => `შებრუნებული წილადია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `შებრუნებული წილადია ${answer}.`,
   }),
 
   // g4-u15-21 (Level 2)
@@ -495,14 +497,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.frac.split('/');
+      const parts = (ctx.vars.frac as string).split('/');
       return [
         `${parts[0]}/${parts[1]}`,
         `${Number(parts[1]) + 1}/${parts[0]}`,
         `${parts[0]}/${Number(parts[1]) + 1}`,
       ];
     },
-    explanation: ({ vars, answer }) => `შებრუნებული წილადია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `შებრუნებული წილადია ${answer}.`,
   }),
 
   // g4-u15-22 (Level 2)
@@ -519,14 +521,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.frac.split('/');
+      const parts = (ctx.vars.frac as string).split('/');
       return [
         `${parts[0]}/${parts[1]}`,
         `${Number(parts[1]) + 1}/${parts[0]}`,
         `${parts[0]}/${Number(parts[1]) + 1}`,
       ];
     },
-    explanation: ({ vars, answer }) => `შებრუნებული წილადია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `შებრუნებული წილადია ${answer}.`,
   }),
 
   // g4-u15-23 (Level 3)
@@ -543,14 +545,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.frac.split('/');
+      const parts = (ctx.vars.frac as string).split('/');
       return [
         `${parts[0]}/${parts[1]}`,
         `${Number(parts[1]) + 1}/${parts[0]}`,
         `${parts[0]}/${Number(parts[1]) + 1}`,
       ];
     },
-    explanation: ({ vars, answer }) => `შებრუნებული წილადია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `შებრუნებული წილადია ${answer}.`,
   }),
 
   // g4-u15-24 (Level 3)
@@ -567,7 +569,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `1/n-ის შებრუნებულია n, ამიტომ პასუხია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `1/n-ის შებრუნებულია n, ამიტომ პასუხია ${answer}.`,
   }),
 
   // g4-u15-25 (Level 1)
@@ -585,7 +587,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `1/${Number(parts[1]) - 1}`,
         `1/${Number(parts[1]) + 2}`,
@@ -610,7 +612,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `1/${Number(parts[1]) - 2}`,
         `1/${Number(parts[1]) + 2}`,
@@ -635,14 +637,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `1/${Number(parts[1]) - 2}`,
         `1/${Number(parts[1]) + 2}`,
         `2/${parts[1]}`,
       ];
     },
-    explanation: ({ vars, answer }) => `მნიშვნელი მრავლდება მთელ რიცხვზე: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მნიშვნელი მრავლდება მთელ რიცხვზე: ${answer}.`,
   }),
 
   // g4-u15-28 (Level 2)
@@ -660,7 +662,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -685,7 +687,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${parts[0]}/${Number(parts[1]) - 1}`,
@@ -710,7 +712,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -735,7 +737,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-32 (Level 1)
@@ -753,7 +755,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 2, 2),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-33 (Level 2)
@@ -771,7 +773,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 2, 2),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-34 (Level 2)
@@ -789,7 +791,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-35 (Level 3)
@@ -807,7 +809,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 2, 2),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-36 (Level 3)
@@ -825,7 +827,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-37 (Level 1)
@@ -1170,7 +1172,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${Math.max(1, Number(ctx.vars.n1) + Number(ctx.vars.n2) - 1)}/${ctx.vars.d}`,
       `${Number(ctx.vars.n1) + Number(ctx.vars.n2)}/${Number(ctx.vars.d) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `სულ გამოიყენეს: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `სულ გამოიყენეს: ${answer}.`,
   }),
 
   // g4-u15-52 (Level 2)
@@ -1193,7 +1195,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${Math.max(1, Number(ctx.vars.n1) + Number(ctx.vars.n2) - 1)}/${ctx.vars.d}`,
       `${Number(ctx.vars.n1) + Number(ctx.vars.n2)}/${Number(ctx.vars.d) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `ლუკამ სულ წაიკითხა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ლუკამ სულ წაიკითხა: ${answer}.`,
   }),
 
   // g4-u15-53 (Level 3)
@@ -1216,7 +1218,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${Math.max(1, Number(ctx.vars.n1) + Number(ctx.vars.n2) - 1)}/${ctx.vars.d}`,
       `${Number(ctx.vars.n1) + Number(ctx.vars.n2)}/${Number(ctx.vars.d) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `სულ გამოიყენეს: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `სულ გამოიყენეს: ${answer}.`,
   }),
 
   // g4-u15-54 (Level 3)
@@ -1239,7 +1241,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
       `${Math.max(1, Number(ctx.vars.n1) - Number(ctx.vars.n2) - 1)}/${ctx.vars.d}`,
       `${Number(ctx.vars.n1) - Number(ctx.vars.n2)}/${Number(ctx.vars.d) + 1}`,
     ],
-    explanation: ({ vars, answer }) => `ავზში დარჩა: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ავზში დარჩა: ${answer}.`,
   }),
 
   // g4-u15-55 (Level 1)
@@ -1256,7 +1258,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${parts[0]}/${Number(parts[1]) - 2}`,
         `${parts[0]}/${Number(parts[1]) + 2}`,
@@ -1281,7 +1283,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `1/${Number(parts[1]) - 2}`,
         `1/${Number(parts[1]) + 2}`,
@@ -1306,7 +1308,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${parts[0]}/${Number(parts[1]) - 2}`,
         `${parts[0]}/${Number(parts[1]) + 2}`,
@@ -1331,7 +1333,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${parts[0]}/${Number(parts[1]) * Number(ctx.vars.mult)}`,
         `${Number(parts[0]) + 1}/${parts[1]}`,
@@ -1356,7 +1358,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -1381,7 +1383,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -1405,7 +1407,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${parts[0]}/${Number(parts[1]) + 1}`,
@@ -1429,7 +1431,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${parts[0]}/${Number(parts[1]) + 1}`,
@@ -1453,7 +1455,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       const n = Number(parts[0]);
       const d = Number(parts[1]);
       return [
@@ -1479,7 +1481,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       const n = Number(parts[0]);
       const d = Number(parts[1]);
       return [
@@ -1505,7 +1507,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       const n = Number(parts[0]);
       const d = Number(parts[1]);
       return [
@@ -1531,7 +1533,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       const n = Number(parts[0]);
       const d = Number(parts[1]);
       return [
@@ -1558,7 +1560,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `1/${Number(parts[1]) - 2}`,
         `1/${Number(parts[1]) + 2}`,
@@ -1583,14 +1585,14 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
         `${parts[0]}/${Number(parts[1]) + 2}`,
       ];
     },
-    explanation: ({ vars, answer }) => `მრიცხველები მრავლდება მრიცხველზე, მნიშვნელები მნიშვნელზე: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მრიცხველები მრავლდება მრიცხველზე, მნიშვნელები მნიშვნელზე: ${answer}.`,
   }),
 
   // g4-u15-69 (Level 2)
@@ -1608,7 +1610,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -1633,7 +1635,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -1658,7 +1660,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -1683,7 +1685,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       return [
         `${Number(parts[0]) + 1}/${parts[1]}`,
         `${Math.max(1, Number(parts[0]) - 1)}/${parts[1]}`,
@@ -1749,7 +1751,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 2, 2),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-76 (Level 2)
@@ -1767,7 +1769,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `გამოტოვებული რიცხვია ${answer}.`,
   }),
 
   // g4-u15-77 (Level 3)
@@ -1840,7 +1842,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `უნდა გავაფერადოთ ${answer} ნაწილი.`,
+    explanation: ({ vars: _vars, answer }) => `უნდა გავაფერადოთ ${answer} ნაწილი.`,
   }),
 
   // g4-u15-81 (Level 2)
@@ -1858,7 +1860,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       const n = Number(parts[0]);
       const d = Number(parts[1]);
       return [
@@ -1885,7 +1887,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     distractors: (ctx) => {
-      const parts = ctx.vars.ans.split('/');
+      const parts = (ctx.vars.ans as string).split('/');
       const n = Number(parts[0]);
       const d = Number(parts[1]);
       return [
@@ -1894,7 +1896,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
         `${n + 1}/${d + 1}`,
       ];
     },
-    explanation: ({ vars, answer }) => `ტოლი წილადი უმცირესი მნიშვნელით არის ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ტოლი წილადი უმცირესი მნიშვნელით არის ${answer}.`,
   }),
 
   // g4-u15-83 (Level 3)
@@ -1912,7 +1914,7 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `უნდა გაფერადდეს ${answer} ნაწილი.`,
+    explanation: ({ vars: _vars, answer }) => `უნდა გაფერადდეს ${answer} ნაწილი.`,
   }),
 
   // g4-u15-84 (Level 3)
@@ -1930,6 +1932,6 @@ export const G4_U15_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `უნდა გაფერადდეს ${answer} ნაწილი.`,
+    explanation: ({ vars: _vars, answer }) => `უნდა გაფერადდეს ${answer} ნაწილი.`,
   }),
 ];

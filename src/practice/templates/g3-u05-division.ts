@@ -422,7 +422,7 @@ export const G3_U05_TEMPLATES: QuestionTemplate[] = [
         `${a * (q - 4)} ÷ ${a}`,
       ];
     },
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars, answer: _answer }) =>
       `${vars.prod} ÷ ${vars.a} = ${vars.q}, რაც მოცემულ ვარიანტებს შორის უდიდესია.`,
   }),
 

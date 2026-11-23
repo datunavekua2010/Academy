@@ -64,7 +64,7 @@ export const G3_U07_TEMPLATES: QuestionTemplate[] = [
       `${v.b} + ${v.c} (შეკრება)`,
     ],
     optionCount: 4,
-    explanation: ({ vars, answer }) =>
+    explanation: ({ vars: _vars, answer }) =>
       `მოქმედებათა რიგის წესის თანახმად, გამრავლება სრულდება შეკრებამდე. ამიტომ პირველად სრულდება ${answer}.`,
   }),
 

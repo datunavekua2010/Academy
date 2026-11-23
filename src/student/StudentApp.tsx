@@ -28,14 +28,14 @@ const TITLES: Record<string, string> = {
 
 /** Public material has an isolated, non-persistent guest preview. */
 function RequireStudent({ children, publicPreview }: { children: ReactNode; publicPreview: boolean }) {
-  const { student, mode, status, signedIn } = useStudentSession();
+  const { student, mode, status, signedIn, practiceMemory, practiceRevision } = useStudentSession();
   if (!student) {
     if (publicPreview && status === 'ready' && !signedIn && mode !== 'invalid') {
       return <PracticeProvider key="guest" studentId="" mode="guest" initialGrade={1}>{children}</PracticeProvider>;
     }
     return <StudentSignIn />;
   }
-  return <PracticeProvider key={`${mode}:${student.id}`} studentId={student.id} mode={mode === 'connected' ? 'connected' : 'demo'} initialGrade={parseStudentGrade(student.grade) ?? 5}>{children}</PracticeProvider>;
+  return <PracticeProvider key={`${mode}:${student.id}`} studentId={student.id} practiceMemory={practiceMemory} practiceRevision={practiceRevision} mode={mode === 'connected' ? 'connected' : 'demo'} initialGrade={parseStudentGrade(student.grade) ?? 5}>{children}</PracticeProvider>;
 }
 
 function NotFound() {

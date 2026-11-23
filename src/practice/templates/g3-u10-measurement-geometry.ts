@@ -1,4 +1,5 @@
 import { defineTemplate, QuestionTemplate } from './types';
+import type { Vars } from './types';
 
 /**
  * Grade 3 — Unit 10: გაზომვა და გეომეტრია (Measurement & Geometry)
@@ -38,7 +39,6 @@ const addr = (options: { id: string; subtopicId: G3U10SubtopicId; difficulty: 1 
   ...options,
 });
 
-type Vars = Record<string, string | number>;
 
 export function nearMisses(answer: number, count = 3, min = 0, step = 1): number[] {
   const result = new Set<number>();

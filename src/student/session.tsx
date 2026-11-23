@@ -3,6 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { supabaseConfiguration } from '../lib/supabase';
 import { setLessonProgressOwner } from '../lessons/progress';
 import { TEST_ACCOUNT_ID, TEST_ACCOUNT_MODE } from './accountMode';
+import { ConnectedPracticeMemory } from '../practice/connectedMemory';
 
 export interface Student {
   id: string;
@@ -21,6 +22,8 @@ interface StudentSessionValue {
   status: SessionStatus;
   error: string | null;
   signedIn: boolean;
+  practiceMemory: ConnectedPracticeMemory | null;
+  practiceRevision: number;
   signInWithPassword: (email: string, password: string) => Promise<void>;
   signOut: () => void;
 }
@@ -40,7 +43,7 @@ function TestStudentSessionProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
   const value = useMemo<StudentSessionValue>(() => ({
-    student: TEST_STUDENT, mode: 'test', status: 'ready', error: null, signedIn: false,
+    student: TEST_STUDENT, mode: 'test', status: 'ready', error: null, signedIn: false, practiceMemory: null, practiceRevision: 0,
     signInWithPassword: async () => {}, signOut: () => {},
   }), []);
   if (!ready) return null;
@@ -57,7 +60,24 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
   const { mode, client } = supabaseConfiguration;
   const [student, setStudent] = useState<Student | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const userId = useRef<string | null | undefined>(undefined);
+  // Survives same-user auth re-verification, but never crosses account changes.
+  // Replacing the user or signing out discards it; it is not persistent storage.
+  const [practiceMemory, setPracticeMemory] = useState<ConnectedPracticeMemory | null>(null);
+  const [practiceRevision, setPracticeRevision] = useState(0);
+  const memoryOwner = useRef<string | null>(null);
+  const currentMemory = useRef<ConnectedPracticeMemory | null>(null);
+  // Keep the unload warning during the brief re-verification interval, when
+  // PracticeProvider itself is deliberately unmounted and cannot warn.
+  useEffect(() => {
+    if (!practiceMemory) return;
+    const warn = (event: BeforeUnloadEvent) => {
+      if (practiceMemory.size) { event.preventDefault(); event.returnValue = ''; }
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [practiceMemory]);
+  const authRevision = useRef(0);
+  const [verification, setVerification] = useState(0);
   const [status, setStatus] = useState<SessionStatus>(mode === 'connected' ? 'loading' : mode === 'invalid' ? 'error' : 'ready');
   const [error, setError] = useState<string | null>(mode === 'invalid' || mode === 'unconfigured' ? 'ანგარიშით შესვლა ამჟამად მიუწვდომელია. დაუკავშირდი აკადემიას.' : null);
 
@@ -68,9 +88,21 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
       if (!active) return;
       // Do not await Supabase calls inside the auth callback (the SDK holds a lock).
       const nextUser = session?.user ?? null;
-      if (userId.current === nextUser?.id && nextUser) return;
-      userId.current = nextUser?.id ?? null;
-      setLessonProgressOwner(nextUser?.id ?? null);
+      const nextOwner = nextUser?.id ?? null;
+      // Process every auth transition, including sign-out and same-user sign-in
+      // in one React batch; batched user state alone can hide that boundary.
+      currentMemory.current?.pause();
+      if (memoryOwner.current !== nextOwner) {
+        memoryOwner.current = nextOwner;
+        currentMemory.current = nextOwner ? new ConnectedPracticeMemory() : null;
+        currentMemory.current?.pause();
+        setPracticeMemory(currentMemory.current);
+      }
+      // Invalidate outstanding profile reads even for a token refresh of the same
+      // user, so role revocation is noticed on the next auth event.
+      authRevision.current++;
+      setVerification(authRevision.current);
+      setLessonProgressOwner(null);
       setStudent(null);
       setUser(nextUser);
       setStatus(session?.user ? 'loading' : 'ready');
@@ -82,6 +114,7 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
   useEffect(() => {
     if (!client || !user) return;
     let active = true;
+    const revision = verification;
     async function loadStudent() {
       try {
         const [profile, role, grade] = await Promise.all([
@@ -89,8 +122,11 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
           client!.from('user_roles').select('role').eq('user_id', user!.id).eq('role', 'student').maybeSingle(),
           client!.from('student_grades').select('grade').eq('student_id', user!.id).maybeSingle(),
         ]);
-        if (profile.error || role.error || grade.error || !profile.data || !role.data) throw new Error('unavailable');
-        if (!active) return;
+        if (profile.error || role.error || grade.error || !profile.data || !role.data || typeof profile.data.display_name !== 'string' || typeof profile.data.first_name !== 'string') throw new Error('unavailable');
+        if (!active || revision !== authRevision.current) return;
+        currentMemory.current?.resume();
+        setPracticeRevision(revision);
+        setLessonProgressOwner(user!.id);
         const name = profile.data.display_name as string;
         const firstName = profile.data.first_name as string;
         const gradeNumber = grade.data?.grade;
@@ -99,7 +135,7 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
           guardian: '—', email: user!.email ?? '—' });
         setStatus('ready');
       } catch {
-        if (!active) return;
+        if (!active || revision !== authRevision.current) return;
         setStudent(null);
         setStatus('error');
         setError('მოსწავლის პროფილი ვერ ჩაიტვირთა. დაუკავშირდი აკადემიას.');
@@ -107,10 +143,10 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
     }
     void loadStudent();
     return () => { active = false; };
-  }, [client, user]);
+  }, [client, user, verification]);
 
   const value = useMemo<StudentSessionValue>(() => ({
-    student, mode, status, error, signedIn: Boolean(user),
+    student, mode, status, error, signedIn: Boolean(user), practiceMemory, practiceRevision,
     signInWithPassword: async (email, password) => {
       if (!client) return;
       setError(null);
@@ -125,7 +161,7 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
         if (signOutError) setError('გასვლა ვერ მოხერხდა. სცადე ხელახლა.');
       }).catch(() => setError('გასვლა ვერ მოხერხდა. სცადე ხელახლა.'));
     },
-  }), [student, mode, status, error, user, client]);
+  }), [student, mode, status, error, user, client, practiceMemory, practiceRevision]);
 
   return <StudentSessionContext.Provider value={value}>{children}</StudentSessionContext.Provider>;
 }

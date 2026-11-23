@@ -54,7 +54,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: () => ['შესაძლებელია', 'შეუძლებელია'],
-    explanation: ({ vars, answer }) => `კამათელზე არის ციფრები 1-დან 6-მდე, ამიტომ ეს მოვლენა ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `კამათელზე არის ციფრები 1-დან 6-მდე, ამიტომ ეს მოვლენა ${answer}.`,
   }),
 
   // g4-u14-02 (Level 1)
@@ -72,7 +72,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: () => ['შეუძლებელია', 'შესაძლებელია'],
-    explanation: ({ vars, answer }) => `კამათელზე მხოლოდ 1-დან 6-მდე ციფრებია, ამიტომ ეს მოვლენა ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `კამათელზე მხოლოდ 1-დან 6-მდე ციფრებია, ამიტომ ეს მოვლენა ${answer}.`,
   }),
 
   // g4-u14-03 (Level 2)
@@ -91,7 +91,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: () => ['შეუძლებელია', 'შესაძლებელია'],
-    explanation: ({ vars, answer }) => `ვინაიდან ყუთში სხვა ფერის ბურთი არ არის, ასეთი ბურთის ამოღება ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ვინაიდან ყუთში სხვა ფერის ბურთი არ არის, ასეთი ბურთის ამოღება ${answer}.`,
   }),
 
   // g4-u14-04 (Level 2)
@@ -110,7 +110,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: () => ['შესაძლებელია', 'შეუძლებელია'],
-    explanation: ({ vars, answer }) => `მონეტას აქვს ორივე მხარე, ამიტომ ეს მოვლენა ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `მონეტას აქვს ორივე მხარე, ამიტომ ეს მოვლენა ${answer}.`,
   }),
 
   // g4-u14-05 (Level 3)
@@ -129,7 +129,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.other)],
-    explanation: ({ vars, answer }) => `ნაკლები რაოდენობის გამო ${answer} ბურთის ამოღებაა ნაკლებად სავარაუდო.`,
+    explanation: ({ vars: _vars, answer }) => `ნაკლები რაოდენობის გამო ${answer} ბურთის ამოღებაა ნაკლებად სავარაუდო.`,
   }),
 
   // g4-u14-06 (Level 3)
@@ -222,7 +222,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     options: (v) => [Number(v.ans), Number(v.w1), Number(v.w2), Number(v.w3)],
-    explanation: ({ vars, answer }) => `კამათელზე არის მხოლოდ 1-დან 6-მდე რიცხვები, ამიტომ შესაძლებელია მხოლოდ ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `კამათელზე არის მხოლოდ 1-დან 6-მდე რიცხვები, ამიტომ შესაძლებელია მხოლოდ ${answer}.`,
   }),
 
   // g4-u14-11 (Level 3)
@@ -242,7 +242,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.w1), String(v.w2), String(v.w3)],
-    explanation: ({ vars, answer }) => `ყუთში არსებული ფერებიდან გამომდინარე, შესაძლებელია: ${answer}.`,
+    explanation: ({ vars: _vars, answer }) => `ყუთში არსებული ფერებიდან გამომდინარე, შესაძლებელია: ${answer}.`,
   }),
 
   // g4-u14-12 (Level 3)
@@ -279,7 +279,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.other)],
-    explanation: ({ vars, answer }) => `რადგან ${answer} ბურთი მეტია, მისი ამოღება უფრო სავარაუდოა.`,
+    explanation: ({ vars: _vars, answer }) => `რადგან ${answer} ბურთი მეტია, მისი ამოღება უფრო სავარაუდოა.`,
   }),
 
   // g4-u14-14 (Level 1)
@@ -298,7 +298,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.other)],
-    explanation: ({ vars, answer }) => `რადგან ${answer} ბურთი მეტი რაოდენობითაა, მისი ამოღება უფრო სავარაუდოა.`,
+    explanation: ({ vars: _vars, answer }) => `რადგან ${answer} ბურთი მეტი რაოდენობითაა, მისი ამოღება უფრო სავარაუდოა.`,
   }),
 
   // g4-u14-15 (Level 2)
@@ -337,7 +337,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.other)],
-    explanation: ({ vars, answer }) => `ნაკლები რაოდენობის გამო ${answer} ბურთის ამოღება ნაკლებად სავარაუდოა.`,
+    explanation: ({ vars: _vars, answer }) => `ნაკლები რაოდენობის გამო ${answer} ბურთის ამოღება ნაკლებად სავარაუდოა.`,
   }),
 
   // g4-u14-17 (Level 3)
@@ -357,7 +357,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.w1), String(v.w2)],
-    explanation: ({ vars, answer }) => `ყველაზე მეტი რაოდენობითაა ${answer} ბურთი, ამიტომ მისი ამოღებაა ყველაზე სავარაუდო.`,
+    explanation: ({ vars: _vars, answer }) => `ყველაზე მეტი რაოდენობითაა ${answer} ბურთი, ამიტომ მისი ამოღებაა ყველაზე სავარაუდო.`,
   }),
 
   // g4-u14-18 (Level 3)
@@ -377,7 +377,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => String(v.ans),
     options: (v) => [String(v.ans), String(v.w1), String(v.w2)],
-    explanation: ({ vars, answer }) => `ყველაზე მეტი რაოდენობითაა ${answer} ბურთი, ამიტომ მისი ამოღება ყველაზე სავარაუდოა.`,
+    explanation: ({ vars: _vars, answer }) => `ყველაზე მეტი რაოდენობითაა ${answer} ბურთი, ამიტომ მისი ამოღება ყველაზე სავარაუდოა.`,
   }),
 
   // g4-u14-19 (Level 1)
@@ -449,7 +449,7 @@ export const G4_U14_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 1, 1),
-    explanation: ({ vars, answer }) => `თითოეული ნივთის არჩევა ცალკე შესაძლებლობაა, ამიტომ სულ ${answer} შესაძლებლობაა.`,
+    explanation: ({ vars: _vars, answer }) => `თითოეული ნივთის არჩევა ცალკე შესაძლებლობაა, ამიტომ სულ ${answer} შესაძლებლობაა.`,
   }),
 
   // g4-u14-23 (Level 3)

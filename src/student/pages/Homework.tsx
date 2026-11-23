@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { getGrade, usePractice } from '../../practice/PracticeProvider';
 import type { GradeId } from '../../practice/types';
 import { topicSubtopics } from '../../practice/types';
@@ -18,9 +19,12 @@ import { useStudentSession } from '../session';
  */
 export function Homework() {
   const { mode } = useStudentSession();
-  const { grade: selectedGrade, assignments, attempts, startPractice, progressFor, session, stop, clearSession } =
+  const { grade: selectedGrade, assignments, attempts, startPractice, progressForAssignment, session, stop, clearSession, refreshAssignments } =
     usePractice();
 
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState(false);
+  const refresh = async () => { if (!refreshAssignments || refreshing) return; setRefreshing(true); setRefreshError(false); try { await refreshAssignments(); } catch { setRefreshError(true); } finally { setRefreshing(false); } };
   const byGrade = new Map<GradeId, typeof assignments>();
   for (const assignment of assignments) {
     if (assignment.ref.grade !== selectedGrade) continue;
@@ -39,7 +43,7 @@ export function Homework() {
           const subtopic = topic
             ? topicSubtopics(topic).find((item) => item.id === assignment.ref.subtopicId)
             : undefined;
-          const progress = progressFor(assignment.ref);
+          const progress = progressForAssignment(assignment);
           return { assignment, topic, subtopic, progress, status: assignmentStatus(progress) };
         })
         .filter((item) => item.topic && item.subtopic)
@@ -69,6 +73,8 @@ export function Homework() {
 
       <p><Link to="/student/homework" className="text-link">← Choose another grade</Link> · {getGrade(selectedGrade).label}</p>
       {all.length === 0 && <p>No homework is currently available for this grade. You can explore the curriculum in practice.</p>}
+      {refreshAssignments && <><button type="button" className="btn btn-ghost" disabled={refreshing} onClick={() => void refresh()}>დავალებების განახლება</button><p>სია ავტომატურად არ ახლდება; განაახლე გაუქმებული დავალებების სანახავად. დაწყებული სესიის შედეგი შესაძლოა შენარჩუნდეს.</p>{refreshError && <p role="alert">სია ვერ განახლდა. სცადე ხელახლა.</p>}</>}
+      <p className="demo-note">დავალებების შედეგები ბრაუზერში მოწმდება და სერვერის მიერ ჯერ არ არის დადასტურებული.</p>
       <div className="task-summary" role="status">
         <strong>
           {completed}/{all.length}
@@ -77,8 +83,8 @@ export function Homework() {
           {all.length === 0
             ? 'ამ კლასისთვის დავალება არ არის.'
             : openCount === 0
-            ? 'ყველა დავალება დასრულებულია — გილოცავ!'
-            : `დარჩა ${openCount} დავალება. თითოეული სესია 100 ქულამდე მიდის.`}
+            ? 'ყველა დავალებაზე დაფიქსირდა ადგილობრივად შეფასებული შედეგი.'
+            : `${openCount} დავალებაზე შედეგი ჯერ არ აღწევს 100 ქულას.`}
         </span>
       </div>
 
@@ -87,7 +93,7 @@ export function Homework() {
           <div className="section-label">
             <h2 id={`hw-grade-${grade}`}>{curriculum.label}</h2>
             <span>
-              {items.filter((item) => item.status === 'completed').length}/{items.length} დასრულებული
+              {items.filter((item) => item.status === 'completed').length}/{items.length} ადგილობრივად შეფასებული
             </span>
           </div>
 
@@ -103,16 +109,18 @@ export function Homework() {
                     <span className="homework-path">
                       {topic.emoji} {topic.title} <span aria-hidden="true">/</span> {subtopic.title}
                     </span>
+                    {assignment.title && <strong>{assignment.title}</strong>}
+                    {assignment.instructions && <p>{assignment.instructions}</p>}
                     <div className="homework-meta">
                       <span className={`status-pill ${status}`}>
                         {status === 'completed'
-                          ? '✓ დასრულებული'
+                          ? '✓ 100 ქულა · დაუდასტურებელი'
                           : status === 'in-progress'
                             ? 'მიმდინარე'
                             : 'დასაწყები'}
                       </span>
                       <span className="meta-chip">
-                        {status === 'completed' ? 'შესრულდა' : 'ვადა'}: {dueLabel(assignment)}
+                        ვადა: {dueLabel(assignment)}
                       </span>
                       <span className="meta-chip">მასწავლებელი: {assignment.assignedBy}</span>
                       {progress.bestScore > 0 && (

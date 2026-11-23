@@ -1,0 +1,22 @@
+import chromium from '../.scratch/browser/node_modules/@sparticuz/chromium/build/index.js';import {chromium as playwright} from '../.scratch/browser/node_modules/playwright-core/index.mjs';import assert from 'node:assert/strict';
+// Only a disposable local Vite preview, never a real Supabase application.
+const origin = new URL(process.env.OUTBOX_TEST_URL ?? 'http://127.0.0.1:5173');
+if (origin.protocol !== 'http:' || !['127.0.0.1','localhost'].includes(origin.hostname) || origin.pathname !== '/' || origin.search || origin.hash) throw new Error('OUTBOX_TEST_URL must be a local Vite origin');
+const browser=await playwright.launch({executablePath:await chromium.executablePath(),headless:true,args:chromium.args});
+try{
+ const context=await browser.newContext();const a=await context.newPage(),b=await context.newPage();await Promise.all([a.goto(origin.href),b.goto(origin.href)]);
+ const owner='00000000-0000-4000-8000-000000000001';const pending={assignmentId:null,attempt:{id:'browser-attempt',assignmentId:null,ref:{grade:2,topicId:'t',subtopicId:'s'},key:'k',score:4,correct:1,incorrect:0,startedAt:'2026-01-01T00:00:00Z',finishedAt:'2026-01-01T00:01:00Z',seconds:60,completed:false,answers:[]}};
+ await a.evaluate(async ({owner,pending})=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');await box.enqueue(owner,pending);box.close();},{owner,pending});
+ await a.reload();assert.deepEqual(await a.evaluate(async owner=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');const rows=await box.list(owner);box.close();return rows;},owner),[pending]);
+ const retry=(page,score)=>page.evaluate(async ({owner,pending,score})=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');try{await box.enqueue(owner,{...pending,attempt:{...pending.attempt,score}});return true;}catch{return false;}finally{box.close();}},{owner,pending,score});
+ const result=await Promise.all([retry(a,4),retry(b,99)]);assert.deepEqual(result,[true,false]);
+ await b.evaluate(async ({owner,pending})=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');await box.acknowledge(owner,pending);box.close();},{owner,pending});
+ const remaining=await a.evaluate(async owner=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');const rows=await box.list(owner);box.close();return rows.length;},owner);assert.equal(remaining,0);
+ // The coordinator must use genuine Web Locks across pages, not just IDB's
+ // transaction serialization. Both tabs compete to send the same stored row.
+ await a.evaluate(async ({owner,pending})=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');await box.enqueue(owner,pending);box.close();localStorage.setItem('review-send-count','0');},{owner,pending});
+ const drain=page=>page.evaluate(async owner=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const {ReviewOutboxCoordinator,browserOutboxLock}=await import('/src/practice/reviewOutboxCoordinator.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');try{const c=new ReviewOutboxCoordinator(owner,box,browserOutboxLock(navigator.locks),async()=>true,async()=>{localStorage.setItem('review-send-count',String(Number(localStorage.getItem('review-send-count'))+1));await new Promise(resolve=>setTimeout(resolve,100));});await c.enable(true);await c.drain();}finally{box.close();}},owner);
+ await Promise.all([drain(a),drain(b)]);assert.equal(await a.evaluate(()=>localStorage.getItem('review-send-count')),'1');
+ assert.equal(await a.evaluate(async owner=>{const {openReviewAttemptOutbox}=await import('/src/practice/reviewAttemptOutbox.ts');const box=await openReviewAttemptOutbox(indexedDB,'browser-only-review');const n=(await box.list(owner)).length;box.close();return n;},owner),0);
+ console.log('Chromium isolated IndexedDB reopen, collision, exact acknowledgement and cross-tab Web Locks coordination: passed.');await context.close();
+}finally{await browser.close();}

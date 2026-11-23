@@ -13,6 +13,7 @@ import { TEMPLATE_REGISTRY } from '../src/practice/templates/catalog';
 import { startSession, submitAnswer, advance } from '../src/practice/session';
 import { generateBatch } from '../src/practice/generator';
 import { MAX_SCORE } from '../src/practice/scoring';
+import { refillAvoid } from '../src/practice/refill';
 
 const SAMPLES = 10;
 const SEED = 20261105;
@@ -135,8 +136,8 @@ describe('Grade 2 — U01: რიცხვები 100-ის ფარგლ�
           state = submission.state;
 
           let refill: ReturnType<typeof generateBatch> = [];
-          if (state.queue.length <= 2) {
-            refill = generateBatch(ref, 4);
+          if (state.queue.length <= 3) {
+            refill = generateBatch(ref, 4, { avoid: refillAvoid(state), seed: SEED + steps });
           }
           state = advance(state, refill);
           steps += 1;

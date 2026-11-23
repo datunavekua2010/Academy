@@ -634,7 +634,7 @@ export const G4_U08_TEMPLATES: QuestionTemplate[] = [
     },
     answer: (v) => Number(v.ans),
     distractors: (ctx) => nearMisses(Number(ctx.answer), 3, 5, 5),
-    explanation: ({ vars, answer }) => `დიაგრამის შესაბამისი სვეტის მიხედვით გაიყიდა ${answer} პური.`,
+    explanation: ({ vars: _vars, answer }) => `დიაგრამის შესაბამისი სვეტის მიხედვით გაიყიდა ${answer} პური.`,
   }),
 
   // g4-u08-32 (Level 1)

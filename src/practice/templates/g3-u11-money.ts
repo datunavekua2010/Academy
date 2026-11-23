@@ -1,4 +1,5 @@
 import { defineTemplate, QuestionTemplate } from './types';
+import type { Vars } from './types';
 
 /**
  * Grade 3 — Unit 11: ფინანსური წიგნიერება და ფული (Financial Literacy & Money)
@@ -28,7 +29,6 @@ const addr = (options: { id: string; subtopicId: G3U11SubtopicId; difficulty: 1 
   ...options,
 });
 
-type Vars = Record<string, string | number>;
 
 export function nearMisses(answer: number, count = 3, min = 0, step = 1): number[] {
   const result = new Set<number>();
@@ -583,7 +583,6 @@ export const G3_U11_TEMPLATES: QuestionTemplate[] = [
     answer: (v: Vars) => `ნივთი A (${v.p1} ლარი) და ნივთი B (${v.p2} ლარი)`,
     format: { kind: 'text' },
     options: (v: Vars) => {
-      const b = Number(v.budget);
       const p1 = Number(v.p1);
       const p2 = Number(v.p2);
       return [

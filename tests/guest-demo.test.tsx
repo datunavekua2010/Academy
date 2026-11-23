@@ -11,7 +11,7 @@ it('opens the clearly labelled test account without sign-in or sign-out', () => 
   window.location.hash = '#/student';
   render(<StudentApp />);
   expect(screen.getByRole('heading', { name: /გამარჯობა, მოსწავლე/ })).toBeTruthy();
-  expect(screen.getByText(/სატესტო ანგარიში · დავალებები/)).toBeTruthy();
+  expect(screen.getByText(/ადგილობრივი სივრცე · დავალებები/)).toBeTruthy();
   expect(screen.queryByLabelText('ელფოსტა')).toBeNull();
   expect(screen.queryByLabelText('პაროლი')).toBeNull();
   expect(screen.queryByRole('button', { name: 'მოსწავლის ანგარიშიდან გასვლა' })).toBeNull();
@@ -35,4 +35,12 @@ it('opens the achievement catalog directly', () => {
   window.location.hash = '#/student/achievements';
   render(<StudentApp />);
   expect(screen.getByRole('heading', { name: 'მიღწევები' })).toBeTruthy();
+});
+
+it('shows the classroom join interface without simulating enrollment in the local account', () => {
+  window.location.hash = '#/student/profile';
+  render(<StudentApp />);
+  expect(screen.getByRole('heading', { name: 'კლასში გაწევრიანება' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'კლასში შესვლა' }).matches(':disabled')).toBe(true);
+  expect(screen.queryByText('კლასს შეუერთდი.')).toBeNull();
 });

@@ -96,7 +96,7 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
         </div>
       </header>
 
-      {mode === 'test' && <div className="test-account-banner" role="status">სატესტო ანგარიში · დავალებები სადემონსტრაციოა. შედეგები ინახება მხოლოდ ამ მოწყობილობაზე და არ იგზავნება აკადემიაში.</div>}
+      {mode === 'test' && <div className="test-account-banner" role="status">ადგილობრივი სივრცე · დავალებები სანიმუშოა. შედეგები ინახება მხოლოდ ამ მოწყობილობაზე და არ იგზავნება აკადემიაში.</div>}
       {student && error && <div className="student-container" role="alert">{error}</div>}
 
       <main id="student-main" className="student-main" tabIndex={-1}>
