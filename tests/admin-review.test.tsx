@@ -24,3 +24,17 @@ it('holds an uncertain profile request fixed until it is resolved or an exact re
 it('clears privileged forms on signout and rejects removed admin role',async()=>{
  render(<AdminReviewApp client={client}/>);act(()=>callback?.('INITIAL_SESSION',{user:{id:admin}}));await screen.findByText('არსებული Auth ანგარიშის პროფილი');act(()=>{role=false;callback?.('TOKEN_REFRESHED',{user:{id:admin}});});await screen.findByRole('alert');expect(screen.queryByText('არსებული Auth ანგარიშის პროფილი')).toBeNull();
 });
+it('ignores rapid duplicate sign-in submissions and clears the password on failure',async()=>{
+ let release!:()=>void;const waiting=new Promise<void>(resolve=>{release=resolve;});
+ const signIn=vi.fn(async()=>{await waiting;return {error:new Error('private error')};});
+ const signingClient={...client,auth:{...client.auth,signInWithPassword:signIn}} as unknown as SupabaseClient;
+ render(<AdminReviewApp client={signingClient}/>);act(()=>callback?.('INITIAL_SESSION',null));
+ fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'admin@example.test'}});
+ fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'test-password'}});
+ const form=screen.getByLabelText('პაროლი').closest('form')!;
+ act(()=>{fireEvent.submit(form);fireEvent.submit(form);});
+ await waitFor(()=>expect(signIn).toHaveBeenCalledTimes(1));
+ await act(async()=>{release();await waiting;});
+ expect((screen.getByLabelText('პაროლი') as HTMLInputElement).value).toBe('');
+ expect(screen.getByRole('alert').textContent).not.toContain('private error');
+});

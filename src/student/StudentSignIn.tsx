@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link } from '../router';
 import { useStudentSession } from './session';
 import { RecoveryRequest } from '../account/PasswordRecovery';
@@ -13,15 +13,16 @@ export function StudentSignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const pending = useRef(false);
   const [captchaError, setCaptchaError] = useState('');
   const captcha = useTurnstileReview();
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (submitting) return;
-    setSubmitting(true); setCaptchaError('');
+    if (pending.current) return;
+    pending.current = true; setSubmitting(true); setCaptchaError('');
     try { const token = await captcha.verify(); await signInWithPassword(email.trim(), password, token); }
     catch { setCaptchaError('უსაფრთხოების შემოწმება ვერ მოხერხდა. სცადეთ ხელახლა.'); }
-    finally { captcha.reset(); setSubmitting(false); setPassword(''); }
+    finally { captcha.reset(); pending.current = false; setSubmitting(false); setPassword(''); }
   };
   return (
     <div className="student-container signin-wrap">

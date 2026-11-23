@@ -34,7 +34,10 @@ try {
     // The same normalization is used in the staging progress notes. It removes
     // whitespace even inside literals: matching hashes are not semantic proof.
     const normalized = sql.replace(/^[ \t]*--[^\n]*/gm, '').replace(/\s+/g, '');
-    console.log(`${name} ${createHash('sha256').update(normalized).digest('hex')}`);
+    // Retain internal whitespace as a stronger second check. As with any
+    // line-based normalization, multiline literals are not semantically parsed.
+    const linewise = sql.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('--')).join('\n');
+    console.log(`${name} whitespace=${createHash('sha256').update(normalized).digest('hex')} linewise=${createHash('sha256').update(linewise).digest('hex')}`);
     await client.query(sql);
   }
   const query = await readFile('supabase/review/staging-schema-fingerprint.sql', 'utf8');
