@@ -8,6 +8,10 @@ The four pre-existing confirmed synthetic Auth users (`parent-a@example.com`, `p
 
 The fixtures intentionally persist for the read-only real-session test and should be removed after testing with carefully scoped deletes, respecting foreign-key dependencies and lifecycle records; do not delete real or unrelated data or reset staging. Auth identities were created by the owner. No real-session result has yet been obtained. Prior SQL role simulation and mock HTTP tests are not substitutes.
 
+## Forgotten synthetic passwords
+
+If the owner cannot recover the passwords for the four synthetic users, `scripts/stage1-reset-test-passwords.mjs` is an optional private-terminal tool pinned to this staging project and those four UUIDs. It prompts for a **staging secret API key** and new passwords without echo, verifies all four UUID/email pairs before changing any password, and uses the Supabase Auth admin API. It does not write credentials to files or logs. A secret key is highly privileged: use it only in a trusted private terminal, never in chat, browser code, shell arguments or production. The script prints each account whose password update succeeded; on a failure, earlier updates remain in effect and need not be assumed rolled back. It does not test revocation of existing sessions. Some Supabase environments may reject new secret keys on Auth admin mutations; do not disable security controls if this happens. Local tests mock the API; no actual reset was run by the assistant.
+
 ## Operator instructions
 
 Use an operator-controlled private terminal on a network that can reach staging. Update this existing working branch to the latest PR commit. In the staging Supabase dashboard's **Project Settings → API Keys**, locate a publishable key beginning `sb_publishable_` for project `wxxgwayrieasrzngpuul` (not a secret/service-role key). Run:

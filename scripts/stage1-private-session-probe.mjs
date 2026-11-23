@@ -34,7 +34,7 @@ export async function runPrivateSessionProbe(prompt, fetcher = fetch) {
   return runStage1Probe(config, fetcher);
 }
 
-async function secretPrompt(label) {
+export async function secretPrompt(label) {
   const muted = new Writable({ write(_chunk, _encoding, done) { done(); } });
   const reader = createInterface({ input: process.stdin, output: muted, terminal: true });
   process.stderr.write(`${label} (input hidden): `);
