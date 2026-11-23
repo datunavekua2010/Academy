@@ -35,3 +35,17 @@
 .login-preview-footer { margin:24px 0 0; text-align:center; color:#87988a; font-size:.72rem; }
 @media (max-width:700px) { .login-preview-header { width:calc(100% - 36px); min-height:72px; }.login-preview-main { padding:18px 18px 30px; }.login-preview-card { grid-template-columns:1fr; min-height:0; border-radius:20px; }.login-preview-intro { min-height:235px; padding:32px; }.login-preview-art { top:35px; left:auto; right:38px; width:120px; height:120px; opacity:.55; }.login-preview-art span { top:20px; left:32px; font-size:3rem; }.login-preview-art b { font-size:1.5rem; }.login-preview-intro h1 { position:relative; font-size:1.9rem; }.login-preview-intro > p:not(.login-preview-kicker) { position:relative; max-width:260px; }.login-preview-quote { display:none; }.login-preview-form-panel { padding:30px 28px 34px; } }
 @media (max-width:380px) { .login-preview-back { font-size:.72rem; }.login-preview-brand { font-size:.94rem; }.login-preview-intro { padding:26px; }.login-preview-form-panel { padding:26px 22px; } }
+.login-preview input { color:#18382e; background:#fff; -webkit-text-fill-color:currentColor; }
+.login-preview input:focus-visible, .login-preview button:focus-visible { outline:3px solid #287f5d; outline-offset:2px; }
+.login-preview button { background:#187c59; cursor:pointer; }
+.login-preview button:hover:not(:disabled) { background:#105c41; }
+.login-preview button:disabled, .login-preview fieldset:disabled button { background:#83ad98; cursor:not-allowed; }
+.login-preview button.login-google { margin:0 0 12px; background:#fff; color:#18382e; border:1px solid #cdded0; }
+.login-preview button.login-google:hover:not(:disabled) { background:#f0f7f1; }
+.login-preview button.login-google:disabled { color:#819389; background:#f5f7f5; }
+.login-preview .recovery-request { margin-top:14px; }
+.login-preview .recovery-link { width:auto; min-height:0; padding:0; color:#197955; background:none; text-decoration:underline; }
+.login-preview .recovery-link:hover:not(:disabled) { color:#095d43; background:none; }
+.login-preview .login-signed-in nav { display:flex; flex-wrap:wrap; gap:10px 16px; margin:16px 0; }
+.login-preview .login-signed-in nav a, .login-preview-help a { color:#197955; font-size:.83rem; font-weight:750; text-decoration:underline; }
+.login-preview .login-error { color:#a52f2f; font-size:.82rem; line-height:1.6; }
