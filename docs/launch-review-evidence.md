@@ -4,7 +4,7 @@ This is a handoff for an independent reviewer, **not** an independent security o
 
 ## Staging read-test update
 
-The owner reported that the real-session four-user staging parent/student read probe passed and confirmed that the separate parent summary-shape, direct raw-result and non-admin link-denial probe passed. A follow-up staging query confirmed the two synthetic links remained and no link-request or relevant audit records were created. These check only the paths described in `staging-two-family-session-test.md`; authorized admin link/provisioning mutations, successful revocation, other exposure paths and production remain unverified. Some historical statements below predate these results or the production upgrade.
+The owner reported that the real-session staging parent/student read probe, the parent summary-shape/raw-result/non-admin link-denial probe, and the authorized admin synthetic link-revocation/retry/relink probe passed. A follow-up staging query corroborated both links intact and one committed request and audit for each link mutation. The temporary staging admin role was removed and its absence verified. These check only the paths described in `staging-two-family-session-test.md`; profile provisioning, other exposure paths and production remain unverified. Some historical statements below predate these results or the production upgrade.
 
 ## Current evidence and boundaries
 
