@@ -6,17 +6,22 @@ import { recoveryClient } from '../lib/passwordRecovery';
 import { signupClient } from '../lib/accountSignup';
 import { googleAuthClient } from '../lib/googleAuth';
 import { GoogleAuthButton } from '../account/GoogleAuth';
+import { useTurnstileReview } from '../account/TurnstileReview';
 
 export function StudentSignIn() {
   const { signInWithPassword, signOut, mode, status, error, signedIn } = useStudentSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [captchaError, setCaptchaError] = useState('');
+  const captcha = useTurnstileReview();
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (submitting) return;
-    setSubmitting(true);
-    try { await signInWithPassword(email.trim(), password); } finally { setSubmitting(false); setPassword(''); }
+    setSubmitting(true); setCaptchaError('');
+    try { const token = await captcha.verify(); await signInWithPassword(email.trim(), password, token); }
+    catch { setCaptchaError('უსაფრთხოების შემოწმება ვერ მოხერხდა. სცადეთ ხელახლა.'); }
+    finally { captcha.reset(); setSubmitting(false); setPassword(''); }
   };
   return (
     <div className="student-container signin-wrap">
@@ -29,7 +34,8 @@ export function StudentSignIn() {
           {!signedIn && <form onSubmit={submit} className="academy-signin-form">
             <label>ელფოსტა<input type="email" required autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
             <label>პაროლი<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-            <button type="submit" className="btn btn-primary" disabled={submitting || mode !== 'connected'}>{submitting ? 'იტვირთება…' : 'შესვლა'}</button>
+            {captcha.widgets}{captchaError && <p role="alert">{captchaError}</p>}
+            <button type="submit" className="btn btn-primary" disabled={submitting || !captcha.ready || mode !== 'connected'}>{submitting ? 'იტვირთება…' : 'შესვლა'}</button>
           </form>}
           {!signedIn && mode === 'connected' && <GoogleAuthButton client={googleAuthClient} />}
           {!signedIn && mode === 'connected' && <RecoveryRequest client={recoveryClient} />}

@@ -3,8 +3,9 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LEARN_STORAGE_KEY, resetProgressCache } from '../src/lessons/progress';
 
-// Exercise the preserved academy-auth path, not the temporary test account.
-vi.mock('../src/student/accountMode', () => ({ TEST_ACCOUNT_MODE: false, TEST_ACCOUNT_ID: 'axiom-test-preview-v1' }));
+// Exercise the preserved academy-auth path with a synthetic verified CAPTCHA, not the temporary test account.
+vi.mock('../src/account/TurnstileReview', () => ({ useTurnstileReview: () => ({ widgets: null, ready: true, verify: async () => 'test-captcha', reset: () => {} }) }));
+vi.mock('../src/student/accountMode', () => ({ TEST_ACCOUNT_MODE: false, ACCOUNT_MODE: 'connected', TEST_ACCOUNT_ID: 'axiom-test-preview-v1' }));
 const auth = vi.hoisted(() => ({ callback: null as null | ((event: string, session: unknown) => void), profile: true, from: vi.fn(), passwordError: false, signIn: vi.fn() }));
 vi.mock('../src/lib/supabase', () => ({ supabaseConfiguration: { mode: 'connected', client: {
   auth: {
@@ -134,14 +135,14 @@ describe('public guest previews', () => {
     fireEvent.change(screen.getByLabelText('პაროლი'), { target: { value: 'incorrect' } });
     fireEvent.click(screen.getByRole('button', { name: 'შესვლა' }));
     expect((await screen.findByRole('alert')).textContent).toContain('შესვლა ვერ მოხერხდა');
-    expect(auth.signIn).toHaveBeenCalledWith({ email: 'student@example.test', password: 'incorrect' });
+    expect(auth.signIn).toHaveBeenCalledWith({ email: 'student@example.test', password: 'incorrect', options: { captchaToken: 'test-captcha' } });
     expect((screen.getByLabelText('პაროლი') as HTMLInputElement).value).toBe('');
     expect(screen.queryByText(/გამარჯობა, ნინო/)).toBeNull();
     auth.passwordError = false;
     fireEvent.change(screen.getByLabelText('პაროლი'), { target: { value: 'academy-password' } });
     fireEvent.click(screen.getByRole('button', { name: 'შესვლა' }));
     expect(await screen.findByRole('heading', { name: /გამარჯობა, Test/ })).toBeTruthy();
-    expect(auth.signIn).toHaveBeenLastCalledWith({ email: 'student@example.test', password: 'academy-password' });
+    expect(auth.signIn).toHaveBeenLastCalledWith({ email: 'student@example.test', password: 'academy-password', options: { captchaToken: 'test-captcha' } });
   });
 
   it('does not turn a signed-in user with an invalid profile into a guest', async () => {

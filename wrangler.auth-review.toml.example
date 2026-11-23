@@ -1,0 +1,13 @@
+# REVIEW ONLY. Separate test deployment; never replace the production config without review.
+name = "academy-auth-review"
+main = "server/auth-captcha-review-worker.ts"
+compatibility_date = "2025-01-01"
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/auth/turnstile-verify"]
+[vars]
+TURNSTILE_REVIEW_ENABLED = "false"
+# Configure an exact HTTPS TURNSTILE_ALLOWED_ORIGIN for the test deployment.
+# Set TURNSTILE_WORKER_SECRET using a Worker secret, never a VITE_ variable.

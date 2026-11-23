@@ -6,6 +6,7 @@ import { recoveryClient } from '../lib/passwordRecovery';
 import { signupClient } from '../lib/accountSignup';
 import { googleAuthClient } from '../lib/googleAuth';
 import { GoogleAuthButton } from '../account/GoogleAuth';
+import { useTurnstileReview } from '../account/TurnstileReview';
 import { Link } from '../router';
 import { getGrade } from '../practice/curriculum';
 import { topicSubtopics,type GradeId } from '../practice/types';
@@ -22,6 +23,7 @@ type Access = {kind:'loading'|'signed-out'|'error'} | {kind:'ready';parentId:str
 export function ParentReviewApp({client}: {client:SupabaseClient}) {
   const [access,setAccess]=useState<Access>({kind:'loading'});
   const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [busy,setBusy]=useState(false);
+  const captcha=useTurnstileReview();
   const [selected,setSelected]=useState<string|null>(null);
   const [detail,setDetail]=useState<{attempts:ParentAttempt[];notes:ParentNote[]}|null>(null);
   const [detailError,setDetailError]=useState(false);const revision=useRef(0);const detailRevision=useRef(0);
@@ -37,7 +39,14 @@ export function ParentReviewApp({client}: {client:SupabaseClient}) {
     });
     return()=>{active=false;revision.current++;detailRevision.current++;subscription.unsubscribe();};
   },[client]);
-  const signIn=async(e:FormEvent)=>{e.preventDefault();setBusy(true);try{const {error}=await client.auth.signInWithPassword({email:email.trim(),password});if(error)throw error;}catch{setAccess({kind:'error'});}finally{setPassword('');setBusy(false);}};
+  const refreshChildren=async()=>{
+    if(access.kind!=='ready')return;
+    const parentId=access.parentId, current=++revision.current;
+    detailRevision.current++;setSelected(null);setDetail(null);setDetailError(false);setAccess({kind:'loading'});
+    try{const children=await loadParentChildren(client,parentId);if(current===revision.current)setAccess({kind:'ready',parentId,children});}
+    catch{if(current===revision.current)setAccess({kind:'error'});}
+  };
+  const signIn=async(e:FormEvent)=>{e.preventDefault();setBusy(true);try{const token=await captcha.verify();const {error}=await client.auth.signInWithPassword({email:email.trim(),password,...(token?{options:{captchaToken:token}}:{})});if(error)throw error;}catch{setAccess({kind:'error'});}finally{captcha.reset();setPassword('');setBusy(false);}};
   const signOut=async()=>{revision.current++;detailRevision.current++;setSelected(null);setDetail(null);setAccess({kind:'loading'});setBusy(true);try{const {error}=await client.auth.signOut();if(error)throw error;}catch{setAccess({kind:'error'});}finally{setBusy(false);}};
   const open=async(studentId:string)=>{
     if(access.kind!=='ready')return;const current=++detailRevision.current;setSelected(studentId);setDetail(null);setDetailError(false);
@@ -46,8 +55,8 @@ export function ParentReviewApp({client}: {client:SupabaseClient}) {
   };
   return <main className="parent-review"><a href="#home">Axiom Academy</a><h1>მშობლის სივრცე</h1>
     {access.kind==='loading'&&<p role="status">მონაცემები იტვირთება…</p>}
-    {(access.kind==='signed-out'||access.kind==='error')&&<><p role={access.kind==='error'?'alert':undefined}>{access.kind==='error'?'წვდომა ან მონაცემები მიუწვდომელია. სცადეთ ხელახლა ან დაუკავშირდით აკადემიას.':'შედით აკადემიის მიერ მოწოდებული ანგარიშით.'}</p><form onSubmit={e=>void signIn(e)}><label>ელფოსტა<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username"/></label><label>პაროლი<input type="password" required value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label><button disabled={busy}>შესვლა</button></form><GoogleAuthButton client={googleAuthClient === client ? client : null}/><RecoveryRequest client={recoveryClient}/>{signupClient&&<p><Link to="/account/register">ანგარიშის მოთხოვნა</Link></p>}{access.kind==='error'&&(signupClient||googleAuthClient)&&<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p>}{access.kind==='error'&&<button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button>}</>}
-    {access.kind==='ready'&&<><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button><h2>დაკავშირებული მოსწავლეები</h2>{access.children.length===0?<p>დაკავშირებული მოსწავლე არ მოიძებნა.</p>:<ul>{access.children.map(child=><li key={child.studentId}><button onClick={()=>void open(child.studentId)}>{child.name}{child.grade ? ` · ${child.grade} კლასი`:''}</button></li>)}</ul>}
+    {(access.kind==='signed-out'||access.kind==='error')&&<><p role={access.kind==='error'?'alert':undefined}>{access.kind==='error'?'წვდომა ან მონაცემები მიუწვდომელია. სცადეთ ხელახლა ან დაუკავშირდით აკადემიას.':'შედით აკადემიის მიერ მოწოდებული ანგარიშით.'}</p><form onSubmit={e=>void signIn(e)}><label>ელფოსტა<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} autoComplete="username"/></label><label>პაროლი<input type="password" required value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password"/></label>{captcha.widgets}<button disabled={busy||!captcha.ready}>შესვლა</button></form><GoogleAuthButton client={googleAuthClient === client ? client : null}/><RecoveryRequest client={recoveryClient}/>{signupClient&&<p><Link to="/account/register">ანგარიშის მოთხოვნა</Link></p>}{access.kind==='error'&&(signupClient||googleAuthClient)&&<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p>}{access.kind==='error'&&<button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button>}</>}
+    {access.kind==='ready'&&<><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button><h2>დაკავშირებული მოსწავლეები</h2><button type="button" onClick={()=>void refreshChildren()}>მონაცემების განახლება</button>{access.children.length===0?<p>დაკავშირებული მოსწავლე არ მოიძებნა.</p>:<ul>{access.children.map(child=><li key={child.studentId}><button onClick={()=>void open(child.studentId)}>{child.name}{child.grade ? ` · ${child.grade} კლასი`:''}</button></li>)}</ul>}
       {selected&&<section><h2>{access.children.find(child=>child.studentId===selected)?.name}</h2>{detailError?<p role="alert">მონაცემები მიუწვდომელია.</p>:!detail?<p role="status">იტვირთება…</p>:<><p>შედეგები მოსწავლის მოწყობილობაზეა შეფასებული და სერვერის მიერ დადასტურებული არ არის.</p><h3>ბოლო სესიები</h3>{detail.attempts.length?<ul>{detail.attempts.map(a=><li key={a.id}>{date(a.createdAt)} · {a.grade} კლასი · {topicLabel(a.grade,a.topicId,a.subtopicId)} · {a.score===null?'შედეგი მიუწვდომელია':`${a.score} ქულა`}</li>)}</ul>:<p>სესიები არ მოიძებნა.</p>}<h3>ბოლო გამოქვეყნებული ჩანაწერები</h3>{detail.notes.length?<ul>{detail.notes.map((note,i)=><li key={`${note.createdAt}:${i}`}><strong>{note.author}</strong> · {date(note.createdAt)}<p>{note.text}</p></li>)}</ul>:<p>ჩანაწერები არ მოიძებნა.</p>}</>}</section>}</>}
   </main>;
 }

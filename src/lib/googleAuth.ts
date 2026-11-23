@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { TEST_ACCOUNT_MODE } from '../student/accountMode';
 import { supabaseConfiguration } from './supabase';
+import { authCallbackUrl } from './trustedAuthCallback';
 
 /** Separate, opt-in review flag. Google authenticates an identity, never an Academy role. */
 export const googleAuthClient = !TEST_ACCOUNT_MODE && import.meta.env.VITE_GOOGLE_AUTH_REVIEW === 'true'
@@ -10,14 +11,12 @@ type StorageAccess = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 /** Only an existing signed-out session may start this flow; never silently replace an account. */
 export async function startGoogleAuth(client: SupabaseClient, origin: string, pathname: string, storage: StorageAccess): Promise<void> {
-  const callback = new URL(pathname, origin);
-  if (callback.origin !== origin || (callback.protocol !== 'https:' && callback.hostname !== 'localhost' && callback.hostname !== '127.0.0.1')) throw new Error('Google auth unavailable');
+  const callback = authCallbackUrl(origin, pathname, 'google_auth');
   const current = await client.auth.getSession();
   if (current.error || current.data.session) throw new Error('Sign out first');
-  callback.search = '?google_auth=1'; callback.hash = '';
   storage.setItem(pendingKey, '1');
   try {
-    const result = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callback.toString() } });
+    const result = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callback } });
     if (result.error || !result.data.url) throw new Error('Google auth unavailable');
   } catch (error) { storage.removeItem(pendingKey); throw error; }
 }

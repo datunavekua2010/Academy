@@ -1,0 +1,56 @@
+# axiacad.uk account configuration — preparation only
+
+Do not deploy, modify the production project, or change dashboard settings without separate approval. These values are a proposed release configuration, not evidence of the live configuration. Production is `iywgnaltjjcgjzuccavj`; the isolated staging project is `wxxgwayrieasrzngpuul`. Do not use production data for tests. The current production database lacks the parent summary and provisioning RPCs and its parent policy permits linked parents to read full attempt JSON. Do not enable connected accounts or parent links there until the incremental migrations, effective privileges and real-session tests have been reviewed and completed.
+
+## Cloudflare build variables (public; embedded into the JavaScript bundle)
+
+For the future production build on `https://axiacad.uk`:
+
+| Name | Value / source |
+| --- | --- |
+| `VITE_ACCOUNT_MODE` | `connected` |
+| `VITE_SUPABASE_URL` | `https://iywgnaltjjcgjzuccavj.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | The **publishable** `sb_publishable_…` key for that project from Supabase Connect / API Keys. Never use a `sb_secret_…` or service-role key. |
+| `VITE_AUTH_CALLBACK_ORIGIN` | `https://axiacad.uk` (no trailing slash) |
+| `VITE_TURNSTILE_SITE_KEY` | Public site key of a Turnstile widget registered for `axiacad.uk`. |
+| `VITE_ACCOUNT_SIGNUP_REVIEW` | `true` only after confirmation, CAPTCHA, role-provisioning and abuse controls are verified; otherwise unset. |
+| `VITE_PASSWORD_RECOVERY_ENABLED` | `true` only after recovery delivery and callback tests; otherwise unset. |
+| `VITE_GOOGLE_AUTH_REVIEW` | Leave unset unless Google OAuth and identity-linking are separately configured and tested. |
+| `VITE_PARENT_ENABLED` | `true` only after parent minimization, link authorization and real-session tests pass; otherwise unset. |
+| `VITE_ADMIN_ENABLED` | `true` only after admin authorization, MFA/operator safeguards and provisioning tests pass; otherwise unset. |
+| `VITE_CLASSROOM_CODES_ENABLED`, `VITE_TURNSTILE_REVIEW` | Leave unset for this rollout; connected password forms already require CAPTCHA. |
+
+In Cloudflare, open the Axiom Academy Worker/Build configuration and set these in **build-time variables for the production environment** (not merely Worker runtime vars). The dashboard is not connected to this session, so existing values are unknown. Setting variables can affect a future build; do not change them until explicitly authorized. Never put service keys, OAuth client secrets or Turnstile secrets in any `VITE_` value, source file or chat. A preview needs its own staging project, preview origin, build variables and Turnstile configuration.
+
+## Supabase Auth (after separate production approval)
+
+In Supabase project `iywgnaltjjcgjzuccavj`, under Authentication → URL Configuration, use Site URL `https://axiacad.uk` and add these exact redirect URLs for the current root-path callbacks:
+
+- `https://axiacad.uk/?signup=1`
+- `https://axiacad.uk/?recovery=1`
+- `https://axiacad.uk/?google_auth=1` (only if Google is enabled)
+
+Do not use broad wildcard redirects. This assumes `https://axiacad.uk` is the canonical browser origin; `www` or other aliases must redirect to it before authentication. Test the deployed Supabase URL matcher, templates, PKCE code exchange, link scanners and query markers; do not claim those tests passed based on this list. Set up email confirmation, a production-capable mail provider, password policy and rate limits separately. Do not enable unrestricted public signup until the account and child-data process is approved.
+
+For Google, if selected later, its OAuth provider redirect is `https://iywgnaltjjcgjzuccavj.supabase.co/auth/v1/callback`; store its client secret only in Supabase's provider settings and review same-email linking and first-time account creation. Google is not covered by the password-form CAPTCHA flow.
+
+## Turnstile and Worker
+
+Create/configure a Turnstile widget for `axiacad.uk`. The frontend uses its public site key for two **separate** single-use tokens. Configure Supabase Authentication → Bot and Abuse Protection to enforce Turnstile with its secret; the Worker precheck is bypassable by direct Supabase Auth requests. Provision the Worker verifier secret in Cloudflare as `TURNSTILE_WORKER_SECRET`, never in a build variable. It must correspond to the frontend widget. `TURNSTILE_ALLOWED_ORIGIN=https://axiacad.uk` and `TURNSTILE_REVIEW_ENABLED=true` are Worker runtime variables, and `ASSETS` is the assets binding. The sample `wrangler.auth-review.toml.example` demonstrates routing `/api/auth/turnstile-verify`; **current `wrangler.toml` does not deploy or route it**. The Worker should be reviewed and tested on an isolated deployment before any production wiring. A 200 static HTML fallback is rejected; only the verifier's 204 response is accepted. Independent rate limits, abuse review and accessibility checks remain required.
+
+Review `public/_headers` before release: its current draft allows the staging Supabase origin as well as production and disables iframe embedding; test the actual CSP, preview environment and real Auth/Turnstile in a browser. Worker API responses need their own headers.
+
+## Verification and rollback
+
+Local commands, from `/home/user/Academy`:
+
+```sh
+npm run typecheck
+npx vitest run tests/account-mode-wiring.test.ts tests/account-mode-configuration.test.ts tests/supabase-session.test.tsx tests/account-signup.test.tsx tests/password-recovery.test.tsx tests/teacher-signin.test.tsx tests/teacher-no-preview.test.tsx tests/guest-preview.test.tsx tests/parent-review.test.tsx tests/auth-security-review.test.tsx tests/worker-security-review.test.ts --maxWorkers=2
+npm run test:review-policies
+npm run build
+```
+
+Each must finish with exit code 0; Vitest reports all files passed, and the policy suite prints passed for each synthetic test. If any command fails, retain its output and fix the failure before release. These do not prove real sessions, Cloudflare routing, email delivery, CAPTCHA enforcement, effective production policies or remote concurrency.
+
+After an expressly authorized, staged production rollout, rollback means restore the previously verified Cloudflare build/configuration and disable new account entry points if necessary, while preserving the database and records. Avoid reversing security policies or deleting records as an improvised rollback. Record the previous build ID, environment variables and a tested backup/restore procedure before changes; database rollback requires a separately reviewed data-preserving plan. No production rollout or rollback has been performed.

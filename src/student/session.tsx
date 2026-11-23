@@ -24,7 +24,7 @@ interface StudentSessionValue {
   signedIn: boolean;
   practiceMemory: ConnectedPracticeMemory | null;
   practiceRevision: number;
-  signInWithPassword: (email: string, password: string) => Promise<void>;
+  signInWithPassword: (email: string, password: string, captchaToken?: string) => Promise<void>;
   signOut: () => void;
 }
 
@@ -147,11 +147,11 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
 
   const value = useMemo<StudentSessionValue>(() => ({
     student, mode, status, error, signedIn: Boolean(user), practiceMemory, practiceRevision,
-    signInWithPassword: async (email, password) => {
+    signInWithPassword: async (email, password, captchaToken) => {
       if (!client) return;
       setError(null);
       try {
-        const { error: signInError } = await client.auth.signInWithPassword({ email, password });
+        const { error: signInError } = await client.auth.signInWithPassword({ email, password, ...(captchaToken ? { options: { captchaToken } } : {}) });
         if (signInError) throw signInError;
       } catch { setError('შესვლა ვერ მოხერხდა. შეამოწმე მონაცემები ან დაუკავშირდი აკადემიას.'); }
     },

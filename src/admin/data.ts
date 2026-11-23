@@ -1,5 +1,6 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
-export const ADMIN_REVIEW_ENABLED=false;
+// This UI gate is not authorization: every operation must also pass the admin RPC checks.
+export const ADMIN_REVIEW_ENABLED=import.meta.env.VITE_ADMIN_ENABLED==='true';
 const uuid=(v:unknown):v is string=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 const reference=(v:string)=>/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/.test(v);
 export type ProfileRequest={requestId:string;targetId:string;role:'parent'|'student'|'teacher';displayName:string;firstName:string;grade:number|null;reference:string};

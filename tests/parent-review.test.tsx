@@ -44,3 +44,13 @@ it('discards stale detail responses on signout and fails closed after role loss'
   act(()=>{user=null;callback?.('SIGNED_OUT',null);});await act(async()=>{release();await Promise.resolve();});expect(screen.queryByText('Published')).toBeNull();
   user=parent;role=false;act(()=>callback?.('TOKEN_REFRESHED',{user:{id:parent}}));await screen.findByRole('alert');expect(screen.queryByText('Child · 3 კლასი')).toBeNull();
 });
+it('refreshes linked children and clears previously displayed details after revocation',async()=>{
+  render(<ParentReviewApp client={client}/>);act(()=>callback?.('INITIAL_SESSION',{user:{id:parent}}));
+  fireEvent.click(await screen.findByText('Child · 3 კლასი'));
+  expect(await screen.findByText('Published')).toBeTruthy();
+  linked=false;
+  fireEvent.click(screen.getByRole('button',{name:'მონაცემების განახლება'}));
+  expect(screen.queryByText('Published')).toBeNull();
+  expect(await screen.findByText('დაკავშირებული მოსწავლე არ მოიძებნა.')).toBeTruthy();
+  expect(screen.queryByText('Child · 3 კლასი')).toBeNull();
+});

@@ -3,7 +3,8 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 const fixture = vi.hoisted(() => ({ user: null as {id:string} | null, role: null as string | null, callback: null as (() => void) | null, signIn:vi.fn(), signOut:vi.fn(), load:vi.fn() }));
-vi.mock('../src/student/accountMode', () => ({ TEST_ACCOUNT_MODE:false, TEST_ACCOUNT_ID:'test' }));
+vi.mock('../src/account/TurnstileReview', () => ({ useTurnstileReview: () => ({widgets:null,ready:true,verify:async()=> 'test-captcha',reset:()=>{}}) }));
+vi.mock('../src/student/accountMode', () => ({ TEST_ACCOUNT_MODE:false, ACCOUNT_MODE:'connected', TEST_ACCOUNT_ID:'test' }));
 vi.mock('../src/teacher/data', () => ({ loadTeacherData:fixture.load }));
 vi.mock('../src/lib/supabase', () => ({ supabaseConfiguration:{ mode:'connected', client:{
   auth:{getUser:async()=>({data:{user:fixture.user},error:null}),onAuthStateChange:(cb:()=>void)=>{fixture.callback=cb;return {data:{subscription:{unsubscribe(){fixture.callback=null;}}}}},signInWithPassword:fixture.signIn,signOut:fixture.signOut},
@@ -17,7 +18,7 @@ it('submits credentials, clears the password on failure, and never exposes the b
  fixture.signIn.mockResolvedValue({error:new Error('secret internal details')}); render(<TeacherApp />);await enter();
  expect((await screen.findByRole('alert')).textContent).toContain('შესვლა ვერ მოხერხდა');
  expect(screen.queryByText(/secret internal details/)).toBeNull(); expect((screen.getByLabelText('პაროლი') as HTMLInputElement).value).toBe('');
- expect(fixture.signIn).toHaveBeenCalledWith({email:'teacher@example.test',password:'my-password'});expect(fixture.load).not.toHaveBeenCalled();
+ expect(fixture.signIn).toHaveBeenCalledWith({email:'teacher@example.test',password:'my-password',options:{captchaToken:'test-captcha'}});expect(fixture.load).not.toHaveBeenCalled();
 });
 it('rechecks roles after successful auth and lets a denied user sign out',async()=>{
  fixture.signIn.mockImplementation(async()=>{fixture.user={id:'student'};fixture.role='student';fixture.callback?.();return {error:null};});
