@@ -30,7 +30,11 @@ export function StudentSignIn() {
         <span className="eyebrow"><span className="eyebrow-dot" /> მოსწავლის შესვლა</span>
         <h1>გამარჯობა! 👋</h1>
         {status === 'loading' ? <p role="status">იტვირთება…</p> : <>
-          <p>შედი აკადემიის მიერ მოწოდებული ელფოსტითა და პაროლით.</p>
+          {signedIn ? (
+            <p>უკვე შესული ხარ. მოსწავლის სივრცეზე წვდომა ჯერ ვერ დადასტურდა. დაუკავშირდი აკადემიას.</p>
+          ) : (
+            <p>{mode === 'connected' && googleAuthClient ? 'შედი ელფოსტითა და პაროლით ან Google-ით.' : 'შედი ელფოსტითა და პაროლით.'}</p>
+          )}
           {error && <p role="alert">{error}</p>}
           {!signedIn && <form onSubmit={submit} className="academy-signin-form">
             <label>ელფოსტა<input type="email" required autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
