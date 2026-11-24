@@ -13,12 +13,11 @@ directory over HTTP(S); opening `index.html` as a local file is not supported.
 - `Escape`, clicking Axi again, the dismiss button, or an outside tap closes the menu.
 - Bubble destinations: `#/student/lessons`, `#/student/homework`, `#/student/practice`,
   `#/student/progress`, `#/student/achievements`, `#/student/profile`.
-- For now, the student area opens automatically as a clearly labelled **test
-  account**, without sign-in. Test data is stored only in this browser under
-  isolated keys, never sent to Supabase, and must not be treated as private or
-  real student information. Anyone with access to the site can use it.
-- The public landing page keeps its conventional navigation. A discreet
-  **მოსწავლის შესვლა** link in the header/footer opens the student area.
+- In connected mode, the student dashboard requires a signed-in student with an
+  Academy profile and role. In local preview mode it opens as a **test account**,
+  without sign-in. Test data stays in this browser under isolated keys, never
+  goes to Supabase, and must not be treated as private or real student information.
+- The **შესვლა** link in the landing page navigation opens `#/account/login`.
 - The footer of every student page also lists all six sections, so navigation
   remains usable if the bubble animation fails.
 
@@ -122,8 +121,8 @@ npm run build
 npx wrangler dev     # serves dist/ exactly as production will
 ```
 
-## Supabase (sign-in deferred)
+## Account sign-in
 
-See [Supabase setup and security notes](docs/supabase.md) for build-time configuration, the review-only migration and seed, account provisioning, tests, and current limitations. Real account sign-in is currently disabled, even when Supabase variables are configured. Restore it deliberately only after review; no migration is applied automatically.
+Production builds use the existing Supabase login when `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are configured at build time. Password sign-in still requires Turnstile; Google sign-in is available only when enabled. Development defaults to the local preview (use `VITE_ACCOUNT_MODE=connected` for a configured development environment). An explicit `VITE_ACCOUNT_MODE=preview` never connects to real accounts. See [production authentication settings](docs/axiacad-production-configuration.md) for the provider and CAPTCHA configuration. No migration is needed to enable the login page on an already configured project.
 
 The 28-item achievement gallery is a catalog preview only; award validation and notifications are blocked until trusted server-side evidence is available. See [achievement system prerequisites](docs/achievement-system.md).

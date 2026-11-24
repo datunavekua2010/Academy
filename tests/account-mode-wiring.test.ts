@@ -5,8 +5,11 @@ vi.mock('@supabase/supabase-js', () => ({ createClient: vi.fn(() => ({ auth: {} 
 afterEach(() => { vi.unstubAllEnvs(); vi.resetModules(); });
 
 describe('connected account wiring', () => {
-  it('suppresses the backend and parent/operator UI in the default preview', async () => {
+  it('keeps explicit production previews local even with project settings present', async () => {
+    vi.stubEnv('PROD', true);
     vi.stubEnv('VITE_ACCOUNT_MODE', 'preview');
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_test');
     vi.stubEnv('VITE_PARENT_ENABLED', ''); vi.stubEnv('VITE_ADMIN_ENABLED', '');
     const [{supabaseConfiguration}, parent, admin] = await Promise.all([
       import('../src/lib/supabase'), import('../src/parent/data'), import('../src/admin/data'),
@@ -24,6 +27,26 @@ describe('connected account wiring', () => {
     ]);
     expect(supabaseConfiguration.mode).toBe('connected');
     expect(parent.PARENT_REVIEW_ENABLED).toBe(true); expect(admin.ADMIN_REVIEW_ENABLED).toBe(true);
+  });
+  it('connects the existing login client to the configured project in production without a mode flag', async () => {
+    vi.stubEnv('PROD', true);
+    vi.stubEnv('VITE_ACCOUNT_MODE', undefined);
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'sb_publishable_test');
+    const { supabaseConfiguration } = await import('../src/lib/supabase');
+    expect(supabaseConfiguration.mode).toBe('connected');
+    expect(supabaseConfiguration.client).not.toBeNull();
+  });
+  it.each([
+    ['', ''], ['https://example.supabase.co', ''], ['', 'sb_publishable_test'],
+    ['http://example.supabase.co', 'sb_publishable_test'], ['https://example.supabase.co', 'not-publishable'],
+  ])('keeps production login unavailable with missing or invalid project settings (%s, %s)', async (url, key) => {
+    vi.stubEnv('PROD', true);
+    vi.stubEnv('VITE_ACCOUNT_MODE', undefined);
+    vi.stubEnv('VITE_SUPABASE_URL', url);
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', key);
+    const { supabaseConfiguration } = await import('../src/lib/supabase');
+    expect(supabaseConfiguration).toEqual({ mode: 'invalid', client: null });
   });
   it('does not create a backend or isolated signup/recovery clients with an invalid mode', async () => {
     vi.stubEnv('VITE_ACCOUNT_MODE', 'conected');
