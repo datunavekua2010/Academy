@@ -9,6 +9,8 @@ interface ImportMetaEnv {
   readonly VITE_ACCOUNT_SIGNUP_REVIEW?: string;
   readonly VITE_GOOGLE_AUTH_REVIEW?: string;
   readonly VITE_GOOGLE_PROOF_REVIEW?: string;
+  readonly VITE_STUDENT_ONBOARDING_REVIEW?: string;
+  readonly VITE_PARENT_ONBOARDING_REVIEW?: string;
   readonly VITE_CLASSROOM_CODES_ENABLED?: string;
   readonly VITE_AUTH_CALLBACK_ORIGIN?: string;
   readonly VITE_TURNSTILE_REVIEW?: string;

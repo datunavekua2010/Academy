@@ -3,9 +3,10 @@ import { useStudentSession } from './session';
 import { googleAuthClient } from '../lib/googleAuth';
 import { GoogleAuthButton, GoogleProofButton } from '../account/GoogleAuth';
 import { LoadingScreen } from '../components/LoadingScreen';
+import { StudentEnrollmentReview } from './StudentEnrollmentReview';
 
 export function StudentSignIn() {
-  const { signOut, mode, status, error, signedIn } = useStudentSession();
+  const { signOut, mode, status, error, signedIn, retryStudentAccess } = useStudentSession();
   const googleAvailable = mode === 'connected' && Boolean(googleAuthClient);
   return (
     <div className="student-container signin-wrap">
@@ -23,6 +24,8 @@ export function StudentSignIn() {
           {error && <p role="alert">{error}</p>}
           {!signedIn && googleAvailable && <GoogleAuthButton client={googleAuthClient} />}
           {signedIn && <GoogleProofButton client={googleAvailable ? googleAuthClient : null} />}
+          {signedIn && googleAuthClient && import.meta.env.VITE_GOOGLE_PROOF_REVIEW === 'true' && import.meta.env.VITE_STUDENT_ONBOARDING_REVIEW === 'true' &&
+            <StudentEnrollmentReview client={googleAuthClient} onComplete={retryStudentAccess} />}
           {signedIn && <p><Link to="/account/status">ანგარიშის ნომერი</Link></p>}
           {signedIn && <button type="button" className="btn btn-ghost" onClick={signOut}>ანგარიშიდან გასვლა</button>}
         </>}

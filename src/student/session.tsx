@@ -25,6 +25,7 @@ interface StudentSessionValue {
   signedIn: boolean;
   practiceMemory: ConnectedPracticeMemory | null;
   practiceRevision: number;
+  retryStudentAccess: () => void;
   signOut: () => void;
 }
 
@@ -44,7 +45,7 @@ function TestStudentSessionProvider({ children }: { children: ReactNode }) {
   }, []);
   const value = useMemo<StudentSessionValue>(() => ({
     student: TEST_STUDENT, mode: 'test', status: 'ready', error: null, signedIn: false, practiceMemory: null, practiceRevision: 0,
-    signOut: () => {},
+    retryStudentAccess: () => {}, signOut: () => {},
   }), []);
   if (!ready) return null;
   return <StudentSessionContext.Provider value={value}>{children}</StudentSessionContext.Provider>;
@@ -149,6 +150,13 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
 
   const value = useMemo<StudentSessionValue>(() => ({
     student, mode, status, error, signedIn: Boolean(user), practiceMemory, practiceRevision,
+    retryStudentAccess: () => {
+      if (!client || !user) return;
+      authRevision.current++;
+      setError(null);
+      setStatus('loading');
+      setVerification(authRevision.current);
+    },
     signOut: () => {
       if (!client) return;
       void client.auth.signOut().then(({ error: signOutError }) => {
