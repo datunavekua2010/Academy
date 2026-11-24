@@ -1,51 +1,29 @@
-import { useRef, useState, type FormEvent } from 'react';
 import { Link } from '../router';
 import { useStudentSession } from './session';
-import { RecoveryRequest } from '../account/PasswordRecovery';
-import { recoveryClient } from '../lib/passwordRecovery';
-import { signupClient } from '../lib/accountSignup';
 import { googleAuthClient } from '../lib/googleAuth';
-import { GoogleAuthButton } from '../account/GoogleAuth';
-import { useTurnstileReview } from '../account/TurnstileReview';
+import { GoogleAuthButton, GoogleProofButton } from '../account/GoogleAuth';
+import { LoadingScreen } from '../components/LoadingScreen';
 
 export function StudentSignIn() {
-  const { signInWithPassword, signOut, mode, status, error, signedIn } = useStudentSession();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const pending = useRef(false);
-  const [captchaError, setCaptchaError] = useState('');
-  const captcha = useTurnstileReview();
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    if (pending.current) return;
-    pending.current = true; setSubmitting(true); setCaptchaError('');
-    try { const token = await captcha.verify(); await signInWithPassword(email.trim(), password, token); }
-    catch { setCaptchaError('უსაფრთხოების შემოწმება ვერ მოხერხდა. სცადეთ ხელახლა.'); }
-    finally { captcha.reset(); pending.current = false; setSubmitting(false); setPassword(''); }
-  };
+  const { signOut, mode, status, error, signedIn } = useStudentSession();
+  const googleAvailable = mode === 'connected' && Boolean(googleAuthClient);
   return (
     <div className="student-container signin-wrap">
       <div className="signin-card">
         <span className="eyebrow"><span className="eyebrow-dot" /> მოსწავლის შესვლა</span>
         <h1>გამარჯობა! 👋</h1>
-        {status === 'loading' ? <p role="status">იტვირთება…</p> : <>
+        {status === 'loading' ? <LoadingScreen compact /> : <>
           {signedIn ? (
             <p>უკვე შესული ხარ. მოსწავლის სივრცეზე წვდომა ჯერ ვერ დადასტურდა. დაუკავშირდი აკადემიას.</p>
+          ) : googleAvailable ? (
+            <p>მოსწავლის სივრცეში შესასვლელად გამოიყენე Google.</p>
           ) : (
-            <p>{mode === 'connected' && googleAuthClient ? 'შედი ელფოსტითა და პაროლით ან Google-ით.' : 'შედი ელფოსტითა და პაროლით.'}</p>
+            <p>Google-ით შესვლა ამ გარემოში ამჟამად მიუწვდომელია. დაუკავშირდი აკადემიას.</p>
           )}
           {error && <p role="alert">{error}</p>}
-          {!signedIn && <form onSubmit={submit} className="academy-signin-form">
-            <label>ელფოსტა<input type="email" required autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
-            <label>პაროლი<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-            {captcha.widgets}{captchaError && <p role="alert">{captchaError}</p>}
-            <button type="submit" className="btn btn-primary" disabled={submitting || !captcha.ready || mode !== 'connected'}>{submitting ? 'იტვირთება…' : 'შესვლა'}</button>
-          </form>}
-          {!signedIn && mode === 'connected' && <GoogleAuthButton client={googleAuthClient} />}
-          {!signedIn && mode === 'connected' && <RecoveryRequest client={recoveryClient} />}
-          {!signedIn && signupClient && <p><Link to="/account/register">ანგარიშის მოთხოვნა</Link></p>}
-          {signedIn && (signupClient || googleAuthClient) && <p><Link to="/account/status">ანგარიშის ნომერი</Link></p>}
+          {!signedIn && googleAvailable && <GoogleAuthButton client={googleAuthClient} />}
+          {signedIn && <GoogleProofButton client={googleAvailable ? googleAuthClient : null} />}
+          {signedIn && <p><Link to="/account/status">ანგარიშის ნომერი</Link></p>}
           {signedIn && <button type="button" className="btn btn-ghost" onClick={signOut}>ანგარიშიდან გასვლა</button>}
         </>}
         {status === 'ready' && !signedIn && mode !== 'invalid' && (

@@ -16,8 +16,8 @@ vi.mock('../src/lib/supabase', () => ({ supabaseConfiguration: { mode: 'connecte
 } } }));
 import { AcademyStudentSessionProvider as StudentSessionProvider, useStudentSession } from '../src/student/session';
 function View() {
-  const { student, status, error, signedIn, signOut, signInWithPassword } = useStudentSession();
-  return <><p data-testid="status">{status}</p><p data-testid="student">{student ? `${student.id} ${student.grade}` : 'none'}</p><p data-testid="signed">{String(signedIn)}</p><p data-testid="error">{error}</p><button onClick={signOut}>out</button><button onClick={() => void signInWithPassword('test@example.test', 'incorrect')}>in</button></>;
+  const { student, status, error, signedIn, signOut } = useStudentSession();
+  return <><p data-testid="status">{status}</p><p data-testid="student">{student ? `${student.id} ${student.grade}` : 'none'}</p><p data-testid="signed">{String(signedIn)}</p><p data-testid="error">{error}</p><button onClick={signOut}>out</button></>;
 }
 beforeEach(() => { mock.callback = null; mock.role = true; mock.profile = true; mock.loginError = false; mock.profileWait = null; });
 afterEach(() => cleanup());
@@ -30,17 +30,13 @@ it('loads an academy-provisioned student, keeps their real grade, and clears the
   await waitFor(() => expect(screen.getByTestId('student').textContent).toBe('none'));
   expect(screen.getByTestId('signed').textContent).toBe('false');
 });
-it('fails closed for missing student role and reports login errors', async () => {
+it('fails closed for missing student role', async () => {
   mock.role = false;
   render(<StudentSessionProvider><View /></StudentSessionProvider>);
   act(() => mock.callback?.('INITIAL_SESSION', { user: { id: 'student-1' } }));
   await waitFor(() => expect(screen.getByTestId('status').textContent).toBe('error'));
   expect(screen.getByTestId('student').textContent).toBe('none');
   expect(screen.getByTestId('error').textContent).toBeTruthy();
-  fireEvent.click(screen.getByText('out'));
-  mock.loginError = true;
-  fireEvent.click(screen.getByText('in'));
-  await waitFor(() => expect(screen.getByTestId('error').textContent).toContain('შესვლა ვერ მოხერხდა'));
   expect(screen.getByTestId('student').textContent).toBe('none');
 });
 it('rechecks the student role on a same-user auth refresh and clears access when revoked', async () => {

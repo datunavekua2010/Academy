@@ -19,6 +19,16 @@ it('delegates ordinary application and asset requests to the assets binding', as
   }
 });
 
+it('keeps Google proof routes disabled without explicit server configuration', async () => {
+  const fetchAsset = vi.fn(async () => new Response('synthetic asset'));
+  for (const path of ['/api/auth/google-proof/start','/api/auth/google-proof/callback']) {
+    const response = await worker.fetch(new Request(`${origin}${path}`), { ASSETS: { fetch: fetchAsset } });
+    expect(response.status).toBe(503);
+    expect(await response.text()).toBe('Unavailable');
+  }
+  expect(fetchAsset).not.toHaveBeenCalled();
+});
+
 it('fails closed without the Worker secret instead of returning SPA content', async () => {
   const fetchAsset = vi.fn(async () => new Response('synthetic asset'));
   const siteverify = vi.fn();

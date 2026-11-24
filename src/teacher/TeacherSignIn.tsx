@@ -3,8 +3,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { RecoveryRequest } from '../account/PasswordRecovery';
 import { recoveryClient } from '../lib/passwordRecovery';
 import { signupClient } from '../lib/accountSignup';
-import { googleAuthClient } from '../lib/googleAuth';
-import { GoogleAuthButton } from '../account/GoogleAuth';
 import { useTurnstileReview } from '../account/TurnstileReview';
 import { Link } from '../router';
 
@@ -39,7 +37,6 @@ export function TeacherSignIn({ client, onSignedIn }: { client: SupabaseClient; 
       {captcha.widgets}
       <button type="submit" className="teacher-button" disabled={busy || !captcha.ready}>{busy ? 'იტვირთება…' : 'შესვლა'}</button>
     </form>
-    <GoogleAuthButton client={googleAuthClient === client ? client : null} />
     {signupClient && <p><Link to="/account/register">ანგარიშის მოთხოვნა</Link></p>}
     {recoveryClient ? <RecoveryRequest client={recoveryClient} /> : <p>პაროლის აღსადგენად დაუკავშირდით აკადემიას.</p>}
   </>;

@@ -9,5 +9,13 @@ function consume(href: string, history: Pick<History, 'replaceState'>, marker: s
   return { code };
 }
 export const consumeGoogleCallback = (href: string, history: Pick<History, 'replaceState'>) => consume(href, history, 'google_auth', '/account/google', true);
+/** A display hint only; the database checks the actual proof on every request. */
+export function consumeGoogleProofCallback(href: string, history: Pick<History, 'replaceState'>): 'ok' | 'error' | null {
+  const url = new URL(href);
+  if (!url.searchParams.has('google_proof')) return null;
+  const values = url.searchParams.getAll('google_proof');
+  history.replaceState(null, '', `${url.pathname}#/account/google`);
+  return values.length === 1 && values[0] === 'ok' ? 'ok' : 'error';
+}
 export const consumeRecoveryCallback = (href: string, history: Pick<History, 'replaceState'>) => consume(href, history, 'recovery', '/account/recovery');
 export const consumeSignupCallback = (href: string, history: Pick<History, 'replaceState'>) => consume(href, history, 'signup', '/account/confirmed');

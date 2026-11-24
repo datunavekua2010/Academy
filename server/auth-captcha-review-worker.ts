@@ -1,6 +1,7 @@
 /** Worker entry point for the app assets and CAPTCHA precheck.
  * Supabase must enforce CAPTCHA independently for direct Auth API requests. */
-type Env = { ASSETS: { fetch(request: Request): Promise<Response> }; TURNSTILE_REVIEW_ENABLED?: string; TURNSTILE_WORKER_SECRET?: string; TURNSTILE_ALLOWED_ORIGIN?: string };
+import { handleGoogleProof, type ProofEnv } from './google-proof-http-review';
+type Env = ProofEnv & { ASSETS: { fetch(request: Request): Promise<Response> }; TURNSTILE_REVIEW_ENABLED?: string; TURNSTILE_WORKER_SECRET?: string; TURNSTILE_ALLOWED_ORIGIN?: string };
 const reply = (status: number) => new Response(status === 204 ? null : 'Unavailable', { status, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
 export async function verifyWorkerTurnstile(token: string, secret: string, hostname: string, fetcher: typeof fetch = fetch): Promise<boolean> {
   if (!token || token.length > 2048 || !secret || !hostname) return false;
@@ -31,4 +32,8 @@ export async function handleAuthCaptcha(request: Request, env: Env, fetcher: typ
   if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length !== 1 || typeof (body as {token?:unknown}).token !== 'string') return reply(400);
   return await verifyWorkerTurnstile((body as {token:string}).token, env.TURNSTILE_WORKER_SECRET, allowed.hostname, fetcher) ? reply(204) : reply(403);
 }
-export default { fetch(request: Request, env: Env) { return handleAuthCaptcha(request, env); } };
+export default { fetch(request: Request, env: Env) {
+  const path = new URL(request.url).pathname;
+  if (path === '/api/auth/google-proof/start' || path === '/api/auth/google-proof/callback') return handleGoogleProof(request, env);
+  return handleAuthCaptcha(request, env);
+} };

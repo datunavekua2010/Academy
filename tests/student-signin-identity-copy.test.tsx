@@ -16,10 +16,10 @@ import { StudentSignIn } from '../src/student/StudentSignIn';
 
 afterEach(() => { cleanup(); fixture.signedIn = false; fixture.status = 'ready'; fixture.error = null; });
 
-it('offers Google or password when signed out', () => {
+it('offers only Google when signed out', () => {
   render(<StudentSignIn />);
-  expect(screen.getByText('შედი ელფოსტითა და პაროლით ან Google-ით.')).toBeTruthy();
-  expect(screen.getByLabelText('პაროლი')).toBeTruthy();
+  expect(screen.getByText('მოსწავლის სივრცეში შესასვლელად გამოიყენე Google.')).toBeTruthy();
+  expect(screen.queryByLabelText('პაროლი')).toBeNull();
   expect(screen.getByRole('button', { name: 'Google-ით გაგრძელება' })).toBeTruthy();
 });
 
