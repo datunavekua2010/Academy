@@ -1,0 +1,30 @@
+import { PGlite } from '@electric-sql/pglite';
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const db=new PGlite();
+try {
+ await db.exec(`create role anon; create role authenticated; create role service_role; create schema auth; create schema academy_private; create table auth.users(id uuid primary key);`);
+ await db.exec(readFileSync('supabase/review/payment-webhook-mock.sql','utf8'));
+ const id='12345678-1234-4234-8234-123456789abc';
+ await db.query('insert into auth.users(id) values ($1)',[id]);
+ await db.query(`insert into academy_private.payment_review_customers values ('review_only','customer-1',$1)`,[id]);
+ const call=async (event,version,type,customer='customer-1',provider='review_only') => (await db.query(`select public.review_payment_apply_verified_event($1,$2,$3,'sub-1',$4,$5) as result`,[provider,event,customer,version,type])).rows[0].result;
+ await db.exec('set role authenticated');
+ await assert.rejects(()=>call('event-0','0','mock.active'),/permission denied/);
+ await db.exec('reset role; set role service_role');
+ assert.equal(await call('event-1','1','mock.active'),'applied');
+ assert.equal(await call('event-1','1','mock.active'),'duplicate');
+ await assert.rejects(()=>call('event-1','2','mock.inactive'),/Event conflict/);
+ assert.equal(await call('event-2','0','mock.inactive'),'ignored');
+ await assert.rejects(()=>call('event-3','1','mock.inactive'),/Version conflict/);
+ assert.equal(await call('event-3','2','mock.inactive'),'applied');
+ await assert.rejects(()=>call('event-4','3','mock.active','unknown'),/Unknown customer/);
+ await assert.rejects(()=>call('event-4','3','mock.active','customer-1','real_provider'),/Invalid review event/);
+ await assert.rejects(()=>db.query('select * from academy_private.payment_review_subscriptions'),/permission denied/);
+ await db.exec('reset role');
+ const {rows:[row]}=await db.query(`select mock_status,mock_version,(select count(*) from academy_private.payment_review_events)::int as events from academy_private.payment_review_subscriptions`);
+ assert.equal(row.mock_status,'inactive');assert.equal(Number(row.mock_version),2);assert.equal(row.events,3);
+ const {rows:[acl]}=await db.query(`select has_function_privilege('anon','public.review_payment_apply_verified_event(text,text,text,text,text,text)','execute') as anon,has_function_privilege('authenticated','public.review_payment_apply_verified_event(text,text,text,text,text,text)','execute') as authenticated,has_function_privilege('service_role','public.review_payment_apply_verified_event(text,text,text,text,text,text)','execute') as service`);
+ assert.deepEqual(acl,{anon:false,authenticated:false,service:true});
+ console.log('Review-only payment mock: transactional deduplication, ordering, rollback, mapping and grants passed.');
+} finally {await db.close();}

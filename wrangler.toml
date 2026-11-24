@@ -1,26 +1,23 @@
-# Cloudflare Workers — static assets only.
-#
-# This app is a single-page static build: `npm run build` emits
-# `dist/index.html` and hashed JS/CSS/assets in `dist/assets`; there is no
-# Worker script. Deploy the entire dist directory, not just index.html. Deploying it through Workers Builds therefore needs an
-# assets-only configuration — without this file the build has no entry point
-# and the deploy fails.
-#
-# Routing is hash-based (#/student/practice), so no SPA fallback is needed:
-# every route lives under the single index.html.
-
-name = "axiom-academy"
+# Production Worker and static assets. This routes CAPTCHA pre-verification;
+# Supabase Auth must also enforce CAPTCHA independently. Deploy only after the
+# rollout prerequisites are ready. The first script deployment must precede
+# adding Worker secrets if the existing deployment serves static assets only.
+# The owner identified axiomacademy9 as the Worker serving axiacad.uk.
+# Workers Builds may override settings not visible in this repository.
+name = "axiomacademy9"
+main = "server/auth-captcha-review-worker.ts"
 compatibility_date = "2025-01-01"
 
 [assets]
 directory = "./dist"
-
-# Serve index.html for unknown paths. Cheap insurance: it keeps the site
-# working if a future route ever uses real paths instead of hashes.
+binding = "ASSETS"
 not_found_handling = "single-page-application"
+run_worker_first = ["/api/auth/turnstile-verify"]
 
-# `wrangler preview` (the command Workers Builds runs on non-production
-# branches) refuses to start without this block, even when empty. Workers
-# Builds checks out only the branch, so this must be committed on every
-# branch that should produce a preview.
+[vars]
+TURNSTILE_REVIEW_ENABLED = "true"
+TURNSTILE_ALLOWED_ORIGIN = "https://axiacad.uk"
+# TURNSTILE_WORKER_SECRET must be provisioned as a Cloudflare Worker secret,
+# never as a [vars] entry or VITE_ build variable.
+
 [previews]

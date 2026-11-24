@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 const db = new PGlite();
 await db.exec(`create role anon; create role authenticated; create schema auth; create table auth.users(id uuid primary key); create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; grant usage on schema auth to authenticated,anon; grant execute on function auth.uid() to authenticated,anon;`);
-await db.exec(fs.readFileSync('supabase/migrations/202611200001_initial_academy.sql','utf8'));
+await db.exec(fs.readFileSync('supabase/migrations/20261120154717_initial_academy.sql','utf8'));
 await db.exec(fs.readFileSync('supabase/migrations/202611230001_classrooms_review.sql','utf8'));
 const [teacher, otherTeacher, student, otherStudent, parent] = [1,2,3,4,5].map(n => `00000000-0000-4000-8000-${String(n).padStart(12,'0')}`);
 for (const id of [teacher,otherTeacher,student,otherStudent,parent]) { await db.query('insert into auth.users values($1)',[id]); await db.query('insert into public.profiles(id,display_name,first_name) values($1,$2,$2)',[id,'სახელი']); }

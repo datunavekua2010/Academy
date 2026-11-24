@@ -5,6 +5,7 @@ import { recoveryClient } from '../lib/passwordRecovery';
 import { signupClient } from '../lib/accountSignup';
 import { googleAuthClient } from '../lib/googleAuth';
 import { GoogleAuthButton } from '../account/GoogleAuth';
+import { useTurnstileReview } from '../account/TurnstileReview';
 import { Link } from '../router';
 
 /** Authentication is only offered for accounts already provisioned by the academy. */
@@ -14,18 +15,20 @@ export function TeacherSignIn({ client, onSignedIn }: { client: SupabaseClient; 
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const pending = useRef(false);
+  const captcha = useTurnstileReview();
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (pending.current) return;
     pending.current = true; setBusy(true); setError('');
     try {
-      const result = await client.auth.signInWithPassword({ email: email.trim(), password });
+      const token = await captcha.verify();
+      const result = await client.auth.signInWithPassword({ email: email.trim(), password, ...(token ? { options: { captchaToken: token } } : {}) });
       if (result.error) throw result.error;
       // The workspace independently verifies the user, profile and role. A successful
       // password alone never grants access; onAuthStateChange also triggers rechecking.
       onSignedIn();
     } catch { setError('შესვლა ვერ მოხერხდა. შეამოწმეთ მონაცემები ან დაუკავშირდით აკადემიას.'); }
-    finally { pending.current = false; setBusy(false); setPassword(''); }
+    finally { captcha.reset(); pending.current = false; setBusy(false); setPassword(''); }
   };
   return <>
     <p>ამ გვერდისთვის საჭიროა მასწავლებლის ავტორიზებული ანგარიში. შედით აკადემიის მიერ მოწოდებული მონაცემებით.</p>
@@ -33,7 +36,8 @@ export function TeacherSignIn({ client, onSignedIn }: { client: SupabaseClient; 
     <form className="teacher-signin" onSubmit={submit}>
       <label>ელფოსტა<input type="email" required autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} /></label>
       <label>პაროლი<input type="password" required autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} /></label>
-      <button type="submit" className="teacher-button" disabled={busy}>{busy ? 'იტვირთება…' : 'შესვლა'}</button>
+      {captcha.widgets}
+      <button type="submit" className="teacher-button" disabled={busy || !captcha.ready}>{busy ? 'იტვირთება…' : 'შესვლა'}</button>
     </form>
     <GoogleAuthButton client={googleAuthClient === client ? client : null} />
     {signupClient && <p><Link to="/account/register">ანგარიშის მოთხოვნა</Link></p>}

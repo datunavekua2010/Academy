@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
-import { TEST_ACCOUNT_MODE } from '../student/accountMode';
+import { ACCOUNT_MODE, TEST_ACCOUNT_MODE } from '../student/accountMode';
+import { authCallbackUrl } from './trustedAuthCallback';
 
 /** Separate recovery auth storage prevents a reset from changing the signed-in
  * app account. PKCE verifiers survive a new tab on the same device. Recovery
@@ -21,7 +22,7 @@ export function makeRecoveryClient(url: string, key: string): SupabaseClient {
 
 /** Intentionally off in the public preview and until the recovery rollout is reviewed. */
 export const recoveryClient: SupabaseClient | null = (() => {
-  if (TEST_ACCOUNT_MODE || import.meta.env.VITE_PASSWORD_RECOVERY_ENABLED !== 'true') return null;
+  if (TEST_ACCOUNT_MODE || ACCOUNT_MODE === 'invalid' || import.meta.env.VITE_PASSWORD_RECOVERY_ENABLED !== 'true') return null;
   const url = import.meta.env.VITE_SUPABASE_URL?.trim();
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
   if (!url || !key?.startsWith('sb_publishable_')) return null;
@@ -38,11 +39,9 @@ export interface RecoveryCallback { code: string | null }
 export { consumeRecoveryCallback } from './authCallbacks';
 
 /** The request must use a fixed same-origin callback, never a caller-supplied redirect. */
-export async function requestRecovery(client: SupabaseClient, email: string, origin: string, pathname: string): Promise<void> {
-  const callback = new URL(pathname, origin);
-  if (callback.origin !== origin || callback.protocol !== 'https:' && callback.hostname !== 'localhost' && callback.hostname !== '127.0.0.1') throw new Error('Invalid recovery origin');
-  callback.search = '?recovery=1'; callback.hash = '';
-  const result = await client.auth.resetPasswordForEmail(email.trim(), { redirectTo: callback.toString() });
+export async function requestRecovery(client: SupabaseClient, email: string, origin: string, pathname: string, captchaToken?: string): Promise<void> {
+  const callback = authCallbackUrl(origin, pathname, 'recovery');
+  const result = await client.auth.resetPasswordForEmail(email.trim(), { redirectTo: callback, ...(captchaToken ? { captchaToken } : {}) });
   if (result.error) throw new Error('Recovery request failed');
 }
 

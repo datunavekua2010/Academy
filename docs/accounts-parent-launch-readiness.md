@@ -1,6 +1,6 @@
 # Accounts and parent access — local implementation and release gate
 
-**Review only; features remain disabled.** This is not production approval. The user authorized synthetic tests and migrations only in the separate test project. The first three migrations have been applied there; the remaining chain has not. See [test-project-progress.md](test-project-progress.md). No real children's data was used. Subscriptions and payments are deferred.
+**Review only; features remain gated.** This is not production approval. All 21 migrations were applied in order only to the separate test project under connector-assigned versions; selected SQL simulations passed but real Auth/PostgREST verification remains outstanding. See [test-project-progress.md](test-project-progress.md). No real children's data was used. Subscriptions and payments are deferred.
 
 ## Local flow
 
@@ -30,3 +30,9 @@ For an isolated test only, the project owner will need to create a Google Cloud 
 ## Local tests
 
 `npm run test:review-policies` runs synthetic SQL/RLS/catalog suites. `npm run test:review-concurrency` uses optional scratch-only embedded PostgreSQL to force selected separate-connection races. `tests/account-signup.test.tsx` exercises the actual Supabase JS SDK against mocked HTTP; `tests/admin-review.test.tsx`, `tests/account-status.test.tsx`, and `tests/parent-review.test.tsx` test mocked Auth/UI boundaries. These do not prove behavior of a real Supabase project, mail delivery, or all concurrent and privileged paths. Some legacy primitive tests intentionally stop before the final primitive-revocation migration; the full-chain privilege and new wrapper suites cover its final grants.
+
+## Connected-mode implementation update
+
+The app can now be built with `VITE_ACCOUNT_MODE=connected` without editing source. An unset or empty mode uses the isolated preview only in development; a production build without a mode fails closed. `VITE_ACCOUNT_MODE=preview` explicitly selects the isolated preview, and unrecognized values fail closed instead of presenting a sample student as an authenticated user. This changes the current static build unless its deployment sets an explicit mode: do not deploy until a mode and the relevant integrations are configured and tested. `VITE_PARENT_ENABLED=true` and `VITE_ADMIN_ENABLED=true` explicitly expose the parent and operator screens in a connected build, but they are only presentation switches, not authorization. Keep them unset on any environment whose effective policies and RPCs have not been verified. Signup, password recovery and Google still use their separate review flags and server-side prerequisites. This change does not configure or enable any remote service.
+
+The parent dashboard has a refresh control that clears the previously selected child and reloads the relationship-scoped list. It is not a realtime revocation mechanism; already-returned data cannot be recalled. The summary-only policy migrations have been applied to the test project and exercised in SQL role simulations, but real Auth/PostgREST testing and history reconciliation remain outstanding. Production retains the broad baseline policy. No subscriber entitlements or paid full-attempt path are implemented.

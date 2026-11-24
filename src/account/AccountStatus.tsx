@@ -1,6 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
-import {supabaseConfiguration} from '../lib/supabase';import {googleAuthClient} from '../lib/googleAuth';import {signupClient} from '../lib/accountSignup';import {Link} from '../router';import './passwordRecovery.css';
+import {supabaseConfiguration} from '../lib/supabase';import {Link} from '../router';import './passwordRecovery.css';
 type Status={kind:'loading'|'signed-out'|'error'}|{kind:'ready';id:string};
 export function AccountStatusView({client}:{client:SupabaseClient}){
  const [status,setStatus]=useState<Status>({kind:'loading'});const [busy,setBusy]=useState(false);const revision=useRef(0);
@@ -8,4 +8,4 @@ export function AccountStatusView({client}:{client:SupabaseClient}){
  const signout=async()=>{revision.current++;setStatus({kind:'loading'});setBusy(true);try{const {error}=await client.auth.signOut();if(error)throw error;}catch{setStatus({kind:'error'});}finally{setBusy(false);}};
  return <main className="recovery-page"><section className="recovery-card"><h1>ანგარიშის ნომერი</h1>{status.kind==='loading'?<p role="status">მოწმდება…</p>:status.kind==='ready'?<><p>ანგარიშის ID: <strong>{status.id}</strong></p><p>გაუზიარეთ მხოლოდ აკადემიის უფლებამოსილ წარმომადგენელს. ეს ID თავისთავად არ ადასტურებს ვინაობას ან ბავშვის წარმომადგენლობის უფლებას.</p><button disabled={busy} onClick={()=>void signout()}>ანგარიშიდან გასვლა</button></>:status.kind==='signed-out'?<p>ანგარიშის ნომრის სანახავად ჯერ შედით.</p>:<><p role="alert">ანგარიშის შემოწმება ვერ მოხერხდა ან ელფოსტა დადასტურებული არ არის.</p><button disabled={busy} onClick={()=>void signout()}>ანგარიშიდან გასვლა</button></>}<p><Link to="/parent">მშობლის შესვლა</Link> · <Link to="/teacher">მასწავლებლის შესვლა</Link> · <Link to="/student">მოსწავლის შესვლა</Link></p></section></main>;
 }
-export function AccountStatus(){if((!signupClient&&!googleAuthClient)||!supabaseConfiguration.client)return <main className="recovery-page"><section className="recovery-card"><h1>ანგარიშის ნომერი</h1><p>ამჟამად მიუწვდომელია.</p></section></main>;return <AccountStatusView client={supabaseConfiguration.client}/>;}
+export function AccountStatus(){if(!supabaseConfiguration.client)return <main className="recovery-page"><section className="recovery-card"><h1>ანგარიშის ნომერი</h1><p>ამჟამად მიუწვდომელია.</p></section></main>;return <AccountStatusView client={supabaseConfiguration.client}/>;}

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-/** Dormant review-only parent view; server RLS/RPCs remain the access boundary. */
-export const PARENT_REVIEW_ENABLED = false;
+/** Enable only after the scoped RPCs and data-minimization policies are installed. */
+export const PARENT_REVIEW_ENABLED = import.meta.env.VITE_PARENT_ENABLED === 'true';
 export type ParentChild = { studentId: string; name: string; grade: number | null };
 export type ParentAttempt = { id: string; createdAt: string; grade: number; topicId: string; subtopicId: string; score: number | null };
 export type ParentNote = { text: string; createdAt: string; author: string };

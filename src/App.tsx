@@ -66,7 +66,7 @@ export default function App() {
     <a className="al-skip" href="#main-content">მთავარ შიგთავსზე გადასვლა</a>
     <header className="al-header"><div className="al-container al-nav">
       <a className="al-brand" href="#home" aria-label="Axiom Academy — მთავარი"><span className="al-brand-mark" aria-hidden="true">✦</span><span>Axiom <strong>Academy</strong><small>მათემატიკის ციფრული პლატფორმა</small></span></a>
-      <nav id="landing-navigation" aria-label="მთავარი ნავიგაცია" className={menuOpen ? 'al-nav-links is-open' : 'al-nav-links'}>{navigation.map(([href, label]) => <a href={href} key={href} onClick={() => setMenuOpen(false)}>{label}</a>)}</nav>
+      <nav id="landing-navigation" aria-label="მთავარი ნავიგაცია" className={menuOpen ? 'al-nav-links is-open' : 'al-nav-links'}>{navigation.map(([href, label]) => <a href={href} key={href} onClick={() => setMenuOpen(false)}>{label}</a>)}<a href="#/account/login" onClick={() => setMenuOpen(false)}>შესვლა</a></nav>
       <a className="al-button al-button-primary al-nav-cta" href="#pricing">ნახე პაკეტები <span aria-hidden="true">↗</span></a>
       <button type="button" className="al-menu" aria-label={menuOpen ? 'მენიუს დახურვა' : 'მენიუს გახსნა'} aria-expanded={menuOpen} aria-controls="landing-navigation" onClick={() => setMenuOpen(!menuOpen)}><span/><span/><span/></button>
     </div></header>

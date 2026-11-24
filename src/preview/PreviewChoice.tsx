@@ -4,7 +4,7 @@ import './preview.css';
 /** Temporary navigation only: choosing a view never grants a real role. */
 export function PreviewChoice() {
   return <div className="preview-choice">
-    <header className="preview-choice-header"><a href="#home" className="preview-choice-brand"><span aria-hidden="true">✦</span> Axiom Academy</a><nav aria-label="საიტის ნავიგაცია"><a href="#home" className="preview-site-link">ვებგვერდის ნახვა ↗</a></nav></header>
+    <header className="preview-choice-header"><a href="#home" className="preview-choice-brand"><span aria-hidden="true">✦</span> Axiom Academy</a><nav aria-label="საიტის ნავიგაცია" className="preview-choice-nav"><Link to="/account/login" className="preview-site-link">შესვლა</Link><a href="#home" className="preview-site-link">ვებგვერდის ნახვა ↗</a></nav></header>
     <main>
     <div className="preview-choice-content">
       <p className="preview-choice-kicker"><span aria-hidden="true" /> Axiom Academy</p>

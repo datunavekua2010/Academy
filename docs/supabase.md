@@ -27,7 +27,7 @@ This file is ignored by Git. Restart `npm run dev` after editing. Never commit i
 
 ## 3. Review and apply to a test project
 
-1. Inspect `supabase/migrations/202611200001_initial_academy.sql` and `supabase/curriculum-seed.sql` in the repository. The schema includes RLS, grants and academy-managed role/link tables. The seed reflects the current practice curriculum and registry; it contains no student data.
+1. Inspect `supabase/migrations/20261120154717_initial_academy.sql` and `supabase/curriculum-seed.sql` in the repository. The schema includes RLS, grants and academy-managed role/link tables. The seed reflects the current practice curriculum and registry; it contains no student data.
 2. If the initial migration is not already installed, in the **test** project open **SQL Editor → New query**. Paste the reviewed contents of the migration file and click **Run**. Confirm success; if anything fails, stop and inspect the error rather than retrying blindly. Each file is transactional.
 3. If curriculum tables are empty, open a second new query, paste the reviewed contents of `supabase/curriculum-seed.sql`, and click **Run**. It is intended for an empty schema; do not run it twice. Future curriculum updates need a separately reviewed migration, not a repeat of this seed.
 4. Verify tables, RLS and policies in **Table Editor / Database → Tables and Policies**. Test using ordinary accounts, never the SQL editor's privileged session, to prove that RLS is enforced.

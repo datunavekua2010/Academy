@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { Link } from '../router';
 import { useStudentSession } from './session';
 import { RecoveryRequest } from '../account/PasswordRecovery';
@@ -6,17 +6,23 @@ import { recoveryClient } from '../lib/passwordRecovery';
 import { signupClient } from '../lib/accountSignup';
 import { googleAuthClient } from '../lib/googleAuth';
 import { GoogleAuthButton } from '../account/GoogleAuth';
+import { useTurnstileReview } from '../account/TurnstileReview';
 
 export function StudentSignIn() {
   const { signInWithPassword, signOut, mode, status, error, signedIn } = useStudentSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const pending = useRef(false);
+  const [captchaError, setCaptchaError] = useState('');
+  const captcha = useTurnstileReview();
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
-    try { await signInWithPassword(email.trim(), password); } finally { setSubmitting(false); setPassword(''); }
+    if (pending.current) return;
+    pending.current = true; setSubmitting(true); setCaptchaError('');
+    try { const token = await captcha.verify(); await signInWithPassword(email.trim(), password, token); }
+    catch { setCaptchaError('უსაფრთხოების შემოწმება ვერ მოხერხდა. სცადეთ ხელახლა.'); }
+    finally { captcha.reset(); pending.current = false; setSubmitting(false); setPassword(''); }
   };
   return (
     <div className="student-container signin-wrap">
@@ -24,12 +30,17 @@ export function StudentSignIn() {
         <span className="eyebrow"><span className="eyebrow-dot" /> მოსწავლის შესვლა</span>
         <h1>გამარჯობა! 👋</h1>
         {status === 'loading' ? <p role="status">იტვირთება…</p> : <>
-          <p>შედი აკადემიის მიერ მოწოდებული ელფოსტითა და პაროლით.</p>
+          {signedIn ? (
+            <p>უკვე შესული ხარ. მოსწავლის სივრცეზე წვდომა ჯერ ვერ დადასტურდა. დაუკავშირდი აკადემიას.</p>
+          ) : (
+            <p>{mode === 'connected' && googleAuthClient ? 'შედი ელფოსტითა და პაროლით ან Google-ით.' : 'შედი ელფოსტითა და პაროლით.'}</p>
+          )}
           {error && <p role="alert">{error}</p>}
           {!signedIn && <form onSubmit={submit} className="academy-signin-form">
             <label>ელფოსტა<input type="email" required autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label>
             <label>პაროლი<input type="password" required autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>
-            <button type="submit" className="btn btn-primary" disabled={submitting || mode !== 'connected'}>{submitting ? 'იტვირთება…' : 'შესვლა'}</button>
+            {captcha.widgets}{captchaError && <p role="alert">{captchaError}</p>}
+            <button type="submit" className="btn btn-primary" disabled={submitting || !captcha.ready || mode !== 'connected'}>{submitting ? 'იტვირთება…' : 'შესვლა'}</button>
           </form>}
           {!signedIn && mode === 'connected' && <GoogleAuthButton client={googleAuthClient} />}
           {!signedIn && mode === 'connected' && <RecoveryRequest client={recoveryClient} />}

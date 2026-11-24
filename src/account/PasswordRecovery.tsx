@@ -3,25 +3,27 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { Link } from '../router';
 import { requestRecovery, updateRecoveryPassword, type RecoveryReady } from '../lib/passwordRecovery';
 import './passwordRecovery.css';
+import { useTurnstileReview } from './TurnstileReview';
 
 export type RecoveryResult = { ready: RecoveryReady } | { error: true };
 export function RecoveryRequest({ client }: { client: SupabaseClient | null }) {
   const [open, setOpen] = useState(false); const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false); const [message, setMessage] = useState(''); const [error, setError] = useState('');
-  const pending = useRef(false);
+  const pending = useRef(false); const captcha = useTurnstileReview();
   if (!client) return null;
   const submit = async (event: FormEvent) => {
     event.preventDefault(); if (pending.current) return;
     pending.current = true; setBusy(true); setError(''); setMessage('');
-    try { await requestRecovery(client, email, window.location.origin, window.location.pathname); setMessage('თუ ანგარიშს ეს ელფოსტა აქვს, აღდგენის ინსტრუქციას მიიღებთ. გახსენით ბოლო ბმული იმავე ბრაუზერსა და მოწყობილობაზე.'); }
+    try { const token = await captcha.verify(); await requestRecovery(client, email, window.location.origin, window.location.pathname, token); setMessage('თუ ანგარიშს ეს ელფოსტა აქვს, აღდგენის ინსტრუქციას მიიღებთ. გახსენით ბოლო ბმული იმავე ბრაუზერსა და მოწყობილობაზე.'); }
     catch { setError('მოთხოვნის გაგზავნა ვერ დადასტურდა. შეამოწმეთ ელფოსტა ან სცადეთ მოგვიანებით.'); }
-    finally { pending.current = false; setBusy(false); }
+    finally { captcha.reset(); pending.current = false; setBusy(false); }
   };
   return <div className="recovery-request">
     <button type="button" className="recovery-link" onClick={() => setOpen(x=>!x)} aria-expanded={open}>პაროლი დაგავიწყდათ?</button>
     {open && <form onSubmit={submit} className="recovery-form">
       <label>ანგარიშის ელფოსტა<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} /></label>
-      <button type="submit" disabled={busy}>{busy ? 'იტვირთება…' : 'აღდგენის მოთხოვნა'}</button>
+      {captcha.widgets}
+      <button type="submit" disabled={busy || !captcha.ready}>{busy ? 'იტვირთება…' : 'აღდგენის მოთხოვნა'}</button>
       {message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}
     </form>}
   </div>;

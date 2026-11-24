@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import {expect,it,vi,afterEach} from 'vitest';import {cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';import {webcrypto} from 'node:crypto';import type {SupabaseClient} from '@supabase/supabase-js';
+import {expect,it,vi,afterEach} from 'vitest';import {act,cleanup,fireEvent,render,screen,waitFor} from '@testing-library/react';import {webcrypto} from 'node:crypto';import type {SupabaseClient} from '@supabase/supabase-js';
 import {consumeSignupCallback,exchangeSignup,makeSignupClient,requestSignup} from '../src/lib/accountSignup';import {SignupForm} from '../src/account/Signup';
 afterEach(()=>cleanup());
 it('uses isolated Supabase PKCE signup and verifies confirmed email before clearing the temporary session',async()=>{
@@ -20,4 +20,18 @@ it('never sends a signup until the adult confirmation and matching passwords are
  const signUp=vi.fn(async()=>({data:{session:null},error:null}));const client={auth:{signUp}} as unknown as SupabaseClient;render(<SignupForm client={client}/>);
  fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});
  fireEvent.submit(screen.getByText('მოთხოვნის გაგზავნა').closest('form')!);expect(signUp).not.toHaveBeenCalled();fireEvent.click(screen.getByLabelText('ვარ სრულწლოვანი და ამ ანგარიშის მოთხოვნის უფლება მაქვს'));fireEvent.click(screen.getByText('მოთხოვნის გაგზავნა'));await waitFor(()=>expect(signUp).toHaveBeenCalledTimes(1));expect(await screen.findByRole('status')).toBeTruthy();
+});
+it('does not send duplicate signup requests from rapid submissions',async()=>{
+ let release!:()=>void;const waiting=new Promise<void>(resolve=>{release=resolve;});
+ const signUp=vi.fn(async()=>{await waiting;return {data:{session:null},error:null};});
+ const client={auth:{signUp}} as unknown as SupabaseClient;render(<SignupForm client={client}/>);
+ fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});
+ fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});
+ fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});
+ fireEvent.click(screen.getByLabelText('ვარ სრულწლოვანი და ამ ანგარიშის მოთხოვნის უფლება მაქვს'));
+ const form=screen.getByText('მოთხოვნის გაგზავნა').closest('form')!;
+ act(()=>{fireEvent.submit(form);fireEvent.submit(form);});
+ await waitFor(()=>expect(signUp).toHaveBeenCalledTimes(1));
+ await act(async()=>{release();await waiting;});
+ expect(await screen.findByRole('status')).toBeTruthy();
 });

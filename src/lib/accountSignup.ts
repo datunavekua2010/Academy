@@ -1,5 +1,6 @@
 import {createClient,type SupabaseClient} from '@supabase/supabase-js';
-import {TEST_ACCOUNT_MODE} from '../student/accountMode';
+import {ACCOUNT_MODE,TEST_ACCOUNT_MODE} from '../student/accountMode';
+import {authCallbackUrl} from './trustedAuthCallback';
 
 /** REVIEW ONLY: Auth signup does not create an Academy role or parent link.
  * Verification data remains on the device; the resulting Auth session is
@@ -17,17 +18,15 @@ export function makeSignupClient(url:string,key:string):SupabaseClient {
  return createClient(url,key,{auth:{storage,storageKey:instance,persistSession:true,autoRefreshToken:false,detectSessionInUrl:false,flowType:'pkce'}});
 }
 export const signupClient:SupabaseClient|null=(()=>{
- if(TEST_ACCOUNT_MODE||import.meta.env.VITE_ACCOUNT_SIGNUP_REVIEW!=='true')return null;
+ if(TEST_ACCOUNT_MODE||ACCOUNT_MODE==='invalid'||import.meta.env.VITE_ACCOUNT_SIGNUP_REVIEW!=='true')return null;
  const url=import.meta.env.VITE_SUPABASE_URL?.trim(),key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
  if(!url||!key?.startsWith('sb_publishable_'))return null;
  try{const u=new URL(url);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||!window.crypto?.subtle||!window.crypto.getRandomValues)return null;window.localStorage.getItem('axiom-signup-check');return makeSignupClient(url,key);}catch{return null;}
 })();
-export async function requestSignup(client:SupabaseClient,email:string,password:string,origin:string,pathname:string):Promise<void>{
- const callback=new URL(pathname,origin);
- if(callback.origin!==origin||(callback.protocol!=='https:'&&callback.hostname!=='localhost'&&callback.hostname!=='127.0.0.1'))throw new Error('Signup unavailable');
+export async function requestSignup(client:SupabaseClient,email:string,password:string,origin:string,pathname:string,captchaToken?:string):Promise<void>{
+ const callback=authCallbackUrl(origin,pathname,'signup');
  if(password.length<10||password.length>128||!email.trim()||email.trim().length>254)throw new Error('Signup unavailable');
- callback.search='?signup=1';callback.hash='';
- const result=await client.auth.signUp({email:email.trim(),password,options:{emailRedirectTo:callback.toString()}});
+ const result=await client.auth.signUp({email:email.trim(),password,options:{emailRedirectTo:callback,...(captchaToken?{captchaToken}:{})}});
  // Confirmation must be enabled in Auth. An unexpected immediate session is
  // never adopted by the main app; the account may nevertheless already exist.
  if(result.data.session){await client.auth.signOut({scope:'local'}).catch(()=>{});throw new Error('Signup unavailable');}
