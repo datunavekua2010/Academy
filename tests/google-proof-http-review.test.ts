@@ -5,7 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { handleGoogleProof, type ProofEnv } from '../server/google-proof-http-review';
 const origin='https://stage.example.test';
 const user='00000000-0000-4000-8000-000000000001', sid='00000000-0000-4000-8000-000000000002';
-const env: ProofEnv={GOOGLE_PROOF_REVIEW_ENABLED:'true',GOOGLE_PROOF_ALLOWED_ORIGIN:origin,GOOGLE_PROOF_CLIENT_ID:'test.apps.googleusercontent.com',GOOGLE_PROOF_CLIENT_SECRET:'secret-example',GOOGLE_PROOF_SUPABASE_URL:'https://wxxgwayrieasrzngpuul.supabase.co',GOOGLE_PROOF_SUPABASE_SERVICE_KEY:'service-example'};
+const env: ProofEnv={GOOGLE_PROOF_REVIEW_ENABLED:'true',GOOGLE_PROOF_ALLOWED_ORIGIN:origin,GOOGLE_PROOF_CLIENT_ID:'test.apps.googleusercontent.com',GOOGLE_PROOF_CLIENT_SECRET:'secret-example',GOOGLE_PROOF_SUPABASE_URL:'https://wxxgwayrieasrzngpuul.supabase.co',GOOGLE_PROOF_SUPABASE_SERVICE_KEY:'service-example',GOOGLE_PROOF_RATE_KEY:'synthetic-rate-key-not-for-production-123456'};
 const enc=(value:unknown)=>Buffer.from(JSON.stringify(value)).toString('base64url');
 const sessionJwt=(method='oauth',sub=user)=>`${enc({alg:'test'})}.${enc({sub,session_id:sid,amr:[{method}]})}.signature`;
 let privateKey: CryptoKey, key: JsonWebKey;
@@ -18,6 +18,7 @@ function mocks() {
   let row:Record<string,string>|undefined;
   const getUser=vi.fn(async()=>({data:{user:{id:user,email_confirmed_at:'2025-01-01'}},error:null}));
   const rpc=vi.fn(async(name:string,args:Record<string,string>)=>{
+    if(name==='review_google_proof_rate_limit')return {data:true,error:null};
     if(name==='review_google_proof_begin'){row=args;return {data:null,error:null};}
     if(name==='review_google_proof_read') return {data:row && args.p_state_hash===row.p_state_hash && args.p_cookie_hash===row.p_cookie_hash ? [{nonce:row.p_nonce,code_verifier:row.p_verifier}] : [],error:null};
     if(name==='review_google_proof_finish') {
@@ -39,7 +40,7 @@ function mocks() {
   const client={auth:{getUser},rpc} as unknown as SupabaseClient;
   return {client,getUser,rpc,fetcher};
 }
-const request=(method:string,path:string,headers:Record<string,string>={})=>new Request(origin+path,{method,headers});
+const request=(method:string,path:string,headers:Record<string,string>={})=>new Request(origin+path,{method,headers:{'CF-Connecting-IP':'192.0.2.1',...headers}});
 it('starts only after server Auth verification, then finishes a CSRF-bound callback without exposing secrets',async()=>{
   const deps=mocks();
   const start=await handleGoogleProof(request('POST','/api/auth/google-proof/start',{origin,authorization:`Bearer ${sessionJwt()}`}),env,deps);
@@ -66,18 +67,28 @@ it('fails closed for wrong origin, unavailable config, password sessions and mis
   expect((await handleGoogleProof(request('POST','/api/auth/google-proof/start',{origin,authorization:`Bearer ${sessionJwt()}`}),{...env,GOOGLE_PROOF_REVIEW_ENABLED:'false'},deps)).status).toBe(503);
   expect((await handleGoogleProof(request('POST','/api/auth/google-proof/start',{origin,authorization:`Bearer ${sessionJwt('password')}`}),env,deps)).status).toBe(403);
   expect((await handleGoogleProof(request('POST','/api/auth/google-proof/start',{origin,authorization:`Bearer ${sessionJwt('oauth','00000000-0000-4000-8000-000000000005')}`}),env,deps)).status).toBe(403);
-  expect(deps.rpc).not.toHaveBeenCalled();
+  expect(deps.rpc.mock.calls.every(([name])=>name==='review_google_proof_rate_limit')).toBe(true);
 });
 it('rejects unverified tokens and duplicate callback parameters',async()=>{
   const deps=mocks();
   deps.getUser.mockResolvedValueOnce({data:{user:null as never},error:{message:'invalid'} as never});
   const denied=await handleGoogleProof(request('POST','/api/auth/google-proof/start',{origin,authorization:`Bearer ${sessionJwt()}`}),env,deps);
   expect(denied.status).toBe(403);
-  expect(deps.rpc).not.toHaveBeenCalled();
+  expect(deps.rpc.mock.calls.every(([name])=>name==='review_google_proof_rate_limit')).toBe(true);
   const cookie='__Host-axiom-google-proof='+'A'.repeat(43);
   for (const path of ['/api/auth/google-proof/callback?state=one&state=two&code=code','/api/auth/google-proof/callback?state=one&code=one&code=two']) {
     const response=await handleGoogleProof(request('GET',path,{cookie}),env,deps);
     expect(response.headers.get('location')).toContain('google_proof=error');
   }
-  expect(deps.rpc).not.toHaveBeenCalled();
+  expect(deps.rpc.mock.calls.every(([name])=>name==='review_google_proof_rate_limit')).toBe(true);
+});
+it('fails closed when rate storage or trusted ingress is unavailable and returns 429 when limited',async()=>{
+  const deps=mocks();
+  deps.rpc.mockResolvedValueOnce({data:false,error:null});
+  expect((await handleGoogleProof(request('POST','/api/auth/google-proof/start',{origin,authorization:`Bearer ${sessionJwt()}`}),env,deps)).status).toBe(429);
+  expect(deps.getUser).not.toHaveBeenCalled();
+  deps.rpc.mockResolvedValueOnce({data:null,error:{message:'unavailable'}});
+  expect((await handleGoogleProof(request('GET','/api/auth/google-proof/callback'),env,deps)).status).toBe(503);
+  expect((await handleGoogleProof(new Request(`${origin}/api/auth/google-proof/callback`),env,deps)).status).toBe(503);
+  expect((await handleGoogleProof(request('GET','/api/auth/google-proof/callback'),{...env,GOOGLE_PROOF_RATE_KEY:undefined},deps)).status).toBe(503);
 });

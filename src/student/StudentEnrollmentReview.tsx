@@ -31,7 +31,7 @@ export function StudentEnrollmentReview({ client, onComplete }: { client: Supaba
       setError('მოსწავლის ანგარიშის შექმნა ვერ მოხერხდა. გადაამოწმე Google-ით შესვლა ან დაუკავშირდი აკადემიას.');
     } finally { pending.current = false; setBusy(false); }
   };
-  return <form onSubmit={event => void submit()}>
+  return <form onSubmit={event => void submit(event)}>
     <h2>მოსწავლის ანგარიშის შექმნა</h2>
     <label>სახელი ან მეტსახელი <input value={name} onChange={event => setName(event.target.value)} required maxLength={100} autoComplete="off" /></label>
     <label>კლასი <select value={grade} onChange={event => setGrade(event.target.value)} required>

@@ -4,6 +4,7 @@ import { supabaseConfiguration } from '../lib/supabase';
 import { googleAuthClient } from '../lib/googleAuth';
 import { GoogleAuthButton, GoogleProofButton } from '../account/GoogleAuth';
 import { ParentEnrollmentReview } from './ParentEnrollmentReview';
+import { ParentLinkApplications } from './ParentLinkApplications';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { Link } from '../router';
 import { getGrade } from '../practice/curriculum';
@@ -58,6 +59,7 @@ export function ParentReviewApp({client}: {client:SupabaseClient}) {
       {access.kind==='error'&&<><GoogleProofButton client={googleAuthClient === client ? client : null}/>{googleAuthClient===client && import.meta.env.VITE_GOOGLE_PROOF_REVIEW==='true' && import.meta.env.VITE_PARENT_ONBOARDING_REVIEW==='true' && <ParentEnrollmentReview client={client} onComplete={()=>setReload(value=>value+1)}/>}<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button></>}
     </>}
     {access.kind==='ready'&&<><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button><h2>დაკავშირებული მოსწავლეები</h2><button type="button" onClick={()=>void refreshChildren()}>მონაცემების განახლება</button>{access.children.length===0?<p>დაკავშირებული მოსწავლე არ მოიძებნა.</p>:<ul>{access.children.map(child=><li key={child.studentId}><button onClick={()=>void open(child.studentId)}>{child.name}{child.grade ? ` · ${child.grade} კლასი`:''}</button></li>)}</ul>}
+      {import.meta.env.VITE_GOOGLE_PROOF_REVIEW==='true' && import.meta.env.VITE_PARENT_LINK_APPLICATION_REVIEW==='true' && <ParentLinkApplications client={client} parentId={access.parentId} onChanged={()=>void refreshChildren()}/>}
       {selected&&<section><h2>{access.children.find(child=>child.studentId===selected)?.name}</h2>{detailError?<p role="alert">მონაცემები მიუწვდომელია.</p>:!detail?<p role="status">იტვირთება…</p>:<><p>შედეგები მოსწავლის მოწყობილობაზეა შეფასებული და სერვერის მიერ დადასტურებული არ არის.</p><h3>ბოლო სესიები</h3>{detail.attempts.length?<ul>{detail.attempts.map(a=><li key={a.id}>{date(a.createdAt)} · {a.grade} კლასი · {topicLabel(a.grade,a.topicId,a.subtopicId)} · {a.score===null?'შედეგი მიუწვდომელია':`${a.score} ქულა`}</li>)}</ul>:<p>სესიები არ მოიძებნა.</p>}<h3>ბოლო გამოქვეყნებული ჩანაწერები</h3>{detail.notes.length?<ul>{detail.notes.map((note,i)=><li key={`${note.createdAt}:${i}`}><strong>{note.author}</strong> · {date(note.createdAt)}<p>{note.text}</p></li>)}</ul>:<p>ჩანაწერები არ მოიძებნა.</p>}</>}</section>}</>}
   </main>;
 }

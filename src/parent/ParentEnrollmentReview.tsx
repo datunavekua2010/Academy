@@ -26,7 +26,7 @@ export function ParentEnrollmentReview({client,onComplete}:{client:SupabaseClien
     }catch{setError('მშობლის ანგარიშის შექმნა ვერ მოხერხდა. გადაამოწმეთ Google-ით შესვლა ან დაუკავშირდით აკადემიას.');}
     finally{pending.current=false;setBusy(false);}
   };
-  return <form onSubmit={event=>void submit()}>
+  return <form onSubmit={event=>void submit(event)}>
     <h2>მშობლის ანგარიშის შექმნა</h2>
     <label>სახელი ან მეტსახელი <input value={name} onChange={event=>setName(event.target.value)} required maxLength={100} autoComplete="off"/></label>
     <label><input type="checkbox" checked={adult} onChange={event=>setAdult(event.target.checked)} required/> სრულწლოვანი ვარ</label>

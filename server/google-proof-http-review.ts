@@ -1,6 +1,7 @@
 /** LOCAL REVIEW ONLY. Unrouted until deployment configuration is reviewed. */
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { startGoogleProof, finishGoogleProof, type GoogleProofStore } from './google-proof-flow';
+import { keyedId } from './classroom-code-gateway';
 
 export type ProofEnv = {
   GOOGLE_PROOF_REVIEW_ENABLED?: string;
@@ -9,6 +10,7 @@ export type ProofEnv = {
   GOOGLE_PROOF_CLIENT_SECRET?: string;
   GOOGLE_PROOF_SUPABASE_URL?: string;
   GOOGLE_PROOF_SUPABASE_SERVICE_KEY?: string;
+  GOOGLE_PROOF_RATE_KEY?: string;
 };
 const START = '/api/auth/google-proof/start';
 const CALLBACK = '/api/auth/google-proof/callback';
@@ -72,21 +74,35 @@ export async function handleGoogleProof(request: Request, env: ProofEnv, deps?: 
   if (url.pathname !== START && url.pathname !== CALLBACK) return failure(404);
   if (env.GOOGLE_PROOF_REVIEW_ENABLED !== 'true') return failure(503);
   const allowed=origin(env.GOOGLE_PROOF_ALLOWED_ORIGIN), endpoint=supabaseEndpoint(env.GOOGLE_PROOF_SUPABASE_URL);
-  if (!allowed || !endpoint || url.origin!==allowed || !env.GOOGLE_PROOF_CLIENT_ID || !env.GOOGLE_PROOF_CLIENT_SECRET || !env.GOOGLE_PROOF_SUPABASE_SERVICE_KEY) return failure(503);
+  if (!allowed || !endpoint || url.origin!==allowed || !env.GOOGLE_PROOF_CLIENT_ID || !env.GOOGLE_PROOF_CLIENT_SECRET || !env.GOOGLE_PROOF_SUPABASE_SERVICE_KEY || !env.GOOGLE_PROOF_RATE_KEY || new TextEncoder().encode(env.GOOGLE_PROOF_RATE_KEY).length<32) return failure(503);
   const config={clientId:env.GOOGLE_PROOF_CLIENT_ID,clientSecret:env.GOOGLE_PROOF_CLIENT_SECRET,redirectUri:allowed+CALLBACK};
   const client=deps?.client ?? createClient(endpoint,env.GOOGLE_PROOF_SUPABASE_SERVICE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
   const store=supabaseProofStore(client);
+  // Only the Cloudflare edge may supply this address; never use X-Forwarded-For
+  // or a browser-supplied account identifier. Raw addresses never reach storage.
+  const network=request.headers.get('CF-Connecting-IP');
+  if (!network || network.length>45 || !/^[0-9a-fA-F:.]+$/.test(network)) return failure(503);
+  const consumeRate=async(scope:'network'|'account', value:string) => {
+    const hash=await keyedId(env.GOOGLE_PROOF_RATE_KEY!, `google-proof-${scope}`,value.toLowerCase());
+    const {data,error}=await client.rpc('review_google_proof_rate_limit',{p_scope:scope,p_key_hash:hash});
+    if (error || typeof data!=='boolean') throw new Error('Unavailable');
+    return data;
+  };
   if (url.pathname === START) {
     if (request.method !== 'POST' || request.headers.get('origin')!==allowed || (request.headers.has('sec-fetch-site') && request.headers.get('sec-fetch-site')!=='same-origin')) return failure(403);
+    try { if (!await consumeRate('network',network)) return failure(429); } catch { return failure(503); }
     const authorization=request.headers.get('authorization');
     if (!authorization?.startsWith('Bearer ')) return failure(401);
+    let session: Awaited<ReturnType<typeof verifySupabaseSession>>;
+    try { session=await verifySupabaseSession(client,authorization.slice(7)); } catch { return failure(403); }
+    try { if (!await consumeRate('account',session.userId)) return failure(429); } catch { return failure(503); }
     try {
-      const session=await verifySupabaseSession(client,authorization.slice(7));
       const result=await startGoogleProof(session,config,store);
       return new Response(JSON.stringify({authorizationUrl:result.authorizationUrl}),{status:200,headers:{...secureHeaders,'Content-Type':'application/json','Set-Cookie':`${COOKIE}=${result.cookie}; Path=/; Max-Age=300; Secure; HttpOnly; SameSite=Lax`}});
     } catch { return failure(403); }
   }
   if (request.method !== 'GET') return failure(405);
+  try { if (!await consumeRate('network',network)) return failure(429); } catch { return failure(503); }
   const states=url.searchParams.getAll('state'),codes=url.searchParams.getAll('code'),cookie=cookieValue(request);
   const redirect=(result: 'ok' | 'error') => new Response(null,{status:303,headers:{...secureHeaders,'Location':`${allowed}/?google_proof=${result}#/account/google`,'Set-Cookie':clearCookie}});
   if (url.searchParams.has('error') || states.length!==1 || codes.length!==1 || !cookie) return redirect('error');
