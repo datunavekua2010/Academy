@@ -1,0 +1,15 @@
+# Separate staging Worker only. Never use for the production Worker.
+# Deploy explicitly with --config wrangler.signup-staging.toml --keep-vars.
+# No API secrets, production project configuration or routes are stored here.
+name = "axiomtest"
+main = "server/auth-captcha-review-worker.ts"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/auth/turnstile-verify", "/api/auth/google-proof/start", "/api/auth/google-proof/callback"]
+
+# Runtime variables/secrets are configured in the isolated Cloudflare Worker.
+# With GOOGLE_PROOF_REVIEW_ENABLED absent, proof endpoints fail closed.
