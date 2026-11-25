@@ -27,11 +27,12 @@ returns text language plpgsql security definer set search_path='' as $$
 declare actor uuid:=(select auth.uid()); existing academy_private.parent_link_applications%rowtype;
 begin
   if actor is null or actor is distinct from p_expected_parent or p_request is null or p_student is null
-     or actor=p_student or not academy_private.has_role('parent') then raise exception 'Request unavailable'; end if;
+     or actor=p_student or not academy_private.has_role('parent')
+     or academy_private.review_google_proof_current() is distinct from true then raise exception 'Request unavailable'; end if;
   perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('academy.parent-application:' || actor::text,0));
   -- Recheck a role lock after waiting so revocation cannot race submission.
   perform 1 from public.user_roles r where r.user_id=actor and r.role='parent' for key share;
-  if not found or not academy_private.has_role('parent') then raise exception 'Request unavailable'; end if;
+  if not found or not academy_private.has_role('parent') or academy_private.review_google_proof_current() is distinct from true then raise exception 'Request unavailable'; end if;
   select * into existing from academy_private.parent_link_applications where id=p_request;
   if found then
     if existing.parent_id<>actor or existing.student_id<>p_student then raise exception 'Request unavailable'; end if;
@@ -50,7 +51,7 @@ create function public.review_parent_link_my_requests()
 returns table(id uuid,student_id uuid,state text,created_at timestamptz)
 language plpgsql stable security definer set search_path='' as $$
 begin
-  if not academy_private.has_role('parent') then raise exception 'Request unavailable'; end if;
+  if not academy_private.has_role('parent') or academy_private.review_google_proof_current() is distinct from true then raise exception 'Request unavailable'; end if;
   return query select a.id,a.student_id,a.state,a.created_at from academy_private.parent_link_applications a
     where a.parent_id=(select auth.uid()) and a.created_at>statement_timestamp()-interval '90 days'
     order by a.created_at desc,a.id limit 20;
@@ -60,9 +61,9 @@ create function public.review_parent_link_cancel(p_expected_parent uuid,p_reques
 returns boolean language plpgsql security definer set search_path='' as $$
 declare actor uuid := (select auth.uid());
 begin
-  if actor is null or actor is distinct from p_expected_parent or not academy_private.has_role('parent') then raise exception 'Request unavailable'; end if;
+  if actor is null or actor is distinct from p_expected_parent or not academy_private.has_role('parent') or academy_private.review_google_proof_current() is distinct from true then raise exception 'Request unavailable'; end if;
   perform 1 from public.user_roles where user_id=actor and role='parent' for key share;
-  if not found or not academy_private.has_role('parent') then raise exception 'Request unavailable'; end if;
+  if not found or not academy_private.has_role('parent') or academy_private.review_google_proof_current() is distinct from true then raise exception 'Request unavailable'; end if;
   update academy_private.parent_link_applications set state='cancelled',resolved_at=clock_timestamp()
     where id=p_request and parent_id=actor and state='pending';
   return found;

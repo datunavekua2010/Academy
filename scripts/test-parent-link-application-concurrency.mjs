@@ -11,6 +11,7 @@ try {
  for(const id of [admin,parent,student]){await a.query('insert into auth.users values($1)',[id]);await a.query("insert into public.profiles(id,display_name,first_name) values($1,'name','name')",[id]);}
  for(const [id,role] of [[admin,'admin'],[parent,'parent'],[student,'student']])await a.query('insert into public.user_roles values($1,$2)',[id,role]);
 
+ await a.query("create function academy_private.review_google_proof_current() returns boolean language sql as $$select true$$");
  await a.query(await readFile('supabase/review/parent-link-application-candidate.sql','utf8'));
  const request='20000000-0000-4000-8000-000000000001';
  const wait=async c=>{for(let i=0;i<150;i++){if((await m.query('select wait_event_type from pg_stat_activity where pid=$1',[c.processID])).rows[0]?.wait_event_type==='Lock')return;await new Promise(r=>setTimeout(r,20));}throw new Error('No lock wait');};

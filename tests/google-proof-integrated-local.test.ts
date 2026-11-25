@@ -33,7 +33,14 @@ it('connects the synthetic callback to actual prototype SQL policies and mixed-r
       create function auth.jwt() returns jsonb language sql stable as $$select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb$$;
       grant usage on schema auth to authenticated,anon;grant execute on function auth.uid(),auth.jwt() to authenticated,anon;`);
     for(const file of readdirSync('supabase/migrations').filter(f=>f.endsWith('.sql')).sort()) await db.exec(readFileSync(`supabase/migrations/${file}`,'utf8'));
-    for(const file of ['role-signin-method-candidate.sql','google-session-proof-candidate.sql','google-proof-ingress-limit-candidate.sql','google-session-enforcement-candidate.sql','student-self-enrollment-candidate.sql','parent-self-enrollment-candidate.sql','parent-link-application-candidate.sql']) await db.exec(readFileSync(`supabase/review/${file}`,'utf8'));
+    await db.exec(readFileSync('supabase/review/release/202612120001_signup_additive.sql','utf8'));
+    // For local end-to-end testing ONLY: the additive migration does not change
+    // existing authorization. This separate enforcement candidate is not a
+    // reviewed or deployable migration and must not be enabled remotely as-is.
+    const roleCandidate=readFileSync('supabase/review/role-signin-method-candidate.sql','utf8');
+    await db.exec(roleCandidate.slice(roleCandidate.indexOf('-- This preserves admin behavior'),roleCandidate.lastIndexOf('commit;')));
+    await db.exec(readFileSync('supabase/review/google-session-enforcement-candidate.sql','utf8'));
+    await q('update academy_private.signup_release_control set enabled=true');
     await q('insert into auth.users(id) values($1),($2),($3)',[user,student,admin]);
     await q("insert into public.profiles(id,display_name,first_name) values($1,'Test','Test'),($2,'Student','Student'),($3,'Admin','Admin')",[user,student,admin]);
     await q("insert into public.user_roles(user_id,role) values($1,'teacher'),($2,'student'),($3,'admin')",[user,student,admin]);
@@ -114,6 +121,16 @@ it('connects the synthetic callback to actual prototype SQL policies and mixed-r
     await login('oauth');
     expect((await q('select * from public.parent_review_children()')).rows).toHaveLength(1);
     await expect(q('select * from public.teacher_classrooms_list()')).rejects.toThrow();
+    await role('postgres');await q("update academy_private.signup_release_control set enabled=false where gate in ('enrollment','parent_link')");
+    await login('oauth');
+    await expect(q('select public.review_parent_self_enroll($1,$2)',[user,'Parent'])).rejects.toThrow();
+    await expect(q('select * from public.review_parent_link_my_requests()')).rejects.toThrow();
+    expect((await q('select * from public.parent_review_children()')).rows).toHaveLength(1);
+    await role('postgres');await q("update academy_private.signup_release_control set enabled=false where gate='proof'");
+    await login('oauth');
+    expect((await q('select public.review_google_proof_status() as ok')).rows[0].ok).toBe(false);
+    await expect(q('select * from public.parent_review_children()')).rejects.toThrow();
+    await role('postgres');await q("update academy_private.signup_release_control set enabled=true where gate='proof'");
     await login('password');
     await expect(q('select * from public.parent_review_children()')).rejects.toThrow();
     expect((await q('select * from public.teacher_classrooms_list()')).rows).toHaveLength(1);

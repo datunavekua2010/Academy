@@ -34,6 +34,13 @@ export async function handleAuthCaptcha(request: Request, env: Env, fetcher: typ
 }
 export default { fetch(request: Request, env: Env) {
   const path = new URL(request.url).pathname;
-  if (path === '/api/auth/google-proof/start' || path === '/api/auth/google-proof/callback') return handleGoogleProof(request, env);
+  if (path === '/api/auth/google-proof/start' || path === '/api/auth/google-proof/callback') {
+    // The rate limiter relies on Cloudflare's connecting IP. Do not accept
+    // requests originating from another Worker or without edge metadata.
+    // The deployed Cloudflare route still requires an ingress configuration
+    // check; this runtime guard alone is not proof of the network boundary.
+    if (!(request as Request & {cf?: unknown}).cf || request.headers.has('cf-worker') || request.headers.has('cf-ew-via')) return reply(503);
+    return handleGoogleProof(request, env);
+  }
   return handleAuthCaptcha(request, env);
 } };

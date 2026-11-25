@@ -57,3 +57,13 @@ it('sends a synthetic runtime secret only to Siteverify and never to assets or t
   expect(JSON.parse(init.body as string)).toEqual({ secret, response: 'synthetic-token' });
   expect([...response.headers.values()].join(' ')).not.toContain(secret);
 });
+
+it('rejects proof requests without trusted edge metadata and Worker subrequests',async()=>{
+  const env={ASSETS:{fetch:vi.fn()},GOOGLE_PROOF_REVIEW_ENABLED:'true'};
+  for(const headers of [{},{'cf-worker':'another.example'},{'cf-ew-via':'15'}]){
+    const req=new Request(`${origin}/api/auth/google-proof/start`,{method:'POST',headers});
+    if(Object.keys(headers).length)Object.defineProperty(req,'cf',{value:{country:'XX'}});
+    expect((await worker.fetch(req,env)).status).toBe(503);
+  }
+  expect(env.ASSETS.fetch).not.toHaveBeenCalled();
+});
