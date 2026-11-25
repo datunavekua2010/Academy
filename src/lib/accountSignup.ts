@@ -1,10 +1,9 @@
-import {createClient,type SupabaseClient} from '@supabase/supabase-js';
+import {createClient,type SupabaseClient,type Session} from '@supabase/supabase-js';
 import {ACCOUNT_MODE,TEST_ACCOUNT_MODE} from '../student/accountMode';
 import {authCallbackUrl} from './trustedAuthCallback';
 
-/** REVIEW ONLY: Auth signup does not create an Academy role or parent link.
- * Verification data remains on the device; the resulting Auth session is
- * memory-only and separate from the ordinary app session. */
+/** Signup uses isolated PKCE storage. Role provisioning is performed by the
+ * database trigger; signup never creates parent-child links. */
 export function makeSignupClient(url:string,key:string):SupabaseClient {
  const canonical=`axiom-signup-${encodeURIComponent(url)}`;
  const bytes=new Uint8Array(16);window.crypto.getRandomValues(bytes);
@@ -23,14 +22,17 @@ export const signupClient:SupabaseClient|null=(()=>{
  if(!url||!key?.startsWith('sb_publishable_'))return null;
  try{const u=new URL(url);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||!window.crypto?.subtle||!window.crypto.getRandomValues)return null;window.localStorage.getItem('axiom-signup-check');return makeSignupClient(url,key);}catch{return null;}
 })();
-export async function requestSignup(client:SupabaseClient,email:string,password:string,origin:string,pathname:string,captchaToken?:string):Promise<void>{
+export type SignupRole = 'student' | 'parent';
+export async function requestSignup(client:SupabaseClient,email:string,password:string,origin:string,pathname:string,captchaToken?:string,role:SignupRole='student',acceptImmediateSession=false):Promise<Session|null>{
  const callback=authCallbackUrl(origin,pathname,'signup');
- if(password.length<10||password.length>128||!email.trim()||email.trim().length>254)throw new Error('Signup unavailable');
- const result=await client.auth.signUp({email:email.trim(),password,options:{emailRedirectTo:callback,...(captchaToken?{captchaToken}:{})}});
- // Confirmation must be enabled in Auth. An unexpected immediate session is
- // never adopted by the main app; the account may nevertheless already exist.
- if(result.data.session){await client.auth.signOut({scope:'local'}).catch(()=>{});throw new Error('Signup unavailable');}
- if(result.error)throw new Error('Signup unavailable');
+ if(password.length<10||password.length>128||!email.trim()||email.trim().length>254||(role!=='student'&&role!=='parent'))throw new Error('invalid_signup');
+ const result=await client.auth.signUp({email:email.trim(),password,options:{emailRedirectTo:callback,data:{role},...(captchaToken?{captchaToken}:{})}});
+ if(result.error){
+  const allowed=new Set(['weak_password','email_address_invalid','over_email_send_rate_limit','over_request_rate_limit','captcha_failed','signup_disabled']);
+  throw new Error(result.error.code && allowed.has(result.error.code) ? result.error.code : 'signup_unavailable');
+ }
+ if(result.data.session&&!acceptImmediateSession){await client.auth.signOut({scope:'local'}).catch(()=>{});throw new Error('signup_unavailable');}
+ return result.data.session;
 }
 export { consumeSignupCallback } from './authCallbacks';
 export async function exchangeSignup(client:SupabaseClient|null,callback:{code:string|null}):Promise<void>{

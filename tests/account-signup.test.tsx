@@ -21,6 +21,36 @@ it('never sends a signup until the adult confirmation and matching passwords are
  fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});
  fireEvent.submit(screen.getByText('მოთხოვნის გაგზავნა').closest('form')!);expect(signUp).not.toHaveBeenCalled();fireEvent.click(screen.getByLabelText('ვარ სრულწლოვანი და ამ ანგარიშის მოთხოვნის უფლება მაქვს'));fireEvent.click(screen.getByText('მოთხოვნის გაგზავნა'));await waitFor(()=>expect(signUp).toHaveBeenCalledTimes(1));expect(await screen.findByRole('status')).toBeTruthy();
 });
+it('sends the selected parent role as signup metadata',async()=>{
+ const signUp=vi.fn(async()=>({data:{session:null},error:null}));const client={auth:{signUp}} as unknown as SupabaseClient;
+ render(<SignupForm client={client} appClient={null}/>);
+ fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});
+ fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});
+ fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});
+ fireEvent.change(screen.getByLabelText('სივრცე'),{target:{value:'parent'}});
+ fireEvent.click(screen.getByLabelText('ვარ სრულწლოვანი და ამ ანგარიშის მოთხოვნის უფლება მაქვს'));
+ fireEvent.click(screen.getByText('მოთხოვნის გაგზავნა'));
+ await waitFor(()=>expect(signUp).toHaveBeenCalledTimes(1));
+ expect(signUp.mock.calls[0][0]).toMatchObject({options:{data:{role:'parent'}}});
+});
+it('redirects only after an immediate signup session has the selected persisted role',async()=>{
+ window.location.hash='';
+ const session={access_token:'synthetic-access',refresh_token:'synthetic-refresh',user:{id:'user-1'}};
+ const signUp=vi.fn(async()=>({data:{session},error:null}));
+ const client={auth:{signUp}} as unknown as SupabaseClient;
+ const maybeSingle=vi.fn(async()=>({data:{role:'parent'},error:null}));
+ const secondEq=vi.fn(()=>({maybeSingle}));const firstEq=vi.fn(()=>({eq:secondEq}));const select=vi.fn(()=>({eq:firstEq}));
+ const appClient={auth:{getSession:vi.fn(async()=>({data:{session:null},error:null})),setSession:vi.fn(async()=>({data:{user:{id:'user-1'}},error:null}))},from:vi.fn(()=>({select}))} as unknown as SupabaseClient;
+ render(<SignupForm client={client} appClient={appClient}/>);
+ fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});
+ fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});
+ fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});
+ fireEvent.change(screen.getByLabelText('სივრცე'),{target:{value:'parent'}});
+ fireEvent.click(screen.getByLabelText('ვარ სრულწლოვანი და ამ ანგარიშის მოთხოვნის უფლება მაქვს'));
+ fireEvent.click(screen.getByText('მოთხოვნის გაგზავნა'));
+ await waitFor(()=>expect(window.location.hash).toBe('#/parent'));
+ expect(secondEq).toHaveBeenCalledWith('role','parent');window.location.hash='';
+});
 it('does not send duplicate signup requests from rapid submissions',async()=>{
  let release!:()=>void;const waiting=new Promise<void>(resolve=>{release=resolve;});
  const signUp=vi.fn(async()=>{await waiting;return {data:{session:null},error:null};});

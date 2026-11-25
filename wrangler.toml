@@ -19,7 +19,7 @@ head_sampling_rate = 1
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/auth/turnstile-verify", "/api/auth/google-proof/start", "/api/auth/google-proof/callback"]
+run_worker_first = ["/api/auth/signup-verify", "/api/auth/turnstile-verify", "/api/auth/google-proof/start", "/api/auth/google-proof/callback"]
 
 [vars]
 TURNSTILE_REVIEW_ENABLED = "true"
