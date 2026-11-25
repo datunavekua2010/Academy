@@ -53,8 +53,36 @@ export async function handleAuthCaptcha(request: Request, env: Env, fetcher: typ
   const result = await verifyDetailed((body as {token:string}).token, env.TURNSTILE_WORKER_SECRET, allowed.hostname, fetcher);
   return result.ok === true ? reply(204) : forbidden(result.codes);
 }
+/** Signup precheck only; Supabase Auth must independently validate its own
+ * single-use CAPTCHA token. CORS is restricted to the configured site. */
+export async function handleSignupVerify(request: Request, env: Env, fetcher: typeof fetch = fetch): Promise<Response> {
+  const origin = request.headers.get('origin');
+  const configured = env.TURNSTILE_ALLOWED_ORIGIN;
+  const headers = { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
+  const respond = (status: number, data: object, cors = false) => new Response(JSON.stringify(data), { status, headers: { ...headers, ...(cors && origin ? { 'Access-Control-Allow-Origin': origin, 'Vary': 'Origin' } : {}) } });
+  if (!configured || origin !== configured || new URL(request.url).origin !== configured) return respond(403, { error: 'origin_not_allowed' });
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: { 'Access-Control-Allow-Origin': configured, 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Vary': 'Origin', 'Cache-Control': 'no-store' } });
+  if (request.method !== 'POST') return respond(405, { error: 'method_not_allowed' }, true);
+  if (env.TURNSTILE_REVIEW_ENABLED !== 'true' || !env.TURNSTILE_WORKER_SECRET) return respond(503, { error: 'verification_unavailable' }, true);
+  let allowed: URL;
+  try { allowed = new URL(configured); } catch { return respond(503, { error: 'verification_unavailable' }, true); }
+  if (allowed.protocol !== 'https:' || allowed.origin !== configured) return respond(503, { error: 'verification_unavailable' }, true);
+  if (request.headers.get('content-type')?.split(';')[0].trim() !== 'application/json') return respond(400, { error: 'invalid_request' }, true);
+  const reader = request.body?.getReader(); if (!reader) return respond(400, { error: 'invalid_request' }, true);
+  const chunks: Uint8Array[] = []; let size = 0;
+  try { for (;;) { const {done, value} = await reader.read(); if (done) break; size += value.length; if (size > 4096) { await reader.cancel(); return respond(413, { error: 'request_too_large' }, true); } chunks.push(value); } } catch { return respond(400, { error: 'invalid_request' }, true); }
+  const bytes = new Uint8Array(size); let offset = 0; for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+  let data: unknown; try { data = JSON.parse(new TextDecoder().decode(bytes)); } catch { return respond(400, { error: 'invalid_request' }, true); }
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return respond(400, { error: 'invalid_request' }, true);
+  const body = data as Record<string, unknown>;
+  if (Object.keys(body).sort().join(',') !== 'email,password,role,turnstileToken' || typeof body.email !== 'string' || !body.email.trim() || body.email.length > 254 || typeof body.password !== 'string' || body.password.length < 10 || body.password.length > 128 || (body.role !== 'student' && body.role !== 'parent') || typeof body.turnstileToken !== 'string') return respond(400, { error: 'invalid_request' }, true);
+  const result = await verifyDetailed(body.turnstileToken, env.TURNSTILE_WORKER_SECRET, allowed.hostname, fetcher);
+  if (result.ok === false) return respond(403, { error: 'verification_failed', 'error-codes': result.codes }, true);
+  return respond(200, { verified: true }, true);
+}
 export default { fetch(request: Request, env: Env) {
   const path = new URL(request.url).pathname;
+  if (path === '/api/auth/signup-verify') return handleSignupVerify(request, env);
   if (path === '/api/auth/google-proof/start' || path === '/api/auth/google-proof/callback') {
     // Retired: do not fall through to the SPA or start a Google proof flow.
     return new Response('Unavailable', { status: 410, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });

@@ -11,15 +11,16 @@ export function useTurnstileReview() {
   const [workerToken, setWorkerToken] = useState(''), [authToken, setAuthToken] = useState('');
   const pending = useRef(false);
   const reset = () => { setWorkerToken(''); setAuthToken(''); worker.current?.reset(); auth.current?.reset(); };
-  const verify = async (): Promise<string | undefined> => {
+  const verify = async (signup?: {email:string; password:string; role:'student'|'parent'}): Promise<string | undefined> => {
     if (!enabled) return undefined;
     if (!siteKey || !workerToken || !authToken || pending.current || workerToken === authToken) throw new Error('Verification unavailable');
     pending.current = true;
     try {
-      const response = await fetch('/api/auth/turnstile-verify', { method:'POST', credentials:'same-origin', headers:{'content-type':'application/json'}, body:JSON.stringify({token:workerToken}) });
+      const response = await fetch(signup ? '/api/auth/signup-verify' : '/api/auth/turnstile-verify', { method:'POST', credentials:'same-origin', headers:{'content-type':'application/json'}, body:JSON.stringify(signup ? {...signup,turnstileToken:workerToken} : {token:workerToken}) });
       // A static SPA fallback can return 200 HTML for an unrouted API path.
       // Only the verifier's explicit success status is accepted.
-      if (response.status !== 204) throw new Error('Verification unavailable');
+      if (response.status !== (signup ? 200 : 204)) throw new Error('security_check_failed');
+      if (signup) { const result = await response.json(); if (result?.verified !== true) throw new Error('security_check_failed'); }
       return authToken;
     } finally { pending.current = false; }
   };

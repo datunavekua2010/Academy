@@ -23,9 +23,9 @@ it('pins connected-mode callback to a configured exact HTTPS origin and root pat
 });
 it('checks a separate Worker token and passes a different CAPTCHA token to Supabase signup',async()=>{
  vi.stubEnv('VITE_TURNSTILE_REVIEW','true');vi.stubEnv('VITE_TURNSTILE_SITE_KEY','test-public-key');
- const fetcher=vi.fn(async()=>new Response(null,{status:204}));vi.stubGlobal('fetch',fetcher);
+ const fetcher=vi.fn(async()=>new Response(JSON.stringify({verified:true}),{status:200,headers:{'content-type':'application/json'}}));vi.stubGlobal('fetch',fetcher);
  const signUp=vi.fn(async()=>({data:{session:null},error:null}));const client={auth:{signUp}} as unknown as SupabaseClient;
- render(<SignupForm client={client} googleClient={null}/>);
+ render(<SignupForm client={client} appClient={null}/>);
  fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});
  fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});
  fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});
@@ -34,13 +34,13 @@ it('checks a separate Worker token and passes a different CAPTCHA token to Supab
  fireEvent.click(screen.getByText('academy_auth'));fireEvent.click(screen.getByText('supabase_auth'));
  fireEvent.click(screen.getByText('მოთხოვნის გაგზავნა'));
  await waitFor(()=>expect(signUp).toHaveBeenCalledTimes(1));
- expect(fetcher).toHaveBeenCalledWith('/api/auth/turnstile-verify',expect.objectContaining({body:JSON.stringify({token:'academy_auth-synthetic-token'})}));
+ expect(fetcher).toHaveBeenCalledWith('/api/auth/signup-verify',expect.objectContaining({body:JSON.stringify({email:'adult@example.test',password:'long-password',role:'student',turnstileToken:'academy_auth-synthetic-token'})}));
  expect(signUp.mock.calls[0][0]).toMatchObject({options:{captchaToken:'supabase_auth-synthetic-token'}});
 });
 it('blocks submission when the Worker check fails and requires new tokens',async()=>{
  vi.stubEnv('VITE_TURNSTILE_REVIEW','true');vi.stubEnv('VITE_TURNSTILE_SITE_KEY','test-public-key');
  vi.stubGlobal('fetch',vi.fn(async()=>new Response(null,{status:403})));
- const signUp=vi.fn();const client={auth:{signUp}} as unknown as SupabaseClient;render(<SignupForm client={client} googleClient={null}/>);
+ const signUp=vi.fn();const client={auth:{signUp}} as unknown as SupabaseClient;render(<SignupForm client={client} appClient={null}/>);
  fireEvent.change(screen.getByLabelText('ელფოსტა'),{target:{value:'adult@example.test'}});fireEvent.change(screen.getByLabelText('პაროლი'),{target:{value:'long-password'}});fireEvent.change(screen.getByLabelText('გაიმეორეთ პაროლი'),{target:{value:'long-password'}});fireEvent.click(screen.getByLabelText('ვარ სრულწლოვანი და ამ ანგარიშის მოთხოვნის უფლება მაქვს'));
  fireEvent.click(screen.getByText('academy_auth'));fireEvent.click(screen.getByText('supabase_auth'));fireEvent.click(screen.getByText('მოთხოვნის გაგზავნა'));
  await screen.findByRole('alert');expect(signUp).not.toHaveBeenCalled();expect((screen.getByText('მოთხოვნის გაგზავნა') as HTMLButtonElement).disabled).toBe(true);
