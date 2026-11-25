@@ -15,6 +15,21 @@ it('fails closed without configuration or for wrong method, origin, hostname, ac
  expect(await verifyWorkerTurnstile('test','secret','preview.example',vi.fn(async()=>{throw Error('offline')}) as unknown as typeof fetch)).toBe(false);
  expect((await handleAuthCaptcha(request('{"token":"test"}'),env,ok)).status).toBe(204);
 });
+it('logs only fixed diagnostic categories, without exposing secrets, tokens, or response data',async()=>{
+ const warn=vi.spyOn(console,'warn').mockImplementation(()=>{});
+ try {
+  const result=(data:unknown)=>vi.fn(async()=>new Response(JSON.stringify(data))) as unknown as typeof fetch;
+  expect(await verifyWorkerTurnstile('private-token','private-secret','preview.example',result({success:false,'error-codes':['invalid-input-secret','private-token']}))).toBe(false);
+  expect(warn).toHaveBeenLastCalledWith('turnstile_precheck_failed',['invalid-input-secret']);
+  expect(await verifyWorkerTurnstile('private-token','private-secret','preview.example',result({success:false,'error-codes':['private-secret']}))).toBe(false);
+  expect(warn).toHaveBeenLastCalledWith('turnstile_precheck_failed',['siteverify_rejected']);
+  expect(await verifyWorkerTurnstile('private-token','private-secret','preview.example',result({success:true,hostname:'private-token',action:'academy_auth'}))).toBe(false);
+  expect(warn).toHaveBeenLastCalledWith('turnstile_precheck_failed',['hostname_mismatch']);
+  expect(await verifyWorkerTurnstile('private-token','private-secret','preview.example',vi.fn(async()=>{throw new Error('private-secret')}) as unknown as typeof fetch)).toBe(false);
+  expect(warn).toHaveBeenLastCalledWith('turnstile_precheck_failed',['siteverify_unavailable']);
+  expect(JSON.stringify(warn.mock.calls)).not.toMatch(/private-token|private-secret/);
+ } finally { warn.mockRestore(); }
+});
 it('keeps webhook disabled and delegates trusted event processing to one atomic RPC',async()=>{
  expect((await paymentWebhookReviewEndpoint(new Request('https://example.test/webhook',{method:'POST',body:'{}'}))).status).toBe(503);
  const rpc=vi.fn(async()=>({data:'duplicate',error:null}));const client={rpc} as unknown as SupabaseClient;

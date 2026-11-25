@@ -7,6 +7,13 @@
 name = "axiomacademy9"
 main = "server/auth-captcha-review-worker.ts"
 compatibility_date = "2025-01-01"
+# Preserve dashboard-managed runtime variables across builds.
+keep_vars = true
+
+# Preserve the explicitly enabled diagnostic logs across Wrangler deployments.
+[observability]
+enabled = true
+head_sampling_rate = 1
 
 [assets]
 directory = "./dist"
