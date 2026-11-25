@@ -58,6 +58,24 @@ it('sends a synthetic runtime secret only to Siteverify and never to assets or t
   expect([...response.headers.values()].join(' ')).not.toContain(secret);
 });
 
+it('forwards documented Siteverify errors as safe JSON and logs only those codes', async () => {
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    const env = { ASSETS: { fetch: vi.fn() }, TURNSTILE_REVIEW_ENABLED: 'true', TURNSTILE_ALLOWED_ORIGIN: origin, TURNSTILE_WORKER_SECRET: 'synthetic-secret' };
+    const siteverify = vi.fn(async () => new Response(JSON.stringify({ success: false, 'error-codes': ['invalid-input-secret', 'timeout-or-duplicate', 'synthetic-secret'] })));
+    const response = await handleAuthCaptcha(request(), env, siteverify as unknown as typeof fetch);
+    expect(response.status).toBe(403);
+    expect(response.headers.get('content-type')).toBe('application/json');
+    expect(await response.json()).toEqual({ error: 'verification_failed', 'error-codes': ['invalid-input-secret', 'timeout-or-duplicate'] });
+    expect(warn).toHaveBeenCalledWith('turnstile_precheck_failed', ['invalid-input-secret', 'timeout-or-duplicate']);
+    expect(JSON.stringify(warn.mock.calls)).not.toContain('synthetic-secret');
+    const wrongOrigin = new Request(route, { method: 'POST', headers: { origin: 'https://evil.example', 'content-type': 'application/json' }, body: '{"token":"test"}' });
+    const rejected = await handleAuthCaptcha(wrongOrigin, env, siteverify as unknown as typeof fetch);
+    expect(rejected.status).toBe(403);
+    expect(await rejected.json()).toEqual({ error: 'verification_failed', 'error-codes': ['origin_or_method_not_allowed'] });
+  } finally { warn.mockRestore(); }
+});
+
 it('retires proof requests regardless of edge metadata',async()=>{
   const env={ASSETS:{fetch:vi.fn()},GOOGLE_PROOF_REVIEW_ENABLED:'true'};
   for(const headers of [{},{'cf-worker':'another.example'},{'cf-ew-via':'15'}]){
