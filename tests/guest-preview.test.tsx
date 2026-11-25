@@ -44,7 +44,7 @@ describe('public guest previews', () => {
     expect(screen.getByRole('link', { name: 'გაკვეთილები' }).getAttribute('href')).toBe('#/student/lessons');
     cleanup();
     await openGuest('#/student/progress');
-    expect(screen.getByText(/Google-ით შესვლა ამ გარემოში ამჟამად მიუწვდომელია/)).toBeTruthy();
+    expect(screen.getByText(/შედი ელფოსტითა და პაროლით/)).toBeTruthy();
     expect(screen.queryByLabelText('პაროლი')).toBeNull();
     expect(screen.queryByText('ჩემი პროგრესი', { selector: 'h1' })).toBeNull();
     expect(auth.from).not.toHaveBeenCalled();

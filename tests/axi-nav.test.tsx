@@ -74,7 +74,7 @@ describe('Axi student navigation', () => {
     render(<StudentApp />);
 
     fireEvent.click(screen.getByRole('button', { name: 'მოსწავლის ანგარიშიდან გასვლა' }));
-    expect(screen.getByText(/Google-ით შესვლა ამ გარემოში ამჟამად მიუწვდომელია/)).toBeTruthy();
+    expect(screen.getByText(/შედი ელფოსტითა და პაროლით/)).toBeTruthy();
     expect(screen.queryByLabelText('პაროლი')).toBeNull();
     expect(screen.queryByRole('heading', { level: 1, name: /გამარჯობა, ნინო/ })).toBeNull();
   });

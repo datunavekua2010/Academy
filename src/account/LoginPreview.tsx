@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseConfiguration } from '../lib/supabase';
-import { googleAuthClient } from '../lib/googleAuth';
-import { chooseGoogleRole, type GoogleSelfServiceRole } from '../lib/chooseGoogleRole';
+import { chooseEmailRole, type SelfServiceRole } from '../lib/chooseEmailRole';
+import { EmailSignIn } from './EmailSignIn';
 import { navigate } from '../router';
 import { LoadingScreen } from '../components/LoadingScreen';
 import journeyIllustration from '../assets/account-journey.jpg';
@@ -17,20 +17,14 @@ function ParentIcon() {
   return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 30.5s-11-6.7-11-14a5.8 5.8 0 0 1 11-2.5 5.8 5.8 0 0 1 11 2.5c0 7.3-11 14-11 14Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/><path d="M4 30c2.5-2.8 5.3-4 8.5-3.5M36 30c-2.5-2.8-5.3-4-8.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
 }
 
-/** Self-service is opt-in; server-side gates and proof are authoritative. */
-export function roleChoiceEnrollmentClient(client: SupabaseClient | null): SupabaseClient | null {
-  return client && client === googleAuthClient && import.meta.env.VITE_GOOGLE_PROOF_REVIEW === 'true'
-    && import.meta.env.VITE_ROLE_CHOICE_SELF_ENROLL === 'true' ? client : null;
-}
-
 export function RoleChoices({ includeTeacher = true, enrollmentClient = null }: { includeTeacher?: boolean; enrollmentClient?: SupabaseClient | null }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const pending = useRef(false);
-  const select = async (role: GoogleSelfServiceRole) => {
+  const select = async (role: SelfServiceRole) => {
     if (!enrollmentClient || pending.current) return;
     pending.current = true; setBusy(true); setError('');
-    try { await chooseGoogleRole(enrollmentClient, role); navigate(`/${role}`); }
+    try { await chooseEmailRole(enrollmentClient, role); navigate(`/${role}`); }
     catch { setError('ანგარიშის შექმნა ან წვდომის დადასტურება ვერ მოხერხდა. სცადეთ ხელახლა ან დაუკავშირდით აკადემიას.'); }
     finally { pending.current = false; setBusy(false); }
   };
@@ -79,12 +73,13 @@ export function LoginForm({ client }: { client: SupabaseClient | null }) {
   return <>
     {state === 'signed-in' ? <p className="role-choice-intro" role="status">ანგარიშში შესული ხართ. აირჩიეთ თქვენი სივრცე.</p> : <p className="role-choice-intro">აირჩიეთ, რომელი სივრცით გსურთ სარგებლობა.</p>}
     {state === 'unavailable' && <p className="login-preview-notice" role="status">ანგარიშით შესვლა ამ გარემოში ჯერ არ არის ხელმისაწვდომი.</p>}
-    <RoleChoices enrollmentClient={state === 'signed-in' ? roleChoiceEnrollmentClient(client) : null} />
+    {state === 'signed-in' && <RoleChoices enrollmentClient={client} />}
+    {state === 'signed-out' && client && <><EmailSignIn client={client} /><p className="role-choice-teacher"><a href="#/teacher">მასწავლებლის შესვლა</a></p></>}
     {state === 'signed-in' ? <div className="login-session-actions">
-      <p>{roleChoiceEnrollmentClient(client) ? 'აირჩიეთ მოსწავლის ან მშობლის სივრცე.' : 'აირჩიეთ თქვენთვის შესაფერისი სივრცე.'}</p>
+      <p>აირჩიეთ მოსწავლის ან მშობლის სივრცე.</p>
       <a href="#/account/status">ანგარიშის ნომერი</a>
       <button type="button" disabled={busy} onClick={() => void signOut()}>{busy ? 'იტვირთება…' : 'ანგარიშიდან გასვლა'}</button>
-    </div> : <p className="role-choice-note"><span aria-hidden="true">✳</span> მოსწავლეები და მშობლები შედიან Google-ით. წვდომას აკადემია ცალკე ადასტურებს.</p>}
+    </div> : null}
     {error && <p role="alert" className="login-error">{error}</p>}
   </>;
 }

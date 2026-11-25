@@ -1,7 +1,6 @@
 /** Worker entry point for the app assets and CAPTCHA precheck.
  * Supabase must enforce CAPTCHA independently for direct Auth API requests. */
-import { handleGoogleProof, type ProofEnv } from './google-proof-http-review';
-type Env = ProofEnv & { ASSETS: { fetch(request: Request): Promise<Response> }; TURNSTILE_REVIEW_ENABLED?: string; TURNSTILE_WORKER_SECRET?: string; TURNSTILE_ALLOWED_ORIGIN?: string };
+type Env = { ASSETS: { fetch(request: Request): Promise<Response> }; TURNSTILE_REVIEW_ENABLED?: string; TURNSTILE_WORKER_SECRET?: string; TURNSTILE_ALLOWED_ORIGIN?: string };
 const reply = (status: number) => new Response(status === 204 ? null : 'Unavailable', { status, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
 export async function verifyWorkerTurnstile(token: string, secret: string, hostname: string, fetcher: typeof fetch = fetch): Promise<boolean> {
   if (!token || token.length > 2048 || !secret || !hostname) return false;
@@ -35,12 +34,8 @@ export async function handleAuthCaptcha(request: Request, env: Env, fetcher: typ
 export default { fetch(request: Request, env: Env) {
   const path = new URL(request.url).pathname;
   if (path === '/api/auth/google-proof/start' || path === '/api/auth/google-proof/callback') {
-    // The rate limiter relies on Cloudflare's connecting IP. Do not accept
-    // requests originating from another Worker or without edge metadata.
-    // The deployed Cloudflare route still requires an ingress configuration
-    // check; this runtime guard alone is not proof of the network boundary.
-    if (!(request as Request & {cf?: unknown}).cf || request.headers.has('cf-worker') || request.headers.has('cf-ew-via')) return reply(503);
-    return handleGoogleProof(request, env);
+    // Retired: do not fall through to the SPA or start a Google proof flow.
+    return new Response('Unavailable', { status: 410, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
   }
   return handleAuthCaptcha(request, env);
 } };

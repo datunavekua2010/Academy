@@ -5,46 +5,11 @@ import { exchangeRecovery, recoveryClient } from './lib/passwordRecovery';
 import type { RecoveryResult } from './account/PasswordRecovery';
 import { exchangeSignup, signupClient } from './lib/accountSignup';
 import type { SignupResult } from './account/Signup';
-import { finishGoogleAuth, googleAuthClient } from './lib/googleAuth';
-import { startGoogleProof, verifyGoogleProofStatus } from './lib/googleProof';
-import { GoogleCallback } from './account/GoogleAuth';
-import { useHashRoute } from './router';
-
-function GoogleCallbackRoute({ result }: { result: 'ok' | 'error' | 'proof-unavailable' }) {
-  const path = useHashRoute();
-  return path === '/account/google' ? <GoogleCallback result={result} /> : <Shell />;
-}
-
 type AuthCallback = { kind: 'google' | 'recovery' | 'signup'; value: { code: string | null } } | { kind: 'proof'; value: 'ok' | 'error' };
-/** The caller already scrubbed the callback URL; this runs exactly once outside React effects. */
+/** Legacy callbacks are scrubbed by main; Google sign-in is no longer offered. */
 export function renderAuthCallback(root: Root, callback: AuthCallback): void {
-  if (callback.kind === 'proof') {
-    // The URL can be forged: ask the server about this session before showing success.
-    if (callback.value !== 'ok' || !googleAuthClient || import.meta.env.VITE_GOOGLE_PROOF_REVIEW !== 'true') {
-      root.render(<GoogleCallbackRoute result="proof-unavailable" />);
-      return;
-    }
-    void verifyGoogleProofStatus(googleAuthClient)
-      .then(() => root.render(<GoogleCallbackRoute result="ok" />), () => root.render(<GoogleCallbackRoute result="proof-unavailable" />));
-    return;
-  }
-  if (callback.kind === 'google') {
-    void Promise.resolve().then(() => finishGoogleAuth(googleAuthClient, callback.value, window.sessionStorage))
-      .then(async () => {
-        if (import.meta.env.VITE_GOOGLE_PROOF_REVIEW === 'true') {
-          try {
-            if (!googleAuthClient) throw new Error('Google proof unavailable');
-            const address = await startGoogleProof(googleAuthClient);
-            window.location.assign(address);
-          } catch {
-            // Identity sign-in already succeeded; proof failure must not be
-            // presented as a successful role grant or as a failed sign-in.
-            root.render(<GoogleCallbackRoute result="proof-unavailable" />);
-          }
-          return;
-        }
-        root.render(<GoogleCallbackRoute result="ok" />);
-      }).catch(() => root.render(<GoogleCallbackRoute result="error" />));
+  if (callback.kind === 'google' || callback.kind === 'proof') {
+    root.render(<StrictMode><Shell /></StrictMode>);
     return;
   }
   const recovery: Promise<RecoveryResult> | null = callback.kind === 'recovery'

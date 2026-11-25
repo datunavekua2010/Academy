@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseConfiguration } from '../lib/supabase';
-import { googleAuthClient } from '../lib/googleAuth';
-import { GoogleAuthButton, GoogleProofButton } from '../account/GoogleAuth';
-import { ParentEnrollmentReview } from './ParentEnrollmentReview';
-import { ParentLinkApplications } from './ParentLinkApplications';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { Link } from '../router';
 import { getGrade } from '../practice/curriculum';
@@ -21,7 +17,6 @@ function date(value:string):string{const d=new Date(value);return Number.isFinit
 type Access = {kind:'loading'|'signed-out'|'error'} | {kind:'ready';parentId:string;children:ParentChild[]};
 export function ParentReviewApp({client}: {client:SupabaseClient}) {
   const [access,setAccess]=useState<Access>({kind:'loading'});
-  const [reload,setReload]=useState(0);
   const [busy,setBusy]=useState(false);
   const [selected,setSelected]=useState<string|null>(null);
   const [detail,setDetail]=useState<{attempts:ParentAttempt[];notes:ParentNote[]}|null>(null);
@@ -37,7 +32,7 @@ export function ParentReviewApp({client}: {client:SupabaseClient}) {
       }).catch(()=>{if(active&&revision.current===current)setAccess({kind:'error'});});},0);
     });
     return()=>{active=false;revision.current++;detailRevision.current++;subscription.unsubscribe();};
-  },[client,reload]);
+  },[client]);
   const refreshChildren=async()=>{
     if(access.kind!=='ready')return;
     const parentId=access.parentId, current=++revision.current;
@@ -54,12 +49,12 @@ export function ParentReviewApp({client}: {client:SupabaseClient}) {
   return <main className="parent-review"><a href="#home">Axiom Academy</a><h1>მშობლის სივრცე</h1>
     {access.kind==='loading'&&<LoadingScreen compact message="მონაცემები იტვირთება…"/>}
     {(access.kind==='signed-out'||access.kind==='error')&&<>
-      {access.kind==='error' ? <p role="alert">წვდომა ან მონაცემები მიუწვდომელია. დაუკავშირდით აკადემიას.</p> : <p>{googleAuthClient === client ? 'მშობლის სივრცეში შესასვლელად გამოიყენეთ Google.' : 'Google-ით შესვლა ამ გარემოში ამჟამად მიუწვდომელია. დაუკავშირდით აკადემიას.'}</p>}
-      {access.kind==='signed-out' && <GoogleAuthButton client={googleAuthClient === client ? client : null}/>}
-      {access.kind==='error'&&<><GoogleProofButton client={googleAuthClient === client ? client : null}/>{googleAuthClient===client && import.meta.env.VITE_GOOGLE_PROOF_REVIEW==='true' && import.meta.env.VITE_PARENT_ONBOARDING_REVIEW==='true' && <ParentEnrollmentReview client={client} onComplete={()=>setReload(value=>value+1)}/>}<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button></>}
+      {access.kind==='error' ? <p role="alert">წვდომა ან მონაცემები მიუწვდომელია. აირჩიეთ მშობლის სივრცე ან დაუკავშირდით აკადემიას.</p> : <p>შედით ელფოსტითა და პაროლით.</p>}
+      <p><Link to="/account/login">ანგარიშში შესვლა ან სივრცის არჩევა</Link></p>
+      {access.kind==='error'&&<><p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button></>}
+
     </>}
     {access.kind==='ready'&&<><button disabled={busy} onClick={()=>void signOut()}>ანგარიშიდან გასვლა</button><h2>დაკავშირებული მოსწავლეები</h2><button type="button" onClick={()=>void refreshChildren()}>მონაცემების განახლება</button>{access.children.length===0?<p>დაკავშირებული მოსწავლე არ მოიძებნა.</p>:<ul>{access.children.map(child=><li key={child.studentId}><button onClick={()=>void open(child.studentId)}>{child.name}{child.grade ? ` · ${child.grade} კლასი`:''}</button></li>)}</ul>}
-      {import.meta.env.VITE_GOOGLE_PROOF_REVIEW==='true' && import.meta.env.VITE_PARENT_LINK_APPLICATION_REVIEW==='true' && <ParentLinkApplications client={client} parentId={access.parentId} onChanged={()=>void refreshChildren()}/>}
       {selected&&<section><h2>{access.children.find(child=>child.studentId===selected)?.name}</h2>{detailError?<p role="alert">მონაცემები მიუწვდომელია.</p>:!detail?<p role="status">იტვირთება…</p>:<><p>შედეგები მოსწავლის მოწყობილობაზეა შეფასებული და სერვერის მიერ დადასტურებული არ არის.</p><h3>ბოლო სესიები</h3>{detail.attempts.length?<ul>{detail.attempts.map(a=><li key={a.id}>{date(a.createdAt)} · {a.grade} კლასი · {topicLabel(a.grade,a.topicId,a.subtopicId)} · {a.score===null?'შედეგი მიუწვდომელია':`${a.score} ქულა`}</li>)}</ul>:<p>სესიები არ მოიძებნა.</p>}<h3>ბოლო გამოქვეყნებული ჩანაწერები</h3>{detail.notes.length?<ul>{detail.notes.map((note,i)=><li key={`${note.createdAt}:${i}`}><strong>{note.author}</strong> · {date(note.createdAt)}<p>{note.text}</p></li>)}</ul>:<p>ჩანაწერები არ მოიძებნა.</p>}</>}</section>}</>}
   </main>;
 }

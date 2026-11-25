@@ -1,5 +1,7 @@
 # Signup integration status
 
+**Update:** The user subsequently selected email-only sign-in and explicitly authorized installation of `public.choose_email_role` on production. That single function was installed directly on `iywgnaltjjcgjzuccavj`; it is not recorded in migration history. See `docs/email-signin-rollout.md`. The Google-specific staging notes below are historical, not the current rollout plan.
+
 ## Current state
 
 **Not enabled or deployed to production; not ready for real users.** The owner installed the default-off additive SQL on the staging project only. Production must not be changed during this task. The owner's reported working Google sign-in is separate from this review implementation. The additive SQL remains outside `supabase/migrations` to prevent an ordinary `supabase db push` from applying it. No external independent security review has been completed.

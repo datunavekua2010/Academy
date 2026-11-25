@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useState, type ReactNode } from 'react';
 import { PracticeProvider, usePractice } from '../practice/PracticeProvider';
 import type { GradeId } from '../practice/types';
 import { Link, useHashRoute } from '../router';
@@ -27,15 +27,18 @@ const TITLES: Record<string, string> = {
 };
 
 /** Public material has an isolated, non-persistent guest preview. */
-function RequireStudent({ children, publicPreview }: { children: ReactNode; publicPreview: boolean }) {
+export function RequireStudent({ children, publicPreview }: { children: ReactNode; publicPreview: boolean }) {
   const { student, mode, status, signedIn, practiceMemory, practiceRevision } = useStudentSession();
+  const [learningGrade, setLearningGrade] = useState<{ owner: string; grade: GradeId } | null>(null);
   if (!student) {
     if (publicPreview && status === 'ready' && !signedIn && mode !== 'invalid') {
       return <PracticeProvider key="guest" studentId="" mode="guest" initialGrade={1}>{children}</PracticeProvider>;
     }
     return <StudentSignIn />;
   }
-  return <PracticeProvider key={`${mode}:${student.id}`} studentId={student.id} practiceMemory={practiceMemory} practiceRevision={practiceRevision} mode={mode === 'connected' ? 'connected' : 'demo'} initialGrade={parseStudentGrade(student.grade) ?? 5}>{children}</PracticeProvider>;
+  const initialGrade = parseStudentGrade(student.grade) ?? (learningGrade?.owner === student.id ? learningGrade.grade : null);
+  if (!initialGrade) return <section className="student-page"><h1>აირჩიე სასწავლო კლასი</h1><p>ეს არჩევანი მხოლოდ სასწავლო მასალის საწყის დონეს განსაზღვრავს; პროფილში კლასი არ ინახება.</p><div>{([1,2,3,4,5,6,7] as GradeId[]).map(grade => <button type="button" className="btn btn-ghost" key={grade} onClick={() => setLearningGrade({owner:student.id,grade})}>{grade} კლასი</button>)}</div><Link to="/">მთავარ გვერდზე დაბრუნება</Link></section>;
+  return <PracticeProvider key={`${mode}:${student.id}`} studentId={student.id} practiceMemory={practiceMemory} practiceRevision={practiceRevision} mode={mode === 'connected' ? 'connected' : 'demo'} initialGrade={initialGrade}>{children}</PracticeProvider>;
 }
 
 function NotFound() {

@@ -20,9 +20,9 @@ export function makeRecoveryClient(url: string, key: string): SupabaseClient {
   return createClient(url, key, { auth: { storage, storageKey: instanceKey, persistSession: true, autoRefreshToken: false, detectSessionInUrl: false, flowType: 'pkce' } });
 }
 
-/** Intentionally off in the public preview and until the recovery rollout is reviewed. */
+/** Keep recovery isolated from the app session, and unavailable in the public preview. */
 export const recoveryClient: SupabaseClient | null = (() => {
-  if (TEST_ACCOUNT_MODE || ACCOUNT_MODE === 'invalid' || import.meta.env.VITE_PASSWORD_RECOVERY_ENABLED !== 'true') return null;
+  if (TEST_ACCOUNT_MODE || ACCOUNT_MODE === 'invalid') return null;
   const url = import.meta.env.VITE_SUPABASE_URL?.trim();
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
   if (!url || !key?.startsWith('sb_publishable_')) return null;

@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { supabaseConfiguration } from '../lib/supabase';
-import { verifyGoogleProofStatus } from '../lib/googleProof';
 import { setLessonProgressOwner } from '../lessons/progress';
 import { TEST_ACCOUNT_ID, TEST_ACCOUNT_MODE } from './accountMode';
 import { ConnectedPracticeMemory } from '../practice/connectedMemory';
@@ -118,7 +117,6 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
     const revision = verification;
     async function loadStudent() {
       try {
-        if (import.meta.env.VITE_GOOGLE_PROOF_REVIEW === 'true') await verifyGoogleProofStatus(client!);
         if (!active || revision !== authRevision.current) return;
         const [profile, role, grade] = await Promise.all([
           client!.from('profiles').select('display_name, first_name').eq('id', user!.id).maybeSingle(),

@@ -28,12 +28,14 @@ it('routes signed-out users to role-specific login and allows a shared session t
   expect(screen.getByRole('status').textContent).toContain('ანგარიში მოწმდება');
   expect(screen.queryByRole('link',{name:'მოსწავლე'})).toBeNull();
   act(()=>listener('INITIAL_SESSION', null));
+  expect(screen.queryByRole('link',{name:'მოსწავლე'})).toBeNull();
+  expect(screen.queryByRole('link',{name:'მშობელი'})).toBeNull();
+  expect(screen.getByRole('link',{name:'მასწავლებლის შესვლა'}).getAttribute('href')).toBe('#/teacher');
+  expect(screen.getByLabelText('პაროლი')).toBeTruthy();
+  act(()=>listener('SIGNED_IN', {user:{id:'test'}}));
+  expect(screen.getByText('აირჩიეთ მოსწავლის ან მშობლის სივრცე.')).toBeTruthy();
   expect(screen.getByRole('link',{name:'მოსწავლე'}).getAttribute('href')).toBe('#/student');
   expect(screen.getByRole('link',{name:'მშობელი'}).getAttribute('href')).toBe('#/parent');
-  expect(screen.getByRole('link',{name:'მასწავლებლის შესვლა'}).getAttribute('href')).toBe('#/teacher');
-  expect(screen.queryByLabelText('პაროლი')).toBeNull();
-  act(()=>listener('SIGNED_IN', {user:{id:'test'}}));
-  expect(screen.getByText('აირჩიეთ თქვენთვის შესაფერისი სივრცე.')).toBeTruthy();
   fireEvent.click(screen.getByRole('button',{name:'ანგარიშიდან გასვლა'}));
   await waitFor(()=>expect(signOut).toHaveBeenCalledTimes(1));
   view.unmount(); expect(unsubscribe).toHaveBeenCalled();

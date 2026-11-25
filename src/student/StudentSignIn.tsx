@@ -1,31 +1,18 @@
 import { Link } from '../router';
 import { useStudentSession } from './session';
-import { googleAuthClient } from '../lib/googleAuth';
-import { GoogleAuthButton, GoogleProofButton } from '../account/GoogleAuth';
 import { LoadingScreen } from '../components/LoadingScreen';
-import { StudentEnrollmentReview } from './StudentEnrollmentReview';
 
 export function StudentSignIn() {
-  const { signOut, mode, status, error, signedIn, retryStudentAccess } = useStudentSession();
-  const googleAvailable = mode === 'connected' && Boolean(googleAuthClient);
+  const { signOut, mode, status, error, signedIn } = useStudentSession();
   return (
     <div className="student-container signin-wrap">
       <div className="signin-card">
         <span className="eyebrow"><span className="eyebrow-dot" /> მოსწავლის შესვლა</span>
         <h1>გამარჯობა! 👋</h1>
         {status === 'loading' ? <LoadingScreen compact /> : <>
-          {signedIn ? (
-            <p>უკვე შესული ხარ. მოსწავლის სივრცეზე წვდომა ჯერ ვერ დადასტურდა. დაუკავშირდი აკადემიას.</p>
-          ) : googleAvailable ? (
-            <p>მოსწავლის სივრცეში შესასვლელად გამოიყენე Google.</p>
-          ) : (
-            <p>Google-ით შესვლა ამ გარემოში ამჟამად მიუწვდომელია. დაუკავშირდი აკადემიას.</p>
-          )}
+          {signedIn ? <p>მოსწავლის სივრცეზე წვდომა ვერ დადასტურდა. აირჩიე მოსწავლის სივრცე ანგარიშის გვერდზე.</p> : <p>შედი ელფოსტითა და პაროლით.</p>}
           {error && <p role="alert">{error}</p>}
-          {!signedIn && googleAvailable && <GoogleAuthButton client={googleAuthClient} />}
-          {signedIn && <GoogleProofButton client={googleAvailable ? googleAuthClient : null} />}
-          {signedIn && googleAuthClient && import.meta.env.VITE_GOOGLE_PROOF_REVIEW === 'true' && import.meta.env.VITE_STUDENT_ONBOARDING_REVIEW === 'true' &&
-            <StudentEnrollmentReview client={googleAuthClient} onComplete={retryStudentAccess} />}
+          <p><Link to="/account/login">ანგარიშში შესვლა ან სივრცის არჩევა</Link></p>
           {signedIn && <p><Link to="/account/status">ანგარიშის ნომერი</Link></p>}
           {signedIn && <button type="button" className="btn btn-ghost" onClick={signOut}>ანგარიშიდან გასვლა</button>}
         </>}

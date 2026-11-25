@@ -18,7 +18,7 @@ export function makeSignupClient(url:string,key:string):SupabaseClient {
  return createClient(url,key,{auth:{storage,storageKey:instance,persistSession:true,autoRefreshToken:false,detectSessionInUrl:false,flowType:'pkce'}});
 }
 export const signupClient:SupabaseClient|null=(()=>{
- if(TEST_ACCOUNT_MODE||ACCOUNT_MODE==='invalid'||import.meta.env.VITE_ACCOUNT_SIGNUP_REVIEW!=='true')return null;
+ if(TEST_ACCOUNT_MODE||ACCOUNT_MODE==='invalid')return null;
  const url=import.meta.env.VITE_SUPABASE_URL?.trim(),key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
  if(!url||!key?.startsWith('sb_publishable_'))return null;
  try{const u=new URL(url);if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||!window.crypto?.subtle||!window.crypto.getRandomValues)return null;window.localStorage.getItem('axiom-signup-check');return makeSignupClient(url,key);}catch{return null;}
