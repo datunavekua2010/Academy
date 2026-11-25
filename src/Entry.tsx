@@ -3,6 +3,7 @@ import { TEST_ACCOUNT_MODE } from './student/accountMode';
 import { isStudentPath, useHashRoute } from './router';
 import { PreviewChoice } from './preview/PreviewChoice';
 import './preview/base.css';
+import { LoadingScreen } from './components/LoadingScreen';
 
 const Shell = lazy(() => import('./Shell').then(module => ({ default: module.Shell })));
 const Landing = lazy(() => import('./LandingEntry'));
@@ -16,7 +17,7 @@ export function Entry() {
     if (!app) document.title = 'Axiom Academy — მათემატიკა და ლოგიკა';
   }, [app]);
   if (preview) return <PreviewChoice />;
-  return <Suspense fallback={<main role="status" className="entry-loading">იტვირთება…</main>}>
+  return <Suspense fallback={<LoadingScreen />}>
     {app ? <Shell /> : <Landing />}
   </Suspense>;
 }

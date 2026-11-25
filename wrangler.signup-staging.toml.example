@@ -1,0 +1,25 @@
+# EXAMPLE ONLY. Copy outside the repository or to an ignored local file after
+# selecting a separate staging Worker name/origin. Never use the production
+# Worker name, routes, Supabase project, credentials, or production data.
+name = "axiom-signup-staging"
+main = "server/auth-captcha-review-worker.ts"
+compatibility_date = "2025-01-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/auth/turnstile-verify", "/api/auth/google-proof/start", "/api/auth/google-proof/callback"]
+
+[vars]
+# Replace STAGING_ORIGIN with the exact HTTPS origin, no trailing slash.
+TURNSTILE_REVIEW_ENABLED = "true"
+TURNSTILE_ALLOWED_ORIGIN = "https://STAGING_ORIGIN"
+GOOGLE_PROOF_REVIEW_ENABLED = "true"
+GOOGLE_PROOF_ALLOWED_ORIGIN = "https://STAGING_ORIGIN"
+GOOGLE_PROOF_SUPABASE_URL = "https://wxxgwayrieasrzngpuul.supabase.co"
+# GOOGLE_PROOF_CLIENT_ID is public but belongs to the staging Google OAuth
+# client. Provision it as a staging runtime variable, not in source control.
+# Worker secrets: GOOGLE_PROOF_CLIENT_SECRET, GOOGLE_PROOF_SUPABASE_SERVICE_KEY,
+# GOOGLE_PROOF_RATE_KEY and TURNSTILE_WORKER_SECRET. Never put these in [vars],
+# build variables, browser code, command history, logs, this file, or chat.

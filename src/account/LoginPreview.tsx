@@ -1,125 +1,116 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseConfiguration } from '../lib/supabase';
-import { googleAuthClient, startGoogleAuth } from '../lib/googleAuth';
-import { recoveryClient } from '../lib/passwordRecovery';
-import { signupClient } from '../lib/accountSignup';
-import { RecoveryRequest } from './PasswordRecovery';
-import { useTurnstileReview } from './TurnstileReview';
+import { chooseEmailRole, type SelfServiceRole } from '../lib/chooseEmailRole';
+import { EmailSignIn } from './EmailSignIn';
+import { navigate } from '../router';
+import { LoadingScreen } from '../components/LoadingScreen';
+import journeyIllustration from '../assets/account-journey.jpg';
 import './loginPreview.css';
 
-type AuthState = 'loading' | 'signed-out' | 'signed-in';
+type AuthState = 'loading' | 'signed-out' | 'signed-in' | 'unavailable';
 
-/** Authentication proves identity only. Each destination enforces its own role. */
-export function LoginForm({ client, googleClient }: { client: SupabaseClient; googleClient: SupabaseClient | null }) {
-  const [state, setState] = useState<AuthState>('loading');
-  const stateRef = useRef<AuthState>('loading');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+function StudentIcon() {
+  return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M4.5 15 20 7l15.5 8L20 23 4.5 15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/><path d="M11 19v7c4.6 4.5 13.4 4.5 18 0v-7M35.5 15v10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M34 28h3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
+}
+function ParentIcon() {
+  return <svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M20 30.5s-11-6.7-11-14a5.8 5.8 0 0 1 11-2.5 5.8 5.8 0 0 1 11 2.5c0 7.3-11 14-11 14Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/><path d="M4 30c2.5-2.8 5.3-4 8.5-3.5M36 30c-2.5-2.8-5.3-4-8.5-3.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
+}
+
+export function RoleChoices({ includeTeacher = true, enrollmentClient = null }: { includeTeacher?: boolean; enrollmentClient?: SupabaseClient | null }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const pending = useRef(false);
-  const captcha = useTurnstileReview();
+  const select = async (role: SelfServiceRole) => {
+    if (!enrollmentClient || pending.current) return;
+    pending.current = true; setBusy(true); setError('');
+    try { await chooseEmailRole(enrollmentClient, role); navigate(`/${role}`); }
+    catch { setError('ანგარიშის შექმნა ან წვდომის დადასტურება ვერ მოხერხდა. სცადეთ ხელახლა ან დაუკავშირდით აკადემიას.'); }
+    finally { pending.current = false; setBusy(false); }
+  };
+  return <>
+    <nav aria-label="აკადემიის სივრცეები" className="role-choice-grid" aria-busy={busy}>
+      <a href="#/student" className="role-choice-card role-choice-student" aria-label="მოსწავლე" aria-disabled={busy || undefined}
+        onClick={enrollmentClient ? event => { event.preventDefault(); void select('student'); } : undefined}>
+        <span className="role-choice-icon"><StudentIcon /></span>
+        <span className="role-choice-copy"><strong>მოსწავლე</strong><span>ვისწავლოთ და აღმოვაჩინოთ ერთად</span></span>
+        <span className="role-choice-arrow" aria-hidden="true">↗</span>
+      </a>
+      <a href="#/parent" className="role-choice-card role-choice-parent" aria-label="მშობელი" aria-disabled={busy || undefined}
+        onClick={enrollmentClient ? event => { event.preventDefault(); void select('parent'); } : undefined}>
+        <span className="role-choice-icon"><ParentIcon /></span>
+        <span className="role-choice-copy"><strong>მშობელი</strong><span>თვალი ადევნეთ შვილის პროგრესს</span></span>
+        <span className="role-choice-arrow" aria-hidden="true">↗</span>
+      </a>
+    </nav>
+    {error && <p role="alert">{error}</p>}
+    {includeTeacher && <p className="role-choice-teacher">მასწავლებელი ხართ? <a href="#/teacher">მასწავლებლის შესვლა <span aria-hidden="true">↗</span></a></p>}
+  </>;
+}
 
+/** A shared session proves identity only. Destinations check their own roles. */
+export function LoginForm({ client }: { client: SupabaseClient | null }) {
+  const [state, setState] = useState<AuthState>(client ? 'loading' : 'unavailable');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const pending = useRef(false);
   useEffect(() => {
+    if (!client) { setState('unavailable'); return; }
     let active = true;
     const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      const next = session?.user ? 'signed-in' : 'signed-out';
-      stateRef.current = next;
-      setState(next);
-      if (next === 'signed-in') setPassword('');
+      if (active) setState(session?.user ? 'signed-in' : 'signed-out');
     });
     return () => { active = false; subscription.unsubscribe(); };
   }, [client]);
-
-  const signIn = async (event: FormEvent) => {
-    event.preventDefault();
-    if (pending.current || stateRef.current !== 'signed-out' || !captcha.ready) return;
-    pending.current = true; setBusy(true); setError('');
-    try {
-      const token = await captcha.verify();
-      // Do not replace a session that appeared in another tab while verifying.
-      const current = await client.auth.getSession();
-      if (current.error || current.data.session || stateRef.current !== 'signed-out') throw new Error('Session changed');
-      const result = await client.auth.signInWithPassword({ email: email.trim(), password, ...(token ? { options: { captchaToken: token } } : {}) });
-      if (result.error || !result.data.session) throw new Error('Sign in failed');
-    } catch {
-      setError('შესვლა ვერ მოხერხდა. შეამოწმეთ მონაცემები და უსაფრთხოების შემოწმება, ან სცადეთ მოგვიანებით.');
-    } finally {
-      captcha.reset(); setPassword(''); pending.current = false; setBusy(false);
-    }
-  };
-  const google = async () => {
-    if (!googleClient || pending.current || stateRef.current !== 'signed-out') return;
-    pending.current = true; setBusy(true); setError('');
-    try { await startGoogleAuth(googleClient, window.location.origin, window.location.pathname, window.sessionStorage); }
-    catch { setError('Google-ით შესვლა ვერ დაიწყო. სცადეთ მოგვიანებით.'); pending.current = false; setBusy(false); }
-  };
   const signOut = async () => {
-    if (pending.current) return;
+    if (!client || pending.current) return;
     pending.current = true; setBusy(true); setError('');
     try { const result = await client.auth.signOut(); if (result.error) throw result.error; }
     catch { setError('ანგარიშიდან გასვლა ვერ მოხერხდა. სცადეთ ხელახლა.'); }
     finally { pending.current = false; setBusy(false); }
   };
-
+  if (state === 'loading') return <LoadingScreen compact message="ანგარიში მოწმდება…" />;
   return <>
-    {state === 'loading' && <p role="status">ანგარიში მოწმდება…</p>}
-    {state === 'signed-out' && <>
-      <p className="login-preview-subtitle">შედით თქვენი ელფოსტითა და პაროლით.</p>
-      <form aria-label="ანგარიშში შესვლის ფორმა" onSubmit={event => void signIn(event)}>
-        <fieldset disabled={busy}>
-          <label htmlFor="login-preview-email">ელფოსტა</label>
-          <input id="login-preview-email" type="email" placeholder="name@example.com" autoComplete="username" required maxLength={254} value={email} onChange={event => setEmail(event.target.value)} />
-          <label htmlFor="login-preview-password">პაროლი</label>
-          <input id="login-preview-password" type="password" placeholder="შეიყვანე პაროლი" autoComplete="current-password" required value={password} onChange={event => setPassword(event.target.value)} />
-          {captcha.widgets}
-          <button type="submit" disabled={!captcha.ready}>{busy ? 'იტვირთება…' : 'შესვლა'} <span aria-hidden="true">→</span></button>
-        </fieldset>
-      </form>
-      {googleClient ? <><div className="login-preview-divider" /><button type="button" className="login-google" disabled={busy} onClick={() => void google()}>Google-ით გაგრძელება</button><p className="login-preview-help">Google-ით პირველად გაგრძელებამ შეიძლება შექმნას ანგარიში. აკადემიის როლი და კავშირები ცალკე დადასტურებას საჭიროებს.</p></> : <p className="login-preview-help">Google-ით შესვლა ამ გარემოში ხელმისაწვდომი არ არის.</p>}
-      <RecoveryRequest client={recoveryClient} />
-      {signupClient && <p className="login-preview-help"><a href="#/account/register">ანგარიშის მოთხოვნა</a></p>}
-    </>}
-    {state === 'signed-in' && <div className="login-signed-in">
-      <p role="status">ანგარიშში შესული ხართ. აირჩიეთ თქვენი სივრცე.</p>
-      <p className="login-preview-help">ანგარიშში შესვლა ავტომატურად არ ანიჭებს აკადემიის როლს ან წვდომას.</p>
-      <nav aria-label="აკადემიის სივრცეები"><a href="#/student">მოსწავლე</a><a href="#/parent">მშობელი</a><a href="#/teacher">მასწავლებელი</a><a href="#/account/status">ანგარიშის ნომერი</a></nav>
-      <button type="button" disabled={busy} onClick={() => void signOut()}>ანგარიშიდან გასვლა</button>
-    </div>}
+    {state === 'signed-in' ? <p className="role-choice-intro" role="status">ანგარიშში შესული ხართ. აირჩიეთ თქვენი სივრცე.</p> : <p className="role-choice-intro">აირჩიეთ, რომელი სივრცით გსურთ სარგებლობა.</p>}
+    {state === 'unavailable' && <p className="login-preview-notice" role="status">ანგარიშით შესვლა ამ გარემოში ჯერ არ არის ხელმისაწვდომი.</p>}
+    {state === 'signed-in' && <RoleChoices enrollmentClient={client} />}
+    {state === 'signed-out' && client && <><EmailSignIn client={client} /><p className="role-choice-teacher"><a href="#/teacher">მასწავლებლის შესვლა</a></p></>}
+    {state === 'signed-in' ? <div className="login-session-actions">
+      <p>აირჩიეთ მოსწავლის ან მშობლის სივრცე.</p>
+      <a href="#/account/status">ანგარიშის ნომერი</a>
+      <button type="button" disabled={busy} onClick={() => void signOut()}>{busy ? 'იტვირთება…' : 'ანგარიშიდან გასვლა'}</button>
+    </div> : null}
     {error && <p role="alert" className="login-error">{error}</p>}
   </>;
 }
 
-export function LoginPreview() {
-  useEffect(() => { document.title = 'ანგარიშში შესვლა — Axiom Academy'; }, []);
+export function LoginLayout({ children }: { children: ReactNode }) {
   return <div className="login-preview">
     <header className="login-preview-header">
-      <a className="login-preview-brand" href="#home" aria-label="Axiom Academy — მთავარი">
-        <span className="login-preview-brand-mark" aria-hidden="true">✦</span>
-        <span>Axiom <strong>Academy</strong></span>
-      </a>
+      <a className="login-preview-brand" href="#home" aria-label="Axiom Academy — მთავარი"><span className="login-preview-brand-mark" aria-hidden="true">✦</span><span>Axiom <strong>Academy</strong></span></a>
       <a className="login-preview-back" href="#home"><span aria-hidden="true">←</span> მთავარ გვერდზე</a>
     </header>
     <main className="login-preview-main">
       <section className="login-preview-card" aria-labelledby="login-preview-title">
         <div className="login-preview-intro">
-          <div className="login-preview-art" aria-hidden="true"><span>✦</span><i>+</i><b>∑</b><em>×</em></div>
-          <p className="login-preview-kicker">AXIOM ACADEMY</p>
-          <h1 id="login-preview-title">კეთილი იყოს<br />შენი დაბრუნება<span>.</span></h1>
-          <p>სწავლა პატარა ნაბიჯებით, დიდი აღმოჩენებით და შენი საკუთარი ტემპით.</p>
-          <div className="login-preview-quote"><span aria-hidden="true">✳</span><p>ყოველი ახალი ნაბიჯი<br /><strong>მეტი შესაძლებლობაა.</strong></p></div>
+          <div className="login-preview-intro-text"><p className="login-preview-kicker"><span aria-hidden="true">✳</span> პატარა ნაბიჯები, დიდი აღმოჩენები</p><h1 id="login-preview-title">სწავლა უფრო<br /><em>ლამაზია ერთად.</em></h1><p>ადგილი ცნობისმოყვარეობისთვის, აღმოჩენებისთვის და ყოველდღიური პროგრესისთვის.</p></div>
+          <img className="login-preview-illustration" src={journeyIllustration} alt="" />
+          <div className="login-preview-intro-footer"><span>შენი სასწავლო თავგადასავალი</span><span aria-hidden="true">✦ &nbsp; ✦ &nbsp; ✦</span></div>
         </div>
         <div className="login-preview-form-panel">
-          <p className="login-preview-eyebrow">შენი სასწავლო სივრცე</p>
-          <h2>ანგარიშში შესვლა</h2>
-          {supabaseConfiguration.client ? <LoginForm client={supabaseConfiguration.client} googleClient={googleAuthClient} /> : <p className="login-preview-notice" role="status">ანგარიშით შესვლა ამ გარემოში ჯერ არ არის ხელმისაწვდომი.</p>}
+          <div className="role-choice-kicker"><span aria-hidden="true" /> კეთილი იყოს თქვენი მობრძანება</div>
+          <h2>ვისთვის არის სივრცე?</h2>
+          {children}
           <div className="login-preview-divider" />
-          <a className="login-preview-explore" href="#home">პლატფორმის ნახვა <span aria-hidden="true">↗</span></a>
+          <a className="login-preview-explore" href="#home"><span aria-hidden="true">←</span> პლატფორმის ნახვა</a>
         </div>
       </section>
-      <p className="login-preview-footer">Axiom Academy <span aria-hidden="true">·</span> ვისწავლოთ ერთად</p>
+      <p className="login-preview-footer">Axiom Academy <span aria-hidden="true">✳</span> ვისწავლოთ ერთად</p>
     </main>
   </div>;
+}
+
+export function LoginPreview() {
+  useEffect(() => { document.title = 'ანგარიშში შესვლა — Axiom Academy'; }, []);
+  return <LoginLayout><LoginForm client={supabaseConfiguration.client} /></LoginLayout>;
 }

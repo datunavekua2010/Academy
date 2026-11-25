@@ -24,7 +24,7 @@ interface StudentSessionValue {
   signedIn: boolean;
   practiceMemory: ConnectedPracticeMemory | null;
   practiceRevision: number;
-  signInWithPassword: (email: string, password: string, captchaToken?: string) => Promise<void>;
+  retryStudentAccess: () => void;
   signOut: () => void;
 }
 
@@ -44,7 +44,7 @@ function TestStudentSessionProvider({ children }: { children: ReactNode }) {
   }, []);
   const value = useMemo<StudentSessionValue>(() => ({
     student: TEST_STUDENT, mode: 'test', status: 'ready', error: null, signedIn: false, practiceMemory: null, practiceRevision: 0,
-    signInWithPassword: async () => {}, signOut: () => {},
+    retryStudentAccess: () => {}, signOut: () => {},
   }), []);
   if (!ready) return null;
   return <StudentSessionContext.Provider value={value}>{children}</StudentSessionContext.Provider>;
@@ -117,6 +117,7 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
     const revision = verification;
     async function loadStudent() {
       try {
+        if (!active || revision !== authRevision.current) return;
         const [profile, role, grade] = await Promise.all([
           client!.from('profiles').select('display_name, first_name').eq('id', user!.id).maybeSingle(),
           client!.from('user_roles').select('role').eq('user_id', user!.id).eq('role', 'student').maybeSingle(),
@@ -147,13 +148,12 @@ export function AcademyStudentSessionProvider({ children }: { children: ReactNod
 
   const value = useMemo<StudentSessionValue>(() => ({
     student, mode, status, error, signedIn: Boolean(user), practiceMemory, practiceRevision,
-    signInWithPassword: async (email, password, captchaToken) => {
-      if (!client) return;
+    retryStudentAccess: () => {
+      if (!client || !user) return;
+      authRevision.current++;
       setError(null);
-      try {
-        const { error: signInError } = await client.auth.signInWithPassword({ email, password, ...(captchaToken ? { options: { captchaToken } } : {}) });
-        if (signInError) throw signInError;
-      } catch { setError('შესვლა ვერ მოხერხდა. შეამოწმე მონაცემები ან დაუკავშირდი აკადემიას.'); }
+      setStatus('loading');
+      setVerification(authRevision.current);
     },
     signOut: () => {
       if (!client) return;

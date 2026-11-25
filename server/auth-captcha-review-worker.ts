@@ -31,4 +31,11 @@ export async function handleAuthCaptcha(request: Request, env: Env, fetcher: typ
   if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length !== 1 || typeof (body as {token?:unknown}).token !== 'string') return reply(400);
   return await verifyWorkerTurnstile((body as {token:string}).token, env.TURNSTILE_WORKER_SECRET, allowed.hostname, fetcher) ? reply(204) : reply(403);
 }
-export default { fetch(request: Request, env: Env) { return handleAuthCaptcha(request, env); } };
+export default { fetch(request: Request, env: Env) {
+  const path = new URL(request.url).pathname;
+  if (path === '/api/auth/google-proof/start' || path === '/api/auth/google-proof/callback') {
+    // Retired: do not fall through to the SPA or start a Google proof flow.
+    return new Response('Unavailable', { status: 410, headers: { 'Cache-Control':'no-store', 'X-Content-Type-Options':'nosniff' } });
+  }
+  return handleAuthCaptcha(request, env);
+} };

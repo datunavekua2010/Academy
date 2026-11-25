@@ -16,6 +16,7 @@ import { LessonNotes } from './LessonNotes';
 import { Classrooms } from './Classrooms';
 import { TestMaker } from './TestMaker';
 import { TeacherSignIn, TeacherSignOut } from './TeacherSignIn';
+import { LoadingScreen } from '../components/LoadingScreen';
 import { signupClient } from '../lib/accountSignup';
 import './teacher.css';
 
@@ -42,6 +43,14 @@ function useTeacherAccess(client: SupabaseClient | null): [Access, () => void] {
         if (error) { setAccess({ status: error.name === 'AuthSessionMissingError' ? 'signed-out' : 'error' }); return; }
         if (!data.user) { setAccess({ status: 'signed-out' }); return; }
         const user = data.user;
+        // A role row is visible even when this particular session used Google.
+        // Ask the server about the effective teacher role before loading data.
+        if (import.meta.env.VITE_GOOGLE_PROOF_REVIEW === 'true') {
+          const result = await client.rpc('review_teacher_session_status');
+          if (!alive || current !== revision) return;
+          if (result.error || typeof result.data !== 'boolean') { setAccess({ status: 'error' }); return; }
+          if (!result.data) { setAccess({ status: 'denied' }); return; }
+        }
         const [role, profile] = await Promise.all([
           client.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'teacher').maybeSingle(),
           client.from('profiles').select('display_name').eq('id', user.id).maybeSingle(),
@@ -273,6 +282,6 @@ export function TeacherApp() {
   const valid = parts.length <= 1 || !!studentId || !!reportStudentId;
   useEffect(() => { document.title = 'მასწავლებლის სივრცე — Axiom Academy'; }, []);
   if (TEST_ACCOUNT_MODE && !client && supabaseConfiguration.mode === 'unconfigured') return <Workspace key="test-preview" client={null} user={null} name="ადგილობრივი სივრცე" section={valid ? section : 'not-found'} studentId={valid ? studentId : null} reportStudentId={valid ? reportStudentId : null} notesView={valid && notesView} />;
-  if (access.status !== 'ready' || !client) return <main className="teacher-gate"><div className="teacher-panel"><Link to="/" className="teacher-brand">✦ Axiom Academy</Link><h1>მასწავლებლის სივრცე</h1>{access.status === 'loading' ? <p role="status">ანგარიში მოწმდება…</p> : access.status === 'unavailable' ? <p>მასწავლებლის ანგარიშით შესვლა ამ ეტაპზე მიუწვდომელია. სატესტო მოსწავლის ანგარიში ამ სივრცეზე წვდომას არ იძლევა.</p> : access.status === 'signed-out' && client ? <TeacherSignIn client={client} onSignedIn={retry} /> : access.status === 'denied' && client ? <><p role="alert">ამ ანგარიშს მასწავლებლის სივრცეზე წვდომა არ აქვს.</p>{signupClient&&<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p>}<TeacherSignOut client={client} /></> : <div role="alert"><p>ანგარიშის შემოწმება ვერ მოხერხდა.</p><button className="teacher-button" onClick={retry}>ხელახლა ცდა</button></div>}<Link to="/student">მოსწავლის გვერდზე დაბრუნება →</Link></div></main>;
+  if (access.status !== 'ready' || !client) return <main className="teacher-gate"><div className="teacher-panel"><Link to="/" className="teacher-brand">✦ Axiom Academy</Link><h1>მასწავლებლის სივრცე</h1>{access.status === 'loading' ? <LoadingScreen compact message="ანგარიში მოწმდება…" /> : access.status === 'unavailable' ? <p>მასწავლებლის ანგარიშით შესვლა ამ ეტაპზე მიუწვდომელია. სატესტო მოსწავლის ანგარიში ამ სივრცეზე წვდომას არ იძლევა.</p> : access.status === 'signed-out' && client ? <TeacherSignIn client={client} onSignedIn={retry} /> : access.status === 'denied' && client ? <><p role="alert">ამ ანგარიშს მასწავლებლის სივრცეზე წვდომა არ აქვს. მასწავლებლის ანგარიშით შესასვლელად გამოიყენეთ ელფოსტა და პაროლი.</p>{signupClient&&<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p>}<TeacherSignOut client={client} /></> : <div role="alert"><p>ანგარიშის შემოწმება ვერ მოხერხდა.</p><button className="teacher-button" onClick={retry}>ხელახლა ცდა</button></div>}<Link to="/student">მოსწავლის გვერდზე დაბრუნება →</Link></div></main>;
   return <Workspace key={access.user.id} client={client} user={access.user} name={access.name} section={valid ? section : 'not-found'} studentId={valid ? studentId : null} reportStudentId={valid ? reportStudentId : null} notesView={valid && notesView} />;
 }

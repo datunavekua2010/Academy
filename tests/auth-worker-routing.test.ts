@@ -19,6 +19,16 @@ it('delegates ordinary application and asset requests to the assets binding', as
   }
 });
 
+it('retires Google proof routes instead of serving SPA content', async () => {
+  const fetchAsset = vi.fn(async () => new Response('synthetic asset'));
+  for (const path of ['/api/auth/google-proof/start','/api/auth/google-proof/callback']) {
+    const response = await worker.fetch(new Request(`${origin}${path}`), { ASSETS: { fetch: fetchAsset } });
+    expect(response.status).toBe(410);
+    expect(await response.text()).toBe('Unavailable');
+  }
+  expect(fetchAsset).not.toHaveBeenCalled();
+});
+
 it('fails closed without the Worker secret instead of returning SPA content', async () => {
   const fetchAsset = vi.fn(async () => new Response('synthetic asset'));
   const siteverify = vi.fn();
@@ -46,4 +56,14 @@ it('sends a synthetic runtime secret only to Siteverify and never to assets or t
   const init = siteverify.mock.calls[0][1] as RequestInit;
   expect(JSON.parse(init.body as string)).toEqual({ secret, response: 'synthetic-token' });
   expect([...response.headers.values()].join(' ')).not.toContain(secret);
+});
+
+it('retires proof requests regardless of edge metadata',async()=>{
+  const env={ASSETS:{fetch:vi.fn()},GOOGLE_PROOF_REVIEW_ENABLED:'true'};
+  for(const headers of [{},{'cf-worker':'another.example'},{'cf-ew-via':'15'}]){
+    const req=new Request(`${origin}/api/auth/google-proof/start`,{method:'POST',headers});
+    if(Object.keys(headers).length)Object.defineProperty(req,'cf',{value:{country:'XX'}});
+    expect((await worker.fetch(req,env)).status).toBe(410);
+  }
+  expect(env.ASSETS.fetch).not.toHaveBeenCalled();
 });

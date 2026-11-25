@@ -11,16 +11,15 @@ vi.mock('../src/account/TurnstileReview', () => ({ useTurnstileReview: () => ({
 }) }));
 vi.mock('../src/lib/passwordRecovery', () => ({ recoveryClient: null }));
 vi.mock('../src/lib/accountSignup', () => ({ signupClient: null }));
-vi.mock('../src/lib/googleAuth', () => ({ googleAuthClient: {} }));
 import { StudentSignIn } from '../src/student/StudentSignIn';
 
 afterEach(() => { cleanup(); fixture.signedIn = false; fixture.status = 'ready'; fixture.error = null; });
 
-it('offers Google or password when signed out', () => {
+it('offers email sign-in when signed out', () => {
   render(<StudentSignIn />);
-  expect(screen.getByText('შედი ელფოსტითა და პაროლით ან Google-ით.')).toBeTruthy();
-  expect(screen.getByLabelText('პაროლი')).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Google-ით გაგრძელება' })).toBeTruthy();
+  expect(screen.getByText('შედი ელფოსტითა და პაროლით.')).toBeTruthy();
+  expect(screen.queryByLabelText('პაროლი')).toBeNull();
+  expect(screen.getByRole('link', { name: 'ანგარიშში შესვლა ან სივრცის არჩევა' }).getAttribute('href')).toBe('#/account/login');
 });
 
 it('does not ask an already signed-in user for an academy password when student access cannot be verified', () => {
@@ -28,7 +27,7 @@ it('does not ask an already signed-in user for an academy password when student 
   fixture.status = 'error';
   fixture.error = 'მოსწავლის პროფილი ვერ ჩაიტვირთა. დაუკავშირდი აკადემიას.';
   render(<StudentSignIn />);
-  expect(screen.getByText('უკვე შესული ხარ. მოსწავლის სივრცეზე წვდომა ჯერ ვერ დადასტურდა. დაუკავშირდი აკადემიას.')).toBeTruthy();
+  expect(screen.getByText('მოსწავლის სივრცეზე წვდომა ვერ დადასტურდა. აირჩიე მოსწავლის სივრცე ანგარიშის გვერდზე.')).toBeTruthy();
   expect(screen.queryByLabelText('პაროლი')).toBeNull();
   expect(screen.queryByRole('button', { name: 'Google-ით გაგრძელება' })).toBeNull();
   expect(screen.getByRole('button', { name: 'ანგარიშიდან გასვლა' })).toBeTruthy();
