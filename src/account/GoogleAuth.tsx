@@ -3,7 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { Link } from '../router';
 import { startGoogleAuth } from '../lib/googleAuth';
 import { startGoogleProof } from '../lib/googleProof';
-import { LoginLayout, RoleChoices } from './LoginPreview';
+import { LoginLayout, RoleChoices, roleChoiceEnrollmentClient } from './LoginPreview';
+import { googleAuthClient } from '../lib/googleAuth';
 import './passwordRecovery.css';
 
 export function GoogleAuthButton({ client, allowed = true }: { client: SupabaseClient | null; allowed?: boolean }) {
@@ -37,14 +38,16 @@ export function GoogleProofButton({ client }: { client: SupabaseClient | null })
   return <div><button type="button" disabled={busy} onClick={() => void start()}>{busy ? 'იტვირთება…' : 'Google-ით ხელახლა დადასტურება'}</button>{error && <p role="alert">{error}</p>}</div>;
 }
 
-export function GoogleCallback({ result }: { result: 'ok' | 'error' }) {
+export function GoogleCallback({ result }: { result: 'ok' | 'error' | 'proof-unavailable' }) {
   if (result === 'ok') return <LoginLayout>
     <p role="status" className="role-choice-intro">Google ანგარიში დადასტურდა. აირჩიეთ თქვენი სივრცე.</p>
-    <RoleChoices includeTeacher={false} />
-    <div className="login-session-actions"><p>აკადემიის როლი და კავშირები ცალკე დადასტურებას საჭიროებს.</p><Link to="/account/status">ანგარიშის ნომერი / ანგარიშიდან გასვლა</Link></div>
+    <RoleChoices includeTeacher={false} enrollmentClient={roleChoiceEnrollmentClient(googleAuthClient)} />
+    <div className="login-session-actions"><p>{roleChoiceEnrollmentClient(googleAuthClient) ? 'აირჩიეთ მოსწავლის ან მშობლის სივრცე. მოსწავლესთან დაკავშირებას ცალკე დადასტურება სჭირდება.' : 'აკადემიის როლი და კავშირები ცალკე დადასტურებას საჭიროებს.'}</p><Link to="/account/status">ანგარიშის ნომერი / ანგარიშიდან გასვლა</Link></div>
   </LoginLayout>;
   return <main className="recovery-page"><section className="recovery-card"><h1>Google-ით შესვლა</h1>
-    <p role="alert">Google-ით შესვლა ვერ დადასტურდა. დაუკავშირდით აკადემიას ან სცადეთ ხელახლა იმავე ბრაუზერში.</p>
-    <p><Link to="/account/status">ანგარიშის ნომერი</Link> · <Link to="/parent">მშობლის შესვლა</Link> · <Link to="/student">მოსწავლის შესვლა</Link></p>
+    <p role="alert">{result === 'proof-unavailable'
+      ? 'Google-ის დამატებითი დადასტურება ამჟამად ვერ მოხერხდა. ამ მოქმედებით ახალი აკადემიური როლი არ მინიჭებულა.'
+      : 'Google-ით შესვლა ვერ დადასტურდა. დაუკავშირდით აკადემიას ან სცადეთ ხელახლა იმავე ბრაუზერში.'}</p>
+    <p><Link to="/">მთავარ გვერდზე დაბრუნება</Link> · <Link to="/account/status">ანგარიშის ნომერი / ანგარიშიდან გასვლა</Link> · <Link to="/parent">მშობლის შესვლა</Link> · <Link to="/student">მოსწავლის შესვლა</Link></p>
   </section></main>;
 }

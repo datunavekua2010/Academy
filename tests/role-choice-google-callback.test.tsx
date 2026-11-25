@@ -16,4 +16,13 @@ it('does not offer role choices on a failed callback', () => {
   render(<GoogleCallback result="error" />);
   expect(screen.getByRole('alert')).toBeTruthy();
   expect(screen.queryByRole('link',{name:'მოსწავლე'})).toBeNull();
+  expect(screen.getByRole('link',{name:'მთავარ გვერდზე დაბრუნება'}).getAttribute('href')).toBe('#/');
+});
+it('explains a separate proof failure without granting a role and keeps the public site accessible', () => {
+  render(<GoogleCallback result="proof-unavailable" />);
+  expect(screen.getByRole('alert').textContent).toContain('დამატებითი დადასტურება');
+  expect(screen.getByRole('link',{name:'მთავარ გვერდზე დაბრუნება'}).getAttribute('href')).toBe('#/');
+  expect(screen.getByRole('link',{name:/ანგარიშიდან გასვლა/}).getAttribute('href')).toBe('#/account/status');
+  expect(screen.queryByRole('link',{name:'მოსწავლე'})).toBeNull();
+  expect(screen.queryByRole('link',{name:'მშობელი'})).toBeNull();
 });

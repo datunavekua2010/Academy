@@ -33,7 +33,7 @@ it('routes signed-out users to role-specific login and allows a shared session t
   expect(screen.getByRole('link',{name:'მასწავლებლის შესვლა'}).getAttribute('href')).toBe('#/teacher');
   expect(screen.queryByLabelText('პაროლი')).toBeNull();
   act(()=>listener('SIGNED_IN', {user:{id:'test'}}));
-  expect(screen.getByText(/ავტომატურად არ ანიჭებს/)).toBeTruthy();
+  expect(screen.getByText('აირჩიეთ თქვენთვის შესაფერისი სივრცე.')).toBeTruthy();
   fireEvent.click(screen.getByRole('button',{name:'ანგარიშიდან გასვლა'}));
   await waitFor(()=>expect(signOut).toHaveBeenCalledTimes(1));
   view.unmount(); expect(unsubscribe).toHaveBeenCalled();
