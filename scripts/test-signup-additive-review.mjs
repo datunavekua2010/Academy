@@ -32,6 +32,11 @@ try {
  const before=(await q("select pg_get_functiondef('academy_private.has_role(text)'::regprocedure) as def")).rows[0].def;
  const policies=Number((await q("select count(*) n from pg_policies where schemaname='public'")).rows[0].n);
  const migration=readFileSync('supabase/review/release/202612120001_signup_additive.sql','utf8');
+ const probe=readFileSync('supabase/review/release/signup_staging_rollback_probe.sql','utf8');
+ await db.exec(probe);
+ assert.equal((await q("select to_regclass('academy_private.signup_release_control') as value")).rows[0].value,null);
+ assert.equal((await q("select to_regprocedure('academy_private.role_session_method_allows(text)') as value")).rows[0].value,null);
+ assert.equal((await q("select pg_get_functiondef('academy_private.has_role(text)'::regprocedure) as def")).rows[0].def,before);
  // A collision part way through must roll back earlier tables and functions.
  await db.exec('create table academy_private.google_session_proofs (sentinel text)');
  await assert.rejects(()=>db.exec(migration)); await db.exec('rollback');

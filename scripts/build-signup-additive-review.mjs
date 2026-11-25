@@ -90,7 +90,9 @@ commit;
 `;
 const path='supabase/review/release/202612120001_signup_additive.sql';
 const generated=[header,method,proof,limit,student,parent,link,cleanup].join('\n\n');
+const probePath='supabase/review/release/signup_staging_rollback_probe.sql';
+const probe=once(generated,'commit;\n',`-- Staging-only compatibility probe: all created objects are rolled back.\ndo $$ begin\n  if (select count(*) from academy_private.signup_release_control) <> 4\n     or exists(select 1 from academy_private.signup_release_control where enabled)\n     or has_function_privilege('anon','public.review_student_self_enroll(uuid,text,smallint)','execute')\n     or not has_function_privilege('authenticated','public.review_student_self_enroll(uuid,text,smallint)','execute')\n     or has_function_privilege('authenticated','public.review_google_proof_finish(text,text,text,text)','execute')\n     or not has_function_privilege('service_role','public.review_google_proof_finish(text,text,text,text)','execute')\n     or has_function_privilege('service_role','academy_private.signup_cleanup_expired(integer)','execute') then\n    raise exception 'Signup staging probe failed';\n  end if;\nend $$;\nrollback;\nselect 'STAGING_DRY_RUN_PASSED' as result;\n`);
 if(process.argv.includes('--check')) {
- if(readFileSync(path,'utf8')!==generated) throw Error('Signup migration differs from reviewed source; regenerate and review it');
- console.log('Signup migration matches generator and source.');
-} else writeFileSync(path,generated);
+ if(readFileSync(path,'utf8')!==generated || readFileSync(probePath,'utf8')!==probe) throw Error('Signup migration or probe differs from source; regenerate and review it');
+ console.log('Signup migration and rollback probe match generator and source.');
+} else {writeFileSync(path,generated);writeFileSync(probePath,probe);}
