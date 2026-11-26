@@ -270,9 +270,10 @@ function AttemptList({ attempts, names, limit, embedded = false }: { attempts: T
   return embedded ? content : <section className="teacher-panel"><h2>ვარჯიშის ისტორია</h2>{content}</section>;
 }
 
-export function TeacherApp() {
+export function TeacherApp({ previewOnly = false }: { previewOnly?: boolean }) {
   const path = useHashRoute();
-  const client = supabaseConfiguration.client;
+  // A public preview never connects to a real teacher session or its data.
+  const client = previewOnly ? null : supabaseConfiguration.client;
   const [access, retry] = useTeacherAccess(client);
   const parts = path.replace(/^\/teacher\/?/, '').replace(/\/+$/, '').split('/').filter(Boolean);
   const section = parts[0] || 'students';
@@ -281,7 +282,7 @@ export function TeacherApp() {
   const reportStudentId = section === 'progress-reports' && parts.length === 2 ? parts[1] : null;
   const valid = parts.length <= 1 || !!studentId || !!reportStudentId;
   useEffect(() => { document.title = 'მასწავლებლის სივრცე — Axiom Academy'; }, []);
-  if (TEST_ACCOUNT_MODE && !client && supabaseConfiguration.mode === 'unconfigured') return <Workspace key="test-preview" client={null} user={null} name="ადგილობრივი სივრცე" section={valid ? section : 'not-found'} studentId={valid ? studentId : null} reportStudentId={valid ? reportStudentId : null} notesView={valid && notesView} />;
+  if (previewOnly || (TEST_ACCOUNT_MODE && !client && supabaseConfiguration.mode === 'unconfigured')) return <Workspace key="test-preview" client={null} user={null} name="ადგილობრივი სივრცე" section={valid ? section : 'not-found'} studentId={valid ? studentId : null} reportStudentId={valid ? reportStudentId : null} notesView={valid && notesView} />;
   if (access.status !== 'ready' || !client) return <main className="teacher-gate"><div className="teacher-panel"><Link to="/" className="teacher-brand">✦ Axiom Academy</Link><h1>მასწავლებლის სივრცე</h1>{access.status === 'loading' ? <LoadingScreen compact message="ანგარიში მოწმდება…" /> : access.status === 'unavailable' ? <p>მასწავლებლის ანგარიშით შესვლა ამ ეტაპზე მიუწვდომელია. სატესტო მოსწავლის ანგარიში ამ სივრცეზე წვდომას არ იძლევა.</p> : access.status === 'signed-out' && client ? <TeacherSignIn client={client} onSignedIn={retry} /> : access.status === 'denied' && client ? <><p role="alert">ამ ანგარიშს მასწავლებლის სივრცეზე წვდომა არ აქვს. მასწავლებლის ანგარიშით შესასვლელად გამოიყენეთ ელფოსტა და პაროლი.</p>{signupClient&&<p><Link to="/account/status">ჩემი ანგარიშის ნომერი</Link></p>}<TeacherSignOut client={client} /></> : <div role="alert"><p>ანგარიშის შემოწმება ვერ მოხერხდა.</p><button className="teacher-button" onClick={retry}>ხელახლა ცდა</button></div>}<Link to="/student">მოსწავლის გვერდზე დაბრუნება →</Link></div></main>;
   return <Workspace key={access.user.id} client={client} user={access.user} name={access.name} section={valid ? section : 'not-found'} studentId={valid ? studentId : null} reportStudentId={valid ? reportStudentId : null} notesView={valid && notesView} />;
 }

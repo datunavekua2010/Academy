@@ -51,8 +51,8 @@ function TestStudentSessionProvider({ children }: { children: ReactNode }) {
 }
 
 /** Switch back to the academy provider once sign-in is ready for launch. */
-export function StudentSessionProvider({ children }: { children: ReactNode }) {
-  return TEST_ACCOUNT_MODE ? <TestStudentSessionProvider>{children}</TestStudentSessionProvider> : <AcademyStudentSessionProvider>{children}</AcademyStudentSessionProvider>;
+export function StudentSessionProvider({ children, previewOnly = false }: { children: ReactNode; previewOnly?: boolean }) {
+  return (previewOnly || TEST_ACCOUNT_MODE) ? <TestStudentSessionProvider>{children}</TestStudentSessionProvider> : <AcademyStudentSessionProvider>{children}</AcademyStudentSessionProvider>;
 }
 
 /** Kept for the future sign-in step; never mounted in test-account mode. */
