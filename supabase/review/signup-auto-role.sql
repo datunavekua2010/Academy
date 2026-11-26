@@ -1,4 +1,2 @@
--- Apply only after the role-selector signup frontend and Worker are deployed.
--- Existing production clients do not send the selected role.
-create trigger on_auth_user_created after insert on auth.users
-  for each row execute function academy_private.provision_signup_role();
+-- Applied to production as migration 20261126140303_activate_signup_role_trigger.
+-- Do not run this trigger creation again; see the recorded migration instead.
