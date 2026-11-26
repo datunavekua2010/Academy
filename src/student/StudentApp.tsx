@@ -120,9 +120,9 @@ function StudentRoutes() {
   );
 }
 
-export function StudentApp() {
+export function StudentApp({ previewOnly = false }: { previewOnly?: boolean }) {
   return (
-    <StudentSessionProvider>
+    <StudentSessionProvider previewOnly={previewOnly}>
       <StudentRoutes />
     </StudentSessionProvider>
   );
