@@ -210,7 +210,9 @@
 .halo-dot-two { bottom: 62px; left: 46px; background: var(--teal); box-shadow: 0 0 0 5px rgba(15, 118, 110, .12); }
 .halo-dot-three { top: 128px; left: 22px; width: 7px; height: 7px; background: var(--pink); box-shadow: 0 0 0 4px rgba(244, 114, 182, .12); }
 
-.axi-nav-mascot {
+/* More specific than the shared mascot styles even if the landing page's
+   stylesheet is loaded after the student stylesheet during navigation. */
+.mascot-root.axi-nav-mascot {
   --mascot-scale: 1.25;
   position: absolute;
   left: 50%;
@@ -578,14 +580,17 @@
   .axi-halo {
     top: 0;
     left: 50%;
-    width: 280px;
-    height: 280px;
+    width: min(280px, 100%);
+    height: auto;
+    aspect-ratio: 1;
     transform: translateX(-50%);
   }
   .axi-halo-ring { inset: 26px; }
-  .axi-nav-mascot {
+  .mascot-root.axi-nav-mascot {
     --mascot-scale: .95;
-    position: static;
+    position: relative;
+    left: auto;
+    top: auto;
     transform: none;
     transform-origin: center center;
     margin-bottom: -4px;
