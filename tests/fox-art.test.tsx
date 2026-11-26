@@ -90,15 +90,26 @@ describe('raster mascot', () => {
   });
 });
 
+describe('dashboard mascot positioning', () => {
+  it('keeps mobile positioning and scale independent of stylesheet load order', () => {
+    const css = readFileSync('src/student/student.css', 'utf8');
+    const rules = [...css.matchAll(/\.mascot-root\.axi-nav-mascot\s*\{([^}]*)\}/g)].map(match => match[1]);
+    expect(rules).toHaveLength(2);
+    expect(rules[0]).toMatch(/position:\s*absolute/);
+    expect(rules[0]).toMatch(/--mascot-scale:\s*1\.25/);
+    expect(rules[1]).toMatch(/position:\s*relative/);
+    expect(rules[1]).toMatch(/left:\s*auto/);
+    expect(rules[1]).toMatch(/top:\s*auto/);
+    expect(rules[1]).toMatch(/--mascot-scale:\s*\.95/);
+  });
+});
+
 describe('mascot containment', () => {
   /**
    * The drawn art and the tap target are position:absolute children of
-   * .mascot-root. AxiNav's mobile layout sets the root to `position: static`,
-   * which would hand their containing block to the nav stage instead: on tap
-   * the stage grows as the bubbles open, the fox slides to the new bottom and
-   * the invisible button stretches over every bubble. jsdom has no layout
-   * engine, so this guards the declaration that prevents it rather than the
-   * resulting geometry.
+   * .mascot-root. Static placements need their own containing block too, so
+   * the art and button do not escape into a surrounding stage. jsdom has no
+   * layout engine, so this guards the declaration rather than the geometry.
    */
   it('keeps its own containing block when a placement makes it static', () => {
     // jsdom's import.meta.url is not a file URL, so resolve from the cwd.
