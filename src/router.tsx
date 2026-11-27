@@ -14,20 +14,34 @@ export function currentPath(): string {
   return raw.startsWith('/') ? raw : `/${raw}`;
 }
 
-export function useHashRoute(): string {
-  const [path, setPath] = useState<string>(() => currentPath());
+/** Preview URLs are distinct from authenticated routes, including on reload. */
+export function isLocalPreviewPath(path: string): boolean {
+  return /^\/preview\/(student|teacher)(\/|$)/.test(path);
+}
 
+export function useRawHashRoute(): string {
+  const [path, setPath] = useState<string>(() => currentPath());
   useEffect(() => {
     const onChange = () => setPath(currentPath());
     window.addEventListener('hashchange', onChange);
     return () => window.removeEventListener('hashchange', onChange);
   }, []);
-
   return path;
 }
 
-export function navigate(to: string): void {
+/** Existing student/teacher pages share their routing logic with local previews. */
+export function useHashRoute(): string {
+  const path = useRawHashRoute();
+  return isLocalPreviewPath(path) ? path.slice('/preview'.length) : path;
+}
+
+function routeTarget(to: string): string {
   const next = to.startsWith('/') ? to : `/${to}`;
+  return isLocalPreviewPath(currentPath()) && /^\/(student|teacher)(\/|$)/.test(next) ? `/preview${next}` : next;
+}
+
+export function navigate(to: string): void {
+  const next = routeTarget(to);
   if (currentPath() === next) return;
   window.location.hash = next;
 }
@@ -40,7 +54,7 @@ type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 /** Internal link that keeps hash routing and normal anchor semantics. */
 export function Link({ to, children, ...rest }: LinkProps) {
   return (
-    <a href={`#${to.startsWith('/') ? to : `/${to}`}`} {...rest}>
+    <a href={`#${routeTarget(to)}`} {...rest}>
       {children}
     </a>
   );

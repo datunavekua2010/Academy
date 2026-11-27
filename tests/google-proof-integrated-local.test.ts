@@ -26,7 +26,7 @@ it('connects the synthetic callback to actual prototype SQL policies and mixed-r
   let expectedNonce='';
   try {
     await db.exec(`create role anon;create role authenticated;create role service_role;create schema auth;
-      create table auth.users(id uuid primary key,email_confirmed_at timestamptz default now(),banned_until timestamptz,deleted_at timestamptz,is_anonymous boolean default false);
+      create table auth.users(id uuid primary key,email_confirmed_at timestamptz default now(),banned_until timestamptz,deleted_at timestamptz,is_anonymous boolean default false,raw_user_meta_data jsonb,encrypted_password text);
       create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id),not_after timestamptz);
       create table auth.identities(user_id uuid references auth.users(id),provider text,provider_id text);
       create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;

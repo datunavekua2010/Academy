@@ -1,3 +1,4 @@
+import { Link } from '../../router';
 import { LessonLibrary } from '../../lessons/LessonLibrary';
 import { LessonScreen } from '../../lessons/LessonScreen';
 import { parseLessonsRoute } from '../../lessons/routes';
@@ -60,9 +61,9 @@ export function Lessons({ sub = '' }: { sub?: string }) {
       <div className="student-page">
         <div className="notfound-card">
           <h1>ეს გვერდი არ არსებობს.</h1>
-          <a href="#/student/lessons" className="btn btn-primary" style={{ marginTop: 14 }}>
+          <Link to="/student/lessons" className="btn btn-primary" style={{ marginTop: 14 }}>
             ჩემი გაკვეთილები
-          </a>
+          </Link>
         </div>
       </div>
     );
