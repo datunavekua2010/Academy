@@ -36,10 +36,10 @@ it('links every navigation item and plan action to a real destination without im
   expect(tutorPlan.getByText('უფასო')).toBeTruthy();
   expect(tutorPlan.queryByText(/₾/)).toBeNull();
   expect(screen.queryByText(/13\.99 ₾|19\.99 ₾|39\.99 ₾|79\.99 ₾/)).toBeNull();
-  expect(within(container.querySelector('#student-plan') as HTMLElement).getByRole('link').getAttribute('href')).toBe('#/student');
-  expect(within(container.querySelector('#tutor-plan') as HTMLElement).getByRole('link').getAttribute('href')).toBe('#/teacher/interventions');
-  navigate('#/student'); expect(await screen.findByRole('button',{name:'Axi-ს ნავიგაციის გახსნა'})).toBeTruthy();
-  navigate('#/teacher/interventions'); expect(await screen.findByRole('heading',{name:'ტესტის შემქმნელი'})).toBeTruthy();
+  expect(within(container.querySelector('#student-plan') as HTMLElement).getByRole('link').getAttribute('href')).toBe('#/preview/student');
+  expect(within(container.querySelector('#tutor-plan') as HTMLElement).getByRole('link').getAttribute('href')).toBe('#/preview/teacher/interventions');
+  navigate('#/preview/student'); expect(await screen.findByRole('button',{name:'Axi-ს ნავიგაციის გახსნა'})).toBeTruthy();
+  navigate('#/preview/teacher/interventions'); expect(await screen.findByRole('heading',{name:'ტესტის შემქმნელი'})).toBeTruthy();
 });
 it('opens the responsive menu and preserves meaningful FAQ answers', () => {
   render(<Shell />);

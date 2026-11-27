@@ -11,8 +11,8 @@ it('offers student, teacher and the original landing page at the root in test mo
   expect(screen.getByRole('heading', { name: 'რომელი სივრცის ნახვა გსურთ?' })).toBeTruthy();
   expect(screen.queryByText('სატესტო რეჟიმი')).toBeNull();
   expect(screen.getByText(/პროგრესი ინახება მხოლოდ ამ მოწყობილობაზე/)).toBeTruthy();
-  expect(screen.getByRole('link', { name: /მოსწავლე/ }).getAttribute('href')).toBe('#/student');
-  expect(screen.getByRole('link', { name: /მასწავლებელი/ }).getAttribute('href')).toBe('#/teacher');
+  expect(screen.getByRole('link', { name: /მოსწავლე/ }).getAttribute('href')).toBe('#/preview/student');
+  expect(screen.getByRole('link', { name: /მასწავლებელი/ }).getAttribute('href')).toBe('#/preview/teacher');
   expect(screen.getByRole('link', { name: /ვებგვერდის ნახვა/ }).getAttribute('href')).toBe('#home');
 });
 it('lets users preview the isolated teacher navigation and return to the student dashboard', async () => {
