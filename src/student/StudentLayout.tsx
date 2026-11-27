@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { Link } from '../router';
-import { STUDENT_NAV } from './navItems';
+import { AxiNav } from './AxiNav';
 import { useStudentSession } from './session';
 
 const BrandMark = () => (
@@ -96,29 +96,19 @@ export function StudentLayout({ children, activeSection }: { children: ReactNode
         </div>
       </header>
 
-      {mode === 'test' && <div className="test-account-banner" role="status">ადგილობრივი სივრცე · დავალებები სანიმუშოა. შედეგები ინახება მხოლოდ ამ მოწყობილობაზე და არ იგზავნება აკადემიაში.</div>}
-      {student && error && <div className="student-container" role="alert">{error}</div>}
-
-      <main id="student-main" className="student-main" tabIndex={-1}>
-        {children}
-      </main>
-
-      <footer className="student-footer">
-        <div className="student-container student-footer-inner">
-          <span>© {new Date().getFullYear()} Axiom Academy</span>
-          {/*
-            Always-visible fallback navigation. If the bubble animation fails or
-            a user prefers a plain list, every student section stays reachable.
-          */}
-          <nav className="student-footer-nav" aria-label="სწრაფი ნავიგაცია">
-            {STUDENT_NAV.map((item) => (
-              <Link key={item.key} to={item.to} aria-current={item.key === activeSection ? 'page' : undefined}>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+      <div className="student-workspace">
+        <aside className="student-sidebar" aria-label="ნავიგაცია">
+          <AxiNav activeSection={activeSection} />
+        </aside>
+        <div className="student-workspace-content">
+          {mode === 'test' && <div className="test-account-banner" role="status">ადგილობრივი სივრცე · დავალებები სანიმუშოა. შედეგები ინახება მხოლოდ ამ მოწყობილობაზე და არ იგზავნება აკადემიაში.</div>}
+          {student && error && <div className="student-container" role="alert">{error}</div>}
+          <main id="student-main" className="student-main" tabIndex={-1}>
+            {children}
+          </main>
+          <footer className="student-footer"><div className="student-container student-footer-inner"><span>© {new Date().getFullYear()} Axiom Academy</span><span>პატარა ნაბიჯებით, ყოველდღე ✦</span></div></footer>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

@@ -25,9 +25,8 @@ it('keeps the six streak badges separate and displays no unverified awards', () 
 it('links to the page through Axi, keeps achievements, and provides a dashboard entry', async () => {
   render(<StudentApp />);
   expect(screen.getByRole('link', { name: /სერიის ნახვა/ }).getAttribute('href')).toBe('#/student/streaks');
-  fireEvent.click(screen.getByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' }));
   const nav = screen.getByRole('navigation', { name: 'მოსწავლის სექციები' });
-  expect(within(nav).getAllByRole('link')).toHaveLength(7);
+  expect(within(nav).getAllByRole('link')).toHaveLength(8);
   expect(within(nav).getByRole('link', { name: /მიღწევები/ }).getAttribute('href')).toBe('#/student/achievements');
   const streaks = within(nav).getByRole('link', { name: /სწავლის სერია/ });
   expect(streaks.getAttribute('href')).toBe('#/student/streaks');

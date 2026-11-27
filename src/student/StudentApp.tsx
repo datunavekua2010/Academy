@@ -114,7 +114,7 @@ function StudentRoutes() {
   if (head !== 'lessons' && head !== 'homework' && rest) page = <NotFound />;
 
   return (
-    <StudentLayout activeSection={head === 'homework' ? head : undefined}>
+    <StudentLayout activeSection={head}>
       <RequireStudent publicPreview={head === 'practice' || head === 'lessons' || head === 'homework'}>{page}</RequireStudent>
     </StudentLayout>
   );

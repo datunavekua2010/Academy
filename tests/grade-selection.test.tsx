@@ -24,7 +24,6 @@ describe('homework grade selection', () => {
 
   it('opens from Axi and keeps profile and chosen grade separate through homework and return', async () => {
     render(<StudentApp />);
-    fireEvent.click(screen.getByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' }));
     const panel = screen.getByRole('navigation', { name: 'მოსწავლის სექციები' });
     expect(within(panel).getByRole('link', { name: /საშინაო დავალება/ }).getAttribute('href')).toBe('#/student/homework');
     window.location.hash = '#/student/homework';
