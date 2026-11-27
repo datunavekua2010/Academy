@@ -16,7 +16,6 @@ const BUBBLES = [
 ];
 
 function openAxi() {
-  fireEvent.click(screen.getByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' }));
   return screen.getByRole('navigation', { name: 'მოსწავლის სექციები' });
 }
 
@@ -48,7 +47,9 @@ describe('Axi student navigation', () => {
   it('closes on Escape', () => {
     render(<StudentApp />);
     openAxi();
-    fireEvent.keyDown(document, { key: 'Escape' });
+    const link = within(screen.getByRole('navigation', { name: 'მოსწავლის სექციები' })).getAllByRole('link')[0];
+    link.focus();
+    fireEvent.keyDown(link, { key: 'Escape' });
     expect(screen.queryByRole('navigation', { name: 'მოსწავლის სექციები' })).toBeNull();
   });
 
@@ -67,7 +68,7 @@ describe('Axi student navigation', () => {
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'ისწავლე და ივარჯიშე' })).toBeTruthy();
     });
-    expect(screen.queryByRole('navigation', { name: 'მოსწავლის სექციები' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'ვარჯიში', current: 'page' })).toBeTruthy();
   });
 
   it('keeps the student area behind the session gate', () => {

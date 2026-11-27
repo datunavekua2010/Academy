@@ -24,9 +24,9 @@ it('keeps both previews isolated and their links inside preview routes', async (
   expect(screen.getByRole('link', { name: 'შესვლა' }).getAttribute('href')).toBe('#/account/login');
   expect(screen.getByRole('link', { name: /მოსწავლე/ }).getAttribute('href')).toBe('#/preview/student');
   go('#/preview/student');
-  expect(await screen.findByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' }, { timeout: 10000 })).toBeTruthy();
+  expect(await screen.findByRole('button', { name: 'Axi-ს ნავიგაციის დახურვა' }, { timeout: 10000 })).toBeTruthy();
   expect(screen.getByText(/ადგილობრივი სივრცე · დავალებები სანიმუშოა/)).toBeTruthy();
-  const footer = screen.getByRole('navigation', { name: 'სწრაფი ნავიგაცია' });
+  const footer = screen.getByRole('navigation', { name: 'მოსწავლის სექციები' });
   expect(within(footer).getAllByRole('link').every(link => link.getAttribute('href')?.startsWith('#/preview/student'))).toBe(true);
   go('#/preview/teacher');
   const nav = await screen.findByRole('navigation', { name: 'მასწავლებლის ნავიგაცია' });

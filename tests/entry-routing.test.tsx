@@ -17,7 +17,7 @@ it('exposes semantic preview landmarks and loads the landing and app routes on d
   go('#home');
   expect(await screen.findByRole('navigation', {name:'მთავარი ნავიგაცია'}, {timeout:15000})).toBeTruthy();
   go('#/student');
-  expect(await screen.findByRole('button', {name:'Axi-ს ნავიგაციის გახსნა'}, {timeout:15000})).toBeTruthy();
+  expect(await screen.findByRole('button', {name:'Axi-ს ნავიგაციის დახურვა'}, {timeout:15000})).toBeTruthy();
   go('#/');
   expect(await screen.findByRole('heading', {name:'რომელი სივრცის ნახვა გსურთ?'})).toBeTruthy();
 }, 30000);

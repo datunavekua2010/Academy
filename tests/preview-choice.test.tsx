@@ -26,7 +26,7 @@ it('lets users preview the isolated teacher navigation and return to the student
   go('#/teacher/assignments');
   expect(await screen.findByText(/ადგილობრივი დავალების შექმნა/)).toBeTruthy();
   go('#/student');
-  expect(await screen.findByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' })).toBeTruthy();
+  expect(await screen.findByRole('button', { name: 'Axi-ს ნავიგაციის დახურვა' })).toBeTruthy();
   expect(screen.queryByRole('navigation', { name: 'მასწავლებლის ნავიგაცია' })).toBeNull();
   go('#/');
   expect(await screen.findByRole('heading', { name: 'რომელი სივრცის ნახვა გსურთ?' })).toBeTruthy();

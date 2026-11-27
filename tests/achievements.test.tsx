@@ -63,7 +63,6 @@ describe('achievement catalog', () => {
 describe('Axi achievement navigation', () => {
   it('opens from the mascot menu and links back to the dashboard', async () => {
     render(<StudentApp />);
-    fireEvent.click(screen.getByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' }));
     const nav = screen.getByRole('navigation', { name: 'მოსწავლის სექციები' });
     const link = within(nav).getByRole('link', { name: /მიღწევები/ });
     expect(link.getAttribute('href')).toBe('#/student/achievements');
@@ -74,6 +73,6 @@ describe('Axi achievement navigation', () => {
     expect(back.getAttribute('href')).toBe('#/student');
     fireEvent.click(back);
     window.location.hash = '#/student';
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Axi-ს ნავიგაციის გახსნა' })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Axi-ს ნავიგაციის დახურვა' })).toBeTruthy());
   });
 });
